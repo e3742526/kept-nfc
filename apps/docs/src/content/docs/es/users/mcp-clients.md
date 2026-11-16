@@ -151,6 +151,8 @@ superior. La parte de Kept que necesita una herramienta es el nombre bajo **Qué
 | `create_place` | cambio | | Añade un lugar bajo otro lugar, o en la cima de la ubicación. Con `template`, añade muebles y un lugar para cada uno de sus compartimentos en un paso, como hace [Muebles con compartimentos](/es/users/locations/#muebles-con-compartimentos); un Deshacer lo quita todo. Una habitación toma su tamaño real, `width_cm` y `length_cm` (50 cm a 100 m), y va en el [mapa](/es/users/location-map/) con él. Una plantilla de bastidor acepta `units` y `numbering` ([Bastidores](/es/users/locations/#bastidores)). |
 | `update_place` | cambio | | Cambia un lugar como hace su página: cámbiale el nombre, cambia su tipo, muévelo a otro lugar o a la cima, fija sus campos, y el orden de los lugares en él (A a Z u Orden personalizado, luego Subir o Bajar). `turn` (`right` o `left`, a dónde fue su parte de arriba) gira [muebles con compartimentos](/es/users/locations/#girar-el-mueble) de lado o boca arriba, con `renumber` true o false. Deshacer durante 7 días, salvo subir o bajar: el movimiento opuesto lo deshace. |
 | `turn_into_boxes` | cambio | | Convierte hasta 50 lugares en cajas, como hace **Convierte lugares en cajas**. Cada una conserva su ID, etiqueta y lo que tiene dentro; una con lugares dentro se queda lugar, y también la que está en la cima de la ubicación (conviértela en Kept). Un Deshacer las vuelve a todas. |
+| `get_map` | lectura | | Dónde está cada habitación en el [mapa](/es/users/location-map/): sus plantas y el rectángulo de cada habitación en centímetros desde la esquina de su planta, como lo muestra la vista Plano (desde la izquierda, desde arriba, ancho y largo), o ninguno si nadie la ha colocado aún. |
+| `arrange_rooms` | cambio | | Coloca, mueve o cambia el tamaño de habitaciones en el mapa, o fija su **tipo** y su **suelo** (madera, baldosas, hormigón, tarima, césped), como hace **Organizar**. Solo cambian las habitaciones que nombra; todo lo demás se queda donde está. Envía la versión del mapa de `get_map` y se rechaza si alguien organizó el mapa desde entonces o si dos habitaciones de una planta se solaparían. Una habitación que aún no está en el mapa necesita su rectángulo entero. Un Deshacer, durante 10 minutos, devuelve el mapa a como estaba. |
 | `attach_link` | cambio | | Un enlace que abre la hoja de captura de Kept para añadir una foto, recibo o documento. |
 | `log_reading` | cambio | | Registra una lectura de contador: odómetro, horas, electricidad. |
 | `lend_thing` | cambio | Préstamos | Presta un objeto a alguien, con fecha de vencimiento opcional. Una caja o un kit va con todo lo que tiene dentro, cada uno en su línea. |
@@ -188,7 +190,7 @@ vea dinero, como en la app; un mínimo necesita **Objetos que se te acaban**. Un
 se omite y la respuesta `not_set` lo dice; la tarjeta del asistente
 lo muestra como "no establecido" con un selector. Un equipo en un bastidor acepta `rack_units` (su altura, 0 junto a los rieles) y `rack_at` (el número de unidad más bajo que ocupa, según la numeración del bastidor, como lo da `get_thing`, su cara y si es de fondo completo), rechazado como en la app si la unidad está ocupada.
 
-Las herramientas de mudanza y `change_lifecycle` son solo para apps conectadas; el asistente en Kept no las usa.
+Las herramientas de mudanza, `change_lifecycle`, `get_map` y `arrange_rooms` son solo para apps conectadas; el asistente en Kept no las usa.
 
 Toda herramienta que tome un id también toma un ID corto de 6 caracteres como `K7D2QX`. Los
 contratos completos están en
