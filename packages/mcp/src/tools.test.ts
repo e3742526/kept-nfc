@@ -62,6 +62,9 @@ const TABLE: Record<
   turn_into_boxes: ['write', null, '1.x'],
   // A thing's lifecycle (1.x): sold, given away, put away, and back in use. MCP only.
   change_lifecycle: ['write', null, '1.x'],
+  // The location map's rooms (1.x). MCP only.
+  get_map: ['read', null, '1.x'],
+  arrange_rooms: ['write', null, '1.x'],
 };
 
 const MCP_ONLY = [
@@ -73,16 +76,18 @@ const MCP_ONLY = [
   'set_box_status',
   'unpack_box',
   'change_lifecycle',
+  'get_map',
+  'arrange_rooms',
 ];
 
 describe('TOOL_DEFS', () => {
   it('is exactly the plan’s table: scope, module and step', () => {
     expect(Object.keys(TOOL_DEFS).sort()).toEqual(Object.keys(TABLE).sort());
     for (const [name, d] of defs) expect([d.scope, d.module, d.since]).toEqual(TABLE[name]);
-    expect(TOOL_NAMES).toHaveLength(40);
+    expect(TOOL_NAMES).toHaveLength(42);
   });
 
-  it('keeps MCP-only tools and the Assistant removal proposal at their own doors', () => {
+  it('keeps MCP-only tools (Moving mode’s, change_lifecycle, the map’s) and the Assistant removal proposal at their own doors', () => {
     for (const [name, d] of defs) {
       expect([...d.doors].sort(), name).toEqual(
         MCP_ONLY.includes(name)
@@ -130,6 +135,32 @@ describe('TOOL_DEFS', () => {
     expect(input.safeParse({ ...sold, ended_price: { amount: '120.00' } }).success).toBe(false);
     expect(input.safeParse({ ...sold, ended_on: '1 October' }).success).toBe(false);
     expect(TOOL_DEFS.change_lifecycle.annotations.destructiveHint).toBe(false);
+  });
+
+  it('arrange_rooms: rooms by id or short ID, each with something to change, in whole centimetres', () => {
+    const input = TOOL_DEFS.arrange_rooms.input;
+    const room = { room_id: 'K7D2QX', x_cm: 0, z_cm: 120, width_cm: 400, length_cm: 350 };
+    expect(input.safeParse({ version: null, rooms: [room] }).success).toBe(true);
+    expect(
+      input.safeParse({
+        version: '2026-11-16T10:00:00.000Z',
+        rooms: [{ room_id: 'K7D2QX', surface: 'tile' }],
+      }).success,
+    ).toBe(true);
+    expect(input.safeParse({ rooms: [room] }).success, 'version is required').toBe(false);
+    expect(input.safeParse({ version: null, rooms: [] }).success).toBe(false);
+    expect(input.safeParse({ version: null, rooms: [{ room_id: 'K7D2QX' }] }).success).toBe(false);
+    expect(input.safeParse({ version: null, rooms: [{ ...room, width_cm: 10 }] }).success).toBe(
+      false,
+    );
+    expect(input.safeParse({ version: null, rooms: [{ ...room, x_cm: -1 }] }).success).toBe(false);
+    expect(input.safeParse({ version: null, rooms: [{ ...room, x_cm: 1.5 }] }).success).toBe(false);
+    expect(
+      input.safeParse({ version: null, rooms: [{ ...room, room_kind: 'cellar' }] }).success,
+    ).toBe(false);
+    expect(TOOL_DEFS.get_map.output.shape.items.element.shape.untrusted.shape).toHaveProperty(
+      'name',
+    );
   });
 
   it('has no tool that trashes, deletes, merges, transfers, reveals, uploads or runs SQL', () => {

@@ -1,5 +1,5 @@
 import { OUTPUT_LIMIT_BYTES } from '@kept/mcp';
-import { formatToken, newTokenParts, parseToken } from '@kept/shared';
+import { formatToken, newId, newTokenParts, parseToken } from '@kept/shared';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { TestApp } from '../../test/app.js';
@@ -253,6 +253,51 @@ describe('/mcp', () => {
       [chair.id],
     );
     expect(live?.lifecycle).toBe('in_use');
+  });
+
+  it('offers get_map to a read token and arrange_rooms to a member’s write token, which arranges as the token, undoably', async () => {
+    const [kitchen] = await own<{ id: string }>(
+      db,
+      `INSERT INTO public.places (id, location_id, name, kind_key)
+       VALUES ($1, $2, 'Map kitchen', 'room') RETURNING id`,
+      [newId(), home.id],
+    );
+    const read = await connect((await token(talia, 'read', [home.id])).secret);
+    const offered = (await read.listTools()).tools.map((x) => x.name);
+    expect(offered).toContain('get_map');
+    expect(offered).not.toContain('arrange_rooms');
+    const map = answer(await read.callTool({ name: 'get_map', arguments: {} }));
+    const data = map.data as { version: string | null; items: { id: string; map: unknown }[] };
+    expect(data.items.find((r) => r.id === kitchen?.id)).toMatchObject({ map: null });
+
+    const { token: made, secret } = await token(louis, 'write', [home.id]);
+    const client = await connect(secret);
+    const listed = (await client.listTools()).tools.find((x) => x.name === 'arrange_rooms');
+    expect(listed?.annotations).toMatchObject({ readOnlyHint: false, destructiveHint: false });
+    const res = await client.callTool({
+      name: 'arrange_rooms',
+      arguments: {
+        location_id: home.id,
+        version: data.version,
+        rooms: [{ room_id: kitchen?.id, x_cm: 0, z_cm: 0, width_cm: 350, length_cm: 300 }],
+      },
+    });
+    const body = answer(res);
+    expect(res.isError, JSON.stringify(body)).toBeFalsy();
+    expect((body.data as Json).undo_until).toBeTruthy();
+    const events = await own<{ action: string }>(
+      db,
+      `SELECT action FROM public.audit_events
+        WHERE actor_type = 'token' AND actor_id = $1 AND entity_id = $2`,
+      [made.id, home.id],
+    );
+    expect(events).toEqual([{ action: 'place.arrange' }]);
+    const [row] = await own<{ w_cm: number; d_cm: number }>(
+      db,
+      'SELECT w_cm, d_cm FROM public.map_nodes WHERE place_id = $1',
+      [kitchen?.id],
+    );
+    expect(row).toEqual({ w_cm: 350, d_cm: 300 });
   });
 
   it('refuses a token per call once its creator loses the role, in Kept’s words', async () => {
