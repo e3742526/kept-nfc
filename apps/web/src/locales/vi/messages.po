@@ -13,17 +13,17 @@ msgstr " và "
 msgid ", "
 msgstr ", "
 
-msgid "Home Assistant backs up Kept"
-msgstr "Home Assistant sao lưu Kept"
+msgid "Home Assistant backs up SheepKeep"
+msgstr "Home Assistant sao lưu SheepKeep"
 
-msgid "Home Assistant backs up Kept: the database, photos and files, and Kept's keys. Take or schedule backups in Home Assistant → {place}."
-msgstr "Home Assistant sao lưu Kept: cơ sở dữ liệu, ảnh, tệp và khóa của Kept. Tạo hoặc lên lịch sao lưu trong Home Assistant → {place}."
+msgid "Home Assistant backs up SheepKeep: the database, photos and files, and SheepKeep's keys. Take or schedule backups in Home Assistant → {place}."
+msgstr "Home Assistant sao lưu SheepKeep: cơ sở dữ liệu, ảnh, tệp và khóa của SheepKeep. Tạo hoặc lên lịch sao lưu trong Home Assistant → {place}."
 
 msgid "Settings → System → Backups"
 msgstr "Cài đặt → Hệ thống → Sao lưu"
 
-msgid "Home Assistant backs up Kept here: take or schedule backups in Home Assistant."
-msgstr "Home Assistant sao lưu Kept tại đây: tạo hoặc lên lịch sao lưu trong Home Assistant."
+msgid "Home Assistant backs up SheepKeep here: take or schedule backups in Home Assistant."
+msgstr "Home Assistant sao lưu SheepKeep tại đây: tạo hoặc lên lịch sao lưu trong Home Assistant."
 
 msgid "Take or schedule them in Home Assistant → {place}."
 msgstr "Tạo hoặc lên lịch chúng trong Home Assistant → {place}."
@@ -37,14 +37,14 @@ msgstr "Đã đổi tên thành {trimmed}"
 msgid "Set up email"
 msgstr "Thiết lập email"
 
-msgid "Without it, Kept sends no sign-in links, password resets, email invites or reminders."
-msgstr "Không có nó, Kept sẽ không gửi liên kết đăng nhập, đặt lại mật khẩu, lời mời qua email hay nhắc nhở."
+msgid "Without it, SheepKeep sends no sign-in links, password resets, email invites or reminders."
+msgstr "Không có nó, SheepKeep sẽ không gửi liên kết đăng nhập, đặt lại mật khẩu, lời mời qua email hay nhắc nhở."
 
 msgid "Any provider that offers SMTP works, such as your email provider's app password or a sending service. Admin → Status shows Sending once it's on."
 msgstr "Bất kỳ nhà cung cấp nào hỗ trợ SMTP cũng dùng được, chẳng hạn mật khẩu ứng dụng của nhà cung cấp email hoặc một dịch vụ gửi thư. Quản trị → Trạng thái sẽ hiển thị Đang gửi khi tính năng được bật."
 
-msgid "the sender, for example <0>Kept <kept@example.org></0>"
-msgstr "người gửi, ví dụ <0>Kept <kept@example.org></0>"
+msgid "the sender, for example <0>SheepKeep <kept@example.org></0>"
+msgstr "người gửi, ví dụ <0>SheepKeep <kept@example.org></0>"
 
 msgid "your mail server, for example <0>smtps://user:password@smtp.example.org:465</0>"
 msgstr "máy chủ thư của bạn, ví dụ <0>smtps://user:password@smtp.example.org:465</0>"
@@ -79,8 +79,8 @@ msgstr "{0, plural, one {# vị trí} other {# vị trí}}"
 msgid "{0, plural, =0 {no fields} one {# field} other {# fields}}"
 msgstr "{0, plural, =0 {không có trường} one {# trường} other {# trường}}"
 
-msgid "Set these where Kept's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart Kept:"
-msgstr "Đặt các giá trị này ở nơi các cài đặt khác của Kept nằm (tệp .env khi dùng Docker Compose; với Helm chart, URL trong secret có tên smtp.existingSecret và người gửi trong smtp.from), rồi khởi động lại Kept:"
+msgid "Set these where SheepKeep's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart SheepKeep:"
+msgstr "Đặt các giá trị này ở nơi các cài đặt khác của SheepKeep nằm (tệp .env khi dùng Docker Compose; với Helm chart, URL trong secret có tên smtp.existingSecret và người gửi trong smtp.from), rồi khởi động lại SheepKeep:"
 
 msgid "the request was more than the plan allows in one minute"
 msgstr "yêu cầu vượt quá giới hạn gói cho phép trong một phút"
@@ -574,8 +574,8 @@ msgstr "Một thay đổi thực hiện ngoại tuyến không thể áp dụng 
 msgid "A computer: the camera icon in the address bar, then Allow."
 msgstr "Máy tính: biểu tượng máy ảnh trên thanh địa chỉ, rồi chọn Cho phép."
 
-msgid "A contact, without a Kept account"
-msgstr "Một liên hệ, không cần tài khoản Kept"
+msgid "A contact, without a SheepKeep account"
+msgstr "Một liên hệ, không cần tài khoản SheepKeep"
 
 msgid "A copy without the serial or purchase."
 msgstr "Một bản sao không có số sê-ri hoặc thông tin mua hàng."
@@ -592,8 +592,8 @@ msgstr "một trường"
 msgid "A field group"
 msgstr "Một nhóm trường"
 
-msgid "A Kept code is 6 letters and digits, like 7KQ‑4MZ."
-msgstr "Mã Kept gồm 6 chữ cái và chữ số, ví dụ 7KQ-4MZ."
+msgid "A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ."
+msgstr "Mã SheepKeep gồm 6 chữ cái và chữ số, ví dụ 7KQ-4MZ."
 
 msgid "A key is a lower-case word in English letters, digits and _, starting with a letter."
 msgstr "Khóa là một từ viết thường gồm chữ cái tiếng Anh, chữ số và _, bắt đầu bằng một chữ cái."
@@ -886,8 +886,8 @@ msgctxt "history kind"
 msgid "AI"
 msgstr "AI"
 
-msgid "AI and barcode lookup can be connected later, from Settings. Kept works without them."
-msgstr "AI và tra cứu mã vạch có thể kết nối sau, từ Cài đặt. Kept vẫn hoạt động mà không cần chúng."
+msgid "AI and barcode lookup can be connected later, from Settings. SheepKeep works without them."
+msgstr "AI và tra cứu mã vạch có thể kết nối sau, từ Cài đặt. SheepKeep vẫn hoạt động mà không cần chúng."
 
 msgid "AI assistant"
 msgstr "Trợ lý AI"
@@ -955,8 +955,8 @@ msgstr "Tất cả loại"
 msgid "Already claimed"
 msgstr "Đã được nhận"
 
-msgid "Already in Kept"
-msgstr "Đã có trong Kept"
+msgid "Already in SheepKeep"
+msgstr "Đã có trong SheepKeep"
 
 msgid "Also called"
 msgstr "Còn được gọi là"
@@ -1244,8 +1244,8 @@ msgctxt "map shape"
 msgid "Camera"
 msgstr "Máy ảnh"
 
-msgid "Camera access is off for Kept."
-msgstr "Quyền truy cập máy ảnh cho Kept đang tắt."
+msgid "Camera access is off for SheepKeep."
+msgstr "Quyền truy cập máy ảnh cho SheepKeep đang tắt."
 
 msgid "Camera view"
 msgstr "Chế độ xem máy ảnh"
@@ -2146,8 +2146,8 @@ msgstr "Euro"
 msgid "Every addition, move and edit in the locations you belong to shows here, newest first."
 msgstr "Mọi lần thêm, di chuyển và sửa trong các địa điểm bạn thuộc về đều hiển thị ở đây, mới nhất trước."
 
-msgid "Every control Kept's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
-msgstr "Mọi thành phần điều khiển mà các màn hình của Kept được xây dựng từ đó, trên React Aria. Hãy chuyển giao diện và ngôn ngữ ở trên: mọi thứ ở đây đều phải hiển thị đối xứng một cách rõ ràng."
+msgid "Every control SheepKeep's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
+msgstr "Mọi thành phần điều khiển mà các màn hình của SheepKeep được xây dựng từ đó, trên React Aria. Hãy chuyển giao diện và ngôn ngữ ở trên: mọi thứ ở đây đều phải hiển thị đối xứng một cách rõ ràng."
 
 msgid "Every device {who} is signed in on is signed out. They get an email about it."
 msgstr "Mọi thiết bị mà {who} đang đăng nhập đều sẽ đăng xuất. Họ sẽ nhận được email về việc này."
@@ -2474,8 +2474,8 @@ msgstr "Đã đưa cho"
 msgid "Go to Home"
 msgstr "Đến Trang chủ"
 
-msgid "Go to Kept"
-msgstr "Đến Kept"
+msgid "Go to SheepKeep"
+msgstr "Đến SheepKeep"
 
 msgid "Go to Settings"
 msgstr "Đến Cài đặt"
@@ -2501,8 +2501,8 @@ msgstr "Nhóm"
 msgid "Hallway"
 msgstr "Hành lang"
 
-msgid "Has a Kept account"
-msgstr "Có tài khoản Kept"
+msgid "Has a SheepKeep account"
+msgstr "Có tài khoản SheepKeep"
 
 msgid "Has a reading that grows, like kilometres or hours."
 msgstr "Có chỉ số tăng dần, ví dụ ki-lô-mét hoặc giờ."
@@ -2591,8 +2591,8 @@ msgstr "Như thế nào"
 msgid "How many to take off"
 msgstr "Lấy ra bao nhiêu"
 
-msgid "How should this Kept work?"
-msgstr "Kept này nên hoạt động ra sao?"
+msgid "How should this SheepKeep work?"
+msgstr "SheepKeep này nên hoạt động ra sao?"
 
 msgid "How to allow it"
 msgstr "Cách cho phép"
@@ -2648,8 +2648,8 @@ msgstr "Trong {addToName}"
 msgid "In a sentence: the drill <0/> is on the tool wall."
 msgstr "Nói gọn trong một câu: máy khoan <0/> đang ở trên tường dụng cụ."
 
-msgid "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install Kept</0>."
-msgstr "Trong Chrome hoặc Edge, hãy nhấp vào biểu tượng cài đặt ở cuối thanh địa chỉ, hoặc mở menu và chọn <0>Cài đặt Kept</0>."
+msgid "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install SheepKeep</0>."
+msgstr "Trong Chrome hoặc Edge, hãy nhấp vào biểu tượng cài đặt ở cuối thanh địa chỉ, hoặc mở menu và chọn <0>Cài đặt SheepKeep</0>."
 
 msgid "In Safari on a Mac, choose <0>File › Add to Dock</0>."
 msgstr "Trong Safari trên máy Mac, hãy chọn <0>Tệp › Thêm vào Dock</0>."
@@ -2681,11 +2681,11 @@ msgstr "Bên trong <0>{0}</0>"
 msgid "Insights"
 msgstr "Thống kê"
 
-msgid "Install Kept"
-msgstr "Cài đặt Kept"
+msgid "Install SheepKeep"
+msgstr "Cài đặt SheepKeep"
 
-msgid "Install Kept on your phone"
-msgstr "Cài đặt Kept trên điện thoại của bạn"
+msgid "Install SheepKeep on your phone"
+msgstr "Cài đặt SheepKeep trên điện thoại của bạn"
 
 msgid "Install on your phone"
 msgstr "Cài đặt trên điện thoại của bạn"
@@ -2744,8 +2744,8 @@ msgstr "Ảnh iPhone (HEIC)"
 msgid "iPhone, iPad"
 msgstr "iPhone, iPad"
 
-msgid "iPhone: Settings › Safari › Camera › Allow, then reopen Kept."
-msgstr "iPhone: Cài đặt › Safari › Camera › Cho phép, rồi mở lại Kept."
+msgid "iPhone: Settings › Safari › Camera › Allow, then reopen SheepKeep."
+msgstr "iPhone: Cài đặt › Safari › Camera › Cho phép, rồi mở lại SheepKeep."
 
 msgid "is any of"
 msgstr "là bất kỳ giá trị nào trong"
@@ -2870,8 +2870,8 @@ msgstr "Loại, thẻ và cửa hàng của nó được sao chép vào danh sá
 msgid "Join {name}"
 msgstr "Tham gia {name}"
 
-msgid "Join {place} on Kept"
-msgstr "Tham gia {place} trên Kept"
+msgid "Join {place} on SheepKeep"
+msgstr "Tham gia {place} trên SheepKeep"
 
 msgid "joined {joined}"
 msgstr "đã tham gia {joined}"
@@ -2879,8 +2879,8 @@ msgstr "đã tham gia {joined}"
 msgid "Joined {joinedName}"
 msgstr "Đã tham gia {joinedName}"
 
-msgid "Joining someone's Kept?"
-msgstr "Đang tham gia Kept của người khác?"
+msgid "Joining someone's SheepKeep?"
+msgstr "Đang tham gia SheepKeep của người khác?"
 
 msgid "Jump to"
 msgstr "Chuyển đến"
@@ -2942,14 +2942,14 @@ msgstr "Được tách riêng và mã hóa, và chỉ được tiết lộ theo 
 msgid "Kept both"
 msgstr "Đã giữ cả hai"
 
-msgid "Kept can't scan here"
-msgstr "Kept không thể quét tại đây"
+msgid "SheepKeep can't scan here"
+msgstr "SheepKeep không thể quét tại đây"
 
-msgid "Kept can't tell what this is from here."
-msgstr "Kept không thể nhận biết đây là gì từ đây."
+msgid "SheepKeep can't tell what this is from here."
+msgstr "SheepKeep không thể nhận biết đây là gì từ đây."
 
-msgid "Kept can't use the camera"
-msgstr "Kept không thể dùng máy ảnh"
+msgid "SheepKeep can't use the camera"
+msgstr "SheepKeep không thể dùng máy ảnh"
 
 msgid "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Two-factor needs a password, so afterwards set a new one with “Forgot your password?” on the sign-in page, then come back here."
 msgstr "Kept sẽ gửi email cho bạn một liên kết đăng nhập; mở liên kết đó sẽ xác nhận địa chỉ. Mở liên kết đó cũng sẽ xóa mật khẩu, khóa truy cập và các phiên khác của tài khoản này, để không ai từng thiết lập chúng trước bạn còn giữ đường vào. Xác thực hai yếu tố cần mật khẩu, vì vậy sau đó hãy đặt mật khẩu mới bằng “Quên mật khẩu của bạn?” trên trang đăng nhập, rồi quay lại đây."
@@ -2957,47 +2957,47 @@ msgstr "Kept sẽ gửi email cho bạn một liên kết đăng nhập; mở li
 msgid "Kept from an earlier type. They're not lost; re-type back to use them again."
 msgstr "Được giữ lại từ một loại trước đó. Chúng không bị mất; hãy đổi lại loại cũ để dùng lại."
 
-msgid "Kept label in view"
-msgstr "Đã thấy nhãn Kept trong khung hình"
+msgid "SheepKeep label in view"
+msgstr "Đã thấy nhãn SheepKeep trong khung hình"
 
-msgid "Kept limits admin actions over HTTP. Put Kept on HTTPS before you rely on them."
-msgstr "Kept hạn chế các thao tác quản trị qua HTTP. Hãy đưa Kept lên HTTPS trước khi dựa vào chúng."
+msgid "SheepKeep limits admin actions over HTTP. Put SheepKeep on HTTPS before you rely on them."
+msgstr "SheepKeep hạn chế các thao tác quản trị qua HTTP. Hãy đưa SheepKeep lên HTTPS trước khi dựa vào chúng."
 
-msgid "Kept makes at most five reports an hour. Try again later."
-msgstr "Kept tạo tối đa năm báo cáo mỗi giờ. Hãy thử lại sau."
+msgid "SheepKeep makes at most five reports an hour. Try again later."
+msgstr "SheepKeep tạo tối đa năm báo cáo mỗi giờ. Hãy thử lại sau."
 
-msgid "Kept needs at least one instance admin"
-msgstr "Kept cần ít nhất một quản trị viên máy chủ"
+msgid "SheepKeep needs at least one instance admin"
+msgstr "SheepKeep cần ít nhất một quản trị viên máy chủ"
 
-msgid "Kept needs at least one instance admin, so the last one can't be removed."
-msgstr "Kept cần ít nhất một quản trị viên máy chủ, vì vậy không thể xóa người cuối cùng."
+msgid "SheepKeep needs at least one instance admin, so the last one can't be removed."
+msgstr "SheepKeep cần ít nhất một quản trị viên máy chủ, vì vậy không thể xóa người cuối cùng."
 
-msgid "Kept on the server is older than this app; ask your admin."
-msgstr "Kept trên máy chủ cũ hơn ứng dụng này; hãy hỏi quản trị viên của bạn."
+msgid "SheepKeep on the server is older than this app; ask your admin."
+msgstr "SheepKeep trên máy chủ cũ hơn ứng dụng này; hãy hỏi quản trị viên của bạn."
 
-msgid "Kept opens from its own icon, full screen, and works offline."
-msgstr "Kept mở từ biểu tượng riêng của nó, toàn màn hình, và hoạt động ngoại tuyến."
+msgid "SheepKeep opens from its own icon, full screen, and works offline."
+msgstr "SheepKeep mở từ biểu tượng riêng của nó, toàn màn hình, và hoạt động ngoại tuyến."
 
-msgid "Kept raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
-msgstr "Kept đưa ra cảnh báo tại đây, và gửi email cho các quản trị viên máy chủ tối đa một lần mỗi ngày, khi có việc trên máy chủ cần người xử lý."
+msgid "SheepKeep raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
+msgstr "SheepKeep đưa ra cảnh báo tại đây, và gửi email cho các quản trị viên máy chủ tối đa một lần mỗi ngày, khi có việc trên máy chủ cần người xử lý."
 
 msgid "Kept safe"
 msgstr "Đã cất an toàn"
 
-msgid "Kept sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart Kept. Link invites and passwords work without it."
-msgstr "Kept không gửi email: không có liên kết đăng nhập, đặt lại mật khẩu, lời mời qua email hay cảnh báo. Hãy đặt <0>KEPT_SMTP_URL</0> và khởi động lại Kept. Lời mời bằng liên kết và mật khẩu vẫn hoạt động mà không cần nó."
+msgid "SheepKeep sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart SheepKeep. Link invites and passwords work without it."
+msgstr "SheepKeep không gửi email: không có liên kết đăng nhập, đặt lại mật khẩu, lời mời qua email hay cảnh báo. Hãy đặt <0>KEPT_SMTP_URL</0> và khởi động lại SheepKeep. Lời mời bằng liên kết và mật khẩu vẫn hoạt động mà không cần nó."
 
-msgid "Kept stores the barcode with it."
-msgstr "Kept lưu mã vạch cùng với nó."
+msgid "SheepKeep stores the barcode with it."
+msgstr "SheepKeep lưu mã vạch cùng với nó."
 
-msgid "Kept takes photos and PDFs. Share those, or use Gallery."
-msgstr "Kept nhận ảnh và PDF. Hãy chia sẻ những thứ đó, hoặc dùng Thư viện."
+msgid "SheepKeep takes photos and PDFs. Share those, or use Gallery."
+msgstr "SheepKeep nhận ảnh và PDF. Hãy chia sẻ những thứ đó, hoặc dùng Thư viện."
 
 msgid "Kept the reading"
 msgstr "Đã giữ chỉ số"
 
-msgid "Kept wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
-msgstr "Kept chưa sẵn sàng nhận tệp trên thiết bị này. Giờ thì đã sẵn sàng: hãy quay lại ứng dụng kia và chia sẻ lại."
+msgid "SheepKeep wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
+msgstr "SheepKeep chưa sẵn sàng nhận tệp trên thiết bị này. Giờ thì đã sẵn sàng: hãy quay lại ứng dụng kia và chia sẻ lại."
 
 msgid "Key"
 msgstr "Khóa"
@@ -3247,8 +3247,8 @@ msgstr "Đang tải…"
 msgid "Location"
 msgstr "Địa điểm"
 
-msgid "Location access is off for Kept in this browser's settings."
-msgstr "Quyền truy cập vị trí đang tắt cho Kept trong cài đặt của trình duyệt này."
+msgid "Location access is off for SheepKeep in this browser's settings."
+msgstr "Quyền truy cập vị trí đang tắt cho SheepKeep trong cài đặt của trình duyệt này."
 
 msgid "Location created"
 msgstr "Đã tạo địa điểm"
@@ -3725,8 +3725,8 @@ msgstr "Tháng sau"
 msgid "Next photo"
 msgstr "Ảnh tiếp theo"
 
-msgid "Next time you sign in, Kept asks for a code from your app."
-msgstr "Lần đăng nhập sau, Kept sẽ hỏi mã từ ứng dụng của bạn."
+msgid "Next time you sign in, SheepKeep asks for a code from your app."
+msgstr "Lần đăng nhập sau, SheepKeep sẽ hỏi mã từ ứng dụng của bạn."
 
 msgid "no"
 msgstr "không"
@@ -3734,8 +3734,8 @@ msgstr "không"
 msgid "No"
 msgstr "Không"
 
-msgid "No account yet? Ask someone who uses this Kept to invite you. The invite link creates your account."
-msgstr "Chưa có tài khoản? Hãy nhờ người đang dùng Kept này mời bạn. Liên kết mời sẽ tạo tài khoản cho bạn."
+msgid "No account yet? Ask someone who uses this SheepKeep to invite you. The invite link creates your account."
+msgstr "Chưa có tài khoản? Hãy nhờ người đang dùng SheepKeep này mời bạn. Liên kết mời sẽ tạo tài khoản cho bạn."
 
 msgid "No activity matches"
 msgstr "Không có hoạt động nào khớp"
@@ -3830,8 +3830,8 @@ msgstr "Không có mục nào đang mở"
 msgid "Not a duplicate · keep both"
 msgstr "Không phải trùng lặp · giữ cả hai"
 
-msgid "Not a Kept label"
-msgstr "Không phải nhãn Kept"
+msgid "Not a SheepKeep label"
+msgstr "Không phải nhãn SheepKeep"
 
 msgid "Not answering"
 msgstr "Không trả lời"
@@ -3851,8 +3851,8 @@ msgstr "Không tìm thấy trong cơ sở dữ liệu sản phẩm."
 msgid "Not here"
 msgstr "Không ở đây"
 
-msgid "Not in your Kept"
-msgstr "Không có trong Kept của bạn"
+msgid "Not in your SheepKeep"
+msgstr "Không có trong SheepKeep của bạn"
 
 msgid "Not inside another type"
 msgstr "Không nằm trong loại khác"
@@ -3863,8 +3863,8 @@ msgstr "Để sau"
 msgid "Not on this phone"
 msgstr "Không có trên điện thoại này"
 
-msgid "Not on this phone. Kept checks it when you open it online."
-msgstr "Không có trên điện thoại này. Kept sẽ kiểm tra khi bạn mở trực tuyến."
+msgid "Not on this phone. SheepKeep checks it when you open it online."
+msgstr "Không có trên điện thoại này. SheepKeep sẽ kiểm tra khi bạn mở trực tuyến."
 
 msgid "Not recorded"
 msgstr "Chưa ghi nhận"
@@ -3935,8 +3935,8 @@ msgstr "Không có gì của bạn đang chờ. Những gì bạn chụp sẽ xu
 msgid "Nothing on this phone matches ‘<0>{q}</0>’"
 msgstr "Không có gì trên điện thoại này khớp với ‘<0>{q}</0>’"
 
-msgid "Nothing on this phone yet. Open Kept once while online to bring your places."
-msgstr "Chưa có gì trên điện thoại này. Hãy mở Kept một lần khi đang trực tuyến để đồng bộ các vị trí của bạn."
+msgid "Nothing on this phone yet. Open SheepKeep once while online to bring your places."
+msgstr "Chưa có gì trên điện thoại này. Hãy mở SheepKeep một lần khi đang trực tuyến để đồng bộ các vị trí của bạn."
 
 msgid "Nothing recorded yet."
 msgstr "Chưa ghi nhận gì."
@@ -4013,11 +4013,11 @@ msgstr "Bật"
 msgid "On Home until every step is done."
 msgstr "Hiện trên Trang chủ cho đến khi mọi bước hoàn tất."
 
-msgid "On iPhone, Kept uploads only while it's open. Keep it open when you're back in signal."
-msgstr "Trên iPhone, Kept chỉ tải lên khi đang mở. Hãy giữ ứng dụng mở khi bạn trở lại vùng có tín hiệu."
+msgid "On iPhone, SheepKeep uploads only while it's open. Keep it open when you're back in signal."
+msgstr "Trên iPhone, SheepKeep chỉ tải lên khi đang mở. Hãy giữ ứng dụng mở khi bạn trở lại vùng có tín hiệu."
 
-msgid "On iPhone, notifications only reach Kept once it's on your Home Screen. Until then, reminders can come by email."
-msgstr "Trên iPhone, thông báo chỉ đến được Kept khi ứng dụng đã có trên Màn hình chính. Trước đó, lời nhắc có thể gửi qua email."
+msgid "On iPhone, notifications only reach SheepKeep once it's on your Home Screen. Until then, reminders can come by email."
+msgstr "Trên iPhone, thông báo chỉ đến được SheepKeep khi ứng dụng đã có trên Màn hình chính. Trước đó, lời nhắc có thể gửi qua email."
 
 msgid "On iPhone, reminders only reach the installed app."
 msgstr "Trên iPhone, lời nhắc chỉ đến được ứng dụng đã cài đặt."
@@ -4049,8 +4049,8 @@ msgstr "Bật: một địa điểm đang dùng nó"
 msgid "On. Signing in asks for a code from your authenticator app."
 msgstr "Đã bật. Khi đăng nhập sẽ yêu cầu mã từ ứng dụng xác thực của bạn."
 
-msgid "Once Kept is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
-msgstr "Khi Kept đã được cài đặt, nó sẽ xuất hiện trong bảng Chia sẻ. Chia sẻ ảnh hoặc PDF tới Kept từ bất kỳ ứng dụng nào, chúng sẽ mở trong Chụp."
+msgid "Once SheepKeep is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
+msgstr "Khi SheepKeep đã được cài đặt, nó sẽ xuất hiện trong bảng Chia sẻ. Chia sẻ ảnh hoặc PDF tới SheepKeep từ bất kỳ ứng dụng nào, chúng sẽ mở trong Chụp."
 
 msgid "One at a time with the move picker, or use Select below to move several at once."
 msgstr "Từng cái một bằng công cụ chọn di chuyển, hoặc dùng Chọn bên dưới để di chuyển nhiều cái cùng lúc."
@@ -4091,11 +4091,11 @@ msgstr "Chỉ quản trị viên của mọi địa điểm dùng <0>{name}</0> 
 msgid "Only me"
 msgstr "Chỉ mình tôi"
 
-msgid "Only part of your Kept is on this phone."
-msgstr "Chỉ một phần Kept của bạn có trên điện thoại này."
+msgid "Only part of your SheepKeep is on this phone."
+msgstr "Chỉ một phần SheepKeep của bạn có trên điện thoại này."
 
-msgid "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. Kept can't check."
-msgstr "Chỉ đồng ý khi hai khóa từ kept admin recovery-kit đã được lưu ở nơi khác ngoài máy chủ này. Kept không thể kiểm tra việc này."
+msgid "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. SheepKeep can't check."
+msgstr "Chỉ đồng ý khi hai khóa từ kept admin recovery-kit đã được lưu ở nơi khác ngoài máy chủ này. SheepKeep không thể kiểm tra việc này."
 
 msgid "Only something nothing uses can be deleted. Otherwise, merge it into another."
 msgstr "Chỉ thứ không được dùng cho gì mới xóa được. Nếu không, hãy gộp nó vào một thứ khác."
@@ -4159,14 +4159,14 @@ msgstr "Mở {title}"
 msgid "Open it"
 msgstr "Mở nó"
 
-msgid "Open Kept"
-msgstr "Mở Kept"
+msgid "Open SheepKeep"
+msgstr "Mở SheepKeep"
 
-msgid "Open Kept from its new icon."
-msgstr "Mở Kept từ biểu tượng mới của nó."
+msgid "Open SheepKeep from its new icon."
+msgstr "Mở SheepKeep từ biểu tượng mới của nó."
 
-msgid "Open Kept once, then share again"
-msgstr "Mở Kept một lần, rồi chia sẻ lại"
+msgid "Open SheepKeep once, then share again"
+msgstr "Mở SheepKeep một lần, rồi chia sẻ lại"
 
 msgid "Open that box"
 msgstr "Mở hộp đó"
@@ -4201,8 +4201,8 @@ msgstr "Đã mở dưới dạng ứng dụng đã cài đặt"
 msgid "Opening the camera"
 msgstr "Đang mở camera"
 
-msgid "Opening this phone's copy of your Kept…"
-msgstr "Đang mở bản sao Kept của bạn trên điện thoại này…"
+msgid "Opening this phone's copy of your SheepKeep…"
+msgstr "Đang mở bản sao SheepKeep của bạn trên điện thoại này…"
 
 msgid "Optional: without one it waits in the Inbox to be named."
 msgstr "Không bắt buộc: nếu không có, nó sẽ chờ trong Hộp thư đến để được đặt tên."
@@ -4210,8 +4210,8 @@ msgstr "Không bắt buộc: nếu không có, nó sẽ chờ trong Hộp thư �
 msgid "or"
 msgstr "hoặc"
 
-msgid "Or reach Kept through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
-msgstr "Hoặc truy cập Kept qua Tailscale và bật HTTPS cho tailnet của bạn; địa chỉ kết thúc bằng <0>.ts.net</0>."
+msgid "Or reach SheepKeep through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
+msgstr "Hoặc truy cập SheepKeep qua Tailscale và bật HTTPS cho tailnet của bạn; địa chỉ kết thúc bằng <0>.ts.net</0>."
 
 msgid "Or search"
 msgstr "Hoặc tìm kiếm"
@@ -4229,11 +4229,11 @@ msgctxt "incident kind"
 msgid "Other"
 msgstr "Khác"
 
-msgid "Over plain HTTP, phones block the camera, installing Kept, push notifications and location."
-msgstr "Qua HTTP thuần, điện thoại sẽ chặn camera, việc cài đặt Kept, thông báo đẩy và vị trí."
+msgid "Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location."
+msgstr "Qua HTTP thuần, điện thoại sẽ chặn camera, việc cài đặt SheepKeep, thông báo đẩy và vị trí."
 
-msgid "Over plain HTTP, phones won't install Kept. Put Kept on HTTPS first."
-msgstr "Qua HTTP thuần, điện thoại sẽ không cài đặt Kept. Hãy đưa Kept lên HTTPS trước."
+msgid "Over plain HTTP, phones won't install SheepKeep. Put SheepKeep on HTTPS first."
+msgstr "Qua HTTP thuần, điện thoại sẽ không cài đặt SheepKeep. Hãy đưa SheepKeep lên HTTPS trước."
 
 msgid "Owner"
 msgstr "Chủ sở hữu"
@@ -4389,11 +4389,11 @@ msgstr "Các vị trí"
 msgid "Places · <0>{placeCount}</0>"
 msgstr "Vị trí · <0>{placeCount}</0>"
 
-msgid "Point at a Kept label"
-msgstr "Hướng vào một nhãn Kept"
+msgid "Point at a SheepKeep label"
+msgstr "Hướng vào một nhãn SheepKeep"
 
-msgid "Point at a Kept label, or a product's barcode."
-msgstr "Hướng vào một nhãn Kept, hoặc mã vạch của sản phẩm."
+msgid "Point at a SheepKeep label, or a product's barcode."
+msgstr "Hướng vào một nhãn SheepKeep, hoặc mã vạch của sản phẩm."
 
 msgid "Point at the label of the place or box they go in."
 msgstr "Hướng vào nhãn của vị trí hoặc hộp chứa chúng."
@@ -4503,8 +4503,8 @@ msgstr "Đã xóa dòng mua hàng"
 msgid "Put it inside another place in {locationName}"
 msgstr "Đặt nó vào một vị trí khác trong {locationName}"
 
-msgid "Put Kept on HTTPS"
-msgstr "Đưa Kept lên HTTPS"
+msgid "Put SheepKeep on HTTPS"
+msgstr "Đưa SheepKeep lên HTTPS"
 
 msgid "Put them back"
 msgstr "Đặt chúng trở lại"
@@ -5161,8 +5161,8 @@ msgstr "Đặt loại"
 msgid "Set up"
 msgstr "Thiết lập"
 
-msgid "Set up this Kept"
-msgstr "Thiết lập Kept này"
+msgid "Set up this SheepKeep"
+msgstr "Thiết lập SheepKeep này"
 
 msgid "Setting it signs you out on every device."
 msgstr "Đặt mục này sẽ đăng xuất bạn khỏi mọi thiết bị."
@@ -5179,8 +5179,8 @@ msgstr "Nhiều lựa chọn"
 msgid "Share a link or a QR code. Choose what they can do and for how long."
 msgstr "Chia sẻ một liên kết hoặc mã QR. Chọn những gì họ có thể làm và trong bao lâu."
 
-msgid "Share the files into Kept again."
-msgstr "Chia sẻ lại các tệp vào Kept."
+msgid "Share the files into SheepKeep again."
+msgstr "Chia sẻ lại các tệp vào SheepKeep."
 
 msgid "Share…"
 msgstr "Chia sẻ…"
@@ -5191,8 +5191,8 @@ msgstr "Đã chia sẻ"
 msgid "Shared files"
 msgstr "Tệp đã chia sẻ"
 
-msgid "Shared into Kept"
-msgstr "Đã chia sẻ vào Kept"
+msgid "Shared into SheepKeep"
+msgstr "Đã chia sẻ vào SheepKeep"
 
 msgid "Shared with {name}"
 msgstr "Đã chia sẻ với {name}"
@@ -5254,8 +5254,8 @@ msgstr "Đăng nhập"
 msgid "Sign in as someone else"
 msgstr "Đăng nhập bằng tài khoản khác"
 
-msgid "Sign in to Kept"
-msgstr "Đăng nhập vào Kept"
+msgid "Sign in to SheepKeep"
+msgstr "Đăng nhập vào SheepKeep"
 
 msgid "Sign in with a one-time code"
 msgstr "Đăng nhập bằng mã dùng một lần"
@@ -5404,8 +5404,8 @@ msgstr "Chỗ"
 msgid "Start"
 msgstr "Bắt đầu"
 
-msgid "Start Kept's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
-msgstr "Khởi động tệp Compose của Kept với hồ sơ <0>https</0>. Hồ sơ này thêm một reverse proxy lấy chứng chỉ cho tên miền của bạn."
+msgid "Start SheepKeep's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
+msgstr "Khởi động tệp Compose của SheepKeep với hồ sơ <0>https</0>. Hồ sơ này thêm một reverse proxy lấy chứng chỉ cho tên miền của bạn."
 
 msgid "State"
 msgstr "Tỉnh/Bang"
@@ -5413,8 +5413,8 @@ msgstr "Tỉnh/Bang"
 msgid "Status"
 msgstr "Trạng thái"
 
-msgid "Stay signed in and open Kept with a connection to finish syncing first."
-msgstr "Giữ đăng nhập và mở Kept khi có kết nối để hoàn tất đồng bộ trước."
+msgid "Stay signed in and open SheepKeep with a connection to finish syncing first."
+msgstr "Giữ đăng nhập và mở SheepKeep khi có kết nối để hoàn tất đồng bộ trước."
 
 msgid "Step {step} of {steps}"
 msgstr "Bước {step} trên {steps}"
@@ -5539,8 +5539,8 @@ msgstr "Lấy chúng ra, rồi bỏ nó vào thùng rác"
 msgid "Taken"
 msgstr "Đã chụp"
 
-msgid "Tap <0>Add</0>, then open Kept from its new icon."
-msgstr "Nhấn <0>Thêm</0>, rồi mở Kept từ biểu tượng mới của nó."
+msgid "Tap <0>Add</0>, then open SheepKeep from its new icon."
+msgstr "Nhấn <0>Thêm</0>, rồi mở SheepKeep từ biểu tượng mới của nó."
 
 msgid "Tap <0>Install app</0>, or <1>Add to Home screen</1>."
 msgstr "Nhấn <0>Cài đặt ứng dụng</0>, hoặc <1>Thêm vào Màn hình chính</1>."
@@ -5593,8 +5593,8 @@ msgstr "Email hoặc tên người dùng và mật khẩu đó không khớp."
 msgid "That key is already a field of this type, one it inherits from, or one below it. Pick another key."
 msgstr "Khóa đó đã là một trường của loại này, của một loại mà nó kế thừa, hoặc của một loại bên dưới nó. Hãy chọn khóa khác."
 
-msgid "That label isn't on a thing in your Kept."
-msgstr "Nhãn đó không gắn với đồ vật nào trong Kept của bạn."
+msgid "That label isn't on a thing in your SheepKeep."
+msgstr "Nhãn đó không gắn với đồ vật nào trong SheepKeep của bạn."
 
 msgid "That name is already in this list. Merge the two instead."
 msgstr "Tên đó đã có trong danh sách này. Thay vào đó, hãy gộp hai cái lại."
@@ -5641,8 +5641,8 @@ msgstr "6 ký tự in dưới mã QR."
 msgid "The assistant may read it"
 msgstr "Trợ lý có thể đọc nó"
 
-msgid "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put Kept on HTTPS."
-msgstr "Máy ảnh cần một địa chỉ bảo mật (HTTPS), mà trang này không có. Quản trị viên của bạn có thể đưa Kept lên HTTPS."
+msgid "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put SheepKeep on HTTPS."
+msgstr "Máy ảnh cần một địa chỉ bảo mật (HTTPS), mà trang này không có. Quản trị viên của bạn có thể đưa SheepKeep lên HTTPS."
 
 msgid "The code is 6 letters and digits, like K7Q-2M9."
 msgstr "Mã gồm 6 chữ cái và chữ số, ví dụ K7Q-2M9."
@@ -5692,8 +5692,8 @@ msgstr "Đã đạt giới hạn token hàng tháng"
 msgid "The old meter's last reading ({unit})"
 msgstr "Chỉ số cuối cùng của đồng hồ cũ ({unit})"
 
-msgid "The one already in Kept, <0>{0}</0>"
-msgstr "Cái đã có trong Kept, <0>{0}</0>"
+msgid "The one already in SheepKeep, <0>{0}</0>"
+msgstr "Cái đã có trong SheepKeep, <0>{0}</0>"
 
 msgid "The original is kept. This format can't be previewed yet."
 msgstr "Bản gốc được giữ lại. Định dạng này chưa xem trước được."
@@ -5752,8 +5752,8 @@ msgstr "chúng"
 msgid "Theme"
 msgstr "Chủ đề"
 
-msgid "Then set KEPT_PUBLIC_URL to the https address and restart Kept."
-msgstr "Sau đó đặt KEPT_PUBLIC_URL thành địa chỉ https và khởi động lại Kept."
+msgid "Then set KEPT_PUBLIC_URL to the https address and restart SheepKeep."
+msgstr "Sau đó đặt KEPT_PUBLIC_URL thành địa chỉ https và khởi động lại SheepKeep."
 
 msgid "There are {0}. The ones you take off get their own row, keeping the same purchase."
 msgstr "Có {0}. Những cái bạn gỡ ra sẽ có hàng riêng, vẫn giữ cùng lần mua."
@@ -5827,8 +5827,8 @@ msgstr "Đồ vật, phương tiện và giấy tờ."
 msgid "This account runs the server: users, sign-up and backups. It can't see inside anyone's home unless they invite it."
 msgstr "Tài khoản này vận hành máy chủ: người dùng, đăng ký và sao lưu. Nó không thể xem bên trong nhà của bất kỳ ai trừ khi họ mời."
 
-msgid "This address doesn't lead to a page in Kept. The link may be old."
-msgstr "Địa chỉ này không dẫn đến một trang trong Kept. Liên kết có thể đã cũ."
+msgid "This address doesn't lead to a page in SheepKeep. The link may be old."
+msgstr "Địa chỉ này không dẫn đến một trang trong SheepKeep. Liên kết có thể đã cũ."
 
 msgid "This batch"
 msgstr "Đợt này"
@@ -5842,20 +5842,20 @@ msgstr "Trình duyệt này không mở được camera ở đây."
 msgid "The scanner didn't start."
 msgstr "Máy quét không khởi động được."
 
-msgid "This browser may clear Kept's offline copy after weeks unused. Open Kept to sync soon."
-msgstr "Trình duyệt này có thể xóa bản sao ngoại tuyến của Kept sau vài tuần không dùng. Hãy mở Kept để đồng bộ sớm."
+msgid "This browser may clear SheepKeep's offline copy after weeks unused. Open SheepKeep to sync soon."
+msgstr "Trình duyệt này có thể xóa bản sao ngoại tuyến của SheepKeep sau vài tuần không dùng. Hãy mở SheepKeep để đồng bộ sớm."
 
 msgid "This changed since you opened it. Reload and try again."
 msgstr "Nội dung này đã thay đổi từ khi bạn mở. Hãy tải lại và thử lại."
 
-msgid "This code isn't one of Kept's labels. It says:"
-msgstr "Mã này không phải là một nhãn của Kept. Nó ghi:"
+msgid "This code isn't one of SheepKeep's labels. It says:"
+msgstr "Mã này không phải là một nhãn của SheepKeep. Nó ghi:"
 
 msgid "This device"
 msgstr "Thiết bị này"
 
-msgid "This device has no camera Kept can use."
-msgstr "Thiết bị này không có camera mà Kept có thể dùng."
+msgid "This device has no camera SheepKeep can use."
+msgstr "Thiết bị này không có camera mà SheepKeep có thể dùng."
 
 msgid "This device stays signed in. The others need your password or passkey again."
 msgstr "Thiết bị này vẫn giữ đăng nhập. Các thiết bị khác cần mật khẩu hoặc khóa truy cập của bạn lần nữa."
@@ -5884,8 +5884,8 @@ msgstr "Lời mời này không còn hiệu lực. Hãy xin {inviter} một lờ
 msgid "This isn't here any more, or you can't see it."
 msgstr "Nội dung này không còn ở đây nữa, hoặc bạn không xem được."
 
-msgid "This Kept is already set up. Sign in instead."
-msgstr "Kept này đã được thiết lập. Hãy đăng nhập thay vì tạo mới."
+msgid "This SheepKeep is already set up. Sign in instead."
+msgstr "SheepKeep này đã được thiết lập. Hãy đăng nhập thay vì tạo mới."
 
 msgid "This label isn't on anything yet. Use it for:"
 msgstr "Nhãn này chưa gắn vào thứ gì. Dùng nó cho:"
@@ -5920,8 +5920,8 @@ msgstr "PDF này đã hết hạn"
 msgid "This phone format can't be previewed yet. The original is kept."
 msgstr "Định dạng điện thoại này chưa xem trước được. Bản gốc vẫn được giữ."
 
-msgid "This phone is out of space for Kept. Free some space to keep capturing offline."
-msgstr "Điện thoại này đã hết dung lượng cho Kept. Hãy giải phóng dung lượng để tiếp tục chụp ngoại tuyến."
+msgid "This phone is out of space for SheepKeep. Free some space to keep capturing offline."
+msgstr "Điện thoại này đã hết dung lượng cho SheepKeep. Hãy giải phóng dung lượng để tiếp tục chụp ngoại tuyến."
 
 msgid "This phone may be out of space."
 msgstr "Điện thoại này có thể đã hết dung lượng."
@@ -5929,8 +5929,8 @@ msgstr "Điện thoại này có thể đã hết dung lượng."
 msgid "This sign-in timed out. Start again from the sign-in page."
 msgstr "Lần đăng nhập này đã hết thời gian. Hãy bắt đầu lại từ trang đăng nhập."
 
-msgid "This step ticks itself the first time you open Kept from its icon."
-msgstr "Bước này sẽ tự đánh dấu lần đầu bạn mở Kept từ biểu tượng của nó."
+msgid "This step ticks itself the first time you open SheepKeep from its icon."
+msgstr "Bước này sẽ tự đánh dấu lần đầu bạn mở SheepKeep từ biểu tượng của nó."
 
 msgid "This thing is…"
 msgstr "Thứ này là…"
@@ -6222,8 +6222,8 @@ msgctxt "map: go up a floor"
 msgid "Up to {0}"
 msgstr "Lên đến {0}"
 
-msgid "Update Kept to finish syncing."
-msgstr "Cập nhật Kept để hoàn tất đồng bộ."
+msgid "Update SheepKeep to finish syncing."
+msgstr "Cập nhật SheepKeep để hoàn tất đồng bộ."
 
 msgid "Updated"
 msgstr "Đã cập nhật"
@@ -6279,8 +6279,8 @@ msgstr "Dùng hết rồi bổ sung lại, như pin."
 msgid "Used up by"
 msgstr "Được dùng hết bởi"
 
-msgid "Used when Kept is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
-msgstr "Dùng khi Kept ở tiếng Ả Rập, cho số tiền, ngày tháng và số lượng. ID ngắn, mã và số sê-ri luôn giữ dạng 0–9."
+msgid "Used when SheepKeep is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
+msgstr "Dùng khi SheepKeep ở tiếng Ả Rập, cho số tiền, ngày tháng và số lượng. ID ngắn, mã và số sê-ri luôn giữ dạng 0–9."
 
 msgid "Username"
 msgstr "Tên người dùng"
@@ -6462,8 +6462,8 @@ msgstr "Khi nào"
 msgid "When AI fills in a thing here, it adds search words in each of these languages, so anyone can find it in their own."
 msgstr "Khi AI điền thông tin cho một đồ vật ở đây, nó thêm từ khóa tìm kiếm bằng từng ngôn ngữ này, để ai cũng tìm được bằng ngôn ngữ của mình."
 
-msgid "When Kept started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
-msgstr "Khi Kept chạy lần đầu, nó in một mã thiết lập dùng một lần trong nhật ký của máy chủ. Nhập mã đó chứng tỏ bạn là người đã cài đặt máy chủ này. Mã sẽ hết hiệu lực sau khi dùng."
+msgid "When SheepKeep started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
+msgstr "Khi SheepKeep chạy lần đầu, nó in một mã thiết lập dùng một lần trong nhật ký của máy chủ. Nhập mã đó chứng tỏ bạn là người đã cài đặt máy chủ này. Mã sẽ hết hiệu lực sau khi dùng."
 
 msgid "When two places are really the same one"
 msgstr "Khi hai vị trí thực ra là một"
@@ -6768,8 +6768,8 @@ msgstr "{0} chưa rõ"
 msgid "{0}% used"
 msgstr "Đã dùng {0}%"
 
-msgid "{held, plural, one {# held back by Kept} other {# held back by Kept}}"
-msgstr "{held, plural, one {# bị Kept giữ lại} other {# bị Kept giữ lại}}"
+msgid "{held, plural, one {# held back by SheepKeep} other {# held back by SheepKeep}}"
+msgstr "{held, plural, one {# bị SheepKeep giữ lại} other {# bị SheepKeep giữ lại}}"
 
 msgid "{name}'s terms, checked {0}"
 msgstr "Điều khoản của {name}, đã kiểm tra {0}"
@@ -6855,8 +6855,8 @@ msgstr "Thêm giá"
 msgid "add a price to see cost"
 msgstr "thêm giá để xem chi phí"
 
-msgid "Add a price to see cost. Until then Kept counts tokens only."
-msgstr "Thêm giá để xem chi phí. Cho đến lúc đó Kept chỉ đếm token."
+msgid "Add a price to see cost. Until then SheepKeep counts tokens only."
+msgstr "Thêm giá để xem chi phí. Cho đến lúc đó SheepKeep chỉ đếm token."
 
 msgid "Admin settings"
 msgstr "Cài đặt quản trị"
@@ -7116,8 +7116,8 @@ msgstr "Diễn biến ra sao"
 msgid "Images"
 msgstr "Hình ảnh"
 
-msgid "In Kept's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
-msgstr "Trong thử nghiệm của Kept vào {date}, nó đọc biên lai, nhãn và tem thông số chính xác với chi phí thấp nhất trong các mô hình đã đo:"
+msgid "In SheepKeep's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
+msgstr "Trong thử nghiệm của SheepKeep vào {date}, nó đọc biên lai, nhãn và tem thông số chính xác với chi phí thấp nhất trong các mô hình đã đo:"
 
 msgid "Input {0} · output {1} per million tokens"
 msgstr "Đầu vào {0} · đầu ra {1} cho mỗi triệu token"
@@ -7134,20 +7134,20 @@ msgstr "Câu trả lời không hợp lệ"
 msgid "Keep paused"
 msgstr "Giữ tạm dừng"
 
-msgid "Kept (background)"
-msgstr "Kept (nền)"
+msgid "SheepKeep (background)"
+msgstr "SheepKeep (nền)"
 
-msgid "Kept can't tell which provider this key is for. Choose it under Advanced."
-msgstr "Kept không biết khóa này dành cho nhà cung cấp nào. Chọn nhà cung cấp trong Nâng cao."
+msgid "SheepKeep can't tell which provider this key is for. Choose it under Advanced."
+msgstr "SheepKeep không biết khóa này dành cho nhà cung cấp nào. Chọn nhà cung cấp trong Nâng cao."
 
-msgid "Kept estimated {0} before sending."
-msgstr "Kept đã ước tính {0} trước khi gửi."
+msgid "SheepKeep estimated {0} before sending."
+msgstr "SheepKeep đã ước tính {0} trước khi gửi."
 
-msgid "Kept fills in {0}'s address."
-msgstr "Kept điền địa chỉ của {0}."
+msgid "SheepKeep fills in {0}'s address."
+msgstr "SheepKeep điền địa chỉ của {0}."
 
-msgid "Kept reads the provider from the key. It sends the key to the server once and never shows it again."
-msgstr "Kept đọc nhà cung cấp từ khóa. Nó gửi khóa lên máy chủ một lần và không bao giờ hiển thị lại."
+msgid "SheepKeep reads the provider from the key. It sends the key to the server once and never shows it again."
+msgstr "SheepKeep đọc nhà cung cấp từ khóa. Nó gửi khóa lên máy chủ một lần và không bao giờ hiển thị lại."
 
 msgid "Key saved"
 msgstr "Đã lưu khóa"
@@ -7188,8 +7188,8 @@ msgstr "Trông giống khóa {0}."
 msgid "Low (the default)"
 msgstr "Thấp (mặc định)"
 
-msgid "Measured by Kept on {0} with Groq · <0>{1}</0>"
-msgstr "Kept đo vào {0} với Groq · <0>{1}</0>"
+msgid "Measured by SheepKeep on {0} with Groq · <0>{1}</0>"
+msgstr "SheepKeep đo vào {0} với Groq · <0>{1}</0>"
 
 msgid "Medium"
 msgstr "Trung bình"
@@ -7269,8 +7269,8 @@ msgstr "Không có thông tin"
 msgid "Not sent"
 msgstr "Chưa gửi"
 
-msgid "Not sent: Kept held it back, so nothing was used."
-msgstr "Chưa gửi: Kept đã giữ lại, nên không dùng gì cả."
+msgid "Not sent: SheepKeep held it back, so nothing was used."
+msgstr "Chưa gửi: SheepKeep đã giữ lại, nên không dùng gì cả."
 
 msgid "Not set: name things by hand"
 msgstr "Chưa đặt: đặt tên đồ vật thủ công"
@@ -7293,8 +7293,8 @@ msgstr "OK"
 msgid "Only a copy of the photo with location and camera data removed, never the original. The fixed instructions and your location's languages. For the assistant, your question and the inventory it looks up, within your role. Never secret fields."
 msgstr "Chỉ một bản sao của ảnh đã xóa dữ liệu vị trí và máy ảnh, không bao giờ là ảnh gốc. Các hướng dẫn cố định và ngôn ngữ của địa điểm của bạn. Đối với trợ lý, câu hỏi của bạn và kho đồ mà nó tra cứu, trong phạm vi vai trò của bạn. Không bao giờ là trường bí mật."
 
-msgid "Only a copy with the location and camera data removed. Kept never keeps it."
-msgstr "Chỉ một bản sao đã xóa dữ liệu vị trí và máy ảnh. Kept không bao giờ giữ nó."
+msgid "Only a copy with the location and camera data removed. SheepKeep never keeps it."
+msgstr "Chỉ một bản sao đã xóa dữ liệu vị trí và máy ảnh. SheepKeep không bao giờ giữ nó."
 
 msgid "Only where the provider bills images apart from tokens."
 msgstr "Chỉ khi nhà cung cấp tính phí hình ảnh riêng ngoài token."
@@ -7446,8 +7446,8 @@ msgstr "Tiếp tục ngay"
 msgid "Run Test to check photos"
 msgstr "Chạy Kiểm tra để kiểm tra ảnh"
 
-msgid "Save a key first: Kept then loads the provider's models to choose from."
-msgstr "Lưu khóa trước: sau đó Kept sẽ tải các mô hình của nhà cung cấp để bạn chọn."
+msgid "Save a key first: SheepKeep then loads the provider's models to choose from."
+msgstr "Lưu khóa trước: sau đó SheepKeep sẽ tải các mô hình của nhà cung cấp để bạn chọn."
 
 msgid "Save and test"
 msgstr "Lưu và kiểm tra"
@@ -7539,8 +7539,8 @@ msgstr "Các lần kiểm tra"
 msgid "That currency isn't turned on. An instance admin can add it."
 msgstr "Loại tiền tệ này chưa được bật. Quản trị viên máy chủ có thể thêm nó."
 
-msgid "That was a test with made-up photos; Kept's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
-msgstr "Đó chỉ là lần kiểm tra với ảnh giả; Kept sẽ kiểm tra lại bằng ảnh thật khi đánh giá. Groq không có mô hình embeddings, nên tìm kiếm ngữ nghĩa cần một nhà cung cấp khác hoặc chỉ dùng từ khóa. Trên gói khóa mà Kept đã đo, Groq đọc {low}–{high} ảnh mỗi phút; Kept điều chỉnh tốc độ theo đó, nên một phiên {photos} ảnh kéo dài {fromMin}–{toMin} phút trong khi bạn tiếp tục làm việc."
+msgid "That was a test with made-up photos; SheepKeep's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
+msgstr "Đó chỉ là lần kiểm tra với ảnh giả; SheepKeep sẽ kiểm tra lại bằng ảnh thật khi đánh giá. Groq không có mô hình embeddings, nên tìm kiếm ngữ nghĩa cần một nhà cung cấp khác hoặc chỉ dùng từ khóa. Trên gói khóa mà SheepKeep đã đo, Groq đọc {low}–{high} ảnh mỗi phút; SheepKeep điều chỉnh tốc độ theo đó, nên một phiên {photos} ảnh kéo dài {fromMin}–{toMin} phút trong khi bạn tiếp tục làm việc."
 
 msgid "That was already undone"
 msgstr "Việc đó đã được hoàn tác rồi"
@@ -7557,17 +7557,17 @@ msgstr "Giới hạn thấp hơn của tài khoản được áp dụng trước
 msgid "the answer was cut off"
 msgstr "câu trả lời bị cắt ngang"
 
-msgid "the answer wasn't in the shape Kept asked for"
-msgstr "câu trả lời không đúng định dạng Kept yêu cầu"
+msgid "the answer wasn't in the shape SheepKeep asked for"
+msgstr "câu trả lời không đúng định dạng SheepKeep yêu cầu"
 
-msgid "The cheapest reliable result in Kept's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it."
-msgstr "Kết quả đáng tin cậy rẻ nhất trong bài kiểm tra của Kept: khoảng USD {perReceipt} mỗi biên lai, với <0>{0}</0>. Trên gói khóa mà Kept đã đo, Groq đọc {low}–{high} ảnh mỗi phút; Kept điều chỉnh tốc độ theo đó."
+msgid "The cheapest reliable result in SheepKeep's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it."
+msgstr "Kết quả đáng tin cậy rẻ nhất trong bài kiểm tra của SheepKeep: khoảng USD {perReceipt} mỗi biên lai, với <0>{0}</0>. Trên gói khóa mà SheepKeep đã đo, Groq đọc {low}–{high} ảnh mỗi phút; SheepKeep điều chỉnh tốc độ theo đó."
 
-msgid "The first AI key is a secret Kept must be able to recover. Save the recovery kit on the status page, then paste the key again."
-msgstr "Khóa AI đầu tiên là một bí mật mà Kept phải có thể khôi phục. Hãy lưu bộ khôi phục trên trang trạng thái, rồi dán lại khóa."
+msgid "The first AI key is a secret SheepKeep must be able to recover. Save the recovery kit on the status page, then paste the key again."
+msgstr "Khóa AI đầu tiên là một bí mật mà SheepKeep phải có thể khôi phục. Hãy lưu bộ khôi phục trên trang trạng thái, rồi dán lại khóa."
 
-msgid "The listing has no prices Kept can use."
-msgstr "Bảng giá không có mức giá nào Kept có thể dùng."
+msgid "The listing has no prices SheepKeep can use."
+msgstr "Bảng giá không có mức giá nào SheepKeep có thể dùng."
 
 msgid "the monthly cap was reached"
 msgstr "đã đạt giới hạn hàng tháng"
@@ -7578,8 +7578,8 @@ msgstr "đã đạt giới hạn token hàng tháng"
 msgid "The person who runs this server needs to save the recovery kit before the first AI key. Ask them, then paste the key again."
 msgstr "Người vận hành máy chủ này cần lưu bộ khôi phục trước khóa AI đầu tiên. Hãy hỏi họ, rồi dán lại khóa."
 
-msgid "the provider asked Kept to slow down"
-msgstr "nhà cung cấp yêu cầu Kept giảm tốc độ"
+msgid "the provider asked SheepKeep to slow down"
+msgstr "nhà cung cấp yêu cầu SheepKeep giảm tốc độ"
 
 msgid "the provider couldn't be reached"
 msgstr "không thể kết nối tới nhà cung cấp"
@@ -7704,8 +7704,8 @@ msgstr "Những gì được gửi tới nhà cung cấp"
 msgid "What it belongs to opens, with what's inside. A worn label, or no camera? Type the code instead."
 msgstr "Mở ra thứ nó thuộc về, cùng với những gì bên trong. Nhãn đã mờ, hoặc không có máy ảnh? Hãy nhập mã thay vào đó."
 
-msgid "What uses AI in Kept"
-msgstr "Những gì dùng AI trong Kept"
+msgid "What uses AI in SheepKeep"
+msgstr "Những gì dùng AI trong SheepKeep"
 
 msgid "Where and who"
 msgstr "Ở đâu và của ai"
@@ -7905,8 +7905,8 @@ msgstr "Đang nhập vào {locationName}"
 msgid "Importing…"
 msgstr "Đang nhập…"
 
-msgid "In any of Kept's languages. Off, the type is kept in the notes."
-msgstr "Bằng bất kỳ ngôn ngữ nào của Kept. Khi tắt, loại được giữ trong ghi chú."
+msgid "In any of SheepKeep's languages. Off, the type is kept in the notes."
+msgstr "Bằng bất kỳ ngôn ngữ nào của SheepKeep. Khi tắt, loại được giữ trong ghi chú."
 
 msgid "It hasn't moved for a while. What it already imported stays."
 msgstr "Nó đã không tiến triển một lúc rồi. Những gì nó đã nhập vẫn còn."
@@ -7965,11 +7965,11 @@ msgstr "Không có vị trí như vậy và không tạo vị trí mới; nó v�
 msgid "No type has this name; kept in the notes."
 msgstr "Không có loại nào mang tên này; giữ trong ghi chú."
 
-msgid "Not a condition Kept knows; kept in the notes."
-msgstr "Không phải tình trạng Kept biết; giữ trong ghi chú."
+msgid "Not a condition SheepKeep knows; kept in the notes."
+msgstr "Không phải tình trạng SheepKeep biết; giữ trong ghi chú."
 
-msgid "Not a currency turned on in Kept; the price is kept in the notes."
-msgstr "Không phải tiền tệ đang bật trong Kept; giá được giữ trong ghi chú."
+msgid "Not a currency turned on in SheepKeep; the price is kept in the notes."
+msgstr "Không phải tiền tệ đang bật trong SheepKeep; giá được giữ trong ghi chú."
 
 msgid "Not a date written as {format}; kept in the notes."
 msgstr "Không phải ngày viết theo dạng {format}; giữ trong ghi chú."
@@ -8217,8 +8217,8 @@ msgstr "Các trường của loại"
 msgid "Things already started from it keep their details."
 msgstr "Các đồ vật đã bắt đầu từ nó giữ nguyên thông tin của chúng."
 
-msgid "Kept labels"
-msgstr "Nhãn Kept"
+msgid "SheepKeep labels"
+msgstr "Nhãn SheepKeep"
 
 msgid "Saved the label images"
 msgstr "Đã lưu các ảnh nhãn"
@@ -8235,8 +8235,8 @@ msgstr "Quay lại nhãn"
 msgid "Share as images"
 msgstr "Chia sẻ dưới dạng hình ảnh"
 
-msgid "Share into Kept"
-msgstr "Chia sẻ vào Kept"
+msgid "Share into SheepKeep"
+msgstr "Chia sẻ vào SheepKeep"
 
 msgid "Print"
 msgstr "In"
@@ -8346,11 +8346,11 @@ msgstr "Chúng sẽ có ID khi điện thoại đã chụp chúng đồng bộ. 
 msgid "{count, plural, one {Print # label} other {Print # labels}}"
 msgstr "{count, plural, one {In # nhãn} other {In # nhãn}}"
 
-msgid "Opens the print dialog at {stockTitle}, scale 100%. Afterwards Kept asks \"Printed OK?\" and records the print date."
-msgstr "Mở hộp thoại in với {stockTitle}, tỉ lệ 100%. Sau đó Kept hỏi “Đã in xong?” và ghi lại ngày in."
+msgid "Opens the print dialog at {stockTitle}, scale 100%. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
+msgstr "Mở hộp thoại in với {stockTitle}, tỉ lệ 100%. Sau đó SheepKeep hỏi “Đã in xong?” và ghi lại ngày in."
 
-msgid "Opens the print dialog: choose your label printer and this label size. Afterwards Kept asks \"Printed OK?\" and records the print date."
-msgstr "Mở hộp thoại in: chọn máy in nhãn của bạn và kích thước nhãn này. Sau đó Kept hỏi “Đã in xong?” và ghi lại ngày in."
+msgid "Opens the print dialog: choose your label printer and this label size. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
+msgstr "Mở hộp thoại in: chọn máy in nhãn của bạn và kích thước nhãn này. Sau đó SheepKeep hỏi “Đã in xong?” và ghi lại ngày in."
 
 msgid "Label preview"
 msgstr "Xem trước nhãn"
@@ -8526,20 +8526,20 @@ msgstr "Nhập một địa chỉ email, hoặc để trống."
 msgid "Former addresses"
 msgstr "Các địa chỉ cũ"
 
-msgid "Look up products Kept doesn't know by their barcode"
-msgstr "Tra cứu sản phẩm mà Kept chưa biết bằng mã vạch của chúng"
+msgid "Look up products SheepKeep doesn't know by their barcode"
+msgstr "Tra cứu sản phẩm mà SheepKeep chưa biết bằng mã vạch của chúng"
 
-msgid "None. Kept answers only at its own address."
-msgstr "Không có. Kept chỉ trả lời tại địa chỉ của chính nó."
+msgid "None. SheepKeep answers only at its own address."
+msgstr "Không có. SheepKeep chỉ trả lời tại địa chỉ của chính nó."
 
-msgid "Off. A scanned product barcode finds only what Kept already holds."
-msgstr "Tắt. Mã vạch sản phẩm đã quét chỉ tìm được những gì Kept đã có."
+msgid "Off. A scanned product barcode finds only what SheepKeep already holds."
+msgstr "Tắt. Mã vạch sản phẩm đã quét chỉ tìm được những gì SheepKeep đã có."
 
 msgid "Old host name"
 msgstr "Tên máy chủ cũ"
 
-msgid "On. A scanned product barcode Kept doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
-msgstr "Bật. Mã vạch sản phẩm đã quét mà Kept chưa biết sẽ được tra cứu trong Open Food Facts, Open Products Facts và Open Beauty Facts. Chỉ mã vạch được gửi đi."
+msgid "On. A scanned product barcode SheepKeep doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
+msgstr "Bật. Mã vạch sản phẩm đã quét mà SheepKeep chưa biết sẽ được tra cứu trong Open Food Facts, Open Products Facts và Open Beauty Facts. Chỉ mã vạch được gửi đi."
 
 msgid "Only the name, like kept.home.example."
 msgstr "Chỉ tên, ví dụ kept.home.example."
@@ -8556,11 +8556,11 @@ msgstr "Đó là địa chỉ của chính máy chủ này."
 msgid "That name is already listed."
 msgstr "Tên đó đã được liệt kê."
 
-msgid "The databases ask each app for a contact. Kept sends this email with each lookup, and nothing else about you."
-msgstr "Các cơ sở dữ liệu yêu cầu mỗi ứng dụng cung cấp một liên hệ. Kept gửi email này kèm mỗi lần tra cứu, và không gửi gì khác về bạn."
+msgid "The databases ask each app for a contact. SheepKeep sends this email with each lookup, and nothing else about you."
+msgstr "Các cơ sở dữ liệu yêu cầu mỗi ứng dụng cung cấp một liên hệ. SheepKeep gửi email này kèm mỗi lần tra cứu, và không gửi gì khác về bạn."
 
-msgid "When Kept moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
-msgstr "Khi Kept chuyển sang địa chỉ mới, hãy liệt kê các tên cũ tại đây và trỏ chúng về máy chủ này. Nhãn in dưới địa chỉ cũ vẫn mở được: yêu cầu sẽ được gửi tới máy chủ này."
+msgid "When SheepKeep moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
+msgstr "Khi SheepKeep chuyển sang địa chỉ mới, hãy liệt kê các tên cũ tại đây và trỏ chúng về máy chủ này. Nhãn in dưới địa chỉ cũ vẫn mở được: yêu cầu sẽ được gửi tới máy chủ này."
 
 msgid "{n, plural, one {Picked up # thing} other {Picked up # things}}"
 msgstr "{n, plural, one {Đã lấy # đồ vật} other {Đã lấy # đồ vật}}"
@@ -8703,8 +8703,8 @@ msgstr "Từ Homebox"
 msgid "In plain words, for whoever types the code."
 msgstr "Bằng lời đơn giản, dành cho người nhập mã."
 
-msgid "Kept can't read this pattern. Check its brackets."
-msgstr "Kept không đọc được mẫu này. Hãy kiểm tra dấu ngoặc của nó."
+msgid "SheepKeep can't read this pattern. Check its brackets."
+msgstr "SheepKeep không đọc được mẫu này. Hãy kiểm tra dấu ngoặc của nó."
 
 msgid "Message when a code doesn't match"
 msgstr "Thông báo khi mã không khớp"
@@ -8793,8 +8793,8 @@ msgstr "Tỷ giá hối đoái"
 msgid "Expiring"
 msgstr "Sắp hết hạn"
 
-msgid "How Kept reaches you"
-msgstr "Cách Kept liên hệ với bạn"
+msgid "How SheepKeep reaches you"
+msgstr "Cách SheepKeep liên hệ với bạn"
 
 msgid "Incident"
 msgstr "Sự cố"
@@ -8838,14 +8838,14 @@ msgstr "Tệp CSV của bạn đã sẵn sàng"
 msgid "Share it to save it to Files or send it on."
 msgstr "Chia sẻ nó để lưu vào Tệp hoặc gửi tiếp."
 
-msgid "This browser can't save files here. Open Kept in Safari to export it."
-msgstr "Trình duyệt này không lưu được tệp tại đây. Mở Kept trong Safari để xuất tệp."
+msgid "This browser can't save files here. Open SheepKeep in Safari to export it."
+msgstr "Trình duyệt này không lưu được tệp tại đây. Mở SheepKeep trong Safari để xuất tệp."
 
 msgid "This file can't be shared from the installed app"
 msgstr "Tệp này không chia sẻ được từ ứng dụng đã cài đặt"
 
-msgid "Open Kept in Safari to download it."
-msgstr "Mở Kept trong Safari để tải tệp xuống."
+msgid "Open SheepKeep in Safari to download it."
+msgstr "Mở SheepKeep trong Safari để tải tệp xuống."
 
 msgid "Couldn't get the file ready. Try again."
 msgstr "Không chuẩn bị được tệp. Thử lại."
@@ -8856,8 +8856,8 @@ msgstr "Tệp vẫn đang được gửi đến. Thử lại sau giây lát."
 msgid "Couldn't share the file. Try again."
 msgstr "Không chia sẻ được tệp. Thử lại."
 
-msgid "Kept can't reach its database right now. Try again in a minute."
-msgstr "Hiện Kept không kết nối được với cơ sở dữ liệu. Thử lại sau một phút."
+msgid "SheepKeep can't reach its database right now. Try again in a minute."
+msgstr "Hiện SheepKeep không kết nối được với cơ sở dữ liệu. Thử lại sau một phút."
 
 msgid "{0, plural, one {# day overdue} other {# days overdue}}"
 msgstr "{0, plural, one {# ngày quá hạn} other {# ngày quá hạn}}"
@@ -8913,8 +8913,8 @@ msgstr "Một số nguyên tháng, từ 1 trở lên."
 msgid "Add a line"
 msgstr "Thêm một dòng"
 
-msgid "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and Kept reminds you before it's due."
-msgstr "Thêm một dịch vụ hoặc lần kiểm tra định kỳ, như bảo dưỡng nồi hơi mỗi năm hoặc ô tô mỗi 10.000 km, và Kept sẽ nhắc bạn trước khi đến hạn."
+msgid "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and SheepKeep reminds you before it's due."
+msgstr "Thêm một dịch vụ hoặc lần kiểm tra định kỳ, như bảo dưỡng nồi hơi mỗi năm hoặc ô tô mỗi 10.000 km, và SheepKeep sẽ nhắc bạn trước khi đến hạn."
 
 msgid "Add line items or an invoice"
 msgstr "Thêm các dòng mục hoặc một hóa đơn"
@@ -9229,8 +9229,8 @@ msgstr "Tìm phòng, chỗ và đồ vật"
 msgid "Search schedules"
 msgstr "Tìm lịch trình"
 
-msgid "Send it however you like. Kept never sends it."
-msgstr "Gửi nó bằng cách nào tùy bạn. Kept không bao giờ gửi nó."
+msgid "Send it however you like. SheepKeep never sends it."
+msgstr "Gửi nó bằng cách nào tùy bạn. SheepKeep không bao giờ gửi nó."
 
 msgid "Service logged"
 msgstr "Đã ghi nhận bảo dưỡng"
@@ -9568,14 +9568,14 @@ msgstr "Một đồ vật đã mượn"
 msgid "A claim needs the day it was opened."
 msgstr "Một yêu cầu cần ngày nó được mở."
 
-msgid "A new person: added to your people when you save. Kept never contacts them."
-msgstr "Một người mới: được thêm vào danh sách người của bạn khi bạn lưu. Kept không bao giờ liên hệ với họ."
+msgid "A new person: added to your people when you save. SheepKeep never contacts them."
+msgstr "Một người mới: được thêm vào danh sách người của bạn khi bạn lưu. SheepKeep không bao giờ liên hệ với họ."
 
 msgid "A phone number, an email or a web page."
 msgstr "Một số điện thoại, một email hoặc một trang web."
 
-msgid "A service or a check that comes round: Kept reminds you before it's due."
-msgstr "Một dịch vụ hoặc lần kiểm tra định kỳ: Kept nhắc bạn trước khi đến hạn."
+msgid "A service or a check that comes round: SheepKeep reminds you before it's due."
+msgstr "Một dịch vụ hoặc lần kiểm tra định kỳ: SheepKeep nhắc bạn trước khi đến hạn."
 
 msgid "A term"
 msgstr "Một thời hạn"
@@ -9790,14 +9790,14 @@ msgstr "Nó thuộc về {0}: nó sẽ rời khỏi số lượng và tổng s�
 msgid "It's in repair: lend it once it's back."
 msgstr "Nó đang sửa chữa: hãy cho mượn khi nó đã về."
 
-msgid "Kept never contacts them."
-msgstr "Kept không bao giờ liên hệ với họ."
+msgid "SheepKeep never contacts them."
+msgstr "SheepKeep không bao giờ liên hệ với họ."
 
-msgid "Kept never messages {0}; the reminder text is yours to send."
-msgstr "Kept không bao giờ nhắn tin cho {0}; bạn tự gửi lời nhắc."
+msgid "SheepKeep never messages {0}; the reminder text is yours to send."
+msgstr "SheepKeep không bao giờ nhắn tin cho {0}; bạn tự gửi lời nhắc."
 
-msgid "Kept reminds you on {0}. It never messages {1}; the reminder text is yours to send."
-msgstr "Kept nhắc bạn vào {0}. Kept không bao giờ nhắn tin cho {1}; bạn tự gửi lời nhắc."
+msgid "SheepKeep reminds you on {0}. It never messages {1}; the reminder text is yours to send."
+msgstr "SheepKeep nhắc bạn vào {0}. SheepKeep không bao giờ nhắn tin cho {1}; bạn tự gửi lời nhắc."
 
 msgid "Lend"
 msgstr "Cho mượn"
@@ -9904,11 +9904,11 @@ msgstr "Đã mở"
 msgid "Opened {0}"
 msgstr "Đã mở {0}"
 
-msgid "Optional. Kept reminds you before this day."
-msgstr "Không bắt buộc. Kept nhắc bạn trước ngày này."
+msgid "Optional. SheepKeep reminds you before this day."
+msgstr "Không bắt buộc. SheepKeep nhắc bạn trước ngày này."
 
-msgid "Optional. Kept reminds you when it's due back."
-msgstr "Không bắt buộc. Kept nhắc bạn khi đến hạn trả."
+msgid "Optional. SheepKeep reminds you when it's due back."
+msgstr "Không bắt buộc. SheepKeep nhắc bạn khi đến hạn trả."
 
 msgid "Optional. Kept reminds you, never them, when it's overdue."
 msgstr "Không bắt buộc. Kept nhắc bạn, không nhắc họ, khi quá hạn."
@@ -10001,11 +10001,11 @@ msgstr "Cập nhật"
 msgid "Update the claim"
 msgstr "Cập nhật yêu cầu bảo hành"
 
-msgid "uses Kept"
-msgstr "dùng Kept"
+msgid "uses SheepKeep"
+msgstr "dùng SheepKeep"
 
-msgid "Uses Kept"
-msgstr "Dùng Kept"
+msgid "Uses SheepKeep"
+msgstr "Dùng SheepKeep"
 
 msgid "Usually in"
 msgstr "Thường ở"
@@ -10058,8 +10058,8 @@ msgstr "Số tiền bạn đã trả"
 msgid "What's wrong"
 msgstr "Có vấn đề gì"
 
-msgid "When it breaks, open a claim: Kept fills in the warranty that covers longest and remembers where it went for repair."
-msgstr "Khi nó hỏng, hãy mở yêu cầu bảo hành: Kept sẽ điền bảo hành có thời hạn dài nhất và ghi nhớ nơi nó được mang đi sửa."
+msgid "When it breaks, open a claim: SheepKeep fills in the warranty that covers longest and remembers where it went for repair."
+msgstr "Khi nó hỏng, hãy mở yêu cầu bảo hành: SheepKeep sẽ điền bảo hành có thời hạn dài nhất và ghi nhớ nơi nó được mang đi sửa."
 
 msgid "Where it goes"
 msgstr "Nó sẽ đi đâu"
@@ -10127,8 +10127,8 @@ msgstr "{browser} trên {os}"
 msgid "{MAX_CALENDAR_FEEDS, plural, one {# link is the most. Revoke one to make another.} other {# links are the most. Revoke one to make another.}}"
 msgstr "{MAX_CALENDAR_FEEDS, plural, one {# liên kết là tối đa. Hãy thu hồi một liên kết để tạo liên kết khác.} other {# liên kết là tối đa. Hãy thu hồi một liên kết để tạo liên kết khác.}}"
 
-msgid "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most Kept allows.} other {You have # webhooks, the most Kept allows.}}"
-msgstr "{MAX_WEBHOOK_CHANNELS, plural, one {Bạn có # webhook, mức tối đa Kept cho phép.} other {Bạn có # webhook, mức tối đa Kept cho phép.}}"
+msgid "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most SheepKeep allows.} other {You have # webhooks, the most SheepKeep allows.}}"
+msgstr "{MAX_WEBHOOK_CHANNELS, plural, one {Bạn có # webhook, mức tối đa SheepKeep cho phép.} other {Bạn có # webhook, mức tối đa SheepKeep cho phép.}}"
 
 msgid "{unreadText} unread"
 msgstr "{unreadText} chưa đọc"
@@ -10160,8 +10160,8 @@ msgstr "Giới hạn chi tiêu AI"
 msgid "AI used 80% of this month's cap"
 msgstr "AI đã dùng 80% giới hạn tháng này"
 
-msgid "Allow notifications for Kept in this browser's settings, then try again."
-msgstr "Hãy cho phép thông báo cho Kept trong cài đặt của trình duyệt này, rồi thử lại."
+msgid "Allow notifications for SheepKeep in this browser's settings, then try again."
+msgstr "Hãy cho phép thông báo cho SheepKeep trong cài đặt của trình duyệt này, rồi thử lại."
 
 msgid "Browser"
 msgstr "Trình duyệt"
@@ -10247,8 +10247,8 @@ msgstr "Email và trung tâm thông báo vẫn liên lạc được với bạn.
 msgid "Enter the full address, starting with https://"
 msgstr "Nhập địa chỉ đầy đủ, bắt đầu bằng https://"
 
-msgid "Everything lands in the notification centre. These reach you outside Kept as well."
-msgstr "Mọi thứ đều vào trung tâm thông báo. Những thứ này cũng đến với bạn ngoài Kept."
+msgid "Everything lands in the notification centre. These reach you outside SheepKeep as well."
+msgstr "Mọi thứ đều vào trung tâm thông báo. Những thứ này cũng đến với bạn ngoài SheepKeep."
 
 msgid "Failed jobs shows why it stopped; if the worker isn't running, start it again. The next good check resolves this alert."
 msgstr "Công việc thất bại cho biết vì sao nó dừng; nếu worker không chạy, hãy khởi động lại. Lần kiểm tra thành công tiếp theo sẽ giải quyết cảnh báo này."
@@ -10256,14 +10256,14 @@ msgstr "Công việc thất bại cho biết vì sao nó dừng; nếu worker kh
 msgid "Failing since {since}"
 msgstr "Lỗi từ {since}"
 
-msgid "For your own automations: Kept posts a signed message when something is due, with ids and dates only, never names."
-msgstr "Cho các tự động hóa của riêng bạn: Kept đăng một thông báo đã ký khi có việc đến hạn, chỉ gồm id và ngày, không bao giờ có tên."
+msgid "For your own automations: SheepKeep posts a signed message when something is due, with ids and dates only, never names."
+msgstr "Cho các tự động hóa của riêng bạn: SheepKeep đăng một thông báo đã ký khi có việc đến hạn, chỉ gồm id và ngày, không bao giờ có tên."
 
 msgid "How to install"
 msgstr "Cách cài đặt"
 
-msgid "In Kept"
-msgstr "Trong Kept"
+msgid "In SheepKeep"
+msgstr "Trong SheepKeep"
 
 msgid "It answered {code}."
 msgstr "Máy chủ đã phản hồi mã {code}."
@@ -10274,20 +10274,20 @@ msgstr "Không liên lạc được với nó."
 msgid "It's no longer there."
 msgstr "Nó không còn ở đó nữa."
 
-msgid "Kept last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
-msgstr "Kept kiểm tra lời nhắc đến hạn lần cuối lúc {lastOk}. Cho đến khi kiểm tra lại, không ai nhận được lời nhắc mới."
+msgid "SheepKeep last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
+msgstr "SheepKeep kiểm tra lời nhắc đến hạn lần cuối lúc {lastOk}. Cho đến khi kiểm tra lại, không ai nhận được lời nhắc mới."
 
-msgid "Kept sends at most 5 tests an hour, across all your channels and devices. Try again later."
-msgstr "Kept gửi tối đa 5 bản thử mỗi giờ, trên tất cả kênh và thiết bị của bạn. Hãy thử lại sau."
+msgid "SheepKeep sends at most 5 tests an hour, across all your channels and devices. Try again later."
+msgstr "SheepKeep gửi tối đa 5 bản thử mỗi giờ, trên tất cả kênh và thiết bị của bạn. Hãy thử lại sau."
 
-msgid "Kept shows it only this once. Anyone with it can read the titles and dates."
-msgstr "Kept chỉ hiển thị nó một lần duy nhất này. Bất kỳ ai có nó đều có thể đọc tiêu đề và ngày."
+msgid "SheepKeep shows it only this once. Anyone with it can read the titles and dates."
+msgstr "SheepKeep chỉ hiển thị nó một lần duy nhất này. Bất kỳ ai có nó đều có thể đọc tiêu đề và ngày."
 
-msgid "Kept shows it only this once. Your receiver checks each message's Kept-Signature header with it."
-msgstr "Kept chỉ hiển thị nó một lần duy nhất này. Bộ nhận của bạn kiểm tra tiêu đề Kept-Signature của mỗi thông báo bằng nó."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
+msgstr "SheepKeep chỉ hiển thị nó một lần duy nhất này. Bộ nhận của bạn kiểm tra tiêu đề SheepKeep-Signature của mỗi thông báo bằng nó."
 
-msgid "Kept stops posting to it. Its secret can't be used again."
-msgstr "Kept ngừng gửi tới webhook này. Mã bí mật của nó không dùng lại được nữa."
+msgid "SheepKeep stops posting to it. Its secret can't be used again."
+msgstr "SheepKeep ngừng gửi tới webhook này. Mã bí mật của nó không dùng lại được nữa."
 
 msgid "Last fetched {fetched}"
 msgstr "Lấy lần cuối lúc {fetched}"
@@ -10298,8 +10298,8 @@ msgstr "Mức dùng AI tháng trước, gửi tới email của bạn."
 msgid "Link made {made}"
 msgstr "Liên kết tạo lúc {made}"
 
-msgid "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when Kept can be reached from the internet."
-msgstr "Các địa điểm yêu cầu xác thực hai lớp sẽ không có trong nguồn cấp. Google Calendar lấy liên kết từ máy chủ của Google, vì vậy nó chỉ hoạt động ở đó khi Kept có thể truy cập được từ internet."
+msgid "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when SheepKeep can be reached from the internet."
+msgstr "Các địa điểm yêu cầu xác thực hai lớp sẽ không có trong nguồn cấp. Google Calendar lấy liên kết từ máy chủ của Google, vì vậy nó chỉ hoạt động ở đó khi SheepKeep có thể truy cập được từ internet."
 
 msgid "Mail isn't configured on this server, so no email goes out yet."
 msgstr "Email chưa được cấu hình trên máy chủ này, vì vậy chưa có email nào được gửi đi."
@@ -10340,14 +10340,14 @@ msgstr "Cài đặt thông báo"
 msgid "Notifications are blocked"
 msgstr "Thông báo đang bị chặn"
 
-msgid "Notifications are blocked for Kept in this browser's settings. Allow them there, then come back."
-msgstr "Thông báo cho Kept đang bị chặn trong cài đặt của trình duyệt này. Hãy cho phép chúng ở đó, rồi quay lại."
+msgid "Notifications are blocked for SheepKeep in this browser's settings. Allow them there, then come back."
+msgstr "Thông báo cho SheepKeep đang bị chặn trong cài đặt của trình duyệt này. Hãy cho phép chúng ở đó, rồi quay lại."
 
 msgid "Notifications are on for this device"
 msgstr "Thông báo đang bật cho thiết bị này"
 
-msgid "On iPhone and iPad, notifications work only from the installed app. Add Kept to your Home Screen, open it from there and turn them on. Until then, email reaches you."
-msgstr "Trên iPhone và iPad, thông báo chỉ hoạt động từ ứng dụng đã cài đặt. Hãy thêm Kept vào Màn hình chính, mở từ đó và bật thông báo. Cho đến lúc đó, email vẫn gửi tới bạn."
+msgid "On iPhone and iPad, notifications work only from the installed app. Add SheepKeep to your Home Screen, open it from there and turn them on. Until then, email reaches you."
+msgstr "Trên iPhone và iPad, thông báo chỉ hoạt động từ ứng dụng đã cài đặt. Hãy thêm SheepKeep vào Màn hình chính, mở từ đó và bật thông báo. Cho đến lúc đó, email vẫn gửi tới bạn."
 
 msgid "Once a month: what AI did for you and what it used."
 msgstr "Mỗi tháng một lần: AI đã làm gì cho bạn và đã dùng những gì."
@@ -10388,8 +10388,8 @@ msgstr "Giờ yên lặng không thể bắt đầu và kết thúc cùng một 
 msgid "Reminders have stopped going out"
 msgstr "Lời nhắc đã ngừng được gửi đi"
 
-msgid "Reminders pop up here even when Kept is closed. Your browser asks first."
-msgstr "Lời nhắc vẫn hiện ở đây ngay cả khi Kept đã đóng. Trình duyệt của bạn sẽ hỏi trước."
+msgid "Reminders pop up here even when SheepKeep is closed. Your browser asks first."
+msgstr "Lời nhắc vẫn hiện ở đây ngay cả khi SheepKeep đã đóng. Trình duyệt của bạn sẽ hỏi trước."
 
 msgid "Remove {name}"
 msgstr "Xóa {name}"
@@ -10436,8 +10436,8 @@ msgstr "Dừng thông báo trên {name}?"
 msgid "Test sent"
 msgstr "Đã gửi bản thử"
 
-msgid "That device stops receiving push from Kept. Turn it on again from the device itself."
-msgstr "Thiết bị đó sẽ ngừng nhận thông báo đẩy từ Kept. Hãy bật lại từ chính thiết bị đó."
+msgid "That device stops receiving push from SheepKeep. Turn it on again from the device itself."
+msgstr "Thiết bị đó sẽ ngừng nhận thông báo đẩy từ SheepKeep. Hãy bật lại từ chính thiết bị đó."
 
 msgid "The mail server didn't take it. Try again later."
 msgstr "Máy chủ thư đã không nhận nó. Hãy thử lại sau."
@@ -10445,8 +10445,8 @@ msgstr "Máy chủ thư đã không nhận nó. Hãy thử lại sau."
 msgid "The test didn't arrive"
 msgstr "Bản thử chưa đến"
 
-msgid "This browser can't receive notifications from Kept. Email still reaches you."
-msgstr "Trình duyệt này không thể nhận thông báo từ Kept. Email vẫn gửi tới bạn."
+msgid "This browser can't receive notifications from SheepKeep. Email still reaches you."
+msgstr "Trình duyệt này không thể nhận thông báo từ SheepKeep. Email vẫn gửi tới bạn."
 
 msgid "Times are in <0>{zone}</0>, your time zone."
 msgstr "Giờ hiển thị theo <0>{zone}</0>, múi giờ của bạn."
@@ -10493,11 +10493,11 @@ msgstr "Webhook"
 msgid "What's coming up arrives together, once a day."
 msgstr "Những việc sắp tới sẽ gửi gộp lại, mỗi ngày một lần."
 
-msgid "Where Kept posts. Only its host is shown after this."
-msgstr "Nơi Kept gửi tới. Sau bước này chỉ hiển thị máy chủ của nó."
+msgid "Where SheepKeep posts. Only its host is shown after this."
+msgstr "Nơi SheepKeep gửi tới. Sau bước này chỉ hiển thị máy chủ của nó."
 
-msgid "Your account has no email address, so Kept tells you here, in the app."
-msgstr "Tài khoản của bạn không có địa chỉ email, vì vậy Kept sẽ thông báo cho bạn tại đây, trong ứng dụng."
+msgid "Your account has no email address, so SheepKeep tells you here, in the app."
+msgstr "Tài khoản của bạn không có địa chỉ email, vì vậy SheepKeep sẽ thông báo cho bạn tại đây, trong ứng dụng."
 
 msgid "Your account has no email address."
 msgstr "Tài khoản của bạn không có địa chỉ email."
@@ -10637,8 +10637,8 @@ msgstr "Chọn nội dung đưa vào"
 msgid "Claims under {name}"
 msgstr "Các yêu cầu bồi thường thuộc {name}"
 
-msgid "Copy it now: Kept shows it only this once."
-msgstr "Sao chép ngay: Kept chỉ hiển thị mã này một lần duy nhất."
+msgid "Copy it now: SheepKeep shows it only this once."
+msgstr "Sao chép ngay: SheepKeep chỉ hiển thị mã này một lần duy nhất."
 
 msgid "Couldn't check on the claim pack"
 msgstr "Không kiểm tra được gói hồ sơ bồi thường"
@@ -10724,11 +10724,11 @@ msgstr "Gói hồ sơ được giữ trong 7 ngày. Hãy tạo gói mới từ s
 msgid "Keep the notes under {NOTES_MAX} characters."
 msgstr "Giữ ghi chú dưới {NOTES_MAX} ký tự."
 
-msgid "Kept converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
-msgstr "Kept chỉ quy đổi bằng tỷ giá bạn đã nhập, không bao giờ ước tính. Hãy thêm một tỷ giá có ngày vào hoặc trước ngày báo cáo, hoặc lập báo cáo mà không có tổng đã quy đổi."
+msgid "SheepKeep converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
+msgstr "SheepKeep chỉ quy đổi bằng tỷ giá bạn đã nhập, không bao giờ ước tính. Hãy thêm một tỷ giá có ngày vào hoặc trước ngày báo cáo, hoặc lập báo cáo mà không có tổng đã quy đổi."
 
-msgid "Kept converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
-msgstr "Kept chỉ quy đổi tổng bằng tỷ giá bạn đã nhập tại đây, cho cặp tiền đó hoặc cặp nghịch đảo của nó. Kept không bao giờ ước tính tỷ giá, và không bao giờ quy đổi qua một loại tiền tệ thứ ba: nếu không có tỷ giá, các tổng vẫn giữ nguyên theo từng loại tiền tệ."
+msgid "SheepKeep converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
+msgstr "SheepKeep chỉ quy đổi tổng bằng tỷ giá bạn đã nhập tại đây, cho cặp tiền đó hoặc cặp nghịch đảo của nó. SheepKeep không bao giờ ước tính tỷ giá, và không bao giờ quy đổi qua một loại tiền tệ thứ ba: nếu không có tỷ giá, các tổng vẫn giữ nguyên theo từng loại tiền tệ."
 
 msgid "Kept until {keptUntil}."
 msgstr "Giữ đến {keptUntil}."
@@ -10872,8 +10872,8 @@ msgstr "Báo cáo bảo hiểm cần bật mô-đun Tiền trong địa điểm 
 msgid "The things stay as they are; only the incident and its references go. You can undo this for 7 days from the history."
 msgstr "Các đồ vật vẫn giữ nguyên; chỉ sự cố và các tham chiếu của nó bị xóa. Bạn có thể hoàn tác việc này trong 7 ngày từ lịch sử."
 
-msgid "This browser can't save files here. Open Kept in Safari to download it."
-msgstr "Trình duyệt này không thể lưu tệp tại đây. Mở Kept trong Safari để tải xuống."
+msgid "This browser can't save files here. Open SheepKeep in Safari to download it."
+msgstr "Trình duyệt này không thể lưu tệp tại đây. Mở SheepKeep trong Safari để tải xuống."
 
 msgid "This claim pack has expired"
 msgstr "Gói hồ sơ bồi thường này đã hết hạn"
@@ -11469,8 +11469,8 @@ msgstr "{count, plural, one {# dòng} other {# dòng}}"
 msgid "{typed} {unit} is lower than {before} {unit} on {on}. Readings can't go down: check the digits, or record that the meter was replaced."
 msgstr "{typed} {unit} thấp hơn {before} {unit} vào {on}. Chỉ số không thể giảm: hãy kiểm tra các chữ số, hoặc ghi nhận rằng đồng hồ đã được thay."
 
-msgid "A new meter starts again from 0. Kept adds what the old one had reached, so the history keeps going up."
-msgstr "Đồng hồ mới bắt đầu lại từ 0. Kept cộng thêm mức đồng hồ cũ đã đạt tới, nên lịch sử vẫn tiếp tục tăng."
+msgid "A new meter starts again from 0. SheepKeep adds what the old one had reached, so the history keeps going up."
+msgstr "Đồng hồ mới bắt đầu lại từ 0. SheepKeep cộng thêm mức đồng hồ cũ đã đạt tới, nên lịch sử vẫn tiếp tục tăng."
 
 msgid "Add the first reading"
 msgstr "Thêm chỉ số đầu tiên"
@@ -11547,14 +11547,14 @@ msgstr "Được giữ dưới dạng bản nháp trên tab Bảo dưỡng của
 msgid "Kept as proof"
 msgstr "Giữ làm bằng chứng"
 
-msgid "Kept checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
-msgstr "Khi đồng bộ, Kept đối chiếu nó với các chỉ số khác của bạn; nếu không khớp, nó chờ trong Hộp thư đến của bạn."
+msgid "SheepKeep checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
+msgstr "Khi đồng bộ, SheepKeep đối chiếu nó với các chỉ số khác của bạn; nếu không khớp, nó chờ trong Hộp thư đến của bạn."
 
-msgid "Kept couldn't read the invoice. Type the lines."
-msgstr "Kept không đọc được hóa đơn. Hãy nhập các dòng."
+msgid "SheepKeep couldn't read the invoice. Type the lines."
+msgstr "SheepKeep không đọc được hóa đơn. Hãy nhập các dòng."
 
-msgid "Kept tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
-msgstr "Kept theo dõi <0>{0}</0> từ chỉ số này trở đi: các ước tính của nó và các lần bảo dưỡng đến hạn theo quãng đường bắt đầu từ đây. Bạn có thể thêm sau từ trang của nó."
+msgid "SheepKeep tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
+msgstr "SheepKeep theo dõi <0>{0}</0> từ chỉ số này trở đi: các ước tính của nó và các lần bảo dưỡng đến hạn theo quãng đường bắt đầu từ đây. Bạn có thể thêm sau từ trang của nó."
 
 msgid "Label photos go on <0>{0}</0>"
 msgstr "Ảnh nhãn được gắn lên <0>{0}</0>"
@@ -11589,8 +11589,8 @@ msgstr "Chưa có lần bảo dưỡng nào"
 msgid "Nothing on this phone has a meter yet"
 msgstr "Chưa có đồ vật nào trên điện thoại này có đồng hồ"
 
-msgid "Open Kept once while online, so this phone has your things and their meters."
-msgstr "Mở Kept một lần khi có mạng, để điện thoại này có các đồ vật của bạn và đồng hồ của chúng."
+msgid "Open SheepKeep once while online, so this phone has your things and their meters."
+msgstr "Mở SheepKeep một lần khi có mạng, để điện thoại này có các đồ vật của bạn và đồng hồ của chúng."
 
 msgid "Optional. It joins the meter's proof photos."
 msgstr "Không bắt buộc. Ảnh sẽ được thêm vào các ảnh bằng chứng của đồng hồ."
@@ -11730,8 +11730,8 @@ msgstr "Các bản xuất trước đây vẫn còn giữ nó."
 msgid "Its values show to everyone who can see the thing, and history keeps them from now on."
 msgstr "Các giá trị của nó hiển thị với mọi người có thể xem đồ vật, và lịch sử sẽ giữ chúng từ nay trở đi."
 
-msgid "Secrets are values Kept must be able to recover. Save the recovery kit on the status page, then make the field secret again."
-msgstr "Các bí mật là những giá trị Kept phải có thể khôi phục. Hãy lưu bộ khôi phục trên trang trạng thái, rồi đặt trường thành bí mật lại."
+msgid "Secrets are values SheepKeep must be able to recover. Save the recovery kit on the status page, then make the field secret again."
+msgstr "Các bí mật là những giá trị SheepKeep phải có thể khôi phục. Hãy lưu bộ khôi phục trên trang trạng thái, rồi đặt trường thành bí mật lại."
 
 msgid "The person who runs this server needs to save the recovery kit before secrets can be kept. Ask them, then make the field secret again."
 msgstr "Người vận hành máy chủ này cần lưu bộ khôi phục trước khi có thể giữ các bí mật. Hãy hỏi họ, rồi đặt trường thành bí mật lại."
@@ -11850,11 +11850,11 @@ msgstr "giữ ít nhất {minText}"
 msgid "Set a minimum"
 msgstr "Đặt mức tối thiểu"
 
-msgid "No minimum. Set one and Kept lists it as low when fewer are left."
-msgstr "Chưa có mức tối thiểu. Đặt một mức và Kept sẽ liệt kê là sắp hết khi số còn lại ít hơn."
+msgid "No minimum. Set one and SheepKeep lists it as low when fewer are left."
+msgstr "Chưa có mức tối thiểu. Đặt một mức và SheepKeep sẽ liệt kê là sắp hết khi số còn lại ít hơn."
 
-msgid "One file per location: everything in it, the original photos and documents, and a copy you can read without Kept. Import it into this Kept or another one."
-msgstr "Một tệp cho mỗi địa điểm: mọi thứ trong đó, ảnh và tài liệu gốc, cùng một bản sao mà bạn có thể đọc mà không cần Kept. Nhập nó vào Kept này hoặc một Kept khác."
+msgid "One file per location: everything in it, the original photos and documents, and a copy you can read without SheepKeep. Import it into this SheepKeep or another one."
+msgstr "Một tệp cho mỗi địa điểm: mọi thứ trong đó, ảnh và tài liệu gốc, cùng một bản sao mà bạn có thể đọc mà không cần SheepKeep. Nhập nó vào SheepKeep này hoặc một SheepKeep khác."
 
 msgid "Export a location"
 msgstr "Xuất một địa điểm"
@@ -11862,8 +11862,8 @@ msgstr "Xuất một địa điểm"
 msgid "Export my data"
 msgstr "Xuất dữ liệu của tôi"
 
-msgid "Each download link is made when you click Download and lasts 5 minutes; Kept checks you're still an owner or admin every time. Exports are kept 7 days."
-msgstr "Mỗi liên kết tải xuống được tạo khi bạn nhấn Tải xuống và có hiệu lực 5 phút; Kept kiểm tra bạn vẫn là chủ sở hữu hoặc quản trị viên mỗi lần. Các bản xuất được giữ 7 ngày."
+msgid "Each download link is made when you click Download and lasts 5 minutes; SheepKeep checks you're still an owner or admin every time. Exports are kept 7 days."
+msgstr "Mỗi liên kết tải xuống được tạo khi bạn nhấn Tải xuống và có hiệu lực 5 phút; SheepKeep kiểm tra bạn vẫn là chủ sở hữu hoặc quản trị viên mỗi lần. Các bản xuất được giữ 7 ngày."
 
 msgid "Your data"
 msgstr "Dữ liệu của bạn"
@@ -11874,14 +11874,14 @@ msgstr "Trước tiên, hãy chọn nơi nhập nó vào."
 msgid "Someone changed this import in the meantime. It has been reloaded; check it and try again."
 msgstr "Ai đó đã thay đổi lần nhập này trong lúc đó. Nó đã được tải lại; hãy kiểm tra và thử lại."
 
-msgid "Kept can't read this archive"
-msgstr "Kept không đọc được tệp nén này"
+msgid "SheepKeep can't read this archive"
+msgstr "SheepKeep không đọc được tệp nén này"
 
 msgid "Nothing was imported"
 msgstr "Không có gì được nhập"
 
-msgid "It isn't an export Kept can read. Export it again and try once more."
-msgstr "Đây không phải bản xuất mà Kept có thể đọc. Hãy xuất lại và thử một lần nữa."
+msgid "It isn't an export SheepKeep can read. Export it again and try once more."
+msgstr "Đây không phải bản xuất mà SheepKeep có thể đọc. Hãy xuất lại và thử một lần nữa."
 
 msgid "Choose another file"
 msgstr "Chọn tệp khác"
@@ -12081,8 +12081,8 @@ msgstr "Từ kết nối tới Homebox. Chọn đơn vị khác chỉ đổi nh�
 msgid "Homebox's export has no currency. Choosing one relabels the amounts; it doesn't convert them."
 msgstr "Bản xuất của Homebox không có đơn vị tiền tệ. Chọn một đơn vị chỉ đổi nhãn cho các số tiền; nó không quy đổi chúng."
 
-msgid "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in Kept. An instance admin can turn it on in Admin → Currencies."
-msgstr "Đơn vị tiền tệ của Homebox, <0>{fromConnection}</0>, chưa được bật trong Kept. Quản trị viên máy chủ có thể bật nó trong Quản trị → Tiền tệ."
+msgid "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in SheepKeep. An instance admin can turn it on in Admin → Currencies."
+msgstr "Đơn vị tiền tệ của Homebox, <0>{fromConnection}</0>, chưa được bật trong SheepKeep. Quản trị viên máy chủ có thể bật nó trong Quản trị → Tiền tệ."
 
 msgid "This location counts in <0>{locationCurrency}</0>; prices in another currency are kept as they are."
 msgstr "Địa điểm này tính bằng <0>{locationCurrency}</0>; giá bằng đơn vị tiền tệ khác được giữ nguyên."
@@ -12123,8 +12123,8 @@ msgstr "Thêm vào loại"
 msgid "Keep in notes"
 msgstr "Giữ trong ghi chú"
 
-msgid "Homebox's types are matched to Kept's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
-msgstr "Các loại của Homebox được khớp với loại của Kept theo tên, và các trường tùy chỉnh của nó được thêm vào các loại của chúng. Việc kiểm tra cho thấy điều đó làm gì trước khi bất cứ thứ gì được nhập."
+msgid "Homebox's types are matched to SheepKeep's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
+msgstr "Các loại của Homebox được khớp với loại của SheepKeep theo tên, và các trường tùy chỉnh của nó được thêm vào các loại của chúng. Việc kiểm tra cho thấy điều đó làm gì trước khi bất cứ thứ gì được nhập."
 
 msgid "number"
 msgstr "số"
@@ -12138,8 +12138,8 @@ msgstr "ngày"
 msgid "text"
 msgstr "văn bản"
 
-msgid "A Kept type"
-msgstr "Một loại Kept"
+msgid "A SheepKeep type"
+msgstr "Một loại SheepKeep"
 
 msgid "Created"
 msgstr "Đã tạo"
@@ -12153,8 +12153,8 @@ msgstr "Tìm kiếm các loại Homebox"
 msgid "{0, plural, one {# item} other {# items}}"
 msgstr "{0, plural, one {# mục} other {# mục}}"
 
-msgid "Kept type for {name}"
-msgstr "Loại Kept cho {name}"
+msgid "SheepKeep type for {name}"
+msgstr "Loại SheepKeep cho {name}"
 
 msgid "Create \"{name}\""
 msgstr "Tạo \"{name}\""
@@ -12225,8 +12225,8 @@ msgstr "Chỉ dùng một lần để đọc Homebox, không bao giờ lưu lạ
 msgid "Couldn't connect"
 msgstr "Không thể kết nối"
 
-msgid "A Kept <0>{0}</0> export{1}{2}"
-msgstr "Một bản xuất Kept <0>{0}</0>{1}{2}"
+msgid "A SheepKeep <0>{0}</0> export{1}{2}"
+msgstr "Một bản xuất SheepKeep <0>{0}</0>{1}{2}"
 
 msgid "{0, plural, one {event in the history} other {events in the history}}"
 msgstr "{0, plural, one {sự kiện trong lịch sử} other {sự kiện trong lịch sử}}"
@@ -12261,23 +12261,23 @@ msgstr "Người cần mời"
 msgid "Nobody is invited by the import: invite each person yourself, with their email."
 msgstr "Quá trình nhập không mời ai cả: tự mời từng người bằng email của họ."
 
-msgid "Not imported: a file type Kept doesn't keep."
-msgstr "Không được nhập: loại tệp mà Kept không giữ."
+msgid "Not imported: a file type SheepKeep doesn't keep."
+msgstr "Không được nhập: loại tệp mà SheepKeep không giữ."
 
 msgid "The file isn't in the archive, so it's left out."
 msgstr "Tệp không có trong bản lưu trữ nên bị bỏ qua."
 
-msgid "The file is larger than Kept takes, so it's left out."
-msgstr "Tệp lớn hơn mức Kept nhận nên bị bỏ qua."
+msgid "The file is larger than SheepKeep takes, so it's left out."
+msgstr "Tệp lớn hơn mức SheepKeep nhận nên bị bỏ qua."
 
-msgid "Not something Kept reads from an export; ignored."
-msgstr "Không phải thứ Kept đọc từ bản xuất; bị bỏ qua."
+msgid "Not something SheepKeep reads from an export; ignored."
+msgstr "Không phải thứ SheepKeep đọc từ bản xuất; bị bỏ qua."
 
 msgid "Archived in Homebox, left out."
 msgstr "Đã lưu trữ trong Homebox, bị bỏ qua."
 
-msgid "Counted one by one in Kept; Homebox's quantity is kept in the notes."
-msgstr "Đếm từng cái một trong Kept; số lượng của Homebox được giữ trong ghi chú."
+msgid "Counted one by one in SheepKeep; Homebox's quantity is kept in the notes."
+msgstr "Đếm từng cái một trong SheepKeep; số lượng của Homebox được giữ trong ghi chú."
 
 msgid "Quantity 0 became 1: Homebox gives 0 when none was set."
 msgstr "Số lượng 0 thành 1: Homebox cho ra 0 khi không đặt số lượng nào."
@@ -12285,17 +12285,17 @@ msgstr "Số lượng 0 thành 1: Homebox cho ra 0 khi không đặt số lượ
 msgid "Homebox keeps numbers whole, so any decimals were already lost there."
 msgstr "Homebox chỉ giữ số nguyên nên mọi số thập phân đã mất ở đó rồi."
 
-msgid "Kept has no icon like Homebox's; the type's own icon is used."
-msgstr "Kept không có biểu tượng giống của Homebox; biểu tượng riêng của loại được dùng."
+msgid "SheepKeep has no icon like Homebox's; the type's own icon is used."
+msgstr "SheepKeep không có biểu tượng giống của Homebox; biểu tượng riêng của loại được dùng."
 
-msgid "A Kept template can't hold money or secrets; the rest of the template is imported."
-msgstr "Mẫu Kept không chứa được tiền hay bí mật; phần còn lại của mẫu được nhập."
+msgid "A SheepKeep template can't hold money or secrets; the rest of the template is imported."
+msgstr "Mẫu SheepKeep không chứa được tiền hay bí mật; phần còn lại của mẫu được nhập."
 
-msgid "This currency isn't turned on in Kept; the prices are kept in the notes."
-msgstr "Đơn vị tiền tệ này chưa bật trong Kept; giá được giữ trong ghi chú."
+msgid "This currency isn't turned on in SheepKeep; the prices are kept in the notes."
+msgstr "Đơn vị tiền tệ này chưa bật trong SheepKeep; giá được giữ trong ghi chú."
 
-msgid "Kept can't hold this record yet; its text is kept in the thing's notes."
-msgstr "Kept chưa chứa được bản ghi này; văn bản của nó được giữ trong ghi chú của đồ vật."
+msgid "SheepKeep can't hold this record yet; its text is kept in the thing's notes."
+msgstr "SheepKeep chưa chứa được bản ghi này; văn bản của nó được giữ trong ghi chú của đồ vật."
 
 msgid "A location inside an item became a container."
 msgstr "Một địa điểm bên trong một mục trở thành một vật chứa."
@@ -12330,11 +12330,11 @@ msgstr "Hai trong các tệp của nó trùng tên."
 msgid "It's incomplete: the download or the copy stopped before the end."
 msgstr "Nó chưa đầy đủ: quá trình tải xuống hoặc sao chép đã dừng trước khi xong."
 
-msgid "It's from a newer version than this Kept reads. Update Kept, then import it."
-msgstr "Nó thuộc phiên bản mới hơn phiên bản Kept này đọc được. Cập nhật Kept rồi nhập nó."
+msgid "It's from a newer version than this SheepKeep reads. Update SheepKeep, then import it."
+msgstr "Nó thuộc phiên bản mới hơn phiên bản SheepKeep này đọc được. Cập nhật SheepKeep rồi nhập nó."
 
-msgid "It's protected with a ZIP password, which Kept can't open. Export it again without one."
-msgstr "Nó được bảo vệ bằng mật khẩu ZIP mà Kept không mở được. Xuất lại mà không dùng mật khẩu."
+msgid "It's protected with a ZIP password, which SheepKeep can't open. Export it again without one."
+msgstr "Nó được bảo vệ bằng mật khẩu ZIP mà SheepKeep không mở được. Xuất lại mà không dùng mật khẩu."
 
 msgid "One of its data files is too large to read."
 msgstr "Một trong các tệp dữ liệu của nó quá lớn để đọc."
@@ -12351,8 +12351,8 @@ msgstr "Homebox v0.26 trở lên: Cài đặt bộ sưu tập → Xuất. Cũ h�
 msgid "A Kept export"
 msgstr "Một bản xuất Kept"
 
-msgid "A location exported from this Kept or another one. It comes in as a new location."
-msgstr "Một địa điểm xuất từ Kept này hoặc Kept khác. Nó được nhập thành một địa điểm mới."
+msgid "A location exported from this SheepKeep or another one. It comes in as a new location."
+msgstr "Một địa điểm xuất từ SheepKeep này hoặc SheepKeep khác. Nó được nhập thành một địa điểm mới."
 
 msgid "Give the new location a name."
 msgstr "Đặt tên cho địa điểm mới."
@@ -12471,8 +12471,8 @@ msgstr "Đồ vật đã kết thúc (đã bán, đã cho đi, đã vứt bỏ)"
 msgid "Things in the Trash"
 msgstr "Đồ vật trong Thùng rác"
 
-msgid "A copy you can read without Kept"
-msgstr "Một bản sao bạn có thể đọc mà không cần Kept"
+msgid "A copy you can read without SheepKeep"
+msgstr "Một bản sao bạn có thể đọc mà không cần SheepKeep"
 
 msgid "with the inventory PDF"
 msgstr "kèm PDF danh sách đồ vật"
@@ -12489,8 +12489,8 @@ msgstr "Bao gồm bí mật"
 msgid "Encrypted with a passphrase you choose. The readable copy never holds them."
 msgstr "Được mã hóa bằng cụm mật khẩu do bạn chọn. Bản sao đọc được không bao giờ chứa chúng."
 
-msgid "Anyone with this file and the passphrase can read every secret in it. Kept can't recover a forgotten passphrase."
-msgstr "Bất kỳ ai có tệp này và cụm mật khẩu đều có thể đọc mọi bí mật trong đó. Kept không thể khôi phục cụm mật khẩu đã quên."
+msgid "Anyone with this file and the passphrase can read every secret in it. SheepKeep can't recover a forgotten passphrase."
+msgstr "Bất kỳ ai có tệp này và cụm mật khẩu đều có thể đọc mọi bí mật trong đó. SheepKeep không thể khôi phục cụm mật khẩu đã quên."
 
 msgid "Export <0>{name}</0>"
 msgstr "Xuất <0>{name}</0>"
@@ -12525,8 +12525,8 @@ msgstr "Một bản xuất của địa điểm này đang chạy."
 msgid "Five exports an hour at most. Try again a little later."
 msgstr "Tối đa năm bản xuất mỗi giờ. Hãy thử lại sau một lát."
 
-msgid "Secrets leave Kept only once the recovery kit is saved. An instance admin saves it from the status page."
-msgstr "Bí mật chỉ rời khỏi Kept khi bộ khôi phục đã được lưu. Quản trị viên máy chủ lưu nó từ trang trạng thái."
+msgid "Secrets leave SheepKeep only once the recovery kit is saved. An instance admin saves it from the status page."
+msgstr "Bí mật chỉ rời khỏi SheepKeep khi bộ khôi phục đã được lưu. Quản trị viên máy chủ lưu nó từ trang trạng thái."
 
 msgid "Use a passphrase of at least 12 characters, the same both times."
 msgstr "Dùng cụm mật khẩu ít nhất 12 ký tự, giống nhau cả hai lần."
@@ -12630,8 +12630,8 @@ msgstr "{name} hết hôm nay"
 msgid "{name}, {unit}"
 msgstr "{name}, {unit}"
 
-msgid "A car, a motorbike or a generator: Kept keeps its odometer, what's due, fuel and running costs."
-msgstr "Ô tô, xe máy hay máy phát điện: Kept theo dõi đồng hồ công-tơ-mét, những gì đến hạn, nhiên liệu và chi phí vận hành của chúng."
+msgid "A car, a motorbike or a generator: SheepKeep keeps its odometer, what's due, fuel and running costs."
+msgstr "Ô tô, xe máy hay máy phát điện: SheepKeep theo dõi đồng hồ công-tơ-mét, những gì đến hạn, nhiên liệu và chi phí vận hành của chúng."
 
 msgid "Accepted"
 msgstr "Đã chấp nhận"
@@ -12897,8 +12897,8 @@ msgstr "{got} trên {size}"
 msgid "{label}: {plain}"
 msgstr "{label}: {plain}"
 
-msgid "{name} can't reach your Kept any more"
-msgstr "{name} không còn kết nối được tới Kept của bạn nữa"
+msgid "{name} can't reach your SheepKeep any more"
+msgstr "{name} không còn kết nối được tới SheepKeep của bạn nữa"
 
 msgid "{scope} · <0>{where}</0> · allowed {granted} · not used yet"
 msgstr "{scope} · <0>{where}</0> · đã cấp {granted} · chưa dùng lần nào"
@@ -12918,11 +12918,11 @@ msgstr "{scope} · <0>{where}</0> · chưa dùng lần nào"
 msgid "{scope} · <0>{where}</0> · used {used}"
 msgstr "{scope} · <0>{where}</0> · đã dùng {used}"
 
-msgid "<0>{name}</0> wants to use your Kept"
-msgstr "<0>{name}</0> muốn dùng Kept của bạn"
+msgid "<0>{name}</0> wants to use your SheepKeep"
+msgstr "<0>{name}</0> muốn dùng SheepKeep của bạn"
 
-msgid "<0>{who}</0> hasn't confirmed your email address, so Kept can't use it. Confirm it there, then try again."
-msgstr "<0>{who}</0> chưa xác nhận địa chỉ email của bạn, nên Kept không dùng được địa chỉ đó. Hãy xác nhận ở đó, rồi thử lại."
+msgid "<0>{who}</0> hasn't confirmed your email address, so SheepKeep can't use it. Confirm it there, then try again."
+msgstr "<0>{who}</0> chưa xác nhận địa chỉ email của bạn, nên SheepKeep không dùng được địa chỉ đó. Hãy xác nhận ở đó, rồi thử lại."
 
 msgid "~{0} tokens"
 msgstr "~{0} token"
@@ -12936,8 +12936,8 @@ msgstr "Một chỉ số đồng hồ được ghi"
 msgid "A reminder is due"
 msgstr "Một lời nhắc đến hạn"
 
-msgid "A Shortcut that asks for the reading and sends it to Kept with a token."
-msgstr "Một Phím tắt hỏi chỉ số rồi gửi tới Kept bằng token."
+msgid "A Shortcut that asks for the reading and sends it to SheepKeep with a token."
+msgstr "Một Phím tắt hỏi chỉ số rồi gửi tới SheepKeep bằng token."
 
 msgid "A signed message to your own server when things change here. It carries ids and the names of changed fields, never names, places or values."
 msgstr "Một thông điệp đã ký gửi tới máy chủ của bạn khi đồ vật thay đổi ở đây. Nó chỉ mang id và tên các trường đã đổi, không bao giờ mang tên, vị trí hay giá trị."
@@ -12978,8 +12978,8 @@ msgstr "Thêm một webhook để báo cho máy chủ nhà, Home Assistant hoặ
 msgid "Add webhook"
 msgstr "Thêm webhook"
 
-msgid "Add your car to Kept with an odometer reading first; its address appears here then."
-msgstr "Thêm xe của bạn vào Kept với chỉ số đồng hồ công-tơ-mét trước; địa chỉ của nó sẽ hiện ở đây sau đó."
+msgid "Add your car to SheepKeep with an odometer reading first; its address appears here then."
+msgstr "Thêm xe của bạn vào SheepKeep với chỉ số đồng hồ công-tơ-mét trước; địa chỉ của nó sẽ hiện ở đây sau đó."
 
 msgid "Added by <0>{0}</0>"
 msgstr "Được thêm bởi <0>{0}</0>"
@@ -13038,8 +13038,8 @@ msgstr "Sao chép tiêu đề"
 msgid "Copy it now. You won't see it again; rotate it if it's lost."
 msgstr "Sao chép ngay. Bạn sẽ không thấy lại nó nữa; hãy thay mới nó nếu bị mất."
 
-msgid "Copy it now. You won't see this again: Kept keeps only a fingerprint of it."
-msgstr "Sao chép ngay. Bạn sẽ không thấy lại nó nữa: Kept chỉ giữ dấu vân tay của nó."
+msgid "Copy it now. You won't see this again: SheepKeep keeps only a fingerprint of it."
+msgstr "Sao chép ngay. Bạn sẽ không thấy lại nó nữa: SheepKeep chỉ giữ dấu vân tay của nó."
 
 msgid "Copy secret"
 msgstr "Sao chép mã bí mật"
@@ -13110,8 +13110,8 @@ msgstr "Tìm đồ vật và thêm, di chuyển hoặc thay đổi chúng. Khôn
 msgid "Find things and read what's recorded. No changes, no secret fields."
 msgstr "Tìm đồ vật và đọc những gì đã ghi lại. Không thay đổi, không trường bí mật."
 
-msgid "Fix it, then restart Kept. Everything else works meanwhile."
-msgstr "Sửa nó, rồi khởi động lại Kept. Mọi thứ khác vẫn hoạt động trong lúc đó."
+msgid "Fix it, then restart SheepKeep. Everything else works meanwhile."
+msgstr "Sửa nó, rồi khởi động lại SheepKeep. Mọi thứ khác vẫn hoạt động trong lúc đó."
 
 msgid "Gave up"
 msgstr "Đã ngừng thử lại"
@@ -13131,29 +13131,29 @@ msgstr "Đã lập chỉ mục {indexed} trên {total} đồ vật"
 msgid "Issuer"
 msgstr "Nhà phát hành"
 
-msgid "It stops reaching your Kept at once. To use it again, connect it again from the app."
-msgstr "Nó sẽ ngừng truy cập Kept của bạn ngay lập tức. Để dùng lại, hãy kết nối lại từ ứng dụng."
+msgid "It stops reaching your SheepKeep at once. To use it again, connect it again from the app."
+msgstr "Nó sẽ ngừng truy cập SheepKeep của bạn ngay lập tức. Để dùng lại, hãy kết nối lại từ ứng dụng."
 
 msgid "Join with <0>{oidcName}</0>"
 msgstr "Tham gia bằng <0>{oidcName}</0>"
 
-msgid "Kept downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
-msgstr "Kept tải mô hình một lần ({size}) và chạy nó trên máy chủ này: không cần khóa, không tính phí theo mỗi lần gọi. Mọi thứ được lập chỉ mục lại bằng nó."
+msgid "SheepKeep downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
+msgstr "SheepKeep tải mô hình một lần ({size}) và chạy nó trên máy chủ này: không cần khóa, không tính phí theo mỗi lần gọi. Mọi thứ được lập chỉ mục lại bằng nó."
 
-msgid "Kept needs an address that can receive mail for an account."
-msgstr "Kept cần một địa chỉ có thể nhận thư cho tài khoản."
+msgid "SheepKeep needs an address that can receive mail for an account."
+msgstr "SheepKeep cần một địa chỉ có thể nhận thư cho tài khoản."
 
-msgid "Kept never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
-msgstr "Kept không bao giờ khớp tài khoản theo email. Nếu bạn mới ở đây, hãy mở lời mời ai đó đã gửi cho bạn và tham gia bằng <0>{who}</0> từ đó. Nếu bạn đã có tài khoản, hãy đăng nhập bằng cách khác."
+msgid "SheepKeep never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
+msgstr "SheepKeep không bao giờ khớp tài khoản theo email. Nếu bạn mới ở đây, hãy mở lời mời ai đó đã gửi cho bạn và tham gia bằng <0>{who}</0> từ đó. Nếu bạn đã có tài khoản, hãy đăng nhập bằng cách khác."
 
-msgid "Kept runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
-msgstr "Kept chạy mô hình trên máy chủ này: không cần khóa, không tính phí theo mỗi lần gọi. Mọi thứ được lập chỉ mục lại bằng nó."
+msgid "SheepKeep runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
+msgstr "SheepKeep chạy mô hình trên máy chủ này: không cần khóa, không tính phí theo mỗi lần gọi. Mọi thứ được lập chỉ mục lại bằng nó."
 
-msgid "Kept signs every delivery with this secret, so your server can tell it came from Kept."
-msgstr "Kept ký mọi lần gửi bằng mã bí mật này, để máy chủ của bạn biết nó đến từ Kept."
+msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
+msgstr "SheepKeep ký mọi lần gửi bằng mã bí mật này, để máy chủ của bạn biết nó đến từ SheepKeep."
 
-msgid "Kept stops sending to it, and its deliveries are forgotten."
-msgstr "Kept ngừng gửi tới nó, và lịch sử gửi của nó bị xóa."
+msgid "SheepKeep stops sending to it, and its deliveries are forgotten."
+msgstr "SheepKeep ngừng gửi tới nó, và lịch sử gửi của nó bị xóa."
 
 msgid "Keyword only (semantic search is off on this server)"
 msgstr "Chỉ từ khóa (tìm kiếm ngữ nghĩa đang tắt trên máy chủ này)"
@@ -13215,8 +13215,8 @@ msgstr "Webhook mới"
 msgid "No changes by connections"
 msgstr "Không có thay đổi nào từ các kết nối"
 
-msgid "No Kept account uses that sign-in yet"
-msgstr "Chưa có tài khoản Kept nào dùng cách đăng nhập đó"
+msgid "No SheepKeep account uses that sign-in yet"
+msgstr "Chưa có tài khoản SheepKeep nào dùng cách đăng nhập đó"
 
 msgid "No tokens yet"
 msgstr "Chưa có token nào"
@@ -13338,8 +13338,8 @@ msgstr "Gửi tới {0}"
 msgid "Server address"
 msgstr "Địa chỉ máy chủ"
 
-msgid "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart Kept."
-msgstr "Đặt <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> và <2>KEPT_OIDC_CLIENT_SECRET</2>, rồi khởi động lại Kept."
+msgid "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart SheepKeep."
+msgstr "Đặt <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> và <2>KEPT_OIDC_CLIENT_SECRET</2>, rồi khởi động lại SheepKeep."
 
 msgid "Set Request Body to JSON with two text fields: <0>value</0>, the number you typed, and <1>takenAt</1>, the Current Date formatted as ISO 8601 with the time."
 msgstr "Đặt Nội dung yêu cầu thành JSON với hai trường văn bản: <0>value</0>, con số bạn đã nhập, và <1>takenAt</1>, Ngày hiện tại được định dạng theo ISO 8601 kèm giờ."
@@ -13353,8 +13353,8 @@ msgstr "Đăng nhập bằng <0>{name}</0>"
 msgid "Sign-in with OIDC"
 msgstr "Đăng nhập bằng OIDC"
 
-msgid "Signing in this way reaches only an account already linked to it, or someone invited here. Kept never joins accounts because their emails match."
-msgstr "Đăng nhập theo cách này chỉ tới được một tài khoản đã liên kết với nó, hoặc người được mời tại đây. Kept không bao giờ gộp tài khoản chỉ vì email của chúng trùng nhau."
+msgid "Signing in this way reaches only an account already linked to it, or someone invited here. SheepKeep never joins accounts because their emails match."
+msgstr "Đăng nhập theo cách này chỉ tới được một tài khoản đã liên kết với nó, hoặc người được mời tại đây. SheepKeep không bao giờ gộp tài khoản chỉ vì email của chúng trùng nhau."
 
 msgid "Signing in with <0>{who}</0> didn't work"
 msgstr "Đăng nhập bằng <0>{who}</0> không thành công"
@@ -13365,8 +13365,8 @@ msgstr "Mã bí mật ký"
 msgid "Start connecting again from the app."
 msgstr "Bắt đầu kết nối lại từ ứng dụng."
 
-msgid "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in Kept, with undo, as if you'd logged it here."
-msgstr "Chạm vào Phím tắt tại trạm xăng hoặc trong bãi đỗ xe, nhập đồng hồ công-tơ-mét, và chỉ số sẽ có trong Kept, kèm hoàn tác, như thể bạn đã ghi lại tại đây."
+msgid "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in SheepKeep, with undo, as if you'd logged it here."
+msgstr "Chạm vào Phím tắt tại trạm xăng hoặc trong bãi đỗ xe, nhập đồng hồ công-tơ-mét, và chỉ số sẽ có trong SheepKeep, kèm hoàn tác, như thể bạn đã ghi lại tại đây."
 
 msgid "Tell your own server when things change here."
 msgstr "Báo cho máy chủ của riêng bạn khi đồ vật thay đổi tại đây."
@@ -13380,8 +13380,8 @@ msgstr "Địa chỉ đó nằm trên mạng riêng, mà máy chủ này không 
 msgid "That email address can't be used"
 msgstr "Không thể dùng địa chỉ email đó"
 
-msgid "That's the name the app gives itself. Kept can't confirm who made it."
-msgstr "Đó là tên mà ứng dụng tự đặt cho mình. Kept không thể xác nhận ai đã tạo ra nó."
+msgid "That's the name the app gives itself. SheepKeep can't confirm who made it."
+msgstr "Đó là tên mà ứng dụng tự đặt cho mình. SheepKeep không thể xác nhận ai đã tạo ra nó."
 
 msgid "The app could move what it finds in one into another, so people in one could see what came from the other. Connect it to one location unless you mean that."
 msgstr "Ứng dụng có thể chuyển những gì nó tìm thấy ở một nơi sang nơi khác, nên người ở một nơi có thể thấy những gì đến từ nơi kia. Chỉ kết nối nó với một địa điểm trừ khi bạn thực sự muốn vậy."
@@ -13404,8 +13404,8 @@ msgstr "Mô hình cục bộ chưa được cài đặt trên máy chủ này, n
 msgid "The old secret stopped working. Put this one on your server; every delivery from now on is signed with it."
 msgstr "Khóa cũ đã ngừng hoạt động. Đặt khóa này lên máy chủ của bạn; mọi lần gửi từ nay sẽ được ký bằng nó."
 
-msgid "The provider couldn't be reached when Kept started."
-msgstr "Không thể liên hệ được với nhà cung cấp khi Kept khởi động."
+msgid "The provider couldn't be reached when SheepKeep started."
+msgstr "Không thể liên hệ được với nhà cung cấp khi SheepKeep khởi động."
 
 msgid "The provider says it's a different issuer from KEPT_OIDC_ISSUER."
 msgstr "Nhà cung cấp cho biết đó là một nhà phát hành khác với KEPT_OIDC_ISSUER."
@@ -13425,8 +13425,8 @@ msgstr "Chưa có tài khoản nào cho bạn tại đây"
 msgid "Things indexed for search"
 msgstr "Đồ vật đã lập chỉ mục để tìm kiếm"
 
-msgid "This Kept lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
-msgstr "Kept này chỉ cho người vào bằng lời mời. Hãy nhờ một người đang dùng nó mời bạn, rồi tham gia từ liên kết mời."
+msgid "This SheepKeep lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
+msgstr "SheepKeep này chỉ cho người vào bằng lời mời. Hãy nhờ một người đang dùng nó mời bạn, rồi tham gia từ liên kết mời."
 
 msgid "This request isn't valid any more"
 msgstr "Yêu cầu này không còn hợp lệ nữa"
@@ -13506,8 +13506,8 @@ msgstr "Token mới của bạn"
 msgid "Your server didn't answer"
 msgstr "Máy chủ của bạn không trả lời"
 
-msgid "Your server's address. Kept sends a signed POST there."
-msgstr "Địa chỉ máy chủ của bạn. Kept gửi một yêu cầu POST đã ký tới đó."
+msgid "Your server's address. SheepKeep sends a signed POST there."
+msgstr "Địa chỉ máy chủ của bạn. SheepKeep gửi một yêu cầu POST đã ký tới đó."
 
 msgid "Delete this thread"
 msgstr "Xóa cuộc trò chuyện này"
@@ -13545,8 +13545,8 @@ msgstr "Đọc chính tả (mic)"
 msgid "Ask the assistant about “{0}”"
 msgstr "Hỏi trợ lý về “{0}”"
 
-msgid "Kept can't use the microphone"
-msgstr "Kept không thể dùng mic"
+msgid "SheepKeep can't use the microphone"
+msgstr "SheepKeep không thể dùng mic"
 
 msgid "Allow it in the browser's settings, or type instead."
 msgstr "Cho phép trong cài đặt của trình duyệt, hoặc gõ thay vào đó."
@@ -13665,8 +13665,8 @@ msgstr "{count} ×"
 msgid "{count} of {total} ×"
 msgstr "{count} trên {total} ×"
 
-msgid "Something Kept can't name"
-msgstr "Thứ Kept không gọi tên được"
+msgid "Something SheepKeep can't name"
+msgstr "Thứ SheepKeep không gọi tên được"
 
 msgid "Include: {0} {1}"
 msgstr "Bao gồm: {0} {1}"
@@ -13710,8 +13710,8 @@ msgstr "{n, plural, one {Xác nhận # thay đổi} other {Xác nhận # thay đ
 msgid "Only ticked rows are saved"
 msgstr "Chỉ các hàng đã chọn mới được lưu"
 
-msgid "Changes for you to confirm, drawn by Kept"
-msgstr "Các thay đổi để bạn xác nhận, do Kept soạn"
+msgid "Changes for you to confirm, drawn by SheepKeep"
+msgstr "Các thay đổi để bạn xác nhận, do SheepKeep soạn"
 
 msgid "Time left to confirm"
 msgstr "Thời gian còn lại để xác nhận"
@@ -13758,8 +13758,8 @@ msgstr "Cuộc trò chuyện này chỉ riêng bạn"
 msgid "Viewers can ask; changes need an admin"
 msgstr "Người xem có thể hỏi; thay đổi cần quản trị viên"
 
-msgid "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card Kept shows you."
-msgstr "Hỏi đồ vật ở đâu hay sắp đến hạn gì, hoặc yêu cầu thay đổi. Không gì thay đổi cho đến khi bạn xác nhận thẻ Kept hiển thị cho bạn."
+msgid "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card SheepKeep shows you."
+msgstr "Hỏi đồ vật ở đâu hay sắp đến hạn gì, hoặc yêu cầu thay đổi. Không gì thay đổi cho đến khi bạn xác nhận thẻ SheepKeep hiển thị cho bạn."
 
 msgid "Say or type a list, like “in the garage I have a drill, a ladder and two paint cans”, and add them all with one Confirm."
 msgstr "Nói hoặc gõ một danh sách, ví dụ “trong gara tôi có một máy khoan, một cái thang và hai lon sơn”, rồi thêm tất cả chỉ bằng một lần Xác nhận."
@@ -13828,8 +13828,8 @@ msgctxt "disk"
 msgid "Backups"
 msgstr "Sao lưu"
 
-msgid "Lock Kept on this device"
-msgstr "Khóa Kept trên thiết bị này"
+msgid "Lock SheepKeep on this device"
+msgstr "Khóa SheepKeep trên thiết bị này"
 
 msgid "Issued on"
 msgstr "Ngày cấp"
@@ -13846,11 +13846,11 @@ msgstr "Đã xóa lần đổ nhiên liệu"
 msgid "Starter schedules added"
 msgstr "Đã thêm lịch trình khởi đầu"
 
-msgid "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; Kept nudges you at # day.} other {A fresh one keeps ~{next} honest; Kept nudges you at # days.}}"
-msgstr "{nudgeDays, plural, one {Một chỉ số mới giúp ~{next} chính xác; Kept nhắc bạn sau # ngày.} other {Một chỉ số mới giúp ~{next} chính xác; Kept nhắc bạn sau # ngày.}}"
+msgid "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; SheepKeep nudges you at # day.} other {A fresh one keeps ~{next} honest; SheepKeep nudges you at # days.}}"
+msgstr "{nudgeDays, plural, one {Một chỉ số mới giúp ~{next} chính xác; SheepKeep nhắc bạn sau # ngày.} other {Một chỉ số mới giúp ~{next} chính xác; SheepKeep nhắc bạn sau # ngày.}}"
 
-msgid "{nudgeDays, plural, one {Kept nudges you at # day.} other {Kept nudges you at # days.}}"
-msgstr "{nudgeDays, plural, one {Kept nhắc bạn sau # ngày.} other {Kept nhắc bạn sau # ngày.}}"
+msgid "{nudgeDays, plural, one {SheepKeep nudges you at # day.} other {SheepKeep nudges you at # days.}}"
+msgstr "{nudgeDays, plural, one {SheepKeep nhắc bạn sau # ngày.} other {SheepKeep nhắc bạn sau # ngày.}}"
 
 msgid "A location's webhook keeps failing"
 msgstr "Webhook của một địa điểm liên tục lỗi"
@@ -13891,8 +13891,8 @@ msgstr "Tải bộ khôi phục"
 msgid "Download the recovery kit"
 msgstr "Tải xuống bộ khôi phục"
 
-msgid "Everything needed to bring Kept back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
-msgstr "Mọi thứ cần thiết để khôi phục Kept trên máy chủ mới: khóa bí mật, nơi lưu bản sao lưu, mật khẩu và khóa lưu trữ của nó, cùng các bước khôi phục."
+msgid "Everything needed to bring SheepKeep back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
+msgstr "Mọi thứ cần thiết để khôi phục SheepKeep trên máy chủ mới: khóa bí mật, nơi lưu bản sao lưu, mật khẩu và khóa lưu trữ của nó, cùng các bước khôi phục."
 
 msgid "Keep it off this server"
 msgstr "Đừng lưu nó trên máy chủ này"
@@ -13930,8 +13930,8 @@ msgstr "Khóa đã được thay mới hoặc cài đặt sao lưu đã thay đ�
 msgid "Keep the recovery kit somewhere else"
 msgstr "Giữ bộ khôi phục ở nơi khác"
 
-msgid "Kept encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. Kept asks for this before the first secret, AI key or backup."
-msgstr "Kept mã hóa các trường bí mật, khóa AI và mật khẩu sao lưu bằng KEPT_SECRET_KEY. Nếu máy chủ này và khóa của nó bị mất cùng lúc, bản sao lưu vẫn khôi phục được đồ vật của bạn, nhưng không khôi phục được những thứ đó. Hãy tải bộ khôi phục (hoặc in bằng <0>kept admin recovery-kit</0>) và giữ nó ở nơi khác, không phải trên máy chủ này. Kept sẽ hỏi việc này trước bí mật, khóa AI hay bản sao lưu đầu tiên."
+msgid "SheepKeep encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. SheepKeep asks for this before the first secret, AI key or backup."
+msgstr "SheepKeep mã hóa các trường bí mật, khóa AI và mật khẩu sao lưu bằng KEPT_SECRET_KEY. Nếu máy chủ này và khóa của nó bị mất cùng lúc, bản sao lưu vẫn khôi phục được đồ vật của bạn, nhưng không khôi phục được những thứ đó. Hãy tải bộ khôi phục (hoặc in bằng <0>kept admin recovery-kit</0>) và giữ nó ở nơi khác, không phải trên máy chủ này. SheepKeep sẽ hỏi việc này trước bí mật, khóa AI hay bản sao lưu đầu tiên."
 
 msgid "Changed since you downloaded it"
 msgstr "Đã thay đổi kể từ khi bạn tải xuống"
@@ -13972,8 +13972,8 @@ msgstr "Khoảng {0} cần tải xuống"
 msgid "App lock"
 msgstr "Khóa ứng dụng"
 
-msgid "Ask for a PIN when Kept opens and after five minutes away. Keeping a location offline needs it."
-msgstr "Yêu cầu mã PIN khi Kept mở và sau năm phút không dùng. Cần có mã PIN để giữ một địa điểm ngoại tuyến."
+msgid "Ask for a PIN when SheepKeep opens and after five minutes away. Keeping a location offline needs it."
+msgstr "Yêu cầu mã PIN khi SheepKeep mở và sau năm phút không dùng. Cần có mã PIN để giữ một địa điểm ngoại tuyến."
 
 msgid "Change PIN"
 msgstr "Đổi mã PIN"
@@ -14005,8 +14005,8 @@ msgstr "Nhập mã PIN của bạn để mở giá và tài liệu được gi�
 msgid "Face ID"
 msgstr "Face ID"
 
-msgid "Face ID or fingerprint can unlock Kept now"
-msgstr "Giờ đây Face ID hoặc vân tay có thể mở khóa Kept"
+msgid "Face ID or fingerprint can unlock SheepKeep now"
+msgstr "Giờ đây Face ID hoặc vân tay có thể mở khóa SheepKeep"
 
 msgid "Face ID or fingerprint didn’t work. Enter your PIN."
 msgstr "Face ID hoặc vân tay không hoạt động. Hãy nhập mã PIN của bạn."
@@ -14035,20 +14035,20 @@ msgstr "Giữ ngoại tuyến"
 msgid "Keeping {0} offline didn’t finish"
 msgstr "Giữ {0} ngoại tuyến chưa hoàn tất"
 
-msgid "Kept app lock"
-msgstr "Khóa ứng dụng Kept"
+msgid "SheepKeep app lock"
+msgstr "Khóa ứng dụng SheepKeep"
 
-msgid "Kept locks on this device now"
-msgstr "Giờ đây Kept sẽ khóa trên thiết bị này"
+msgid "SheepKeep locks on this device now"
+msgstr "Giờ đây SheepKeep sẽ khóa trên thiết bị này"
 
 msgid "Kept offline is locked behind your PIN."
 msgstr "Kept ngoại tuyến được khóa bằng mã PIN của bạn."
 
-msgid "Kept on this device"
-msgstr "Kept trên thiết bị này"
+msgid "SheepKeep on this device"
+msgstr "SheepKeep trên thiết bị này"
 
-msgid "Lock Kept with a PIN, and keep a location available offline."
-msgstr "Khóa Kept bằng mã PIN và giữ một địa điểm sẵn dùng ngoại tuyến."
+msgid "Lock SheepKeep with a PIN, and keep a location available offline."
+msgstr "Khóa SheepKeep bằng mã PIN và giữ một địa điểm sẵn dùng ngoại tuyến."
 
 msgid "Not available in this browser"
 msgstr "Không khả dụng trong trình duyệt này"
@@ -14056,8 +14056,8 @@ msgstr "Không khả dụng trong trình duyệt này"
 msgid "Now turn on Face ID or fingerprint again"
 msgstr "Bây giờ hãy bật lại Face ID hoặc vân tay"
 
-msgid "On this phone Face ID or fingerprint opens Kept, but prices and documents kept offline still ask for the PIN."
-msgstr "Trên điện thoại này, Face ID hoặc vân tay mở được Kept, nhưng giá và tài liệu giữ ngoại tuyến vẫn yêu cầu mã PIN."
+msgid "On this phone Face ID or fingerprint opens SheepKeep, but prices and documents kept offline still ask for the PIN."
+msgstr "Trên điện thoại này, Face ID hoặc vân tay mở được SheepKeep, nhưng giá và tài liệu giữ ngoại tuyến vẫn yêu cầu mã PIN."
 
 msgid "PIN"
 msgstr "Mã PIN"
@@ -14077,8 +14077,8 @@ msgstr "Không thành công. Hãy thử lại."
 msgid "That is more than this device can keep offline."
 msgstr "Vượt quá mức thiết bị này có thể giữ ngoại tuyến."
 
-msgid "The app lock needs storage this browser doesn’t give Kept."
-msgstr "Khóa ứng dụng cần bộ nhớ mà trình duyệt này không cấp cho Kept."
+msgid "The app lock needs storage this browser doesn’t give SheepKeep."
+msgstr "Khóa ứng dụng cần bộ nhớ mà trình duyệt này không cấp cho SheepKeep."
 
 msgid "The PIN keeps out someone holding this phone. Forgot it? Sign out and sign in again."
 msgstr "Mã PIN ngăn người đang cầm điện thoại này mở Kept. Quên rồi? Hãy đăng xuất rồi đăng nhập lại."
@@ -14113,14 +14113,14 @@ msgstr "đã cập nhật {0}"
 msgid "Use Face ID or fingerprint"
 msgstr "Dùng Face ID hoặc vân tay"
 
-msgid "Whoever unlocks Kept on this phone sees prices and documents for this location."
-msgstr "Bất kỳ ai mở khóa Kept trên điện thoại này cũng thấy giá và tài liệu của địa điểm này."
+msgid "Whoever unlocks SheepKeep on this phone sees prices and documents for this location."
+msgstr "Bất kỳ ai mở khóa SheepKeep trên điện thoại này cũng thấy giá và tài liệu của địa điểm này."
 
-msgid "Whoever unlocks Kept on this phone sees prices and documents for this location. About {0} to download."
-msgstr "Bất kỳ ai mở khóa Kept trên điện thoại này cũng thấy giá và tài liệu của địa điểm này. Khoảng {0} cần tải xuống."
+msgid "Whoever unlocks SheepKeep on this phone sees prices and documents for this location. About {0} to download."
+msgstr "Bất kỳ ai mở khóa SheepKeep trên điện thoại này cũng thấy giá và tài liệu của địa điểm này. Khoảng {0} cần tải xuống."
 
-msgid "Whoever unlocks Kept sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
-msgstr "Bất kỳ ai mở khóa Kept cũng thấy giá và tài liệu của các địa điểm này. Mã PIN chỉ ngăn người đang cầm điện thoại, chứ không ngăn người đã sao chép bộ nhớ của trình duyệt."
+msgid "Whoever unlocks SheepKeep sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
+msgstr "Bất kỳ ai mở khóa SheepKeep cũng thấy giá và tài liệu của các địa điểm này. Mã PIN chỉ ngăn người đang cầm điện thoại, chứ không ngăn người đã sao chép bộ nhớ của trình duyệt."
 
 msgid "Wrong PIN."
 msgstr "Sai mã PIN."
@@ -14158,8 +14158,8 @@ msgstr "Đường dẫn tuyệt đối, hoặc tương đối so với thư mụ
 msgid "Access key ID"
 msgstr "ID khóa truy cập"
 
-msgid "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk Kept's data is on."
-msgstr "Đường dẫn tuyệt đối theo cách máy chủ nhìn thấy: một ổ đĩa khác, hoặc điểm gắn NAS. Không phải ổ đĩa chứa dữ liệu của Kept."
+msgid "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk SheepKeep's data is on."
+msgstr "Đường dẫn tuyệt đối theo cách máy chủ nhìn thấy: một ổ đĩa khác, hoặc điểm gắn NAS. Không phải ổ đĩa chứa dữ liệu của SheepKeep."
 
 msgid "An OpenSSH private key. It replaces the saved key when you save."
 msgstr "Một khóa riêng OpenSSH. Nó sẽ thay thế khóa đã lưu khi bạn lưu."
@@ -14167,8 +14167,8 @@ msgstr "Một khóa riêng OpenSSH. Nó sẽ thay thế khóa đã lưu khi bạ
 msgid "Another run holds the repository. Try again when it finishes."
 msgstr "Một lần chạy khác đang giữ kho lưu trữ. Hãy thử lại khi nó hoàn tất."
 
-msgid "At least 12 characters. Without it nobody can read the backups, Kept included."
-msgstr "Ít nhất 12 ký tự. Không có nó thì không ai đọc được các bản sao lưu, kể cả Kept."
+msgid "At least 12 characters. Without it nobody can read the backups, SheepKeep included."
+msgstr "Ít nhất 12 ký tự. Không có nó thì không ai đọc được các bản sao lưu, kể cả SheepKeep."
 
 msgid "Backup password"
 msgstr "Mật khẩu sao lưu"
@@ -14191,8 +14191,8 @@ msgstr "Các bản sao lưu nằm trên cùng ổ đĩa với dữ liệu của 
 msgid "Backups need a password: no password, no backup."
 msgstr "Sao lưu cần mật khẩu: không có mật khẩu thì không có sao lưu."
 
-msgid "Backups should run every night. Check the runs in Backups, and that Kept's worker is running."
-msgstr "Sao lưu nên chạy mỗi đêm. Hãy kiểm tra các lần chạy trong mục Sao lưu, và xem worker của Kept có đang chạy không."
+msgid "Backups should run every night. Check the runs in Backups, and that SheepKeep's worker is running."
+msgstr "Sao lưu nên chạy mỗi đêm. Hãy kiểm tra các lần chạy trong mục Sao lưu, và xem worker của SheepKeep có đang chạy không."
 
 msgid "Before upgrade"
 msgstr "Trước khi nâng cấp"
@@ -14203,8 +14203,8 @@ msgstr "Bucket"
 msgid "Can't check this build"
 msgstr "Không thể kiểm tra bản build này"
 
-msgid "Change the locked settings in the server's configuration (<0>{0}</0>) and restart Kept."
-msgstr "Hãy thay đổi các cài đặt bị khóa trong cấu hình của máy chủ (<0>{0}</0>) rồi khởi động lại Kept."
+msgid "Change the locked settings in the server's configuration (<0>{0}</0>) and restart SheepKeep."
+msgstr "Hãy thay đổi các cài đặt bị khóa trong cấu hình của máy chủ (<0>{0}</0>) rồi khởi động lại SheepKeep."
 
 msgid "Check for new versions"
 msgstr "Kiểm tra phiên bản mới"
@@ -14278,8 +14278,8 @@ msgstr "Mỗi đêm lúc (UTC)"
 msgid "Every night at <0>{time}</0> UTC, keeping {daily} daily, {weekly} weekly and {monthly} monthly snapshots."
 msgstr "Mỗi đêm lúc <0>{time}</0> UTC, giữ {daily} ảnh chụp nhanh hàng ngày, {weekly} ảnh chụp nhanh hàng tuần và {monthly} ảnh chụp nhanh hàng tháng."
 
-msgid "Every week, Kept checks that every snapshot can be read."
-msgstr "Mỗi tuần, Kept kiểm tra rằng mọi ảnh chụp nhanh đều đọc được."
+msgid "Every week, SheepKeep checks that every snapshot can be read."
+msgstr "Mỗi tuần, SheepKeep kiểm tra rằng mọi ảnh chụp nhanh đều đọc được."
 
 msgid "File bucket versioning"
 msgstr "Phiên bản hóa bucket tệp"
@@ -14296,8 +14296,8 @@ msgstr "Từ kho lưu trữ, {cached}"
 msgid "GitHub shows no published release for this server's source repository. It may be private, or have none yet."
 msgstr "GitHub không hiển thị bản phát hành đã công bố nào cho kho mã nguồn của máy chủ này. Kho có thể là riêng tư, hoặc chưa có bản nào."
 
-msgid "GitHub's answer wasn't what Kept expected. Kept asks again tomorrow."
-msgstr "Câu trả lời của GitHub không như Kept mong đợi. Kept sẽ hỏi lại vào ngày mai."
+msgid "GitHub's answer wasn't what SheepKeep expected. SheepKeep asks again tomorrow."
+msgstr "Câu trả lời của GitHub không như SheepKeep mong đợi. SheepKeep sẽ hỏi lại vào ngày mai."
 
 msgid "GitHub's limit reached"
 msgstr "Đã đạt giới hạn của GitHub"
@@ -14308,26 +14308,26 @@ msgstr "Khóa máy chủ"
 msgid "Keep the saved one"
 msgstr "Giữ lại bản đã lưu"
 
-msgid "Kept {v} is available"
-msgstr "Đã có Kept {v}"
+msgid "SheepKeep {v} is available"
+msgstr "Đã có SheepKeep {v}"
 
-msgid "Kept <0>{version}</0> is available"
-msgstr "Đã có Kept <0>{version}</0>"
+msgid "SheepKeep <0>{version}</0> is available"
+msgstr "Đã có SheepKeep <0>{version}</0>"
 
-msgid "Kept allows one release back. Upgrade again when the problem that made you roll back is fixed."
-msgstr "Kept cho phép quay lại một bản phát hành. Hãy nâng cấp lại khi sự cố khiến bạn quay lại đã được khắc phục."
+msgid "SheepKeep allows one release back. Upgrade again when the problem that made you roll back is fixed."
+msgstr "SheepKeep cho phép quay lại một bản phát hành. Hãy nâng cấp lại khi sự cố khiến bạn quay lại đã được khắc phục."
 
-msgid "Kept checks it with each backup."
-msgstr "Kept kiểm tra nó với mỗi lần sao lưu."
+msgid "SheepKeep checks it with each backup."
+msgstr "SheepKeep kiểm tra nó với mỗi lần sao lưu."
 
-msgid "Kept doesn't ask for new versions. Turn it on in Admin → Sign-up."
-msgstr "Kept không hỏi về phiên bản mới. Bật tính năng này trong Quản trị → Đăng ký."
+msgid "SheepKeep doesn't ask for new versions. Turn it on in Admin → Sign-up."
+msgstr "SheepKeep không hỏi về phiên bản mới. Bật tính năng này trong Quản trị → Đăng ký."
 
-msgid "Kept got no answer from the backup storage. Check the address, the credentials and the network."
-msgstr "Kept không nhận được câu trả lời từ nơi lưu bản sao lưu. Kiểm tra địa chỉ, thông tin đăng nhập và mạng."
+msgid "SheepKeep got no answer from the backup storage. Check the address, the credentials and the network."
+msgstr "SheepKeep không nhận được câu trả lời từ nơi lưu bản sao lưu. Kiểm tra địa chỉ, thông tin đăng nhập và mạng."
 
-msgid "Kept warns at {warnAt}%."
-msgstr "Kept cảnh báo ở mức {warnAt}%."
+msgid "SheepKeep warns at {warnAt}%."
+msgstr "SheepKeep cảnh báo ở mức {warnAt}%."
 
 msgid "Last checked {checked}"
 msgstr "Kiểm tra lần cuối {checked}"
@@ -14386,8 +14386,8 @@ msgstr "Không có trong ngày qua"
 msgid "Not known yet"
 msgstr "Chưa biết"
 
-msgid "Not made by Kept"
-msgstr "Không phải do Kept tạo"
+msgid "Not made by SheepKeep"
+msgstr "Không phải do SheepKeep tạo"
 
 msgid "Not measured yet"
 msgstr "Chưa đo"
@@ -14395,11 +14395,11 @@ msgstr "Chưa đo"
 msgid "Nothing on this server is backed up. Choose where backups go (another disk, an S3 bucket or an SFTP server) and a password in Backups."
 msgstr "Không có gì trên máy chủ này được sao lưu. Chọn nơi lưu bản sao lưu (một ổ đĩa khác, một bucket S3 hoặc một máy chủ SFTP) và mật khẩu trong Sao lưu."
 
-msgid "Off. Kept never asks; check the releases page yourself."
-msgstr "Tắt. Kept không bao giờ hỏi; tự kiểm tra trang phát hành."
+msgid "Off. SheepKeep never asks; check the releases page yourself."
+msgstr "Tắt. SheepKeep không bao giờ hỏi; tự kiểm tra trang phát hành."
 
-msgid "On. Once a day the server asks GitHub for Kept's newest release, sending nothing but the request. Admin → Status says when one is out."
-msgstr "Bật. Mỗi ngày một lần, máy chủ hỏi GitHub về bản phát hành mới nhất của Kept, chỉ gửi đúng yêu cầu. Quản trị → Trạng thái cho biết khi nào có bản mới."
+msgid "On. Once a day the server asks GitHub for SheepKeep's newest release, sending nothing but the request. Admin → Status says when one is out."
+msgstr "Bật. Mỗi ngày một lần, máy chủ hỏi GitHub về bản phát hành mới nhất của SheepKeep, chỉ gửi đúng yêu cầu. Quản trị → Trạng thái cho biết khi nào có bản mới."
 
 msgid "Once a month, restore into a scratch database and compare: <0>{command}</0>"
 msgstr "Mỗi tháng một lần, khôi phục vào cơ sở dữ liệu tạm và so sánh: <0>{command}</0>"
@@ -14527,14 +14527,14 @@ msgstr "Kết xuất cơ sở dữ liệu thất bại. Nhật ký của máy ch
 msgid "The backup stopped before it finished: the server restarted or ran out of memory. The next backup runs as usual."
 msgstr "Bản sao lưu đã dừng trước khi hoàn tất: máy chủ đã khởi động lại hoặc hết bộ nhớ. Lần sao lưu tiếp theo chạy như bình thường."
 
-msgid "The database dump tool doesn't match the database's version. Use Kept's own image."
-msgstr "Công cụ kết xuất cơ sở dữ liệu không khớp với phiên bản của cơ sở dữ liệu. Hãy dùng image của chính Kept."
+msgid "The database dump tool doesn't match the database's version. Use SheepKeep's own image."
+msgstr "Công cụ kết xuất cơ sở dữ liệu không khớp với phiên bản của cơ sở dữ liệu. Hãy dùng image của chính SheepKeep."
 
 msgid "The dump was much smaller than the last good one. Older snapshots were kept."
 msgstr "Bản kết xuất nhỏ hơn nhiều so với bản thành công gần nhất. Các ảnh chụp nhanh cũ hơn đã được giữ lại."
 
-msgid "The last check got no answer. Kept asks again tomorrow."
-msgstr "Lần kiểm tra gần nhất không nhận được phản hồi. Kept sẽ hỏi lại vào ngày mai."
+msgid "The last check got no answer. SheepKeep asks again tomorrow."
+msgstr "Lần kiểm tra gần nhất không nhận được phản hồi. SheepKeep sẽ hỏi lại vào ngày mai."
 
 msgid "The repository is locked by another run. If none is running, {unlock} removes the lock."
 msgstr "Kho lưu trữ đang bị khóa bởi một lần chạy khác. Nếu không có lần chạy nào đang hoạt động, {unlock} sẽ gỡ khóa."
@@ -14548,8 +14548,8 @@ msgstr "Kho lưu trữ được tạo bằng một mật khẩu khác. Hãy đ�
 msgid "The server's environment sets that, so it can't be changed here."
 msgstr "Môi trường của máy chủ đặt giá trị này, nên không thể thay đổi tại đây."
 
-msgid "The server's own key, as ssh-keyscan prints it without the host name. Kept connects to no other."
-msgstr "Khóa riêng của máy chủ, như ssh-keyscan in ra mà không có tên máy chủ. Kept không kết nối tới máy nào khác."
+msgid "The server's own key, as ssh-keyscan prints it without the host name. SheepKeep connects to no other."
+msgstr "Khóa riêng của máy chủ, như ssh-keyscan in ra mà không có tên máy chủ. SheepKeep không kết nối tới máy nào khác."
 
 msgid "The snapshot was taken, but something needs a look. The server's log has the details."
 msgstr "Ảnh chụp nhanh đã được tạo, nhưng có thứ cần xem lại. Nhật ký của máy chủ có chi tiết."
@@ -14563,17 +14563,17 @@ msgstr "Chưa có kho lưu trữ nào ở đích. Nhấn Kiểm tra để tạo 
 msgid "They need a decision: retry or discard."
 msgstr "Chúng cần một quyết định: thử lại hay loại bỏ."
 
-msgid "This needs a secure (HTTPS) connection to Kept."
-msgstr "Cần kết nối an toàn (HTTPS) tới Kept."
+msgid "This needs a secure (HTTPS) connection to SheepKeep."
+msgstr "Cần kết nối an toàn (HTTPS) tới SheepKeep."
 
-msgid "This server runs <0>{current}</0>. Upgrading is the release notes' steps; Kept never updates itself."
-msgstr "Máy chủ này đang chạy <0>{current}</0>. Nâng cấp theo các bước trong ghi chú phát hành; Kept không bao giờ tự cập nhật."
+msgid "This server runs <0>{current}</0>. Upgrading is the release notes' steps; SheepKeep never updates itself."
+msgstr "Máy chủ này đang chạy <0>{current}</0>. Nâng cấp theo các bước trong ghi chú phát hành; SheepKeep không bao giờ tự cập nhật."
 
-msgid "This server's source code address isn't a GitHub repository, so Kept doesn't ask."
-msgstr "Địa chỉ mã nguồn của máy chủ này không phải là kho GitHub, nên Kept không hỏi."
+msgid "This server's source code address isn't a GitHub repository, so SheepKeep doesn't ask."
+msgstr "Địa chỉ mã nguồn của máy chủ này không phải là kho GitHub, nên SheepKeep không hỏi."
 
-msgid "Too many requests came from this server's address. Kept asks again tomorrow."
-msgstr "Quá nhiều yêu cầu đến từ địa chỉ của máy chủ này. Kept sẽ hỏi lại vào ngày mai."
+msgid "Too many requests came from this server's address. SheepKeep asks again tomorrow."
+msgstr "Quá nhiều yêu cầu đến từ địa chỉ của máy chủ này. SheepKeep sẽ hỏi lại vào ngày mai."
 
 msgid "Up to date"
 msgstr "Đã là bản mới nhất"
@@ -14617,8 +14617,8 @@ msgstr "Bản xuất dữ liệu của bạn đã sẵn sàng"
 msgid "Low since {day}"
 msgstr "Sắp hết từ {day}"
 
-msgid "Kept can't reach that address. Check it for typos."
-msgstr "Kept không thể tới được địa chỉ đó. Hãy kiểm tra lỗi gõ."
+msgid "SheepKeep can't reach that address. Check it for typos."
+msgstr "SheepKeep không thể tới được địa chỉ đó. Hãy kiểm tra lỗi gõ."
 
 msgid "You have no AI of your own to answer here. Ask from a location's page, where its AI answers."
 msgstr "Bạn không có AI riêng để trả lời tại đây. Hãy hỏi từ trang của một địa điểm, nơi AI của địa điểm đó trả lời."
@@ -14644,8 +14644,8 @@ msgstr "Đã thêm tên khác"
 msgid "Other names requested for an import"
 msgstr "Đã yêu cầu tên khác cho một lần nhập"
 
-msgid "Kept set up"
-msgstr "Đã thiết lập Kept"
+msgid "SheepKeep set up"
+msgstr "Đã thiết lập SheepKeep"
 
 msgid "Instance settings changed"
 msgstr "Đã thay đổi cài đặt máy chủ"
@@ -14803,8 +14803,8 @@ msgstr "Tài khoản của bạn chưa thể xóa được"
 msgid "This account was made for you by someone who runs a location. Ask them to remove it."
 msgstr "Tài khoản này do người quản lý một địa điểm tạo cho bạn. Hãy nhờ họ xóa nó."
 
-msgid "You're the only person who runs this Kept. Make someone else an instance admin first."
-msgstr "Bạn là người duy nhất quản lý Kept này. Hãy đặt một người khác làm quản trị viên máy chủ trước."
+msgid "You're the only person who runs this SheepKeep. Make someone else an instance admin first."
+msgstr "Bạn là người duy nhất quản lý SheepKeep này. Hãy đặt một người khác làm quản trị viên máy chủ trước."
 
 msgid "You own these locations. Hand each one to someone else, or delete it, first."
 msgstr "Bạn sở hữu các địa điểm này. Hãy bàn giao từng địa điểm cho người khác, hoặc xóa nó, trước."
@@ -14824,8 +14824,8 @@ msgstr "Tài khoản của bạn sẽ bị xóa vào {day}"
 msgid "Keep my account"
 msgstr "Giữ tài khoản của tôi"
 
-msgid "Your account is going to be deleted. Keep it to use Kept again."
-msgstr "Tài khoản của bạn sắp bị xóa. Hãy giữ lại để dùng Kept trở lại."
+msgid "Your account is going to be deleted. Keep it to use SheepKeep again."
+msgstr "Tài khoản của bạn sắp bị xóa. Hãy giữ lại để dùng SheepKeep trở lại."
 
 msgid "Your account can't be deleted yet."
 msgstr "Chưa thể xóa tài khoản của bạn."
@@ -14869,14 +14869,14 @@ msgstr "Bạn sẽ không thể đăng nhập bằng {name} cho đến khi liên
 msgid "Unlink"
 msgstr "Hủy liên kết"
 
-msgid "Once linked, that account signs you in here. Kept never links one because the email matches."
-msgstr "Sau khi liên kết, tài khoản đó sẽ đăng nhập bạn tại đây. Kept không bao giờ liên kết tài khoản chỉ vì email trùng khớp."
+msgid "Once linked, that account signs you in here. SheepKeep never links one because the email matches."
+msgstr "Sau khi liên kết, tài khoản đó sẽ đăng nhập bạn tại đây. SheepKeep không bao giờ liên kết tài khoản chỉ vì email trùng khớp."
 
 msgid "Sign-in with Google"
 msgstr "Đăng nhập bằng Google"
 
-msgid "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart Kept."
-msgstr "Tạo một OAuth client trong Google Cloud, đặt <0>KEPT_GOOGLE_CLIENT_ID</0> và <1>KEPT_GOOGLE_CLIENT_SECRET</1>, rồi khởi động lại Kept."
+msgid "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart SheepKeep."
+msgstr "Tạo một OAuth client trong Google Cloud, đặt <0>KEPT_GOOGLE_CLIENT_ID</0> và <1>KEPT_GOOGLE_CLIENT_SECRET</1>, rồi khởi động lại SheepKeep."
 
 msgid "Redirect URI to register with Google"
 msgstr "URI chuyển hướng để đăng ký với Google"
@@ -14884,11 +14884,11 @@ msgstr "URI chuyển hướng để đăng ký với Google"
 msgid "Google sign-in reaches only an account already linked to it, or someone invited here. Nobody gets in on their own."
 msgstr "Đăng nhập bằng Google chỉ tới được tài khoản đã liên kết với nó, hoặc người được mời tại đây. Không ai tự vào được."
 
-msgid "That server is on a private network, which this Kept doesn't allow. An instance admin can allow it."
-msgstr "Máy chủ đó nằm trên mạng riêng, mà Kept này không cho phép. Quản trị viên máy chủ có thể cho phép."
+msgid "That server is on a private network, which this SheepKeep doesn't allow. An instance admin can allow it."
+msgstr "Máy chủ đó nằm trên mạng riêng, mà SheepKeep này không cho phép. Quản trị viên máy chủ có thể cho phép."
 
-msgid "Kept stops sending to it, and forgets its settings."
-msgstr "Kept ngừng gửi tới nó và xóa các cài đặt của nó."
+msgid "SheepKeep stops sending to it, and forgets its settings."
+msgstr "SheepKeep ngừng gửi tới nó và xóa các cài đặt của nó."
 
 msgid "Add ntfy"
 msgstr "Thêm ntfy"
@@ -14896,8 +14896,8 @@ msgstr "Thêm ntfy"
 msgid "Add Telegram"
 msgstr "Thêm Telegram"
 
-msgid "You have {MAX_RELAY_CHANNELS}, the most Kept allows."
-msgstr "Bạn có {MAX_RELAY_CHANNELS}, mức tối đa Kept cho phép."
+msgid "You have {MAX_RELAY_CHANNELS}, the most SheepKeep allows."
+msgstr "Bạn có {MAX_RELAY_CHANNELS}, mức tối đa SheepKeep cho phép."
 
 msgid "Reminders on your phone through ntfy.sh or your own ntfy server."
 msgstr "Lời nhắc trên điện thoại của bạn qua ntfy.sh hoặc máy chủ ntfy của riêng bạn."
@@ -14935,17 +14935,17 @@ msgstr "Cuộc trò chuyện của bạn với bot, số của một nhóm, ho�
 msgid "Optional, to tell them apart."
 msgstr "Tùy chọn, để phân biệt chúng."
 
-msgid "Kept keeps these settings encrypted and never shows them again."
-msgstr "Kept giữ các cài đặt này ở dạng mã hóa và không bao giờ hiển thị lại."
+msgid "SheepKeep keeps these settings encrypted and never shows them again."
+msgstr "SheepKeep giữ các cài đặt này ở dạng mã hóa và không bao giờ hiển thị lại."
 
 msgid "It's also on its way to your email."
 msgstr "Nó cũng đang được gửi tới email của bạn."
 
-msgid "Kept emails this location's inventory every Monday morning."
-msgstr "Kept gửi email danh mục của địa điểm này vào mỗi sáng thứ Hai."
+msgid "SheepKeep emails this location's inventory every Monday morning."
+msgstr "SheepKeep gửi email danh mục của địa điểm này vào mỗi sáng thứ Hai."
 
-msgid "Kept emails this location's inventory on the 1st of every month."
-msgstr "Kept gửi email danh mục của địa điểm này vào ngày 1 mỗi tháng."
+msgid "SheepKeep emails this location's inventory on the 1st of every month."
+msgstr "SheepKeep gửi email danh mục của địa điểm này vào ngày 1 mỗi tháng."
 
 msgid "Email it to me"
 msgstr "Gửi email cho tôi"
@@ -14968,8 +14968,8 @@ msgstr "Gửi qua email cho bạn: toàn bộ địa điểm, kèm ảnh, đúng
 msgid "Skipped: you'd made five reports that hour."
 msgstr "Đã bỏ qua: bạn đã tạo năm báo cáo trong giờ đó."
 
-msgid "Skipped: that part of Kept is off in this location."
-msgstr "Đã bỏ qua: phần đó của Kept đang tắt trong địa điểm này."
+msgid "Skipped: that part of SheepKeep is off in this location."
+msgstr "Đã bỏ qua: phần đó của SheepKeep đang tắt trong địa điểm này."
 
 msgid "Skipped: you can't make this report there any more."
 msgstr "Đã bỏ qua: bạn không thể tạo báo cáo này ở đó nữa."
@@ -14977,8 +14977,8 @@ msgstr "Đã bỏ qua: bạn không thể tạo báo cáo này ở đó nữa."
 msgid "Stop this report?"
 msgstr "Dừng báo cáo này?"
 
-msgid "Kept stops emailing it. You can print it any time."
-msgstr "Kept ngừng gửi báo cáo này qua email. Bạn có thể in nó bất cứ lúc nào."
+msgid "SheepKeep stops emailing it. You can print it any time."
+msgstr "SheepKeep ngừng gửi báo cáo này qua email. Bạn có thể in nó bất cứ lúc nào."
 
 msgid "Stop"
 msgstr "Dừng"
@@ -15010,11 +15010,11 @@ msgstr "Nhập từ LubeLogger"
 msgid "This isn't a LubeLogger export of fuel, services or odometer."
 msgstr "Đây không phải là bản xuất LubeLogger của nhiên liệu, bảo dưỡng hoặc đồng hồ công-tơ-mét."
 
-msgid "Kept can't read this file. Export it from LubeLogger again as CSV."
-msgstr "Kept không đọc được tệp này. Hãy xuất lại từ LubeLogger dưới dạng CSV."
+msgid "SheepKeep can't read this file. Export it from LubeLogger again as CSV."
+msgstr "SheepKeep không đọc được tệp này. Hãy xuất lại từ LubeLogger dưới dạng CSV."
 
-msgid "Kept can't read this file."
-msgstr "Kept không đọc được tệp này."
+msgid "SheepKeep can't read this file."
+msgstr "SheepKeep không đọc được tệp này."
 
 msgid "Imported {0} records"
 msgstr "Đã nhập {0} bản ghi"
@@ -15049,8 +15049,8 @@ msgstr "Gallon"
 msgid "Check"
 msgstr "Kiểm tra"
 
-msgid "no date Kept can read"
-msgstr "không có ngày Kept đọc được"
+msgid "no date SheepKeep can read"
+msgstr "không có ngày SheepKeep đọc được"
 
 msgid "no amount of fuel"
 msgstr "không có lượng nhiên liệu"
@@ -15070,8 +15070,8 @@ msgstr "đồng hồ công-tơ-mét chạy ngược"
 msgid "a cost below zero"
 msgstr "chi phí dưới 0"
 
-msgid "Kept refused it"
-msgstr "Kept đã từ chối nó"
+msgid "SheepKeep refused it"
+msgstr "SheepKeep đã từ chối nó"
 
 msgid "What it will do"
 msgstr "Nó sẽ làm gì"
@@ -15103,8 +15103,8 @@ msgstr "Nhận qua email"
 msgid "That address is on a private network. An instance admin can allow it in Admin → Settings."
 msgstr "Địa chỉ đó nằm trên mạng riêng. Quản trị viên hệ thống có thể cho phép trong Quản trị → Cài đặt."
 
-msgid "Kept couldn't reach that server. Check the host and port."
-msgstr "Kept không kết nối được tới máy chủ đó. Hãy kiểm tra máy chủ và cổng."
+msgid "SheepKeep couldn't reach that server. Check the host and port."
+msgstr "SheepKeep không kết nối được tới máy chủ đó. Hãy kiểm tra máy chủ và cổng."
 
 msgid "The server's encryption didn't check out. Check the host and the security."
 msgstr "Không xác minh được mã hóa của máy chủ. Hãy kiểm tra máy chủ và chế độ bảo mật."
@@ -15118,8 +15118,8 @@ msgstr "Thư mục đó không tồn tại trong hộp thư."
 msgid "The server took too long to answer."
 msgstr "Máy chủ trả lời quá lâu."
 
-msgid "Kept couldn't sign in to the mailbox."
-msgstr "Kept không đăng nhập được vào hộp thư."
+msgid "SheepKeep couldn't sign in to the mailbox."
+msgstr "SheepKeep không đăng nhập được vào hộp thư."
 
 msgid "The person who connected it no longer administers this location."
 msgstr "Người đã kết nối nó không còn quản trị địa điểm này nữa."
@@ -15148,14 +15148,14 @@ msgstr "Đã xóa hộp thư"
 msgid "Remove this mailbox?"
 msgstr "Xóa hộp thư này?"
 
-msgid "Kept stops checking it. The receipts it already made stay."
-msgstr "Kept ngừng kiểm tra nó. Các hóa đơn đã tạo vẫn còn."
+msgid "SheepKeep stops checking it. The receipts it already made stay."
+msgstr "SheepKeep ngừng kiểm tra nó. Các hóa đơn đã tạo vẫn còn."
 
 msgid "Mailbox"
 msgstr "Hộp thư"
 
-msgid "Kept stopped checking this mailbox"
-msgstr "Kept đã ngừng kiểm tra hộp thư này"
+msgid "SheepKeep stopped checking this mailbox"
+msgstr "SheepKeep đã ngừng kiểm tra hộp thư này"
 
 msgid "Save it again to turn it back on."
 msgstr "Lưu lại để bật lại."
@@ -15169,8 +15169,8 @@ msgstr "<0>{0}</0> · thư mục <1>{1}</1>"
 msgid "Checked {0}"
 msgstr "Đã kiểm tra {0}"
 
-msgid "Not checked yet. Kept checks every 10 minutes."
-msgstr "Chưa kiểm tra. Kept kiểm tra mỗi 10 phút."
+msgid "Not checked yet. SheepKeep checks every 10 minutes."
+msgstr "Chưa kiểm tra. SheepKeep kiểm tra mỗi 10 phút."
 
 msgid "Connected by {0}"
 msgstr "Được kết nối bởi {0}"
@@ -15187,8 +15187,8 @@ msgstr "Đổi hộp thư"
 msgid "Connect a mailbox"
 msgstr "Kết nối hộp thư"
 
-msgid "Kept checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
-msgstr "Kept kiểm tra một thư mục trong hộp thư bạn đã có, mỗi 10 phút. Ảnh và PDF của mỗi thư, hoặc nội dung thư khi không có tệp đính kèm, trở thành một biên lai nháp trong Hộp thư đến. Chỉ thư đến sau khi bạn kết nối mới được đọc, và không có gì trong hộp thư bị thay đổi."
+msgid "SheepKeep checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
+msgstr "SheepKeep kiểm tra một thư mục trong hộp thư bạn đã có, mỗi 10 phút. Ảnh và PDF của mỗi thư, hoặc nội dung thư khi không có tệp đính kèm, trở thành một biên lai nháp trong Hộp thư đến. Chỉ thư đến sau khi bạn kết nối mới được đọc, và không có gì trong hộp thư bị thay đổi."
 
 msgid "IMAP server"
 msgstr "Máy chủ IMAP"
@@ -15220,8 +15220,8 @@ msgstr "Chỉ từ những người gửi này"
 msgid "Optional, comma-separated. A filter against noise, not a security check: a From address can be forged."
 msgstr "Không bắt buộc, phân tách bằng dấu phẩy. Bộ lọc chống thư rác, không phải kiểm tra bảo mật: địa chỉ From có thể bị giả mạo."
 
-msgid "Kept couldn't connect"
-msgstr "Kept không kết nối được"
+msgid "SheepKeep couldn't connect"
+msgstr "SheepKeep không kết nối được"
 
 msgid "Recent mail"
 msgstr "Thư gần đây"
@@ -15232,8 +15232,8 @@ msgstr "Mở Hộp thư đến"
 msgid "No mail read yet"
 msgstr "Chưa đọc thư nào"
 
-msgid "Messages that arrive in the folder show here once Kept has read them."
-msgstr "Thư đến thư mục sẽ hiển thị tại đây sau khi Kept đọc xong."
+msgid "Messages that arrive in the folder show here once SheepKeep has read them."
+msgstr "Thư đến thư mục sẽ hiển thị tại đây sau khi SheepKeep đọc xong."
 
 msgid "Add Apprise"
 msgstr "Thêm Apprise"
@@ -15262,11 +15262,11 @@ msgstr "Hư hỏng"
 msgid "Condition report PDF"
 msgstr "PDF báo cáo tình trạng"
 
-msgid "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time Kept received each photo."
-msgstr "Cả hai lần kiểm tra từng phòng, lần sớm hơn ở trước: tình trạng, ghi chú và ảnh của mỗi phòng, kèm thời gian Kept nhận mỗi ảnh."
+msgid "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time SheepKeep received each photo."
+msgstr "Cả hai lần kiểm tra từng phòng, lần sớm hơn ở trước: tình trạng, ghi chú và ảnh của mỗi phòng, kèm thời gian SheepKeep nhận mỗi ảnh."
 
-msgid "Each room's condition, note and photos, with the time Kept received each photo."
-msgstr "Tình trạng, ghi chú và ảnh của mỗi phòng, kèm thời gian Kept nhận mỗi ảnh."
+msgid "Each room's condition, note and photos, with the time SheepKeep received each photo."
+msgstr "Tình trạng, ghi chú và ảnh của mỗi phòng, kèm thời gian SheepKeep nhận mỗi ảnh."
 
 msgid "This report isn't finished, and the PDF says so."
 msgstr "Báo cáo này chưa hoàn thành, và PDF cũng ghi như vậy."
@@ -15385,8 +15385,8 @@ msgstr "Báo cáo bắt đầu với các phòng của địa điểm. Thêm ph�
 msgid "Day of the walk-through"
 msgstr "Ngày kiểm tra"
 
-msgid "Shared from Kept · read-only"
-msgstr "Được chia sẻ từ Kept · chỉ đọc"
+msgid "Shared from SheepKeep · read-only"
+msgstr "Được chia sẻ từ SheepKeep · chỉ đọc"
 
 msgid "Shared with you"
 msgstr "Được chia sẻ với bạn"
@@ -15481,8 +15481,8 @@ msgstr "Tạo liên kết"
 msgid "Anyone with this link can open it until {until}."
 msgstr "Bất kỳ ai có liên kết này cũng có thể mở nó đến {until}."
 
-msgid "Copy it now. Kept shows this link once; make a new one if it's lost."
-msgstr "Hãy sao chép ngay. Kept chỉ hiển thị liên kết này một lần; hãy tạo liên kết mới nếu bị mất."
+msgid "Copy it now. SheepKeep shows this link once; make a new one if it's lost."
+msgstr "Hãy sao chép ngay. SheepKeep chỉ hiển thị liên kết này một lần; hãy tạo liên kết mới nếu bị mất."
 
 msgid "See this location's share links"
 msgstr "Xem các liên kết chia sẻ của địa điểm này"
@@ -16000,8 +16000,8 @@ msgstr "Không thêm được tầng"
 msgid "Throw away these changes?"
 msgstr "Hủy các thay đổi này?"
 
-msgid "The map goes back to how it was. Rooms and floors you added stay in Kept."
-msgstr "Bản đồ sẽ trở lại như cũ. Các phòng và tầng bạn đã thêm vẫn còn trong Kept."
+msgid "The map goes back to how it was. Rooms and floors you added stay in SheepKeep."
+msgstr "Bản đồ sẽ trở lại như cũ. Các phòng và tầng bạn đã thêm vẫn còn trong SheepKeep."
 
 msgid "Throw away"
 msgstr "Hủy bỏ"
@@ -16159,8 +16159,8 @@ msgstr "{what} qua {how} tại {where}, chỉ đặt cho địa điểm này"
 msgid "{what} by {how} in {where}"
 msgstr "{what} qua {how} tại {where}"
 
-msgid "In Kept is off, so nothing is sent."
-msgstr "Kênh Trong Kept đang tắt nên không có gì được gửi."
+msgid "In SheepKeep is off, so nothing is sent."
+msgstr "Kênh Trong SheepKeep đang tắt nên không có gì được gửi."
 
 msgid "Due dates"
 msgstr "Ngày đến hạn"
@@ -16183,8 +16183,8 @@ msgstr "Thêm kênh khác"
 msgid "Applies to every location, ones you add later too. Pick a location to change it there only."
 msgstr "Áp dụng cho mọi địa điểm, kể cả địa điểm bạn thêm sau này. Chọn một địa điểm để chỉ đổi ở đó."
 
-msgid "You're a member here: Kept starts with only the loans you record."
-msgstr "Bạn là thành viên ở đây: Kept bắt đầu chỉ với các khoản cho mượn bạn ghi lại."
+msgid "You're a member here: SheepKeep starts with only the loans you record."
+msgstr "Bạn là thành viên ở đây: SheepKeep bắt đầu chỉ với các khoản cho mượn bạn ghi lại."
 
 msgid "You're a viewer here: only members joining and leaving."
 msgstr "Bạn là người xem ở đây: chỉ có thành viên tham gia và rời đi."
@@ -16327,8 +16327,8 @@ msgstr "Thông báo đẩy đang tắt trong bản demo này."
 msgid "The camera is off in this demo"
 msgstr "Máy ảnh đang tắt trong bản demo này"
 
-msgid "In your own Kept, Capture opens the camera here. Photos you pick stay in this tab."
-msgstr "Trong Kept của chính bạn, Chụp sẽ mở máy ảnh tại đây. Ảnh bạn chọn sẽ ở lại trong tab này."
+msgid "In your own SheepKeep, Capture opens the camera here. Photos you pick stay in this tab."
+msgstr "Trong SheepKeep của chính bạn, Chụp sẽ mở máy ảnh tại đây. Ảnh bạn chọn sẽ ở lại trong tab này."
 
 msgid "The app lock is off in this demo."
 msgstr "Khóa ứng dụng đang tắt trong bản demo này."
@@ -16336,8 +16336,8 @@ msgstr "Khóa ứng dụng đang tắt trong bản demo này."
 msgid "Downloads are off in this demo."
 msgstr "Tải xuống đang tắt trong bản demo này."
 
-msgid "Your own Kept makes the PDF here. This demo has no files."
-msgstr "Kept của chính bạn sẽ tạo PDF tại đây. Bản demo này không có tệp nào."
+msgid "Your own SheepKeep makes the PDF here. This demo has no files."
+msgstr "SheepKeep của chính bạn sẽ tạo PDF tại đây. Bản demo này không có tệp nào."
 
 msgid "Sample answers in this demo: no AI is asked."
 msgstr "Câu trả lời mẫu trong bản demo này: không hỏi AI nào."
@@ -16360,8 +16360,8 @@ msgstr "Paperless đã ngắt kết nối"
 msgid "Disconnect Paperless?"
 msgstr "Ngắt kết nối Paperless?"
 
-msgid "The {links} links to its documents go too. Documents copied into Kept stay."
-msgstr "{links} liên kết tới tài liệu của nó cũng sẽ bị xóa. Tài liệu đã sao chép vào Kept vẫn còn."
+msgid "The {links} links to its documents go too. Documents copied into SheepKeep stay."
+msgstr "{links} liên kết tới tài liệu của nó cũng sẽ bị xóa. Tài liệu đã sao chép vào SheepKeep vẫn còn."
 
 msgid "Members can no longer link its documents."
 msgstr "Thành viên không còn liên kết được tài liệu của nó nữa."
@@ -16396,8 +16396,8 @@ msgstr "Đổi kết nối"
 msgid "Connect Paperless-ngx"
 msgstr "Kết nối Paperless-ngx"
 
-msgid "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. Kept stores the document's number and title, not the file, unless someone copies it into Kept."
-msgstr "Thành viên sau đó có thể liên kết một đồ vật hoặc một vị trí tới các hóa đơn, hướng dẫn sử dụng và thẻ bảo hành của nó trong Paperless, mà không cần tải lên hai lần. Kept chỉ lưu số và tiêu đề của tài liệu, không lưu tệp, trừ khi ai đó sao chép nó vào Kept."
+msgid "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. SheepKeep stores the document's number and title, not the file, unless someone copies it into SheepKeep."
+msgstr "Thành viên sau đó có thể liên kết một đồ vật hoặc một vị trí tới các hóa đơn, hướng dẫn sử dụng và thẻ bảo hành của nó trong Paperless, mà không cần tải lên hai lần. SheepKeep chỉ lưu số và tiêu đề của tài liệu, không lưu tệp, trừ khi ai đó sao chép nó vào SheepKeep."
 
 msgid "Paperless address"
 msgstr "Địa chỉ Paperless"
@@ -16408,14 +16408,14 @@ msgstr "Địa chỉ bạn mở Paperless, ví dụ https://paperless.example.co
 msgid "Plain http"
 msgstr "Http thuần"
 
-msgid "Kept accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
-msgstr "Kept chỉ chấp nhận http cho địa chỉ trên mạng của chính bạn, và chỉ khi quản trị viên máy chủ cho phép địa chỉ riêng. Token sẽ truyền không mã hóa ở đó."
+msgid "SheepKeep accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
+msgstr "SheepKeep chỉ chấp nhận http cho địa chỉ trên mạng của chính bạn, và chỉ khi quản trị viên máy chủ cho phép địa chỉ riêng. Token sẽ truyền không mã hóa ở đó."
 
 msgid "API token"
 msgstr "Token API"
 
-msgid "In Paperless, open My Profile and press the circular arrow by the API token. Kept sees what that user sees."
-msgstr "Trong Paperless, hãy mở Hồ sơ của tôi và nhấn mũi tên tròn bên cạnh token API. Kept sẽ thấy những gì người dùng đó thấy."
+msgid "In Paperless, open My Profile and press the circular arrow by the API token. SheepKeep sees what that user sees."
+msgstr "Trong Paperless, hãy mở Hồ sơ của tôi và nhấn mũi tên tròn bên cạnh token API. SheepKeep sẽ thấy những gì người dùng đó thấy."
 
 msgid "From Paperless-ngx"
 msgstr "Từ Paperless-ngx"
@@ -16426,8 +16426,8 @@ msgstr "Liên kết từ Paperless"
 msgid "Paperless can't be reached"
 msgstr "Không kết nối được tới Paperless"
 
-msgid "The titles below are as Kept last saw them."
-msgstr "Các tiêu đề dưới đây là như Kept đã thấy lần cuối."
+msgid "The titles below are as SheepKeep last saw them."
+msgstr "Các tiêu đề dưới đây là như SheepKeep đã thấy lần cuối."
 
 msgid "No Paperless documents of this kind."
 msgstr "Không có tài liệu Paperless nào thuộc loại này."
@@ -16438,8 +16438,8 @@ msgstr "Chưa liên kết gì. Hãy liên kết một hóa đơn hoặc hướng
 msgid "Paperless documents"
 msgstr "Tài liệu Paperless"
 
-msgid "Copied into Kept"
-msgstr "Đã sao chép vào Kept"
+msgid "Copied into SheepKeep"
+msgstr "Đã sao chép vào SheepKeep"
 
 msgid "Couldn't copy it"
 msgstr "Không sao chép được"
@@ -16447,8 +16447,8 @@ msgstr "Không sao chép được"
 msgid "Unlink this document?"
 msgstr "Hủy liên kết tài liệu này?"
 
-msgid "It comes off {name}. Paperless keeps it, and the copy in Kept stays."
-msgstr "Nó sẽ được gỡ khỏi {name}. Paperless vẫn giữ nó, và bản sao trong Kept vẫn còn."
+msgid "It comes off {name}. Paperless keeps it, and the copy in SheepKeep stays."
+msgstr "Nó sẽ được gỡ khỏi {name}. Paperless vẫn giữ nó, và bản sao trong SheepKeep vẫn còn."
 
 msgid "It comes off {name}. Paperless keeps it."
 msgstr "Nó sẽ được gỡ khỏi {name}. Paperless vẫn giữ nó."
@@ -16459,8 +16459,8 @@ msgstr "Không hủy liên kết được"
 msgid "Open in Paperless"
 msgstr "Mở trong Paperless"
 
-msgid "Copy into Kept"
-msgstr "Sao chép vào Kept"
+msgid "Copy into SheepKeep"
+msgstr "Sao chép vào SheepKeep"
 
 msgid "Unlink {0}"
 msgstr "Hủy liên kết {0}"
@@ -16498,8 +16498,8 @@ msgstr "{0, plural, =0 {Liên kết} one {Liên kết # tài liệu} other {Liê
 msgid "Use https:// for a Paperless outside your network. Over http the token would travel unencrypted."
 msgstr "Hãy dùng https:// cho Paperless ngoài mạng của bạn. Qua http, token sẽ truyền không mã hóa."
 
-msgid "Kept couldn't reach Paperless at that address."
-msgstr "Kept không kết nối được tới Paperless tại địa chỉ đó."
+msgid "SheepKeep couldn't reach Paperless at that address."
+msgstr "SheepKeep không kết nối được tới Paperless tại địa chỉ đó."
 
 msgid "Paperless didn't answer within 10 seconds."
 msgstr "Paperless không trả lời trong 10 giây."
@@ -16513,14 +16513,14 @@ msgstr "Paperless đã từ chối token."
 msgid "That address doesn't answer like Paperless-ngx."
 msgstr "Địa chỉ đó không trả lời như Paperless-ngx."
 
-msgid "Kept needs Paperless-ngx 2.16 or later."
-msgstr "Kept cần Paperless-ngx 2.16 trở lên."
+msgid "SheepKeep needs Paperless-ngx 2.16 or later."
+msgstr "SheepKeep cần Paperless-ngx 2.16 trở lên."
 
 msgid "Paperless no longer has this document, or the token's user can't see it."
 msgstr "Paperless không còn tài liệu này nữa, hoặc người dùng của token không xem được nó."
 
-msgid "That document is larger than Kept takes."
-msgstr "Tài liệu đó lớn hơn mức Kept nhận."
+msgid "That document is larger than SheepKeep takes."
+msgstr "Tài liệu đó lớn hơn mức SheepKeep nhận."
 
 msgid "Paperless connected"
 msgstr "Paperless đã kết nối"
@@ -16534,8 +16534,8 @@ msgstr "Đã liên kết tài liệu Paperless"
 msgid "Paperless document unlinked"
 msgstr "Đã hủy liên kết tài liệu Paperless"
 
-msgid "Paperless document copied into Kept"
-msgstr "Đã sao chép tài liệu Paperless vào Kept"
+msgid "Paperless document copied into SheepKeep"
+msgstr "Đã sao chép tài liệu Paperless vào SheepKeep"
 
 msgid "Small device"
 msgstr "Thiết bị nhỏ"
@@ -16981,8 +16981,8 @@ msgstr "Phòng nó sẽ đến (không bắt buộc)"
 msgid "Add the box"
 msgstr "Thêm thùng"
 
-msgid "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in Kept."
-msgstr "Một trang cho mỗi thùng: số thùng, phòng nó sẽ đến, đồ bên trong và mã của nó. Dán trang này lên thùng; quét mã sẽ mở thùng trong Kept."
+msgid "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in SheepKeep."
+msgstr "Một trang cho mỗi thùng: số thùng, phòng nó sẽ đến, đồ bên trong và mã của nó. Dán trang này lên thùng; quét mã sẽ mở thùng trong SheepKeep."
 
 msgid "Add a box first."
 msgstr "Hãy thêm một thùng trước."
@@ -17680,14 +17680,14 @@ msgstr "Cơ bản"
 msgid "Capture & Inbox"
 msgstr "Chụp & Hộp thư đến"
 
-msgid "Check what Kept read, fix anything wrong, then tap Accept."
-msgstr "Kiểm tra những gì Kept đã đọc, sửa bất cứ gì sai, rồi nhấn Chấp nhận."
+msgid "Check what SheepKeep read, fix anything wrong, then tap Accept."
+msgstr "Kiểm tra những gì SheepKeep đã đọc, sửa bất cứ gì sai, rồi nhấn Chấp nhận."
 
-msgid "Choose how reminders reach you: in Kept, by email, push or a channel."
-msgstr "Chọn cách lời nhắc đến với bạn: trong Kept, qua email, thông báo đẩy hoặc một kênh."
+msgid "Choose how reminders reach you: in SheepKeep, by email, push or a channel."
+msgstr "Chọn cách lời nhắc đến với bạn: trong SheepKeep, qua email, thông báo đẩy hoặc một kênh."
 
-msgid "Choose what reaches you, and how: in Kept, by email, push or a channel."
-msgstr "Chọn nội dung nào đến với bạn, và bằng cách nào: trong Kept, qua email, thông báo đẩy hoặc một kênh."
+msgid "Choose what reaches you, and how: in SheepKeep, by email, push or a channel."
+msgstr "Chọn nội dung nào đến với bạn, và bằng cách nào: trong SheepKeep, qua email, thông báo đẩy hoặc một kênh."
 
 msgid "Discard my change"
 msgstr "Hủy thay đổi của tôi"
@@ -17773,8 +17773,8 @@ msgstr "Chọn một tầng, hoặc Tất cả cho toàn bộ tòa nhà."
 msgid "Pick what it is, then add the file to the thing it belongs to."
 msgstr "Chọn xem nó là gì, rồi thêm tệp vào đồ vật mà nó thuộc về."
 
-msgid "Pick where it comes from: a spreadsheet, Homebox or another Kept."
-msgstr "Chọn xem nó đến từ đâu: một bảng tính, Homebox hoặc một Kept khác."
+msgid "Pick where it comes from: a spreadsheet, Homebox or another SheepKeep."
+msgstr "Chọn xem nó đến từ đâu: một bảng tính, Homebox hoặc một SheepKeep khác."
 
 msgid "Receipts, manuals and warranty cards from every thing and room."
 msgstr "Hóa đơn, hướng dẫn sử dụng và thẻ bảo hành từ mọi đồ vật và phòng."
@@ -17824,8 +17824,8 @@ msgstr "Nhấn Cho mượn để đưa cho ai đó và đặt ngày phải trả
 msgid "Tap Mark returned when it comes back."
 msgstr "Nhấn Đánh dấu đã trả khi đồ vật được trả về."
 
-msgid "Tap Scan and point the camera at a Kept label. What it's on opens."
-msgstr "Nhấn Quét rồi hướng camera vào nhãn Kept. Đồ vật mang nhãn đó sẽ mở ra."
+msgid "Tap Scan and point the camera at a SheepKeep label. What it's on opens."
+msgstr "Nhấn Quét rồi hướng camera vào nhãn SheepKeep. Đồ vật mang nhãn đó sẽ mở ra."
 
 msgid "The file"
 msgstr "Tệp"
@@ -17890,14 +17890,14 @@ msgstr "Ảnh phòng"
 msgid "Keep room photos after review"
 msgstr "Giữ ảnh phòng sau khi xem lại"
 
-msgid "When you photograph a room, Kept cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
-msgstr "Khi bạn chụp một phòng, Kept cắt một ảnh cho mỗi đồ vật nó tìm thấy. Khi bạn đóng phòng trong hộp thư đến, các ảnh đầy đủ sẽ bị xóa, trừ khi bật tùy chọn này: khi đó chúng sẽ ở lại trên trang của phòng."
+msgid "When you photograph a room, SheepKeep cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
+msgstr "Khi bạn chụp một phòng, SheepKeep cắt một ảnh cho mỗi đồ vật nó tìm thấy. Khi bạn đóng phòng trong hộp thư đến, các ảnh đầy đủ sẽ bị xóa, trừ khi bật tùy chọn này: khi đó chúng sẽ ở lại trên trang của phòng."
 
 msgid "Photograph this room"
 msgstr "Chụp phòng này"
 
-msgid "Placed by Kept from room photos: move them where they stand."
-msgstr "Được Kept đặt từ ảnh phòng: di chuyển chúng đến đúng vị trí chúng đang đứng."
+msgid "Placed by SheepKeep from room photos: move them where they stand."
+msgstr "Được SheepKeep đặt từ ảnh phòng: di chuyển chúng đến đúng vị trí chúng đang đứng."
 
 msgid "Photos of {name}"
 msgstr "Ảnh của {name}"
@@ -17953,8 +17953,8 @@ msgstr "Đang liệt kê những gì có trong ảnh…"
 msgid "Reading photo {0} of {1}…"
 msgstr "Đang đọc ảnh {0} trên {1}…"
 
-msgid "Kept couldn't read these photos. Retry, or take them again."
-msgstr "Kept không đọc được các ảnh này. Thử lại, hoặc chụp lại."
+msgid "SheepKeep couldn't read these photos. Retry, or take them again."
+msgstr "SheepKeep không đọc được các ảnh này. Thử lại, hoặc chụp lại."
 
 msgid "AI capture is off here, so nothing was listed. The photos wait on <0>{name}</0>."
 msgstr "Chụp bằng AI đang tắt tại đây, nên không liệt kê được gì. Các ảnh đang chờ trên <0>{name}</0>."
@@ -18007,14 +18007,14 @@ msgstr "{0, plural, one {Đánh dấu # đã thấy} other {Đánh dấu # đã 
 msgid "{0, plural, one {# new thing to review below} other {# new things to review below}}"
 msgstr "{0, plural, one {# đồ vật mới cần xem lại bên dưới} other {# đồ vật mới cần xem lại bên dưới}}"
 
-msgid "{0, plural, one {# already in Kept} other {# already in Kept}}"
-msgstr "{0, plural, one {# đã có trong Kept} other {# đã có trong Kept}}"
+msgid "{0, plural, one {# already in SheepKeep} other {# already in SheepKeep}}"
+msgstr "{0, plural, one {# đã có trong SheepKeep} other {# đã có trong SheepKeep}}"
 
 msgid "{0, plural, one {# piece of furniture to add as a place} other {# pieces of furniture to add as places}}"
 msgstr "{0, plural, one {# món nội thất cần thêm làm vị trí} other {# món nội thất cần thêm làm vị trí}}"
 
-msgid "Photographed {name} for Kept to list what is in it"
-msgstr "Đã chụp {name} để Kept liệt kê những gì có trong đó"
+msgid "Photographed {name} for SheepKeep to list what is in it"
+msgstr "Đã chụp {name} để SheepKeep liệt kê những gì có trong đó"
 
 msgid "Thing, receipt, label, reading or room. Pick one before the photo."
 msgstr "Đồ vật, hóa đơn, nhãn, chỉ số hoặc phòng. Chọn một loại trước khi chụp."
@@ -18022,8 +18022,8 @@ msgstr "Đồ vật, hóa đơn, nhãn, chỉ số hoặc phòng. Chọn một l
 msgid "A whole room"
 msgstr "Cả một phòng"
 
-msgid "Up to five photos of a room. AI lists what's in them as drafts, skipping what Kept already has."
-msgstr "Tối đa năm ảnh của một phòng. AI liệt kê những gì có trong đó thành bản nháp, bỏ qua những thứ Kept đã có."
+msgid "Up to five photos of a room. AI lists what's in them as drafts, skipping what SheepKeep already has."
+msgstr "Tối đa năm ảnh của một phòng. AI liệt kê những gì có trong đó thành bản nháp, bỏ qua những thứ SheepKeep đã có."
 
 msgid "Five photos at most. Send these, then take the next wall."
 msgstr "Tối đa năm ảnh. Gửi các ảnh này, rồi chụp bức tường tiếp theo."
@@ -18031,8 +18031,8 @@ msgstr "Tối đa năm ảnh. Gửi các ảnh này, rồi chụp bức tường
 msgid "Room sent"
 msgstr "Đã gửi phòng"
 
-msgid "Kept lists what is in it in your Inbox."
-msgstr "Kept liệt kê những gì có trong đó trong Hộp thư đến của bạn."
+msgid "SheepKeep lists what is in it in your Inbox."
+msgstr "SheepKeep liệt kê những gì có trong đó trong Hộp thư đến của bạn."
 
 msgid "{n, plural, one {About # photo} other {About # photos}}"
 msgstr "{n, plural, one {Khoảng # ảnh} other {Khoảng # ảnh}}"
@@ -18064,8 +18064,8 @@ msgstr "Ảnh của phòng này"
 msgid "Remove photo {0}"
 msgstr "Xóa ảnh {0}"
 
-msgid "In Try Kept no AI runs: every room photo gives the same sample results."
-msgstr "Trong Thử Kept, không có AI nào chạy: mọi ảnh phòng đều cho cùng kết quả mẫu."
+msgid "In Try SheepKeep no AI runs: every room photo gives the same sample results."
+msgstr "Trong Thử SheepKeep, không có AI nào chạy: mọi ảnh phòng đều cho cùng kết quả mẫu."
 
 msgid "Use a sample room photo"
 msgstr "Dùng ảnh phòng mẫu"
@@ -18337,8 +18337,8 @@ msgstr "Không khớp ({0})"
 msgid "Blank labels can be claimed from Scan, one at a time."
 msgstr "Có thể gán nhãn trống từ Quét, mỗi lần một cái."
 
-msgid "Not in your Kept ({0})"
-msgstr "Không có trong Kept của bạn ({0})"
+msgid "Not in your SheepKeep ({0})"
+msgstr "Không có trong SheepKeep của bạn ({0})"
 
 msgid "Check later ({0})"
 msgstr "Kiểm tra sau ({0})"
@@ -18493,8 +18493,8 @@ msgstr "Nhập bản xuất Homebox thay thế"
 msgid "Import it as a spreadsheet"
 msgstr "Nhập nó dưới dạng bảng tính"
 
-msgid "Kept reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
-msgstr "Kept đọc các ID tài sản của nó, nên nhãn Homebox cũ vẫn quét được, cùng các mục đã lưu trữ và đã bán, bảo hành và cột đã bảo hiểm. Bảng tính không mang được ảnh, tệp, bảo dưỡng hay mục trong mục: để có những thứ đó, hãy cập nhật một bản sao Homebox lên v0.26.1 trở lên (khuyên dùng v0.27.0) rồi nhập tệp ZIP xuất của nó."
+msgid "SheepKeep reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
+msgstr "SheepKeep đọc các ID tài sản của nó, nên nhãn Homebox cũ vẫn quét được, cùng các mục đã lưu trữ và đã bán, bảo hành và cột đã bảo hiểm. Bảng tính không mang được ảnh, tệp, bảo dưỡng hay mục trong mục: để có những thứ đó, hãy cập nhật một bản sao Homebox lên v0.26.1 trở lên (khuyên dùng v0.27.0) rồi nhập tệp ZIP xuất của nó."
 
 msgid "One with a sale still ends sold."
 msgstr "Mục có giao dịch bán vẫn kết thúc ở trạng thái đã bán."
@@ -18670,8 +18670,8 @@ msgstr "{0, plural, one {# đồ vật mới} other {# đồ vật mới}}"
 msgid "Open the previous count ({0})"
 msgstr "Mở lần kiểm kê trước ({0})"
 
-msgid "Counts saved before Kept 1.14 didn't record what was missing or elsewhere."
-msgstr "Các lần kiểm kê đã lưu trước Kept 1.14 không ghi lại những gì còn thiếu hay ở nơi khác."
+msgid "Counts saved before SheepKeep 1.14 didn't record what was missing or elsewhere."
+msgstr "Các lần kiểm kê đã lưu trước SheepKeep 1.14 không ghi lại những gì còn thiếu hay ở nơi khác."
 
 msgid "now in <0>{now}</0>"
 msgstr "hiện ở <0>{now}</0>"
@@ -18796,8 +18796,8 @@ msgstr "{lines, plural, one {Đã cho {0} mượn} other {Đã cho {1} mượn: 
 msgid "Stayed here: {0}"
 msgstr "Còn ở đây: {0}"
 
-msgid "Optional. Kept reminds you, never them, two days before and when it's overdue."
-msgstr "Không bắt buộc. Kept nhắc bạn, không bao giờ nhắc họ, hai ngày trước hạn và khi đã quá hạn."
+msgid "Optional. SheepKeep reminds you, never them, two days before and when it's overdue."
+msgstr "Không bắt buộc. SheepKeep nhắc bạn, không bao giờ nhắc họ, hai ngày trước hạn và khi đã quá hạn."
 
 msgid "What goes with it"
 msgstr "Những gì đi kèm với nó"
@@ -19021,8 +19021,8 @@ msgstr "có tất cả"
 msgid "Indigo"
 msgstr "Chàm"
 
-msgid "Its tags aren't kept: in Kept only things have tags."
-msgstr "Thẻ của nó không được giữ lại: trong Kept chỉ đồ vật mới có thẻ."
+msgid "Its tags aren't kept: in SheepKeep only things have tags."
+msgstr "Thẻ của nó không được giữ lại: trong SheepKeep chỉ đồ vật mới có thẻ."
 
 msgid "No colour"
 msgstr "Không màu"
@@ -19081,14 +19081,14 @@ msgstr "Một số sê-ri hoặc một mã vạch"
 msgid "Keep the code as"
 msgstr "Giữ mã dưới dạng"
 
-msgid "Kept stores it as the serial number."
-msgstr "Kept lưu nó dưới dạng số sê-ri."
+msgid "SheepKeep stores it as the serial number."
+msgstr "SheepKeep lưu nó dưới dạng số sê-ri."
 
-msgid "Kept stores it as the serial number or the barcode: you pick."
-msgstr "Kept lưu nó dưới dạng số sê-ri hoặc mã vạch: bạn chọn."
+msgid "SheepKeep stores it as the serial number or the barcode: you pick."
+msgstr "SheepKeep lưu nó dưới dạng số sê-ri hoặc mã vạch: bạn chọn."
 
-msgid "Kept stores the barcode and serial number with it."
-msgstr "Kept lưu mã vạch và số sê-ri kèm theo nó."
+msgid "SheepKeep stores the barcode and serial number with it."
+msgstr "SheepKeep lưu mã vạch và số sê-ri kèm theo nó."
 
 msgid "Add one in Sign-in and security"
 msgstr "Thêm một cái trong mục Đăng nhập và bảo mật"
@@ -19099,8 +19099,8 @@ msgstr "Khóa truy cập đó không phải là khóa mà tài khoản này dùn
 msgid "They add one in Sign-in and security"
 msgstr "Họ thêm một cái trong mục Đăng nhập và bảo mật"
 
-msgid "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
-msgstr "Kept gửi cho bạn một liên kết đăng nhập qua email; mở liên kết sẽ xác nhận địa chỉ. Mở liên kết cũng sẽ xóa mật khẩu, khóa truy cập và các phiên khác của tài khoản này, để không ai từng thiết lập chúng trước bạn còn đường vào. Sau đó quay lại đây trong vòng mười phút."
+msgid "SheepKeep emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
+msgstr "SheepKeep gửi cho bạn một liên kết đăng nhập qua email; mở liên kết sẽ xác nhận địa chỉ. Mở liên kết cũng sẽ xóa mật khẩu, khóa truy cập và các phiên khác của tài khoản này, để không ai từng thiết lập chúng trước bạn còn đường vào. Sau đó quay lại đây trong vòng mười phút."
 
 msgid "After this, signing in with a sign-in link or Google also asks for a 6-digit code from an authenticator app (1Password, Google Authenticator, Aegis…)."
 msgstr "Sau bước này, đăng nhập bằng liên kết đăng nhập hoặc Google cũng sẽ yêu cầu mã 6 chữ số từ ứng dụng xác thực (1Password, Google Authenticator, Aegis…)."
@@ -19141,8 +19141,8 @@ msgstr "Đã thêm khóa truy cập"
 msgid "Use {NAME_MAX} characters or fewer."
 msgstr "Dùng tối đa {NAME_MAX} ký tự."
 
-msgid "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; Kept never sees it."
-msgstr "Trình duyệt của bạn sẽ yêu cầu Face ID, vân tay hoặc khóa màn hình. Khóa truy cập được giữ bởi thiết bị này hoặc trình quản lý mật khẩu của bạn; Kept không bao giờ thấy nó."
+msgid "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; SheepKeep never sees it."
+msgstr "Trình duyệt của bạn sẽ yêu cầu Face ID, vân tay hoặc khóa màn hình. Khóa truy cập được giữ bởi thiết bị này hoặc trình quản lý mật khẩu của bạn; SheepKeep không bao giờ thấy nó."
 
 msgid "So you can tell your passkeys apart."
 msgstr "Để bạn phân biệt được các khóa truy cập của mình."
@@ -19243,8 +19243,8 @@ msgstr "Đã thiết lập lại xác thực hai yếu tố"
 msgid "Unlock with Face ID or fingerprint"
 msgstr "Mở khóa bằng Face ID hoặc vân tay"
 
-msgid "Unlocks Kept on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
-msgstr "Chỉ mở khóa Kept trên thiết bị này. Để đăng nhập bằng khóa truy cập, hãy thêm một cái trong <0>Đăng nhập và bảo mật</0>."
+msgid "Unlocks SheepKeep on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
+msgstr "Chỉ mở khóa SheepKeep trên thiết bị này. Để đăng nhập bằng khóa truy cập, hãy thêm một cái trong <0>Đăng nhập và bảo mật</0>."
 
 msgid "Added a passkey"
 msgstr "Đã thêm khóa truy cập"
@@ -19303,8 +19303,8 @@ msgstr "Đã tạo {made}"
 msgid "Not confirmed as printed"
 msgstr "Chưa xác nhận đã in"
 
-msgid "Once these labels have printed, confirm it here, so Kept stops counting them as unprinted."
-msgstr "Khi các nhãn này đã in xong, hãy xác nhận tại đây, để Kept ngừng tính chúng là chưa in."
+msgid "Once these labels have printed, confirm it here, so SheepKeep stops counting them as unprinted."
+msgstr "Khi các nhãn này đã in xong, hãy xác nhận tại đây, để SheepKeep ngừng tính chúng là chưa in."
 
 msgid "Each label: QR code and short ID. The codes are made when you print."
 msgstr "Mỗi nhãn: mã QR và ID ngắn. Các mã được tạo khi bạn in."
@@ -19483,8 +19483,8 @@ msgstr "Nó chứa các mục khác nên đã nhập vào dưới dạng hộp."
 msgid "A location that came in as a box, as chosen."
 msgstr "Một vị trí Homebox đã nhập vào dưới dạng hộp, đúng như đã chọn."
 
-msgid "Its description isn't kept: places in Kept have no notes."
-msgstr "Mô tả của nó không được giữ lại: vị trí trong Kept không có ghi chú."
+msgid "Its description isn't kept: places in SheepKeep have no notes."
+msgstr "Mô tả của nó không được giữ lại: vị trí trong SheepKeep không có ghi chú."
 
 msgid "{joined}, and {more} more"
 msgstr "{joined}, và {more} nữa"
@@ -19495,8 +19495,8 @@ msgstr "Đã sửa lần nhập"
 msgid "Repair this import"
 msgstr "Sửa lần nhập này"
 
-msgid "It was imported before Kept read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
-msgstr "Nó đã được nhập trước khi Kept đọc Homebox theo cách hiện tại. Hãy chọn những gì cần sửa; một lần Hoàn tác sẽ khôi phục tất cả."
+msgid "It was imported before SheepKeep read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
+msgstr "Nó đã được nhập trước khi SheepKeep đọc Homebox theo cách hiện tại. Hãy chọn những gì cần sửa; một lần Hoàn tác sẽ khôi phục tất cả."
 
 msgid "{0, plural, one {Archive the # thing that had quantity 0 in Homebox} other {Archive the # things that had quantity 0 in Homebox}}"
 msgstr "{0, plural, one {Lưu trữ # đồ vật có số lượng 0 trong Homebox} other {Lưu trữ # đồ vật có số lượng 0 trong Homebox}}"
@@ -19547,14 +19547,14 @@ msgstr "Theo dõi"
 msgid "Open {expected}"
 msgstr "Mở {expected}"
 
-msgid "This Kept is set up for <0>{expected}</0>. Open it there."
-msgstr "Kept này được thiết lập cho <0>{expected}</0>. Hãy mở nó ở đó."
+msgid "This SheepKeep is set up for <0>{expected}</0>. Open it there."
+msgstr "SheepKeep này được thiết lập cho <0>{expected}</0>. Hãy mở nó ở đó."
 
-msgid "This Kept is set up for a different address. Open it at the address you were given."
-msgstr "Kept này được thiết lập cho một địa chỉ khác. Hãy mở nó tại địa chỉ bạn được cung cấp."
+msgid "This SheepKeep is set up for a different address. Open it at the address you were given."
+msgstr "SheepKeep này được thiết lập cho một địa chỉ khác. Hãy mở nó tại địa chỉ bạn được cung cấp."
 
-msgid "This Kept is set up for {address}. Open it there."
-msgstr "Kept này được thiết lập cho {address}. Hãy mở nó ở đó."
+msgid "This SheepKeep is set up for {address}. Open it there."
+msgstr "SheepKeep này được thiết lập cho {address}. Hãy mở nó ở đó."
 
 msgid "In Homebox, open Collection → Tools → Backup & Restore and choose Create Backup. When the backup is listed, Download it: that .zip is the file."
 msgstr "Trong Homebox, mở Collection → Tools → Backup & Restore rồi chọn Create Backup. Khi bản sao lưu xuất hiện trong danh sách, hãy Download nó: tệp .zip đó chính là tệp cần dùng."
@@ -19562,8 +19562,8 @@ msgstr "Trong Homebox, mở Collection → Tools → Backup & Restore rồi ch�
 msgid "Homebox v0.26.1 or newer (v0.27.0 recommended): Collection → Tools → Backup & Restore → Create Backup → Download. Older than v0.26: import its spreadsheet export, or update a copy of Homebox first."
 msgstr "Homebox v0.26.1 trở lên (khuyên dùng v0.27.0): Collection → Tools → Backup & Restore → Create Backup → Download. Cũ hơn v0.26: hãy nhập bản xuất bảng tính của nó, hoặc cập nhật một bản sao Homebox trước."
 
-msgid "On a home network without HTTPS, the person who runs this Kept can make one on the server: kept admin token create."
-msgstr "Trên mạng gia đình không có HTTPS, người vận hành Kept này có thể tạo một token trên máy chủ: kept admin token create."
+msgid "On a home network without HTTPS, the person who runs this SheepKeep can make one on the server: kept admin token create."
+msgstr "Trên mạng gia đình không có HTTPS, người vận hành SheepKeep này có thể tạo một token trên máy chủ: kept admin token create."
 
 msgid "Open the map"
 msgstr "Mở bản đồ"
@@ -19577,8 +19577,8 @@ msgstr "{count, plural, one {+# thùng} other {+# thùng}}"
 msgid "Allow private addresses in Admin → Settings"
 msgstr "Cho phép địa chỉ riêng tư trong Quản trị → Cài đặt"
 
-msgid "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put Kept on HTTPS to add one."
-msgstr "Khóa truy cập cần HTTPS. Trên địa chỉ HTTP thuần, trình duyệt không cung cấp khóa truy cập; hãy đưa Kept lên HTTPS để thêm khóa truy cập."
+msgid "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put SheepKeep on HTTPS to add one."
+msgstr "Khóa truy cập cần HTTPS. Trên địa chỉ HTTP thuần, trình duyệt không cung cấp khóa truy cập; hãy đưa SheepKeep lên HTTPS để thêm khóa truy cập."
 
 msgid "{0, plural, one {secret value left out of the export} other {secret values left out of the export}}"
 msgstr "{0, plural, one {giá trị bí mật bị bỏ khỏi bản xuất} other {giá trị bí mật bị bỏ khỏi bản xuất}}"
@@ -19589,8 +19589,8 @@ msgstr "Tôi chỉ dùng trong mạng gia đình"
 msgid "Over plain HTTP, secret values stay out of the export. Each one is marked as left out, and the rest imports as usual."
 msgstr "Qua HTTP thuần, các giá trị bí mật sẽ không có trong bản xuất. Mỗi giá trị đều được đánh dấu là bị bỏ qua, và phần còn lại vẫn nhập như thường."
 
-msgid "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at Kept’s HTTPS address."
-msgstr "Mở chúng cần HTTPS. Qua HTTP thuần, mọi thứ khác đều được nhập mà không có chúng; để mang chúng theo cùng, hãy nhập tệp này tại địa chỉ HTTPS của Kept."
+msgid "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at SheepKeep’s HTTPS address."
+msgstr "Mở chúng cần HTTPS. Qua HTTP thuần, mọi thứ khác đều được nhập mà không có chúng; để mang chúng theo cùng, hãy nhập tệp này tại địa chỉ HTTPS của SheepKeep."
 
 msgid "{0} moved to {1} of {2}"
 msgstr "{0} đã chuyển sang {1} trên {2}"
@@ -19760,8 +19760,8 @@ msgstr "Nhìn từ thấp hơn"
 msgid "Show the whole house"
 msgstr "Hiện toàn bộ ngôi nhà"
 
-msgid "The graph is drawn from Kept’s server. The list has everything offline."
-msgstr "Sơ đồ được vẽ từ máy chủ của Kept. Danh sách có đầy đủ mọi thứ khi ngoại tuyến."
+msgid "The graph is drawn from SheepKeep’s server. The list has everything offline."
+msgstr "Sơ đồ được vẽ từ máy chủ của SheepKeep. Danh sách có đầy đủ mọi thứ khi ngoại tuyến."
 
 msgid "Where you are in the graph"
 msgstr "Vị trí của bạn trong sơ đồ"
@@ -19928,8 +19928,8 @@ msgstr "Trang {n} trên {total}: {title}"
 msgid "Slide {n} of {total}"
 msgstr "Trang {n} trên {total}"
 
-msgid "What's new in Kept"
-msgstr "Có gì mới trong Kept"
+msgid "What's new in SheepKeep"
+msgstr "Có gì mới trong SheepKeep"
 
 msgid "Version <0>{version}</0>"
 msgstr "Phiên bản <0>{version}</0>"
@@ -20225,8 +20225,8 @@ msgstr "Các phòng từ sơ đồ"
 msgid "Set a room’s size"
 msgstr "Đặt kích thước của một phòng"
 
-msgid "Kept read the first 60 rooms. Add the rest by drawing."
-msgstr "Kept đã đọc 60 phòng đầu tiên. Thêm các phòng còn lại bằng cách vẽ."
+msgid "SheepKeep read the first 60 rooms. Add the rest by drawing."
+msgstr "SheepKeep đã đọc 60 phòng đầu tiên. Thêm các phòng còn lại bằng cách vẽ."
 
 msgid "Keep the plan with <0>{location}</0>"
 msgstr "Giữ sơ đồ cùng với <0>{location}</0>"
@@ -20258,8 +20258,8 @@ msgstr "Tên không rõ trên sơ đồ."
 msgid "Add {room}"
 msgstr "Thêm {room}"
 
-msgid "A photo, a screenshot or a PDF of a plan. Kept reads the rooms and their sizes; you check them before anything is added."
-msgstr "Một ảnh, ảnh chụp màn hình hoặc PDF của một sơ đồ. Kept đọc các phòng và kích thước của chúng; bạn kiểm tra trước khi bất cứ thứ gì được thêm vào."
+msgid "A photo, a screenshot or a PDF of a plan. SheepKeep reads the rooms and their sizes; you check them before anything is added."
+msgstr "Một ảnh, ảnh chụp màn hình hoặc PDF của một sơ đồ. SheepKeep đọc các phòng và kích thước của chúng; bạn kiểm tra trước khi bất cứ thứ gì được thêm vào."
 
 msgid "Use a sample floor plan"
 msgstr "Dùng sơ đồ mặt bằng mẫu"
@@ -20279,8 +20279,8 @@ msgstr "Chỉ trang đầu tiên được đọc."
 msgid "Up to ~{tokens} tokens"
 msgstr "Tối đa ~{tokens} token"
 
-msgid "Kept sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
-msgstr "Kept gửi sơ đồ, không kèm dữ liệu định vị của nó, tới <0>{name}</0>. Nó sẽ bị xóa khi bạn hoàn tất, trừ khi bạn giữ lại."
+msgid "SheepKeep sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
+msgstr "SheepKeep gửi sơ đồ, không kèm dữ liệu định vị của nó, tới <0>{name}</0>. Nó sẽ bị xóa khi bạn hoàn tất, trừ khi bạn giữ lại."
 
 msgid "Read the plan"
 msgstr "Đọc sơ đồ"
@@ -20315,8 +20315,8 @@ msgstr "Chọn loại"
 msgid "Couldn't save the label image. Try again."
 msgstr "Không lưu được ảnh nhãn. Thử lại."
 
-msgid "Kept label"
-msgstr "Nhãn Kept"
+msgid "SheepKeep label"
+msgstr "Nhãn SheepKeep"
 
 msgid "Loading the label"
 msgstr "Đang tải nhãn"
@@ -20342,12 +20342,12 @@ msgid "What the file can hold"
 msgstr "Tệp có thể chứa gì"
 
 #: src/components/import/csv-help.tsx
-msgid "The first row names the columns, in any of Kept's languages. Kept matches the names it knows, and you choose the rest in the next step. Only a name is needed."
-msgstr "Hàng đầu tiên ghi tên các cột, bằng bất kỳ ngôn ngữ nào của Kept. Kept tự khớp những tên nó biết, phần còn lại bạn chọn ở bước tiếp theo. Chỉ cần có tên."
+msgid "The first row names the columns, in any of SheepKeep's languages. SheepKeep matches the names it knows, and you choose the rest in the next step. Only a name is needed."
+msgstr "Hàng đầu tiên ghi tên các cột, bằng bất kỳ ngôn ngữ nào của SheepKeep. SheepKeep tự khớp những tên nó biết, phần còn lại bạn chọn ở bước tiếp theo. Chỉ cần có tên."
 
 #: src/components/import/csv-help.tsx
-msgid "The columns Kept reads"
-msgstr "Các cột Kept đọc được"
+msgid "The columns SheepKeep reads"
+msgstr "Các cột SheepKeep đọc được"
 
 #: src/components/import/csv-help.tsx
 msgid "A field of your own types, such as Wattage"
@@ -20434,8 +20434,8 @@ msgid "Used for <0>{personal}</0>, your private threads, and questions that span
 msgstr "Dùng cho <0>{personal}</0>, các cuộc trò chuyện riêng tư của bạn và những câu hỏi liên quan đến nhiều chủ sở hữu."
 
 #: src/components/delete-account.tsx
-msgid "You asked for it, with your own location and everything in it. Until then nothing else in Kept opens. Keep the account to go back to it as it was."
-msgstr "Bạn đã yêu cầu việc đó, cùng với địa điểm của riêng bạn và mọi thứ trong đó. Cho đến lúc đó, không có gì khác trong Kept mở được. Hãy giữ tài khoản để quay lại như trước."
+msgid "You asked for it, with your own location and everything in it. Until then nothing else in SheepKeep opens. Keep the account to go back to it as it was."
+msgstr "Bạn đã yêu cầu việc đó, cùng với địa điểm của riêng bạn và mọi thứ trong đó. Cho đến lúc đó, không có gì khác trong SheepKeep mở được. Hãy giữ tài khoản để quay lại như trước."
 
 #: src/components/delete-account.tsx
 msgid "Your account, your own location <0>{personal}</0> and everything in it are deleted 30 days from now. Until then you can sign in and keep the account; nothing else opens."
@@ -20873,8 +20873,8 @@ msgid "Resize places"
 msgstr "Đổi độ rộng danh sách vị trí"
 
 #: src/components/import/labels.ts
-msgid "{count, plural, one {# link keeps its Homebox title: Kept couldn't get one from Paperless.} other {# links keep their Homebox titles: Kept couldn't get them from Paperless.}}"
-msgstr "{count, plural, one {# liên kết giữ tiêu đề từ Homebox: Kept không lấy được tiêu đề từ Paperless.} other {# liên kết giữ tiêu đề từ Homebox: Kept không lấy được tiêu đề từ Paperless.}}"
+msgid "{count, plural, one {# link keeps its Homebox title: SheepKeep couldn't get one from Paperless.} other {# links keep their Homebox titles: SheepKeep couldn't get them from Paperless.}}"
+msgstr "{count, plural, one {# liên kết giữ tiêu đề từ Homebox: SheepKeep không lấy được tiêu đề từ Paperless.} other {# liên kết giữ tiêu đề từ Homebox: SheepKeep không lấy được tiêu đề từ Paperless.}}"
 
 #: src/routes/signin/index.tsx
 msgid "Passkeys work only at <0/>, because browsers tie a passkey to one address. Here, use your password or an email link."
@@ -21104,8 +21104,8 @@ msgid "Connect Home Assistant"
 msgstr "Kết nối Home Assistant"
 
 #: src/components/connections/token-create.tsx
-msgid "Home Assistant reads Kept as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
-msgstr "Home Assistant đọc Kept với tư cách của bạn, trong các địa điểm bạn chọn, và tự lấy token của nó: không có gì để sao chép. Thu hồi nó tại đây bất cứ lúc nào."
+msgid "Home Assistant reads SheepKeep as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
+msgstr "Home Assistant đọc SheepKeep với tư cách của bạn, trong các địa điểm bạn chọn, và tự lấy token của nó: không có gì để sao chép. Thu hồi nó tại đây bất cứ lúc nào."
 
 #: src/components/connections/token-create.tsx
 msgid "Home Assistant is connected"
@@ -21386,8 +21386,8 @@ msgid "An attached file exceeds the server upload limit."
 msgstr "Tệp đính kèm vượt quá giới hạn tải lên của máy chủ."
 
 #: src/native/main.tsx
-msgid "An attached file format is not supported by Kept."
-msgstr "Kept không hỗ trợ định dạng của tệp đính kèm."
+msgid "An attached file format is not supported by SheepKeep."
+msgstr "SheepKeep không hỗ trợ định dạng của tệp đính kèm."
 
 #: src/native/main.tsx
 msgid "An uploaded file did not match its saved checksum. Retry or review the capture."
@@ -21427,16 +21427,16 @@ msgid "Close camera"
 msgstr "Đóng máy ảnh"
 
 #: src/native/main.tsx
-msgid "Connect to Kept to review recent batches."
-msgstr "Kết nối với Kept để xem lại các lô gần đây."
+msgid "Connect to SheepKeep to review recent batches."
+msgstr "Kết nối với SheepKeep để xem lại các lô gần đây."
 
 #: src/native/main.tsx
 msgid "Connect to your inventory"
 msgstr "Kết nối với kho của bạn"
 
 #: src/native/label-panel.tsx
-msgid "Connect to your Kept server over HTTPS to enroll NFC tags."
-msgstr "Kết nối với máy chủ Kept qua HTTPS để ghi thẻ NFC."
+msgid "Connect to your SheepKeep server over HTTPS to enroll NFC tags."
+msgstr "Kết nối với máy chủ SheepKeep qua HTTPS để ghi thẻ NFC."
 
 #: src/native/main.tsx
 msgid "Continue finding"
@@ -21447,8 +21447,8 @@ msgid "Continue scanning"
 msgstr "Tiếp tục quét"
 
 #: src/native/main.tsx
-msgid "Could not connect to Kept. Check the server address and try again."
-msgstr "Không thể kết nối với Kept. Hãy kiểm tra địa chỉ máy chủ và thử lại."
+msgid "Could not connect to SheepKeep. Check the server address and try again."
+msgstr "Không thể kết nối với SheepKeep. Hãy kiểm tra địa chỉ máy chủ và thử lại."
 
 #: src/native/main.tsx
 msgid "Sign-in cancelled."
@@ -21459,8 +21459,8 @@ msgid "Could not create the box. Check your connection and selected location."
 msgstr "Không thể tạo hộp. Hãy kiểm tra kết nối và vị trí đã chọn."
 
 #: src/native/main.tsx
-msgid "Could not search Kept. Try again."
-msgstr "Không thể tìm kiếm trong Kept. Hãy thử lại."
+msgid "Could not search SheepKeep. Try again."
+msgstr "Không thể tìm kiếm trong SheepKeep. Hãy thử lại."
 
 #: src/native/main.tsx
 msgid "Could not sign out."
@@ -21567,24 +21567,24 @@ msgid "Keep my description"
 msgstr "Giữ mô tả của tôi"
 
 #: src/native/main.tsx
-msgid "Kept could not read the saved session."
-msgstr "Kept không thể đọc phiên đã lưu."
+msgid "SheepKeep could not read the saved session."
+msgstr "SheepKeep không thể đọc phiên đã lưu."
 
 #: src/native/capture-form.tsx
-msgid "Kept could not save on this iPhone. Check available storage and try again."
-msgstr "Kept không thể lưu trên iPhone này. Hãy kiểm tra dung lượng trống và thử lại."
+msgid "SheepKeep could not save on this iPhone. Check available storage and try again."
+msgstr "SheepKeep không thể lưu trên iPhone này. Hãy kiểm tra dung lượng trống và thử lại."
 
 #: src/native/label-panel.tsx
-msgid "Kept QR label"
-msgstr "Nhãn QR Kept"
+msgid "SheepKeep QR label"
+msgstr "Nhãn QR SheepKeep"
 
 #: src/native/main.tsx
-msgid "Kept server address"
-msgstr "Địa chỉ máy chủ Kept"
+msgid "SheepKeep server address"
+msgstr "Địa chỉ máy chủ SheepKeep"
 
 #: src/native/label-panel.tsx
-msgid "Kept tag verified."
-msgstr "Đã xác minh thẻ Kept."
+msgid "SheepKeep tag verified."
+msgstr "Đã xác minh thẻ SheepKeep."
 
 #: src/native/label-panel.tsx
 #: src/native/record.tsx
@@ -21628,16 +21628,16 @@ msgid "No matching inventory."
 msgstr "Không có mục kho phù hợp."
 
 #: src/native/label-panel.tsx
-msgid "Not a Kept label."
-msgstr "Đây không phải nhãn Kept."
+msgid "Not a SheepKeep label."
+msgstr "Đây không phải nhãn SheepKeep."
 
 #: src/native/main.tsx
 msgid "Nothing in this batch needs review."
 msgstr "Không có mục nào trong lô này cần duyệt."
 
 #: src/native/main.tsx
-msgid "Offline. Changes stay on this iPhone until Kept is reachable."
-msgstr "Ngoại tuyến. Các thay đổi được giữ trên iPhone này cho đến khi kết nối lại với Kept."
+msgid "Offline. Changes stay on this iPhone until SheepKeep is reachable."
+msgstr "Ngoại tuyến. Các thay đổi được giữ trên iPhone này cho đến khi kết nối lại với SheepKeep."
 
 #: src/native/main.tsx
 msgid "Only part of your inventory is cached."
@@ -21779,8 +21779,8 @@ msgid "Sign out with unsynced captures?"
 msgstr "Đăng xuất khi vẫn còn mục chưa đồng bộ?"
 
 #: src/native/main.tsx
-msgid "Signed out on this iPhone. Kept could not revoke the server session while offline."
-msgstr "Đã đăng xuất trên iPhone này. Kept không thể thu hồi phiên máy chủ khi ngoại tuyến."
+msgid "Signed out on this iPhone. SheepKeep could not revoke the server session while offline."
+msgstr "Đã đăng xuất trên iPhone này. SheepKeep không thể thu hồi phiên máy chủ khi ngoại tuyến."
 
 #: src/native/main.tsx
 msgid "Stay signed in"
@@ -21862,8 +21862,8 @@ msgid "This is a different label. Scan another tag."
 msgstr "Đây là nhãn khác. Hãy quét thẻ khác."
 
 #: src/native/main.tsx
-msgid "This Kept was restored or replaced. Pending captures from the previous server state are held for review."
-msgstr "Máy chủ Kept này đã được khôi phục hoặc thay thế. Các mục đang chờ từ trạng thái trước được giữ lại để kiểm tra."
+msgid "This SheepKeep was restored or replaced. Pending captures from the previous server state are held for review."
+msgstr "Máy chủ SheepKeep này đã được khôi phục hoặc thay thế. Các mục đang chờ từ trạng thái trước được giữ lại để kiểm tra."
 
 #: src/native/label-panel.tsx
 msgid "This label could not be checked offline, so it is not confirmed as a different box."
@@ -21879,8 +21879,8 @@ msgstr "Nhãn này chưa được gán."
 
 #: src/native/label-panel.tsx
 #: src/native/main.tsx
-msgid "This label is unavailable in your Kept."
-msgstr "Nhãn này không khả dụng trong Kept của bạn."
+msgid "This label is unavailable in your SheepKeep."
+msgstr "Nhãn này không khả dụng trong SheepKeep của bạn."
 
 #: src/native/label-panel.tsx
 msgid "This NFC tag is blank."
@@ -21895,8 +21895,8 @@ msgid "This NFC tag is too small for the label URL."
 msgstr "Thẻ NFC này quá nhỏ cho URL của nhãn."
 
 #: src/native/label-panel.tsx
-msgid "This tag already contains the verified Kept label."
-msgstr "Thẻ này đã chứa nhãn Kept đã xác minh."
+msgid "This tag already contains the verified SheepKeep label."
+msgstr "Thẻ này đã chứa nhãn SheepKeep đã xác minh."
 
 #: src/native/label-panel.tsx
 msgid "This tag already holds information. Writing will replace its contents."
@@ -21904,12 +21904,12 @@ msgstr "Thẻ này đã có dữ liệu. Việc ghi sẽ thay thế nội dung h
 
 #: src/native/label-panel.tsx
 #: src/native/main.tsx
-msgid "This tag belongs to a different Kept server."
-msgstr "Thẻ này thuộc về một máy chủ Kept khác."
+msgid "This tag belongs to a different SheepKeep server."
+msgstr "Thẻ này thuộc về một máy chủ SheepKeep khác."
 
 #: src/native/label-panel.tsx
-msgid "This tag does not contain a Kept label URL."
-msgstr "Thẻ này không chứa URL nhãn Kept."
+msgid "This tag does not contain a SheepKeep label URL."
+msgstr "Thẻ này không chứa URL nhãn SheepKeep."
 
 #: src/native/label-panel.tsx
 msgid "This tag does not support NDEF."
@@ -21968,8 +21968,8 @@ msgstr "Bộ nhớ iPhone đã đầy. Hãy giải phóng dung lượng và th�
 msgid "Your session ended. Sign in again to see your pending captures."
 msgstr "Phiên của bạn đã kết thúc. Hãy đăng nhập lại để xem các mục đang chờ."
 
-msgid "Connected Kept for iPhone"
-msgstr "Đã kết nối Kept cho iPhone"
+msgid "Connected SheepKeep for iPhone"
+msgstr "Đã kết nối SheepKeep cho iPhone"
 
 msgid "Entries saved in this batch: {saved}"
 msgstr "Số mục đã lưu trong đợt này: {saved}"
@@ -21982,12 +21982,12 @@ msgid "Discarded: {batchDiscardedCount}"
 msgstr "Đã loại bỏ: {batchDiscardedCount}"
 
 #: src/native/label-panel.tsx
-msgid "That code matches more than one item, so Kept cannot confirm whether it is this box. Scan another tag."
-msgstr "Mã đó khớp với nhiều mục, vì vậy Kept không thể xác nhận đó có phải hộp này không. Hãy quét thẻ khác."
+msgid "That code matches more than one item, so SheepKeep cannot confirm whether it is this box. Scan another tag."
+msgstr "Mã đó khớp với nhiều mục, vì vậy SheepKeep không thể xác nhận đó có phải hộp này không. Hãy quét thẻ khác."
 
 #: src/native/main.tsx
-msgid "This Kept server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade Kept, then retry. Nothing was changed or removed."
-msgstr "Máy chủ Kept này cũ hơn và chưa thể chấp nhận bản ghi này. Mục và bản gốc vẫn ở trên iPhone này — hãy nâng cấp Kept rồi thử lại. Không có gì bị thay đổi hoặc xóa."
+msgid "This SheepKeep server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade SheepKeep, then retry. Nothing was changed or removed."
+msgstr "Máy chủ SheepKeep này cũ hơn và chưa thể chấp nhận bản ghi này. Mục và bản gốc vẫn ở trên iPhone này — hãy nâng cấp SheepKeep rồi thử lại. Không có gì bị thay đổi hoặc xóa."
 
 #: src/native/main.tsx
 msgid "Discard held {0}?"
@@ -22006,8 +22006,8 @@ msgid "Held captures: {0}"
 msgstr "Bản ghi bị giữ: {0}"
 
 #: src/native/main.tsx
-msgid "These captures were saved before this Kept server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
-msgstr "Các bản ghi này đã được lưu trước khi máy chủ Kept này được khôi phục, vì vậy việc phát lại tự động bị tạm dừng để tránh trùng lặp. Chúng vẫn ở trên iPhone này cho đến khi bạn xuất hoặc loại bỏ. Đã lưu trên thiết bị không có nghĩa là đã sao lưu."
+msgid "These captures were saved before this SheepKeep server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
+msgstr "Các bản ghi này đã được lưu trước khi máy chủ SheepKeep này được khôi phục, vì vậy việc phát lại tự động bị tạm dừng để tránh trùng lặp. Chúng vẫn ở trên iPhone này cho đến khi bạn xuất hoặc loại bỏ. Đã lưu trên thiết bị không có nghĩa là đã sao lưu."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -22103,8 +22103,8 @@ msgid "Sign in with Apple for iPhone"
 msgstr "Đăng nhập bằng Apple trên iPhone"
 
 #: src/native/main.tsx
-msgid "Update this Kept server to sign in with Apple."
-msgstr "Hãy cập nhật máy chủ Kept này để đăng nhập bằng Apple."
+msgid "Update this SheepKeep server to sign in with Apple."
+msgstr "Hãy cập nhật máy chủ SheepKeep này để đăng nhập bằng Apple."
 
 #: src/native/record.tsx
 msgid "Add to this room"
@@ -22367,8 +22367,8 @@ msgid "This record will be available in Unplaced."
 msgstr "Hồ sơ này sẽ xuất hiện trong mục Chưa xếp chỗ."
 
 #: src/native/edit-record.tsx
-msgid "Update this Kept server to use this action."
-msgstr "Cập nhật máy chủ Kept này để dùng thao tác đó."
+msgid "Update this SheepKeep server to use this action."
+msgstr "Cập nhật máy chủ SheepKeep này để dùng thao tác đó."
 
 #: src/native/record.tsx
 msgid "Use as cover"
@@ -22394,3 +22394,7 @@ msgstr "Yêu cầu người vận hành máy chủ cấu hình nơi lưu, sau đ
 #: src/components/ops/status-tiles.tsx
 msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
 msgstr "Yêu cầu người vận hành máy chủ cấu hình nơi lưu, sau đó đặt mật khẩu trong mục Sao lưu."
+
+
+msgid "SheepKeep"
+msgstr "SheepKeep"

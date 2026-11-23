@@ -33,6 +33,8 @@ concurrency:
 
 jobs:
   mirror:
+    # Retained upstream workflow. SheepKeep has no Docker Hub distribution configured.
+    if: github.repository == 'keptinventory/kept'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:

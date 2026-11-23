@@ -19,7 +19,7 @@ function SnapshotRow({ snap }: { snap: BackupSnapshot }) {
     <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-0.5 px-3.5 py-2">
       <span className="flex-1 basis-40 tabular-nums">{f.dateTime(snap.time)}</span>
       <span className="text-small text-ink-2">
-        {snap.kind ? words.kind(snap.kind) : <Trans>Not made by Kept</Trans>}
+        {snap.kind ? words.kind(snap.kind) : <Trans>Not made by SheepKeep</Trans>}
         {snap.version ? (
           <>
             {f.sep}

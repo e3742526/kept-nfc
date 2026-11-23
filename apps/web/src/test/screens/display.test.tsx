@@ -275,7 +275,7 @@ describe('Settings → Me → Display', () => {
 describe('the sign-in pages', () => {
   it('pick the language from the same searchable list, in a small box', async () => {
     const { user } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     const box = await screen.findByRole('combobox', { name: 'Language' });
     await user.click(box);
     await user.keyboard('deutsch');

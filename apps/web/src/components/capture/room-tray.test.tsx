@@ -35,7 +35,7 @@ describe('the room tray', () => {
     expect(screen.getByRole('button', { name: 'Send 3 photos' })).toBeEnabled();
   });
 
-  it('says why it is off, and offers the sample photo in Try Kept', async () => {
+  it('says why it is off, and offers the sample photo in Try SheepKeep', async () => {
     const onSample = vi.fn();
     const { user } = await renderUI(
       <RoomTray
@@ -55,7 +55,7 @@ describe('the room tray', () => {
     expectLogicalOnly(document.body);
   });
 
-  it('says plainly that no AI runs in Try Kept, instead of a cost', async () => {
+  it('says plainly that no AI runs in Try SheepKeep, instead of a cost', async () => {
     const tray = (n: number) => (
       <RoomTray
         shots={shots(n)}

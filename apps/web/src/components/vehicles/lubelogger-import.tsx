@@ -115,8 +115,8 @@ function ImportForm({ onClose }: { onClose: () => void }) {
       setFile(null);
       setFileError(
         e instanceof ParseError && e.problem.kind === 'unreadable'
-          ? t`Kept can't read this file. Export it from LubeLogger again as CSV.`
-          : t`Kept can't read this file.`,
+          ? t`SheepKeep can't read this file. Export it from LubeLogger again as CSV.`
+          : t`SheepKeep can't read this file.`,
       );
     }
   };
@@ -252,7 +252,7 @@ function CheckResult({ result }: { result: LubeLoggerImportResult }) {
   const reason = (code: string) => {
     switch (code) {
       case 'date':
-        return t`no date Kept can read`;
+        return t`no date SheepKeep can read`;
       case 'amount':
         return t`no amount of fuel`;
       case 'description':
@@ -266,7 +266,7 @@ function CheckResult({ result }: { result: LubeLoggerImportResult }) {
       case 'cost':
         return t`a cost below zero`;
       default:
-        return t`Kept refused it`;
+        return t`SheepKeep refused it`;
     }
   };
   const shown = result.issues.slice(0, 20);

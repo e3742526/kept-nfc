@@ -140,9 +140,9 @@ function Loaded<K extends 'brands' | 'vendors' | 'people'>({
           <div className="flex flex-wrap items-center gap-1.5 text-small text-ink-2">
             {kind === 'people' ? (
               (item as RegistryItem['people']).userId ? (
-                <Trans>Has a Kept account</Trans>
+                <Trans>Has a SheepKeep account</Trans>
               ) : (
-                <Trans>A contact, without a Kept account</Trans>
+                <Trans>A contact, without a SheepKeep account</Trans>
               )
             ) : null}
             {builtin ? (

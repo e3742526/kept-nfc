@@ -25,6 +25,7 @@ permissions:
 jobs:
   cla:
     if: >-
+      github.repository == 'keptinventory/kept' &&
       github.event.repository.private == false &&
       (github.event_name == 'pull_request_target' ||
        github.event.comment.body == 'recheck' ||

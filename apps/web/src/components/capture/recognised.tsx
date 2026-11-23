@@ -41,7 +41,7 @@ export function RecognisedLabel({
   const name = label.name ?? (label.kind === 'blank' ? t`Blank label` : t`a box`);
   return (
     <section
-      aria-label={t`Kept label in view`}
+      aria-label={t`SheepKeep label in view`}
       className="absolute inset-x-2.5 bottom-2.5 z-10 grid gap-2.5 rounded-[14px] border border-[#34302A] bg-[#1E1C19] p-3 text-[#F2EFE9]"
     >
       <div className="flex items-center gap-2.5">
@@ -60,7 +60,7 @@ export function RecognisedLabel({
       </div>
       {label.kind === 'unknown' ? (
         <p className="m-0 text-[#BDB7AC] text-[13px]">
-          <Trans>Not on this phone. Kept checks it when you open it online.</Trans>
+          <Trans>Not on this phone. SheepKeep checks it when you open it online.</Trans>
         </p>
       ) : label.where ? (
         <p className="m-0 text-[#BDB7AC] text-[13px]">

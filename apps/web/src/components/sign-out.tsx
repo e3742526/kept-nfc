@@ -43,7 +43,7 @@ export function useSignOut() {
           one: "# capture hasn't synced. Signing out deletes it.",
           other: "# captures haven't synced. Signing out deletes them.",
         }),
-        body: t`Stay signed in and open Kept with a connection to finish syncing first.`,
+        body: t`Stay signed in and open SheepKeep with a connection to finish syncing first.`,
         confirmLabel: t`Sign out anyway`,
         destructive: true,
       }))
@@ -61,7 +61,7 @@ export function useSignOut() {
   };
 }
 
-/** Try Kept (D246) has no account to leave: its banner's Reset starts the household again. */
+/** Try SheepKeep (D246) has no account to leave: its banner's Reset starts the household again. */
 export function SignOutButton() {
   return TRY ? null : <SignOut />;
 }

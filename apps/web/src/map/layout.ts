@@ -108,7 +108,7 @@ export type Item = {
   on: string | null;
   /** #138: on a wall, how high its middle hangs (metres); unset for everything standing. */
   hang?: number;
-  /** Kept's nearest room or node above it. */
+  /** SheepKeep's nearest room or node above it. */
   parentId: string;
   isContainer: boolean;
   quantity: number;
@@ -118,7 +118,7 @@ export type Item = {
   /** Why it has its shape, when it was put on the map in this session (D249): from its type or
    * its name, or a guess the card asks about. Never stored; picking a shape clears it. */
   shapeFrom?: ShapeFrom;
-  /** Kept put it here by itself (a room photo's accepted thing, #194): Arrange lists it to
+  /** SheepKeep put it here by itself (a room photo's accepted thing, #194): Arrange lists it to
    * nudge. Saving the arrangement makes it the person's. */
   placedByKept?: boolean;
   /** Furniture made from a place template (#238): its grid as it stands and its compartments,
@@ -1247,7 +1247,7 @@ export function wallTops(items: readonly Item[], roomId: string): Map<MapWall, n
 // ---------------------------------------------------------------------------------------------
 
 export type Contents = {
-  /** Things directly under a room or node (Kept's nearest one above them). */
+  /** Things directly under a room or node (SheepKeep's nearest one above them). */
   under: Map<string, MapThingView[]>;
   /** Places on the map directly under a room or node: walked through, never counted. */
   places: Map<string, string[]>;

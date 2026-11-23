@@ -243,7 +243,7 @@ describe('planOf (auto layout, M2)', () => {
     });
   });
 
-  it('marks what Kept placed by itself from room photos, for Arrange to list', () => {
+  it('marks what SheepKeep placed by itself from room photos, for Arrange to list', () => {
     const v = view();
     const desk = v.nodes[2];
     if (desk) {

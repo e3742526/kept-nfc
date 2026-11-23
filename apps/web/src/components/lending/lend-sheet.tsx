@@ -193,7 +193,7 @@ function LendForm({ onClose }: { onClose: () => void }) {
       ) : null}
       <DatePicker
         label={t`Due back`}
-        description={t`Optional. Kept reminds you, never them, two days before and when it's overdue.`}
+        description={t`Optional. SheepKeep reminds you, never them, two days before and when it's overdue.`}
         value={dueOn}
         onChange={setDueOn}
         minValue={today}

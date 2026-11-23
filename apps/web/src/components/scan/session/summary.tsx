@@ -494,7 +494,7 @@ export function SessionSummary({
         />,
       )}
       {group(
-        t`Not in your Kept (${n(sum.notInYourKept.length)})`,
+        t`Not in your SheepKeep (${n(sum.notInYourKept.length)})`,
         sum.notInYourKept.length,
         <Rows items={sum.notInYourKept} render={(r) => <bdi dir="ltr">{r.code ?? r.text}</bdi>} />,
       )}

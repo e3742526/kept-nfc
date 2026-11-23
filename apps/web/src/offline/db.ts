@@ -133,7 +133,7 @@ export type MetaKey =
   | 'tags'
   /** The tags hash last received, sent back as `tagsHash`. */
   | 'tagsHash'
-  /** The server said only part of the Kept fits on this phone. */
+  /** The server said only part of the SheepKeep fits on this phone. */
   | 'truncated'
   /** The payload window the server reported on its last snapshot page (D148). */
   | 'serverPayloadWindow'

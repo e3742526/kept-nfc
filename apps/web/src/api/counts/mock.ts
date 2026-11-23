@@ -446,7 +446,7 @@ export function recordCount(
   s.finished = true;
 }
 
-/** For Try Kept and tests: a past count, as the server would have saved it. */
+/** For Try SheepKeep and tests: a past count, as the server would have saved it. */
 export function seedCount(state: MockState, r: CountResult): void {
   countsStore(state).results.push(r);
 }

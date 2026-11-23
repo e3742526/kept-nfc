@@ -232,10 +232,10 @@ export default defineConfig({
       },
     }),
     starlight({
-      title: 'Kept',
+      title: 'SheepKeep',
       description:
         'A self-hosted, open-source inventory of everything you own and where it is. Built-in AI assistant and MCP server.',
-      logo: { src: './src/assets/logo.svg', alt: 'Kept' },
+      logo: { src: './src/assets/logo.svg', alt: 'SheepKeep' },
       favicon: '/favicon.svg',
       defaultLocale: 'root',
       locales,
@@ -244,6 +244,7 @@ export default defineConfig({
         Hero: './src/components/Hero.astro',
         LanguageSelect: './src/components/language/LanguageSelect.astro',
         Search: './src/components/Search.astro',
+        Footer: './src/components/Footer.astro',
       },
       // The share card: og:image and twitter:image (absolute, from `site` and `base`), og:locale
       // per language, og:type website on the landing pages.
@@ -260,8 +261,11 @@ export default defineConfig({
         './src/styles/kept.css',
       ],
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/keptinventory/kept' },
-        { icon: 'discord', label: 'Discord', href: 'https://discord.gg/g4WCXPfuNv' },
+        {
+          icon: 'github',
+          label: 'SheepKeep on GitHub',
+          href: 'https://github.com/e3742526/kept-nfc',
+        },
       ],
       plugins: [
         // fr/de/it are fallback pages by design, so links into them must not fail. The API

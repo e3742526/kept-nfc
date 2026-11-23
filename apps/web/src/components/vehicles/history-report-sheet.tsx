@@ -105,7 +105,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
   });
   const startError = (e: unknown) =>
     isApiError(e) && e.code === 'rate_limited'
-      ? t`Kept makes at most five reports an hour. Try again later.`
+      ? t`SheepKeep makes at most five reports an hour. Try again later.`
       : errorText(e);
 
   if (runId)

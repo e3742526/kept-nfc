@@ -93,7 +93,7 @@ export type ReadKind =
   | 'not_in_your_kept'
   /** Offline, and not on the phone: checked once online. */
   | 'check_later'
-  /** Not a Kept label, or the same product barcode again. */
+  /** Not a SheepKeep label, or the same product barcode again. */
   | 'ignored'
   /** The session holds as many labels as it can. */
   | 'full';
@@ -201,7 +201,7 @@ export function newSession(args: {
   };
 }
 
-/** The same label, however it was read: a Kept code by its code, any host. */
+/** The same label, however it was read: a SheepKeep code by its code, any host. */
 export function readKey(text: string, format?: string): string {
   const s = parseScan(text, format);
   switch (s.kind) {

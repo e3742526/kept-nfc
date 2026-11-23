@@ -64,7 +64,7 @@ export function useCanPromptInstall(): boolean {
   return useSyncExternalStore(subscribe, canPromptInstall, () => false);
 }
 
-/** iPhone and iPad: no install prompt and no share target, so Kept explains instead. */
+/** iPhone and iPad: no install prompt and no share target, so SheepKeep explains instead. */
 export function isAppleMobile(ua = navigator.userAgent, touchPoints = navigator.maxTouchPoints) {
   const { os } = describeUserAgent(ua);
   // iPadOS asks for desktop sites and reports a Mac; its touch points give it away.

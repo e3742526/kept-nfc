@@ -85,7 +85,7 @@ function EmailChangePage() {
         }
         footer={
           <LinkButton to="/" variant="primary">
-            <Trans>Open Kept</Trans>
+            <Trans>Open SheepKeep</Trans>
           </LinkButton>
         }
       >

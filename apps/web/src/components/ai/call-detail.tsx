@@ -100,7 +100,7 @@ export function CallFields({ call }: { call: AiCall }) {
   const payer = call.paidBy.label;
   const person =
     call.person === 'background' ? (
-      <Trans>Kept (background)</Trans>
+      <Trans>SheepKeep (background)</Trans>
     ) : call.person ? (
       <bdi>{call.person.name}</bdi>
     ) : (
@@ -188,11 +188,11 @@ export function CallFields({ call }: { call: AiCall }) {
             ) : null}
           </>
         ) : (
-          <Trans>Not sent: Kept held it back, so nothing was used.</Trans>
+          <Trans>Not sent: SheepKeep held it back, so nothing was used.</Trans>
         )}
         {call.tokens.estimate !== null ? (
           <span className="block text-small text-ink-2">
-            <Trans>Kept estimated {n(call.tokens.estimate)} before sending.</Trans>
+            <Trans>SheepKeep estimated {n(call.tokens.estimate)} before sending.</Trans>
           </span>
         ) : null}
       </Field>
@@ -217,7 +217,9 @@ export function CallFields({ call }: { call: AiCall }) {
           </>
         )}
         <span className="block text-small text-ink-2">
-          <Trans>Only a copy with the location and camera data removed. Kept never keeps it.</Trans>
+          <Trans>
+            Only a copy with the location and camera data removed. SheepKeep never keeps it.
+          </Trans>
         </span>
       </Field>
       {call.latencyMs !== null || call.finishReason ? (

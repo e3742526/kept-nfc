@@ -36,7 +36,7 @@ export function NameField({
   useEffect(() => {
     if (dictation.deniedNow)
       toast({
-        title: t`Kept can't use the microphone`,
+        title: t`SheepKeep can't use the microphone`,
         description: t`Allow it in the browser's settings, or type instead.`,
         tone: 'danger',
       });

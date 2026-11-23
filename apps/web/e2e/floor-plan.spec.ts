@@ -165,7 +165,9 @@ test('a floor plan: read, checked, rescaled, one room left out, added, undone', 
   // 1. The sheet: the invented flat, read.
   await stage.getByRole('button', { name: 'Start from a floor plan' }).click();
   const sheet = page.getByRole('dialog', { name: 'Start from a floor plan' });
-  await expect(sheet.getByText(/Kept sends the plan, without its location data/)).toBeVisible();
+  await expect(
+    sheet.getByText(/SheepKeep sends the plan, without its location data/),
+  ).toBeVisible();
   await sheet.locator('input[type="file"]').first().setInputFiles(PLAN);
   await expect(sheet.getByRole('img', { name: 'The plan you chose' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Read the plan' }).click();

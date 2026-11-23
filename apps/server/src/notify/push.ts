@@ -232,7 +232,7 @@ export function digestPush(locale: MailLocale, items: ReminderFacts[], day: stri
   const lines = items.slice(0, DIGEST_LINES).map((f) => w.headline(f));
   if (items.length > DIGEST_LINES) lines.push('…');
   return {
-    title: `Kept${separator(w.tag)}${REMINDER_COUNT[locale](items.length)}`,
+    title: `SheepKeep${separator(w.tag)}${REMINDER_COUNT[locale](items.length)}`,
     body: lines.join('\n'),
     url: '/',
     tag: `digest-${day}`,
@@ -240,14 +240,14 @@ export function digestPush(locale: MailLocale, items: ReminderFacts[], day: stri
 }
 
 const TEST_PUSH: Record<MailLocale, { title: string; body: string }> = {
-  ar: { title: 'Kept', body: 'تصل الإشعارات إلى هذا الجهاز.' },
-  de: { title: 'Kept', body: 'Benachrichtigungen kommen auf diesem Gerät an.' },
-  en: { title: 'Kept', body: 'Notifications reach this device.' },
-  es: { title: 'Kept', body: 'Las notificaciones llegan a este dispositivo.' },
-  fr: { title: 'Kept', body: 'Les notifications arrivent sur cet appareil.' },
-  it: { title: 'Kept', body: 'Le notifiche arrivano su questo dispositivo.' },
-  uk: { title: 'Kept', body: 'Сповіщення надходять на цей пристрій.' },
-  vi: { title: 'Kept', body: 'Thông báo đến được thiết bị này.' },
+  ar: { title: 'SheepKeep', body: 'تصل الإشعارات إلى هذا الجهاز.' },
+  de: { title: 'SheepKeep', body: 'Benachrichtigungen kommen auf diesem Gerät an.' },
+  en: { title: 'SheepKeep', body: 'Notifications reach this device.' },
+  es: { title: 'SheepKeep', body: 'Las notificaciones llegan a este dispositivo.' },
+  fr: { title: 'SheepKeep', body: 'Les notifications arrivent sur cet appareil.' },
+  it: { title: 'SheepKeep', body: 'Le notifiche arrivano su questo dispositivo.' },
+  uk: { title: 'SheepKeep', body: 'Сповіщення надходять на цей пристрій.' },
+  vi: { title: 'SheepKeep', body: 'Thông báo đến được thiết bị này.' },
 };
 
 /** The test send's payload (Settings → Me → Notifications → Test). */

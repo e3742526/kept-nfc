@@ -34,7 +34,7 @@ export function useHintCopy(): Record<FirstUseHint, HintCopy> & { gotIt: string 
       description: t`Tap Scan on Home and point the camera at a label: what it belongs to opens, with what's inside. A label keeps its code for good, so a lost one reprints the same.`,
     },
     'scan.first_open': {
-      title: t`Point at a Kept label`,
+      title: t`Point at a SheepKeep label`,
       description: t`What it belongs to opens, with what's inside. A worn label, or no camera? Type the code instead.`,
     },
   };
@@ -59,7 +59,7 @@ export function useTourStepCopy(): Record<string, HintCopy> {
     ),
     'basics.scan': e(
       t`Scan`,
-      t`Tap Scan and point the camera at a Kept label. What it's on opens.`,
+      t`Tap Scan and point the camera at a SheepKeep label. What it's on opens.`,
     ),
     'basics.search': e(
       t`Search`,
@@ -110,7 +110,7 @@ export function useTourStepCopy(): Record<string, HintCopy> {
     ),
     'capture.room': e(
       t`A whole room`,
-      t`Up to five photos of a room. AI lists what's in them as drafts, skipping what Kept already has.`,
+      t`Up to five photos of a room. AI lists what's in them as drafts, skipping what SheepKeep already has.`,
     ),
     'capture.shutter': e(
       t`Take the photo`,
@@ -120,7 +120,10 @@ export function useTourStepCopy(): Record<string, HintCopy> {
       t`Yours or everyone's`,
       t`Switch between what you captured and what everyone in your locations did.`,
     ),
-    'capture.review': e(t`Review`, t`Check what Kept read, fix anything wrong, then tap Accept.`),
+    'capture.review': e(
+      t`Review`,
+      t`Check what SheepKeep read, fix anything wrong, then tap Accept.`,
+    ),
 
     'scanning.start': e(
       t`Scan many at once`,
@@ -189,7 +192,7 @@ export function useTourStepCopy(): Record<string, HintCopy> {
     'schedules.complete': e(t`Complete`, t`Tap Complete when it's done. The next date moves on.`),
     'schedules.reminders': e(
       t`Reminders`,
-      t`Choose how reminders reach you: in Kept, by email, push or a channel.`,
+      t`Choose how reminders reach you: in SheepKeep, by email, push or a channel.`,
     ),
 
     'paperwork.list': e(
@@ -217,7 +220,7 @@ export function useTourStepCopy(): Record<string, HintCopy> {
 
     'import-export.source': e(
       t`Import`,
-      t`Pick where it comes from: a spreadsheet, Homebox or another Kept.`,
+      t`Pick where it comes from: a spreadsheet, Homebox or another SheepKeep.`,
     ),
     'import-export.file': e(
       t`The file`,
@@ -230,7 +233,7 @@ export function useTourStepCopy(): Record<string, HintCopy> {
 
     'settings.notifications': e(
       t`Notifications`,
-      t`Choose what reaches you, and how: in Kept, by email, push or a channel.`,
+      t`Choose what reaches you, and how: in SheepKeep, by email, push or a channel.`,
     ),
     'settings.locations': e(
       t`Your locations`,

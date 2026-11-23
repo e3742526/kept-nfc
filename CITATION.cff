@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: Cite this repository and the revision you used. Credit Kept for the upstream project.
+title: SheepKeep
+type: software
+authors:
+  - name: SheepKeep contributors
+repository-code: https://github.com/e3742526/kept-nfc
+license: AGPL-3.0-only
+references:
+  - type: software
+    title: Kept
+    authors:
+      - given-names: Ibrahim
+        family-names: Roshdy
+      - name: Kept contributors
+    repository-code: https://github.com/keptinventory/kept
+    commit: 52a19f0c9060f6db3f6250a6b46d7cd9032aae66
+    license: AGPL-3.0-only

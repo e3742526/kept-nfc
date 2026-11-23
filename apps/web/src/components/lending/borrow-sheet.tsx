@@ -173,7 +173,7 @@ function BorrowForm({
       <WherePicker value={where} onChange={setWhere} allowOtherLocations={false} />
       <DatePicker
         label={t`Due back`}
-        description={t`Optional. Kept reminds you when it's due back.`}
+        description={t`Optional. SheepKeep reminds you when it's due back.`}
         value={dueOn}
         onChange={setDueOn}
         minValue={today}

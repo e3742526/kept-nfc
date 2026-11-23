@@ -96,7 +96,7 @@ export function roomCards(
       children: kids,
     };
   };
-  /** What stands on a node, then what Kept says is in it (nodes inside it as nodes). */
+  /** What stands on a node, then what SheepKeep says is in it (nodes inside it as nodes). */
   function childRows(id: string, depth: number): Row[] {
     const out: Row[] = [];
     const seen = new Set<string>();

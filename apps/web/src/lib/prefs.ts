@@ -173,13 +173,13 @@ export function storedThemePref(): ThemePref {
   return v === 'light' || v === 'dark' ? v : 'system';
 }
 
-/** The browser's language if Kept has it, else English. */
+/** The browser's language if SheepKeep has it, else English. */
 function browserLocale(): Locale {
   const nav = typeof navigator !== 'undefined' ? navigator.language : 'en';
   return localeOfTag(nav ?? 'en') ?? 'en';
 }
 
-/** The stored language, else the browser's if Kept has it, else English. */
+/** The stored language, else the browser's if SheepKeep has it, else English. */
 export function initialLocale(): Locale {
   const v = read(LOCALE_KEY);
   if (isLocale(v)) return v;
@@ -275,7 +275,7 @@ function resolve(theme: ThemePref): 'light' | 'dark' {
 }
 
 /** The page's paper colour per theme (tokens.css `--paper`), for the browser chrome (L85). */
-export const THEME_COLOR = { light: '#F2F1EC', dark: '#151412' } as const;
+export const THEME_COLOR = { light: '#FFF9EB', dark: '#173E37' } as const;
 
 function applyToDocument(s: State): void {
   const d = document.documentElement;

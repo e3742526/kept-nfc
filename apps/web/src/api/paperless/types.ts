@@ -17,7 +17,7 @@ export type PaperlessError =
   | 'too_large'
   | 'failed';
 
-/** What a document is, in Kept's paperwork roles: Paperless's document type or tags say so when
+/** What a document is, in SheepKeep's paperwork roles: Paperless's document type or tags say so when
  * it is linked; after that the link's kind is the person's to change (#347). */
 export type PaperlessKind = 'receipt' | 'invoice' | 'manual' | 'warranty_doc' | 'document';
 
@@ -91,7 +91,7 @@ export type PaperlessLink = {
   typeName: string | null;
   correspondent: string | null;
   createdOn: string | null;
-  /** The attachment "Copy into Kept" made. */
+  /** The attachment "Copy into SheepKeep" made. */
   copiedAttachmentId: string | null;
   openUrl: string;
   createdBy: { id: string; displayName: string };

@@ -20,20 +20,20 @@ msgstr ", "
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
-msgid "Home Assistant backs up Kept"
-msgstr "Home Assistant backs up Kept"
+msgid "Home Assistant backs up SheepKeep"
+msgstr "Home Assistant backs up SheepKeep"
 
 #: src/routes/_app/admin.backups.tsx
-msgid "Home Assistant backs up Kept: the database, photos and files, and Kept's keys. Take or schedule backups in Home Assistant → {place}."
-msgstr "Home Assistant backs up Kept: the database, photos and files, and Kept's keys. Take or schedule backups in Home Assistant → {place}."
+msgid "Home Assistant backs up SheepKeep: the database, photos and files, and SheepKeep's keys. Take or schedule backups in Home Assistant → {place}."
+msgstr "Home Assistant backs up SheepKeep: the database, photos and files, and SheepKeep's keys. Take or schedule backups in Home Assistant → {place}."
 
 #: src/components/ops/home-assistant-backups.tsx
 msgid "Settings → System → Backups"
 msgstr "Settings → System → Backups"
 
 #: src/components/ops/backup-target-form.tsx
-msgid "Home Assistant backs up Kept here: take or schedule backups in Home Assistant."
-msgstr "Home Assistant backs up Kept here: take or schedule backups in Home Assistant."
+msgid "Home Assistant backs up SheepKeep here: take or schedule backups in Home Assistant."
+msgstr "Home Assistant backs up SheepKeep here: take or schedule backups in Home Assistant."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Take or schedule them in Home Assistant → {place}."
@@ -52,8 +52,8 @@ msgid "Renamed to {trimmed}"
 msgstr "Renamed to {trimmed}"
 
 #: src/components/home/checklist.tsx
-msgid "Set these where Kept's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart Kept:"
-msgstr "Set these where Kept's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart Kept:"
+msgid "Set these where SheepKeep's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart SheepKeep:"
+msgstr "Set these where SheepKeep's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart SheepKeep:"
 
 #: src/components/home/checklist.tsx
 msgid "Set up email"
@@ -64,12 +64,12 @@ msgid "the request was more than the plan allows in one minute"
 msgstr "the request was more than the plan allows in one minute"
 
 #: src/components/home/checklist.tsx
-msgid "the sender, for example <0>Kept <kept@example.org></0>"
-msgstr "the sender, for example <0>Kept <kept@example.org></0>"
+msgid "the sender, for example <0>SheepKeep <kept@example.org></0>"
+msgstr "the sender, for example <0>SheepKeep <kept@example.org></0>"
 
 #: src/components/home/checklist.tsx
-msgid "Without it, Kept sends no sign-in links, password resets, email invites or reminders."
-msgstr "Without it, Kept sends no sign-in links, password resets, email invites or reminders."
+msgid "Without it, SheepKeep sends no sign-in links, password resets, email invites or reminders."
+msgstr "Without it, SheepKeep sends no sign-in links, password resets, email invites or reminders."
 
 #: src/components/home/checklist.tsx
 msgid "your mail server, for example <0>smtps://user:password@smtp.example.org:465</0>"
@@ -842,8 +842,8 @@ msgid "A computer: the camera icon in the address bar, then Allow."
 msgstr "A computer: the camera icon in the address bar, then Allow."
 
 #: src/components/registries/registry-page.tsx
-msgid "A contact, without a Kept account"
-msgstr "A contact, without a Kept account"
+msgid "A contact, without a SheepKeep account"
+msgstr "A contact, without a SheepKeep account"
 
 #: src/components/things/action-menu.tsx
 msgid "A copy without the serial or purchase."
@@ -866,8 +866,8 @@ msgid "A field group"
 msgstr "A field group"
 
 #: src/components/scan/manual-code.tsx
-msgid "A Kept code is 6 letters and digits, like 7KQ‑4MZ."
-msgstr "A Kept code is 6 letters and digits, like 7KQ‑4MZ."
+msgid "A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ."
+msgstr "A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ."
 
 #: src/components/registries/field-sheet.tsx
 msgid "A key is a lower-case word in English letters, digits and _, starting with a letter."
@@ -1278,8 +1278,8 @@ msgid "AI"
 msgstr "AI"
 
 #: src/routes/setup.tsx
-msgid "AI and barcode lookup can be connected later, from Settings. Kept works without them."
-msgstr "AI and barcode lookup can be connected later, from Settings. Kept works without them."
+msgid "AI and barcode lookup can be connected later, from Settings. SheepKeep works without them."
+msgstr "AI and barcode lookup can be connected later, from Settings. SheepKeep works without them."
 
 #: src/lib/labels.ts
 msgid "AI assistant"
@@ -1374,8 +1374,8 @@ msgid "Already claimed"
 msgstr "Already claimed"
 
 #: src/components/inbox/duplicate-review.tsx
-msgid "Already in Kept"
-msgstr "Already in Kept"
+msgid "Already in SheepKeep"
+msgstr "Already in SheepKeep"
 
 #: src/components/history/labels.ts
 #: src/components/things/overview.tsx
@@ -1788,8 +1788,8 @@ msgid "Camera"
 msgstr "Camera"
 
 #: src/components/capture/file-fallback.tsx
-msgid "Camera access is off for Kept."
-msgstr "Camera access is off for Kept."
+msgid "Camera access is off for SheepKeep."
+msgstr "Camera access is off for SheepKeep."
 
 #: src/components/capture/capture-screen.tsx
 msgid "Camera view"
@@ -3124,8 +3124,8 @@ msgid "Every addition, move and edit in the locations you belong to shows here, 
 msgstr "Every addition, move and edit in the locations you belong to shows here, newest first."
 
 #: src/routes/gallery.tsx
-msgid "Every control Kept's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
-msgstr "Every control Kept's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
+msgid "Every control SheepKeep's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
+msgstr "Every control SheepKeep's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
 
 #: src/routes/_app/admin.users.tsx
 msgid "Every device {who} is signed in on is signed out. They get an email about it."
@@ -3582,8 +3582,8 @@ msgid "Go to Home"
 msgstr "Go to Home"
 
 #: src/routes/invite.tsx
-msgid "Go to Kept"
-msgstr "Go to Kept"
+msgid "Go to SheepKeep"
+msgstr "Go to SheepKeep"
 
 #: src/routes/auth/email-change.tsx
 msgid "Go to Settings"
@@ -3621,8 +3621,8 @@ msgstr "Hallway"
 
 #: src/components/registries/registry-list.tsx
 #: src/components/registries/registry-page.tsx
-msgid "Has a Kept account"
-msgstr "Has a Kept account"
+msgid "Has a SheepKeep account"
+msgstr "Has a SheepKeep account"
 
 #: src/components/registries/labels.ts
 msgid "Has a reading that grows, like kilometres or hours."
@@ -3745,8 +3745,8 @@ msgid "How many to take off"
 msgstr "How many to take off"
 
 #: src/routes/setup.tsx
-msgid "How should this Kept work?"
-msgstr "How should this Kept work?"
+msgid "How should this SheepKeep work?"
+msgstr "How should this SheepKeep work?"
 
 #: src/components/capture/file-fallback.tsx
 msgid "How to allow it"
@@ -3823,8 +3823,8 @@ msgid "In a sentence: the drill <0/> is on the tool wall."
 msgstr "In a sentence: the drill <0/> is on the tool wall."
 
 #: src/components/home/install-sheet.tsx
-msgid "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install Kept</0>."
-msgstr "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install Kept</0>."
+msgid "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install SheepKeep</0>."
+msgstr "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install SheepKeep</0>."
 
 #: src/components/home/install-sheet.tsx
 msgid "In Safari on a Mac, choose <0>File › Add to Dock</0>."
@@ -3873,12 +3873,12 @@ msgid "Insights"
 msgstr "Insights"
 
 #: src/components/home/install-sheet.tsx
-msgid "Install Kept"
-msgstr "Install Kept"
+msgid "Install SheepKeep"
+msgstr "Install SheepKeep"
 
 #: src/components/home/install-sheet.tsx
-msgid "Install Kept on your phone"
-msgstr "Install Kept on your phone"
+msgid "Install SheepKeep on your phone"
+msgstr "Install SheepKeep on your phone"
 
 #: src/components/home/checklist.tsx
 msgid "Install on your phone"
@@ -3962,8 +3962,8 @@ msgid "iPhone, iPad"
 msgstr "iPhone, iPad"
 
 #: src/components/capture/file-fallback.tsx
-msgid "iPhone: Settings › Safari › Camera › Allow, then reopen Kept."
-msgstr "iPhone: Settings › Safari › Camera › Allow, then reopen Kept."
+msgid "iPhone: Settings › Safari › Camera › Allow, then reopen SheepKeep."
+msgstr "iPhone: Settings › Safari › Camera › Allow, then reopen SheepKeep."
 
 #: src/components/filters/panel.tsx
 msgid "is any of"
@@ -4131,8 +4131,8 @@ msgid "Join {name}"
 msgstr "Join {name}"
 
 #: src/routes/_app/settings.location.$id.invite.tsx
-msgid "Join {place} on Kept"
-msgstr "Join {place} on Kept"
+msgid "Join {place} on SheepKeep"
+msgstr "Join {place} on SheepKeep"
 
 #: src/routes/_app/admin.users.tsx
 msgid "joined {joined}"
@@ -4143,8 +4143,8 @@ msgid "Joined {joinedName}"
 msgstr "Joined {joinedName}"
 
 #: src/routes/_app/index.tsx
-msgid "Joining someone's Kept?"
-msgstr "Joining someone's Kept?"
+msgid "Joining someone's SheepKeep?"
+msgstr "Joining someone's SheepKeep?"
 
 #: src/components/search/palette.tsx
 msgid "Jump to"
@@ -4236,16 +4236,16 @@ msgid "Kept both"
 msgstr "Kept both"
 
 #: src/components/scan/scanner-view.tsx
-msgid "Kept can't scan here"
-msgstr "Kept can't scan here"
+msgid "SheepKeep can't scan here"
+msgstr "SheepKeep can't scan here"
 
 #: src/components/scan/scan-screen.tsx
-msgid "Kept can't tell what this is from here."
-msgstr "Kept can't tell what this is from here."
+msgid "SheepKeep can't tell what this is from here."
+msgstr "SheepKeep can't tell what this is from here."
 
 #: src/components/capture/file-fallback.tsx
-msgid "Kept can't use the camera"
-msgstr "Kept can't use the camera"
+msgid "SheepKeep can't use the camera"
+msgstr "SheepKeep can't use the camera"
 
 #: src/routes/_app/settings.two-factor.tsx
 msgid "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Two-factor needs a password, so afterwards set a new one with “Forgot your password?” on the sign-in page, then come back here."
@@ -4256,52 +4256,52 @@ msgid "Kept from an earlier type. They're not lost; re-type back to use them aga
 msgstr "Kept from an earlier type. They're not lost; re-type back to use them again."
 
 #: src/components/capture/recognised.tsx
-msgid "Kept label in view"
-msgstr "Kept label in view"
+msgid "SheepKeep label in view"
+msgstr "SheepKeep label in view"
 
 #: src/routes/_app/admin.tsx
-msgid "Kept limits admin actions over HTTP. Put Kept on HTTPS before you rely on them."
-msgstr "Kept limits admin actions over HTTP. Put Kept on HTTPS before you rely on them."
+msgid "SheepKeep limits admin actions over HTTP. Put SheepKeep on HTTPS before you rely on them."
+msgstr "SheepKeep limits admin actions over HTTP. Put SheepKeep on HTTPS before you rely on them."
 
 #: src/components/reports/print-sheet.tsx
-msgid "Kept makes at most five reports an hour. Try again later."
-msgstr "Kept makes at most five reports an hour. Try again later."
+msgid "SheepKeep makes at most five reports an hour. Try again later."
+msgstr "SheepKeep makes at most five reports an hour. Try again later."
 
 #: src/routes/_app/admin.admins.tsx
-msgid "Kept needs at least one instance admin"
-msgstr "Kept needs at least one instance admin"
+msgid "SheepKeep needs at least one instance admin"
+msgstr "SheepKeep needs at least one instance admin"
 
 #: src/routes/_app/admin.admins.tsx
-msgid "Kept needs at least one instance admin, so the last one can't be removed."
-msgstr "Kept needs at least one instance admin, so the last one can't be removed."
+msgid "SheepKeep needs at least one instance admin, so the last one can't be removed."
+msgstr "SheepKeep needs at least one instance admin, so the last one can't be removed."
 
 #: src/components/sync-status.tsx
-msgid "Kept on the server is older than this app; ask your admin."
-msgstr "Kept on the server is older than this app; ask your admin."
+msgid "SheepKeep on the server is older than this app; ask your admin."
+msgstr "SheepKeep on the server is older than this app; ask your admin."
 
 #: src/routes/_app/help.tsx
-msgid "Kept opens from its own icon, full screen, and works offline."
-msgstr "Kept opens from its own icon, full screen, and works offline."
+msgid "SheepKeep opens from its own icon, full screen, and works offline."
+msgstr "SheepKeep opens from its own icon, full screen, and works offline."
 
 #: src/routes/_app/admin.alerts.tsx
-msgid "Kept raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
-msgstr "Kept raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
+msgid "SheepKeep raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
+msgstr "SheepKeep raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
 
 #: src/routes/_app/admin.status.tsx
 msgid "Kept safe"
 msgstr "Kept safe"
 
 #: src/routes/_app/admin.status.tsx
-msgid "Kept sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart Kept. Link invites and passwords work without it."
-msgstr "Kept sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart Kept. Link invites and passwords work without it."
+msgid "SheepKeep sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart SheepKeep. Link invites and passwords work without it."
+msgstr "SheepKeep sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart SheepKeep. Link invites and passwords work without it."
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores the barcode with it."
-msgstr "Kept stores the barcode with it."
+msgid "SheepKeep stores the barcode with it."
+msgstr "SheepKeep stores the barcode with it."
 
 #: src/components/capture/share-arrival.tsx
-msgid "Kept takes photos and PDFs. Share those, or use Gallery."
-msgstr "Kept takes photos and PDFs. Share those, or use Gallery."
+msgid "SheepKeep takes photos and PDFs. Share those, or use Gallery."
+msgstr "SheepKeep takes photos and PDFs. Share those, or use Gallery."
 
 #: src/components/inbox/reading-review.tsx
 #: src/components/things/meters-section.tsx
@@ -4309,8 +4309,8 @@ msgid "Kept the reading"
 msgstr "Kept the reading"
 
 #: src/components/capture/share-arrival.tsx
-msgid "Kept wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
-msgstr "Kept wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
+msgid "SheepKeep wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
+msgstr "SheepKeep wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
 
 #: src/components/registries/field-sheet.tsx
 msgid "Key"
@@ -4678,8 +4678,8 @@ msgid "Location"
 msgstr "Location"
 
 #: src/components/capture/place-chip.tsx
-msgid "Location access is off for Kept in this browser's settings."
-msgstr "Location access is off for Kept in this browser's settings."
+msgid "Location access is off for SheepKeep in this browser's settings."
+msgstr "Location access is off for SheepKeep in this browser's settings."
 
 #: src/components/history/labels.ts
 msgid "Location created"
@@ -5388,8 +5388,8 @@ msgid "Next photo"
 msgstr "Next photo"
 
 #: src/routes/_app/settings.two-factor.tsx
-msgid "Next time you sign in, Kept asks for a code from your app."
-msgstr "Next time you sign in, Kept asks for a code from your app."
+msgid "Next time you sign in, SheepKeep asks for a code from your app."
+msgstr "Next time you sign in, SheepKeep asks for a code from your app."
 
 #: src/components/history/timeline.tsx
 msgid "no"
@@ -5402,8 +5402,8 @@ msgid "No"
 msgstr "No"
 
 #: src/routes/signin/index.tsx
-msgid "No account yet? Ask someone who uses this Kept to invite you. The invite link creates your account."
-msgstr "No account yet? Ask someone who uses this Kept to invite you. The invite link creates your account."
+msgid "No account yet? Ask someone who uses this SheepKeep to invite you. The invite link creates your account."
+msgstr "No account yet? Ask someone who uses this SheepKeep to invite you. The invite link creates your account."
 
 #: src/routes/_app/activity.tsx
 msgid "No activity matches"
@@ -5534,8 +5534,8 @@ msgid "Not a duplicate · keep both"
 msgstr "Not a duplicate · keep both"
 
 #: src/components/scan/outcome-sheet.tsx
-msgid "Not a Kept label"
-msgstr "Not a Kept label"
+msgid "Not a SheepKeep label"
+msgstr "Not a SheepKeep label"
 
 #: src/routes/_app/admin.status.tsx
 msgid "Not answering"
@@ -5562,8 +5562,8 @@ msgid "Not here"
 msgstr "Not here"
 
 #: src/components/scan/outcome-sheet.tsx
-msgid "Not in your Kept"
-msgstr "Not in your Kept"
+msgid "Not in your SheepKeep"
+msgstr "Not in your SheepKeep"
 
 #: src/components/registries/type-editor.tsx
 msgid "Not inside another type"
@@ -5581,8 +5581,8 @@ msgid "Not on this phone"
 msgstr "Not on this phone"
 
 #: src/components/capture/recognised.tsx
-msgid "Not on this phone. Kept checks it when you open it online."
-msgstr "Not on this phone. Kept checks it when you open it online."
+msgid "Not on this phone. SheepKeep checks it when you open it online."
+msgstr "Not on this phone. SheepKeep checks it when you open it online."
 
 #: src/components/things/purchase-section.tsx
 msgid "Not recorded"
@@ -5688,8 +5688,8 @@ msgid "Nothing on this phone matches ‘<0>{q}</0>’"
 msgstr "Nothing on this phone matches ‘<0>{q}</0>’"
 
 #: src/components/capture/capture-screen.tsx
-msgid "Nothing on this phone yet. Open Kept once while online to bring your places."
-msgstr "Nothing on this phone yet. Open Kept once while online to bring your places."
+msgid "Nothing on this phone yet. Open SheepKeep once while online to bring your places."
+msgstr "Nothing on this phone yet. Open SheepKeep once while online to bring your places."
 
 #: src/components/things/overview.tsx
 msgid "Nothing recorded yet."
@@ -5798,12 +5798,12 @@ msgid "On Home until every step is done."
 msgstr "On Home until every step is done."
 
 #: src/components/capture/summary.tsx
-msgid "On iPhone, Kept uploads only while it's open. Keep it open when you're back in signal."
-msgstr "On iPhone, Kept uploads only while it's open. Keep it open when you're back in signal."
+msgid "On iPhone, SheepKeep uploads only while it's open. Keep it open when you're back in signal."
+msgstr "On iPhone, SheepKeep uploads only while it's open. Keep it open when you're back in signal."
 
 #: src/components/home/install-sheet.tsx
-msgid "On iPhone, notifications only reach Kept once it's on your Home Screen. Until then, reminders can come by email."
-msgstr "On iPhone, notifications only reach Kept once it's on your Home Screen. Until then, reminders can come by email."
+msgid "On iPhone, notifications only reach SheepKeep once it's on your Home Screen. Until then, reminders can come by email."
+msgstr "On iPhone, notifications only reach SheepKeep once it's on your Home Screen. Until then, reminders can come by email."
 
 #: src/components/home/checklist.tsx
 msgid "On iPhone, reminders only reach the installed app."
@@ -5846,8 +5846,8 @@ msgid "On. Signing in asks for a code from your authenticator app."
 msgstr "On. Signing in asks for a code from your authenticator app."
 
 #: src/routes/_app/help.tsx
-msgid "Once Kept is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
-msgstr "Once Kept is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
+msgid "Once SheepKeep is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
+msgstr "Once SheepKeep is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
 
 #: src/routes/_app/p.$id.tsx
 msgid "One at a time with the move picker, or use Select below to move several at once."
@@ -5905,12 +5905,12 @@ msgid "Only me"
 msgstr "Only me"
 
 #: src/components/sync-status.tsx
-msgid "Only part of your Kept is on this phone."
-msgstr "Only part of your Kept is on this phone."
+msgid "Only part of your SheepKeep is on this phone."
+msgstr "Only part of your SheepKeep is on this phone."
 
 #: src/routes/_app/admin.status.tsx
-msgid "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. Kept can't check."
-msgstr "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. Kept can't check."
+msgid "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. SheepKeep can't check."
+msgstr "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. SheepKeep can't check."
 
 #: src/components/registries/registry-list.tsx
 msgid "Only something nothing uses can be deleted. Otherwise, merge it into another."
@@ -5996,16 +5996,16 @@ msgid "Open it"
 msgstr "Open it"
 
 #: src/routes/auth/email-change.tsx
-msgid "Open Kept"
-msgstr "Open Kept"
+msgid "Open SheepKeep"
+msgstr "Open SheepKeep"
 
 #: src/components/home/install-sheet.tsx
-msgid "Open Kept from its new icon."
-msgstr "Open Kept from its new icon."
+msgid "Open SheepKeep from its new icon."
+msgstr "Open SheepKeep from its new icon."
 
 #: src/components/capture/share-arrival.tsx
-msgid "Open Kept once, then share again"
-msgstr "Open Kept once, then share again"
+msgid "Open SheepKeep once, then share again"
+msgstr "Open SheepKeep once, then share again"
 
 #: src/components/scan/claim-sheet.tsx
 msgid "Open that box"
@@ -6052,8 +6052,8 @@ msgid "Opening the camera"
 msgstr "Opening the camera"
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Opening this phone's copy of your Kept…"
-msgstr "Opening this phone's copy of your Kept…"
+msgid "Opening this phone's copy of your SheepKeep…"
+msgstr "Opening this phone's copy of your SheepKeep…"
 
 #: src/components/scan/barcode-sheet.tsx
 msgid "Optional: without one it waits in the Inbox to be named."
@@ -6064,8 +6064,8 @@ msgid "or"
 msgstr "or"
 
 #: src/components/home/checklist.tsx
-msgid "Or reach Kept through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
-msgstr "Or reach Kept through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
+msgid "Or reach SheepKeep through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
+msgstr "Or reach SheepKeep through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
 
 #: src/components/boxcheck/box-check-screen.tsx
 msgid "Or search"
@@ -6086,12 +6086,12 @@ msgid "Other"
 msgstr "Other"
 
 #: src/components/home/checklist.tsx
-msgid "Over plain HTTP, phones block the camera, installing Kept, push notifications and location."
-msgstr "Over plain HTTP, phones block the camera, installing Kept, push notifications and location."
+msgid "Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location."
+msgstr "Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location."
 
 #: src/components/home/install-sheet.tsx
-msgid "Over plain HTTP, phones won't install Kept. Put Kept on HTTPS first."
-msgstr "Over plain HTTP, phones won't install Kept. Put Kept on HTTPS first."
+msgid "Over plain HTTP, phones won't install SheepKeep. Put SheepKeep on HTTPS first."
+msgstr "Over plain HTTP, phones won't install SheepKeep. Put SheepKeep on HTTPS first."
 
 #: src/lib/labels.ts
 msgid "Owner"
@@ -6325,12 +6325,12 @@ msgid "Places · <0>{placeCount}</0>"
 msgstr "Places · <0>{placeCount}</0>"
 
 #: src/components/hints/hint-copy.ts
-msgid "Point at a Kept label"
-msgstr "Point at a Kept label"
+msgid "Point at a SheepKeep label"
+msgstr "Point at a SheepKeep label"
 
 #: src/components/scan/scan-screen.tsx
-msgid "Point at a Kept label, or a product's barcode."
-msgstr "Point at a Kept label, or a product's barcode."
+msgid "Point at a SheepKeep label, or a product's barcode."
+msgstr "Point at a SheepKeep label, or a product's barcode."
 
 #: src/components/scan/scan-screen.tsx
 msgid "Point at the label of the place or box they go in."
@@ -6483,8 +6483,8 @@ msgid "Put it inside another place in {locationName}"
 msgstr "Put it inside another place in {locationName}"
 
 #: src/components/home/checklist.tsx
-msgid "Put Kept on HTTPS"
-msgstr "Put Kept on HTTPS"
+msgid "Put SheepKeep on HTTPS"
+msgstr "Put SheepKeep on HTTPS"
 
 #: src/components/tray/tray.tsx
 msgid "Put them back"
@@ -7449,8 +7449,8 @@ msgid "Set up"
 msgstr "Set up"
 
 #: src/routes/setup.tsx
-msgid "Set up this Kept"
-msgstr "Set up this Kept"
+msgid "Set up this SheepKeep"
+msgstr "Set up this SheepKeep"
 
 #: src/routes/auth/reset.tsx
 msgid "Setting it signs you out on every device."
@@ -7478,8 +7478,8 @@ msgid "Share a link or a QR code. Choose what they can do and for how long."
 msgstr "Share a link or a QR code. Choose what they can do and for how long."
 
 #: src/components/capture/share-arrival.tsx
-msgid "Share the files into Kept again."
-msgstr "Share the files into Kept again."
+msgid "Share the files into SheepKeep again."
+msgstr "Share the files into SheepKeep again."
 
 #: src/routes/_app/settings.location.$id.invite.tsx
 msgid "Share…"
@@ -7494,8 +7494,8 @@ msgid "Shared files"
 msgstr "Shared files"
 
 #: src/components/capture/shared-sheet.tsx
-msgid "Shared into Kept"
-msgstr "Shared into Kept"
+msgid "Shared into SheepKeep"
+msgstr "Shared into SheepKeep"
 
 #: src/components/filters/views.tsx
 msgid "Shared with {name}"
@@ -7582,8 +7582,8 @@ msgstr "Sign in as someone else"
 
 #: src/routes/auth/confirm.tsx
 #: src/routes/signin/index.tsx
-msgid "Sign in to Kept"
-msgstr "Sign in to Kept"
+msgid "Sign in to SheepKeep"
+msgstr "Sign in to SheepKeep"
 
 #: src/routes/signin/code.tsx
 msgid "Sign in with a one-time code"
@@ -7796,8 +7796,8 @@ msgid "Start"
 msgstr "Start"
 
 #: src/components/home/checklist.tsx
-msgid "Start Kept's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
-msgstr "Start Kept's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
+msgid "Start SheepKeep's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
+msgstr "Start SheepKeep's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
 
 #: src/components/filters/registry.tsx
 msgid "State"
@@ -7809,8 +7809,8 @@ msgid "Status"
 msgstr "Status"
 
 #: src/components/sign-out.tsx
-msgid "Stay signed in and open Kept with a connection to finish syncing first."
-msgstr "Stay signed in and open Kept with a connection to finish syncing first."
+msgid "Stay signed in and open SheepKeep with a connection to finish syncing first."
+msgstr "Stay signed in and open SheepKeep with a connection to finish syncing first."
 
 #: src/components/auth-frame.tsx
 msgid "Step {step} of {steps}"
@@ -7987,8 +7987,8 @@ msgid "Taken"
 msgstr "Taken"
 
 #: src/components/home/install-sheet.tsx
-msgid "Tap <0>Add</0>, then open Kept from its new icon."
-msgstr "Tap <0>Add</0>, then open Kept from its new icon."
+msgid "Tap <0>Add</0>, then open SheepKeep from its new icon."
+msgstr "Tap <0>Add</0>, then open SheepKeep from its new icon."
 
 #: src/components/home/install-sheet.tsx
 msgid "Tap <0>Install app</0>, or <1>Add to Home screen</1>."
@@ -8060,8 +8060,8 @@ msgid "That key is already a field of this type, one it inherits from, or one be
 msgstr "That key is already a field of this type, one it inherits from, or one below it. Pick another key."
 
 #: src/components/boxcheck/box-check-screen.tsx
-msgid "That label isn't on a thing in your Kept."
-msgstr "That label isn't on a thing in your Kept."
+msgid "That label isn't on a thing in your SheepKeep."
+msgstr "That label isn't on a thing in your SheepKeep."
 
 #: src/components/registries/registry-edit-sheet.tsx
 msgid "That name is already in this list. Merge the two instead."
@@ -8126,8 +8126,8 @@ msgid "The assistant may read it"
 msgstr "The assistant may read it"
 
 #: src/components/capture/file-fallback.tsx
-msgid "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put Kept on HTTPS."
-msgstr "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put Kept on HTTPS."
+msgid "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put SheepKeep on HTTPS."
+msgstr "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put SheepKeep on HTTPS."
 
 #: src/routes/setup.tsx
 msgid "The code is 6 letters and digits, like K7Q-2M9."
@@ -8195,8 +8195,8 @@ msgstr "The old meter's last reading ({unit})"
 
 #. placeholder {0}: th.name
 #: src/components/inbox/duplicate-review.tsx
-msgid "The one already in Kept, <0>{0}</0>"
-msgstr "The one already in Kept, <0>{0}</0>"
+msgid "The one already in SheepKeep, <0>{0}</0>"
+msgstr "The one already in SheepKeep, <0>{0}</0>"
 
 #: src/components/things/photos.tsx
 msgid "The original is kept. This format can't be previewed yet."
@@ -8277,8 +8277,8 @@ msgid "Theme"
 msgstr "Theme"
 
 #: src/components/home/checklist.tsx
-msgid "Then set KEPT_PUBLIC_URL to the https address and restart Kept."
-msgstr "Then set KEPT_PUBLIC_URL to the https address and restart Kept."
+msgid "Then set KEPT_PUBLIC_URL to the https address and restart SheepKeep."
+msgstr "Then set KEPT_PUBLIC_URL to the https address and restart SheepKeep."
 
 #. placeholder {0}: fmt.num(thing.quantity)
 #: src/components/things/split-sheet.tsx
@@ -8384,8 +8384,8 @@ msgid "This account runs the server: users, sign-up and backups. It can't see in
 msgstr "This account runs the server: users, sign-up and backups. It can't see inside anyone's home unless they invite it."
 
 #: src/components/not-found.tsx
-msgid "This address doesn't lead to a page in Kept. The link may be old."
-msgstr "This address doesn't lead to a page in Kept. The link may be old."
+msgid "This address doesn't lead to a page in SheepKeep. The link may be old."
+msgstr "This address doesn't lead to a page in SheepKeep. The link may be old."
 
 #: src/components/capture/summary.tsx
 msgid "This batch"
@@ -8404,24 +8404,24 @@ msgid "The scanner didn't start."
 msgstr "The scanner didn't start."
 
 #: src/components/sync-status.tsx
-msgid "This browser may clear Kept's offline copy after weeks unused. Open Kept to sync soon."
-msgstr "This browser may clear Kept's offline copy after weeks unused. Open Kept to sync soon."
+msgid "This browser may clear SheepKeep's offline copy after weeks unused. Open SheepKeep to sync soon."
+msgstr "This browser may clear SheepKeep's offline copy after weeks unused. Open SheepKeep to sync soon."
 
 #: src/components/page.tsx
 msgid "This changed since you opened it. Reload and try again."
 msgstr "This changed since you opened it. Reload and try again."
 
 #: src/components/scan/outcome-sheet.tsx
-msgid "This code isn't one of Kept's labels. It says:"
-msgstr "This code isn't one of Kept's labels. It says:"
+msgid "This code isn't one of SheepKeep's labels. It says:"
+msgstr "This code isn't one of SheepKeep's labels. It says:"
 
 #: src/routes/_app/settings.index.tsx
 msgid "This device"
 msgstr "This device"
 
 #: src/components/capture/file-fallback.tsx
-msgid "This device has no camera Kept can use."
-msgstr "This device has no camera Kept can use."
+msgid "This device has no camera SheepKeep can use."
+msgstr "This device has no camera SheepKeep can use."
 
 #: src/routes/_app/settings.index.tsx
 msgid "This device stays signed in. The others need your password or passkey again."
@@ -8460,8 +8460,8 @@ msgid "This isn't here any more, or you can't see it."
 msgstr "This isn't here any more, or you can't see it."
 
 #: src/routes/setup.tsx
-msgid "This Kept is already set up. Sign in instead."
-msgstr "This Kept is already set up. Sign in instead."
+msgid "This SheepKeep is already set up. Sign in instead."
+msgstr "This SheepKeep is already set up. Sign in instead."
 
 #: src/components/scan/claim-sheet.tsx
 msgid "This label isn't on anything yet. Use it for:"
@@ -8513,8 +8513,8 @@ msgid "This phone format can't be previewed yet. The original is kept."
 msgstr "This phone format can't be previewed yet. The original is kept."
 
 #: src/components/sync-status.tsx
-msgid "This phone is out of space for Kept. Free some space to keep capturing offline."
-msgstr "This phone is out of space for Kept. Free some space to keep capturing offline."
+msgid "This phone is out of space for SheepKeep. Free some space to keep capturing offline."
+msgstr "This phone is out of space for SheepKeep. Free some space to keep capturing offline."
 
 #: src/components/capture/capture-screen.tsx
 msgid "This phone may be out of space."
@@ -8525,8 +8525,8 @@ msgid "This sign-in timed out. Start again from the sign-in page."
 msgstr "This sign-in timed out. Start again from the sign-in page."
 
 #: src/components/home/install-sheet.tsx
-msgid "This step ticks itself the first time you open Kept from its icon."
-msgstr "This step ticks itself the first time you open Kept from its icon."
+msgid "This step ticks itself the first time you open SheepKeep from its icon."
+msgstr "This step ticks itself the first time you open SheepKeep from its icon."
 
 #: src/components/things/links.tsx
 msgid "This thing is…"
@@ -8958,8 +8958,8 @@ msgid "Up to {0}"
 msgstr "Up to {0}"
 
 #: src/components/sync-status.tsx
-msgid "Update Kept to finish syncing."
-msgstr "Update Kept to finish syncing."
+msgid "Update SheepKeep to finish syncing."
+msgstr "Update SheepKeep to finish syncing."
 
 #: src/components/pull-to-refresh.tsx
 msgid "Updated"
@@ -9035,8 +9035,8 @@ msgid "Used up by"
 msgstr "Used up by"
 
 #: src/components/display-prefs.tsx
-msgid "Used when Kept is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
-msgstr "Used when Kept is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
+msgid "Used when SheepKeep is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
+msgstr "Used when SheepKeep is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
 
 #: src/routes/_app/settings.location.$id.members.tsx
 #: src/routes/signin/code.tsx
@@ -9293,8 +9293,8 @@ msgid "When AI fills in a thing here, it adds search words in each of these lang
 msgstr "When AI fills in a thing here, it adds search words in each of these languages, so anyone can find it in their own."
 
 #: src/routes/setup.tsx
-msgid "When Kept started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
-msgstr "When Kept started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
+msgid "When SheepKeep started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
+msgstr "When SheepKeep started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
 
 #: src/routes/_app/p.$id.tsx
 msgid "When two places are really the same one"
@@ -9745,8 +9745,8 @@ msgid "{0}% used"
 msgstr "{0}% used"
 
 #: src/components/ai/usage-totals.tsx
-msgid "{held, plural, one {# held back by Kept} other {# held back by Kept}}"
-msgstr "{held, plural, one {# held back by Kept} other {# held back by Kept}}"
+msgid "{held, plural, one {# held back by SheepKeep} other {# held back by SheepKeep}}"
+msgstr "{held, plural, one {# held back by SheepKeep} other {# held back by SheepKeep}}"
 
 #. placeholder {0}: fmt.day(`${terms.checked}T12:00:00Z`)
 #: src/components/ai/data-use-note.tsx
@@ -9875,8 +9875,8 @@ msgid "add a price to see cost"
 msgstr "add a price to see cost"
 
 #: src/components/ai/what-uses-ai.tsx
-msgid "Add a price to see cost. Until then Kept counts tokens only."
-msgstr "Add a price to see cost. Until then Kept counts tokens only."
+msgid "Add a price to see cost. Until then SheepKeep counts tokens only."
+msgstr "Add a price to see cost. Until then SheepKeep counts tokens only."
 
 #: src/components/ai/advanced.tsx
 msgid "Admin settings"
@@ -10260,8 +10260,8 @@ msgid "Images"
 msgstr "Images"
 
 #: src/components/ai/recommended.tsx
-msgid "In Kept's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
-msgstr "In Kept's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
+msgid "In SheepKeep's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
+msgstr "In SheepKeep's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
 
 #. placeholder {0}: money(r.inputPerMtok, price.currency)
 #. placeholder {1}: money(r.outputPerMtok, price.currency)
@@ -10291,26 +10291,26 @@ msgstr "Keep paused"
 #: src/components/ai/call-filters.tsx
 #: src/components/ai/call-list.tsx
 #: src/components/ai/usage-charts.tsx
-msgid "Kept (background)"
-msgstr "Kept (background)"
+msgid "SheepKeep (background)"
+msgstr "SheepKeep (background)"
 
 #: src/components/ai/paste-key.tsx
-msgid "Kept can't tell which provider this key is for. Choose it under Advanced."
-msgstr "Kept can't tell which provider this key is for. Choose it under Advanced."
+msgid "SheepKeep can't tell which provider this key is for. Choose it under Advanced."
+msgstr "SheepKeep can't tell which provider this key is for. Choose it under Advanced."
 
 #. placeholder {0}: n(call.tokens.estimate)
 #: src/components/ai/call-detail.tsx
-msgid "Kept estimated {0} before sending."
-msgstr "Kept estimated {0} before sending."
+msgid "SheepKeep estimated {0} before sending."
+msgstr "SheepKeep estimated {0} before sending."
 
 #. placeholder {0}: kindName(kind)
 #: src/components/ai/advanced.tsx
-msgid "Kept fills in {0}'s address."
-msgstr "Kept fills in {0}'s address."
+msgid "SheepKeep fills in {0}'s address."
+msgstr "SheepKeep fills in {0}'s address."
 
 #: src/components/ai/paste-key.tsx
-msgid "Kept reads the provider from the key. It sends the key to the server once and never shows it again."
-msgstr "Kept reads the provider from the key. It sends the key to the server once and never shows it again."
+msgid "SheepKeep reads the provider from the key. It sends the key to the server once and never shows it again."
+msgstr "SheepKeep reads the provider from the key. It sends the key to the server once and never shows it again."
 
 #: src/components/ai/paste-key.tsx
 msgid "Key saved"
@@ -10371,8 +10371,8 @@ msgstr "Low (the default)"
 #. placeholder {0}: fmt.day(`${refDate}T12:00:00Z`)
 #. placeholder {1}: REFERENCE_FIGURES.model
 #: src/components/ai/what-uses-ai.tsx
-msgid "Measured by Kept on {0} with Groq · <0>{1}</0>"
-msgstr "Measured by Kept on {0} with Groq · <0>{1}</0>"
+msgid "Measured by SheepKeep on {0} with Groq · <0>{1}</0>"
+msgstr "Measured by SheepKeep on {0} with Groq · <0>{1}</0>"
 
 #: src/components/ai/advanced.tsx
 msgid "Medium"
@@ -10488,8 +10488,8 @@ msgid "Not sent"
 msgstr "Not sent"
 
 #: src/components/ai/call-detail.tsx
-msgid "Not sent: Kept held it back, so nothing was used."
-msgstr "Not sent: Kept held it back, so nothing was used."
+msgid "Not sent: SheepKeep held it back, so nothing was used."
+msgstr "Not sent: SheepKeep held it back, so nothing was used."
 
 #: src/components/ai/key-scope.tsx
 msgid "Not set: name things by hand"
@@ -10520,8 +10520,8 @@ msgid "Only a copy of the photo with location and camera data removed, never the
 msgstr "Only a copy of the photo with location and camera data removed, never the original. The fixed instructions and your location's languages. For the assistant, your question and the inventory it looks up, within your role. Never secret fields."
 
 #: src/components/ai/call-detail.tsx
-msgid "Only a copy with the location and camera data removed. Kept never keeps it."
-msgstr "Only a copy with the location and camera data removed. Kept never keeps it."
+msgid "Only a copy with the location and camera data removed. SheepKeep never keeps it."
+msgstr "Only a copy with the location and camera data removed. SheepKeep never keeps it."
 
 #: src/components/ai/prices.tsx
 msgid "Only where the provider bills images apart from tokens."
@@ -10737,8 +10737,8 @@ msgid "Run Test to check photos"
 msgstr "Run Test to check photos"
 
 #: src/components/ai/advanced.tsx
-msgid "Save a key first: Kept then loads the provider's models to choose from."
-msgstr "Save a key first: Kept then loads the provider's models to choose from."
+msgid "Save a key first: SheepKeep then loads the provider's models to choose from."
+msgstr "Save a key first: SheepKeep then loads the provider's models to choose from."
 
 #: src/components/ai/paste-key.tsx
 msgid "Save and test"
@@ -10869,8 +10869,8 @@ msgid "That currency isn't turned on. An instance admin can add it."
 msgstr "That currency isn't turned on. An instance admin can add it."
 
 #: src/components/ai/recommended.tsx
-msgid "That was a test with made-up photos; Kept's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
-msgstr "That was a test with made-up photos; Kept's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
+msgid "That was a test with made-up photos; SheepKeep's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
+msgstr "That was a test with made-up photos; SheepKeep's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
 
 #: src/components/history/undo.ts
 msgid "That was already undone"
@@ -10893,21 +10893,21 @@ msgid "the answer was cut off"
 msgstr "the answer was cut off"
 
 #: src/components/ai/labels.ts
-msgid "the answer wasn't in the shape Kept asked for"
-msgstr "the answer wasn't in the shape Kept asked for"
+msgid "the answer wasn't in the shape SheepKeep asked for"
+msgstr "the answer wasn't in the shape SheepKeep asked for"
 
 #. placeholder {0}: RECOMMENDED.model
 #: src/components/ai/recommended.tsx
-msgid "The cheapest reliable result in Kept's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it."
-msgstr "The cheapest reliable result in Kept's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it."
+msgid "The cheapest reliable result in SheepKeep's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it."
+msgstr "The cheapest reliable result in SheepKeep's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it."
 
 #: src/components/ai/paste-key.tsx
-msgid "The first AI key is a secret Kept must be able to recover. Save the recovery kit on the status page, then paste the key again."
-msgstr "The first AI key is a secret Kept must be able to recover. Save the recovery kit on the status page, then paste the key again."
+msgid "The first AI key is a secret SheepKeep must be able to recover. Save the recovery kit on the status page, then paste the key again."
+msgstr "The first AI key is a secret SheepKeep must be able to recover. Save the recovery kit on the status page, then paste the key again."
 
 #: src/components/ai/prices.tsx
-msgid "The listing has no prices Kept can use."
-msgstr "The listing has no prices Kept can use."
+msgid "The listing has no prices SheepKeep can use."
+msgstr "The listing has no prices SheepKeep can use."
 
 #: src/components/ai/labels.ts
 msgid "the monthly cap was reached"
@@ -10922,8 +10922,8 @@ msgid "The person who runs this server needs to save the recovery kit before the
 msgstr "The person who runs this server needs to save the recovery kit before the first AI key. Ask them, then paste the key again."
 
 #: src/components/ai/labels.ts
-msgid "the provider asked Kept to slow down"
-msgstr "the provider asked Kept to slow down"
+msgid "the provider asked SheepKeep to slow down"
+msgstr "the provider asked SheepKeep to slow down"
 
 #: src/components/ai/labels.ts
 msgid "the provider couldn't be reached"
@@ -11100,8 +11100,8 @@ msgid "What it belongs to opens, with what's inside. A worn label, or no camera?
 msgstr "What it belongs to opens, with what's inside. A worn label, or no camera? Type the code instead."
 
 #: src/components/ai/what-uses-ai.tsx
-msgid "What uses AI in Kept"
-msgstr "What uses AI in Kept"
+msgid "What uses AI in SheepKeep"
+msgstr "What uses AI in SheepKeep"
 
 #: src/components/ai/call-detail.tsx
 msgid "Where and who"
@@ -11381,8 +11381,8 @@ msgid "Importing…"
 msgstr "Importing…"
 
 #: src/components/import/choices-step.tsx
-msgid "In any of Kept's languages. Off, the type is kept in the notes."
-msgstr "In any of Kept's languages. Off, the type is kept in the notes."
+msgid "In any of SheepKeep's languages. Off, the type is kept in the notes."
+msgstr "In any of SheepKeep's languages. Off, the type is kept in the notes."
 
 #: src/components/import/progress-step.tsx
 msgid "It hasn't moved for a while. What it already imported stays."
@@ -11461,12 +11461,12 @@ msgid "No type has this name; kept in the notes."
 msgstr "No type has this name; kept in the notes."
 
 #: src/components/import/labels.ts
-msgid "Not a condition Kept knows; kept in the notes."
-msgstr "Not a condition Kept knows; kept in the notes."
+msgid "Not a condition SheepKeep knows; kept in the notes."
+msgstr "Not a condition SheepKeep knows; kept in the notes."
 
 #: src/components/import/labels.ts
-msgid "Not a currency turned on in Kept; the price is kept in the notes."
-msgstr "Not a currency turned on in Kept; the price is kept in the notes."
+msgid "Not a currency turned on in SheepKeep; the price is kept in the notes."
+msgstr "Not a currency turned on in SheepKeep; the price is kept in the notes."
 
 #: src/components/import/labels.ts
 msgid "Not a date written as {format}; kept in the notes."
@@ -11801,8 +11801,8 @@ msgid "Things already started from it keep their details."
 msgstr "Things already started from it keep their details."
 
 #: src/routes/_print/labels.$batchId.tsx
-msgid "Kept labels"
-msgstr "Kept labels"
+msgid "SheepKeep labels"
+msgstr "SheepKeep labels"
 
 #: src/routes/_print/labels.$batchId.tsx
 msgid "Saved the label images"
@@ -11825,8 +11825,8 @@ msgid "Share as images"
 msgstr "Share as images"
 
 #: src/routes/_app/help.tsx
-msgid "Share into Kept"
-msgstr "Share into Kept"
+msgid "Share into SheepKeep"
+msgstr "Share into SheepKeep"
 
 #: src/components/home/checklist.tsx
 #: src/routes/_print/labels.$batchId.tsx
@@ -11977,12 +11977,12 @@ msgid "{count, plural, one {Print # label} other {Print # labels}}"
 msgstr "{count, plural, one {Print # label} other {Print # labels}}"
 
 #: src/components/labels/batch-builder.tsx
-msgid "Opens the print dialog at {stockTitle}, scale 100%. Afterwards Kept asks \"Printed OK?\" and records the print date."
-msgstr "Opens the print dialog at {stockTitle}, scale 100%. Afterwards Kept asks \"Printed OK?\" and records the print date."
+msgid "Opens the print dialog at {stockTitle}, scale 100%. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
+msgstr "Opens the print dialog at {stockTitle}, scale 100%. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
 
 #: src/components/labels/batch-builder.tsx
-msgid "Opens the print dialog: choose your label printer and this label size. Afterwards Kept asks \"Printed OK?\" and records the print date."
-msgstr "Opens the print dialog: choose your label printer and this label size. Afterwards Kept asks \"Printed OK?\" and records the print date."
+msgid "Opens the print dialog: choose your label printer and this label size. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
+msgstr "Opens the print dialog: choose your label printer and this label size. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
 
 #: src/components/labels/batch-builder.tsx
 msgid "Label preview"
@@ -12218,24 +12218,24 @@ msgid "Former addresses"
 msgstr "Former addresses"
 
 #: src/routes/_app/admin.settings.tsx
-msgid "Look up products Kept doesn't know by their barcode"
-msgstr "Look up products Kept doesn't know by their barcode"
+msgid "Look up products SheepKeep doesn't know by their barcode"
+msgstr "Look up products SheepKeep doesn't know by their barcode"
 
 #: src/routes/_app/admin.settings.tsx
-msgid "None. Kept answers only at its own address."
-msgstr "None. Kept answers only at its own address."
+msgid "None. SheepKeep answers only at its own address."
+msgstr "None. SheepKeep answers only at its own address."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "Off. A scanned product barcode finds only what Kept already holds."
-msgstr "Off. A scanned product barcode finds only what Kept already holds."
+msgid "Off. A scanned product barcode finds only what SheepKeep already holds."
+msgstr "Off. A scanned product barcode finds only what SheepKeep already holds."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Old host name"
 msgstr "Old host name"
 
 #: src/routes/_app/admin.settings.tsx
-msgid "On. A scanned product barcode Kept doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
-msgstr "On. A scanned product barcode Kept doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
+msgid "On. A scanned product barcode SheepKeep doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
+msgstr "On. A scanned product barcode SheepKeep doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Only the name, like kept.home.example."
@@ -12258,12 +12258,12 @@ msgid "That name is already listed."
 msgstr "That name is already listed."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "The databases ask each app for a contact. Kept sends this email with each lookup, and nothing else about you."
-msgstr "The databases ask each app for a contact. Kept sends this email with each lookup, and nothing else about you."
+msgid "The databases ask each app for a contact. SheepKeep sends this email with each lookup, and nothing else about you."
+msgstr "The databases ask each app for a contact. SheepKeep sends this email with each lookup, and nothing else about you."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "When Kept moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
-msgstr "When Kept moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
+msgid "When SheepKeep moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
+msgstr "When SheepKeep moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
 
 #: src/components/places/contents-list.tsx
 msgid "{n, plural, one {Picked up # thing} other {Picked up # things}}"
@@ -12455,8 +12455,8 @@ msgid "In plain words, for whoever types the code."
 msgstr "In plain words, for whoever types the code."
 
 #: src/components/codes/code-settings.tsx
-msgid "Kept can't read this pattern. Check its brackets."
-msgstr "Kept can't read this pattern. Check its brackets."
+msgid "SheepKeep can't read this pattern. Check its brackets."
+msgstr "SheepKeep can't read this pattern. Check its brackets."
 
 #: src/components/codes/code-settings.tsx
 msgid "Message when a code doesn't match"
@@ -12577,8 +12577,8 @@ msgid "Expiring"
 msgstr "Expiring"
 
 #: src/routes/_app/settings.me.notifications.tsx
-msgid "How Kept reaches you"
-msgstr "How Kept reaches you"
+msgid "How SheepKeep reaches you"
+msgstr "How SheepKeep reaches you"
 
 #: src/routes/_app/incidents.$id.tsx
 msgid "Incident"
@@ -12638,16 +12638,16 @@ msgid "Share it to save it to Files or send it on."
 msgstr "Share it to save it to Files or send it on."
 
 #: src/components/ai/call-list.tsx
-msgid "This browser can't save files here. Open Kept in Safari to export it."
-msgstr "This browser can't save files here. Open Kept in Safari to export it."
+msgid "This browser can't save files here. Open SheepKeep in Safari to export it."
+msgstr "This browser can't save files here. Open SheepKeep in Safari to export it."
 
 #: src/components/things/original-file.ts
 msgid "This file can't be shared from the installed app"
 msgstr "This file can't be shared from the installed app"
 
 #: src/components/things/original-file.ts
-msgid "Open Kept in Safari to download it."
-msgstr "Open Kept in Safari to download it."
+msgid "Open SheepKeep in Safari to download it."
+msgstr "Open SheepKeep in Safari to download it."
 
 #: src/components/things/original-file.ts
 msgid "Couldn't get the file ready. Try again."
@@ -12662,8 +12662,8 @@ msgid "Couldn't share the file. Try again."
 msgstr "Couldn't share the file. Try again."
 
 #: src/components/page.tsx
-msgid "Kept can't reach its database right now. Try again in a minute."
-msgstr "Kept can't reach its database right now. Try again in a minute."
+msgid "SheepKeep can't reach its database right now. Try again in a minute."
+msgstr "SheepKeep can't reach its database right now. Try again in a minute."
 
 #. placeholder {0}: -n
 #: src/components/schedules/labels.tsx
@@ -12749,8 +12749,8 @@ msgid "Add a line"
 msgstr "Add a line"
 
 #: src/routes/_app/schedules.tsx
-msgid "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and Kept reminds you before it's due."
-msgstr "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and Kept reminds you before it's due."
+msgid "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and SheepKeep reminds you before it's due."
+msgstr "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and SheepKeep reminds you before it's due."
 
 #: src/components/schedules/complete-sheet.tsx
 msgid "Add line items or an invoice"
@@ -13186,8 +13186,8 @@ msgid "Search schedules"
 msgstr "Search schedules"
 
 #: src/components/lending/loan-row.tsx
-msgid "Send it however you like. Kept never sends it."
-msgstr "Send it however you like. Kept never sends it."
+msgid "Send it however you like. SheepKeep never sends it."
+msgstr "Send it however you like. SheepKeep never sends it."
 
 #: src/components/services/log-service-sheet.tsx
 msgid "Service logged"
@@ -13671,16 +13671,16 @@ msgid "A claim needs the day it was opened."
 msgstr "A claim needs the day it was opened."
 
 #: src/components/lending/person-picker.tsx
-msgid "A new person: added to your people when you save. Kept never contacts them."
-msgstr "A new person: added to your people when you save. Kept never contacts them."
+msgid "A new person: added to your people when you save. SheepKeep never contacts them."
+msgstr "A new person: added to your people when you save. SheepKeep never contacts them."
 
 #: src/components/warranties/warranty-sheet.tsx
 msgid "A phone number, an email or a web page."
 msgstr "A phone number, an email or a web page."
 
 #: src/components/things/schedules-section.tsx
-msgid "A service or a check that comes round: Kept reminds you before it's due."
-msgstr "A service or a check that comes round: Kept reminds you before it's due."
+msgid "A service or a check that comes round: SheepKeep reminds you before it's due."
+msgstr "A service or a check that comes round: SheepKeep reminds you before it's due."
 
 #: src/components/warranties/warranty-sheet.tsx
 msgid "A term"
@@ -13993,19 +13993,19 @@ msgid "It's in repair: lend it once it's back."
 msgstr "It's in repair: lend it once it's back."
 
 #: src/components/lending/person-picker.tsx
-msgid "Kept never contacts them."
-msgstr "Kept never contacts them."
+msgid "SheepKeep never contacts them."
+msgstr "SheepKeep never contacts them."
 
 #. placeholder {0}: loan.person.name
 #: src/components/lending/thing-loans.tsx
-msgid "Kept never messages {0}; the reminder text is yours to send."
-msgstr "Kept never messages {0}; the reminder text is yours to send."
+msgid "SheepKeep never messages {0}; the reminder text is yours to send."
+msgstr "SheepKeep never messages {0}; the reminder text is yours to send."
 
 #. placeholder {0}: fmt.day(loan.dueOn)
 #. placeholder {1}: loan.person.name
 #: src/components/lending/thing-loans.tsx
-msgid "Kept reminds you on {0}. It never messages {1}; the reminder text is yours to send."
-msgstr "Kept reminds you on {0}. It never messages {1}; the reminder text is yours to send."
+msgid "SheepKeep reminds you on {0}. It never messages {1}; the reminder text is yours to send."
+msgstr "SheepKeep reminds you on {0}. It never messages {1}; the reminder text is yours to send."
 
 #: src/components/lending/lend-sheet.tsx
 #: src/components/lending/thing-loans.tsx
@@ -14163,12 +14163,12 @@ msgid "Opened {0}"
 msgstr "Opened {0}"
 
 #: src/components/warranties/warranty-sheet.tsx
-msgid "Optional. Kept reminds you before this day."
-msgstr "Optional. Kept reminds you before this day."
+msgid "Optional. SheepKeep reminds you before this day."
+msgstr "Optional. SheepKeep reminds you before this day."
 
 #: src/components/lending/borrow-sheet.tsx
-msgid "Optional. Kept reminds you when it's due back."
-msgstr "Optional. Kept reminds you when it's due back."
+msgid "Optional. SheepKeep reminds you when it's due back."
+msgstr "Optional. SheepKeep reminds you when it's due back."
 
 #: src/components/lending/lend-sheet.tsx
 msgid "Optional. Kept reminds you, never them, when it's overdue."
@@ -14306,12 +14306,12 @@ msgid "Update the claim"
 msgstr "Update the claim"
 
 #: src/components/lending/thing-loans.tsx
-msgid "uses Kept"
-msgstr "uses Kept"
+msgid "uses SheepKeep"
+msgstr "uses SheepKeep"
 
 #: src/components/lending/person-picker.tsx
-msgid "Uses Kept"
-msgstr "Uses Kept"
+msgid "Uses SheepKeep"
+msgstr "Uses SheepKeep"
 
 #: src/components/things/header.tsx
 msgid "Usually in"
@@ -14384,8 +14384,8 @@ msgid "What's wrong"
 msgstr "What's wrong"
 
 #: src/components/claims/claims-section.tsx
-msgid "When it breaks, open a claim: Kept fills in the warranty that covers longest and remembers where it went for repair."
-msgstr "When it breaks, open a claim: Kept fills in the warranty that covers longest and remembers where it went for repair."
+msgid "When it breaks, open a claim: SheepKeep fills in the warranty that covers longest and remembers where it went for repair."
+msgstr "When it breaks, open a claim: SheepKeep fills in the warranty that covers longest and remembers where it went for repair."
 
 #: src/components/lending/return-sheet.tsx
 msgid "Where it goes"
@@ -14478,8 +14478,8 @@ msgid "{MAX_CALENDAR_FEEDS, plural, one {# link is the most. Revoke one to make 
 msgstr "{MAX_CALENDAR_FEEDS, plural, one {# link is the most. Revoke one to make another.} other {# links are the most. Revoke one to make another.}}"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most Kept allows.} other {You have # webhooks, the most Kept allows.}}"
-msgstr "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most Kept allows.} other {You have # webhooks, the most Kept allows.}}"
+msgid "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most SheepKeep allows.} other {You have # webhooks, the most SheepKeep allows.}}"
+msgstr "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most SheepKeep allows.} other {You have # webhooks, the most SheepKeep allows.}}"
 
 #: src/components/notifications/centre.tsx
 msgid "{unreadText} unread"
@@ -14522,8 +14522,8 @@ msgid "AI used 80% of this month's cap"
 msgstr "AI used 80% of this month's cap"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Allow notifications for Kept in this browser's settings, then try again."
-msgstr "Allow notifications for Kept in this browser's settings, then try again."
+msgid "Allow notifications for SheepKeep in this browser's settings, then try again."
+msgstr "Allow notifications for SheepKeep in this browser's settings, then try again."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Browser"
@@ -14646,8 +14646,8 @@ msgid "Enter the full address, starting with https://"
 msgstr "Enter the full address, starting with https://"
 
 #: src/components/notifications/settings/notification-settings.tsx
-msgid "Everything lands in the notification centre. These reach you outside Kept as well."
-msgstr "Everything lands in the notification centre. These reach you outside Kept as well."
+msgid "Everything lands in the notification centre. These reach you outside SheepKeep as well."
+msgstr "Everything lands in the notification centre. These reach you outside SheepKeep as well."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
@@ -14659,16 +14659,16 @@ msgid "Failing since {since}"
 msgstr "Failing since {since}"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "For your own automations: Kept posts a signed message when something is due, with ids and dates only, never names."
-msgstr "For your own automations: Kept posts a signed message when something is due, with ids and dates only, never names."
+msgid "For your own automations: SheepKeep posts a signed message when something is due, with ids and dates only, never names."
+msgstr "For your own automations: SheepKeep posts a signed message when something is due, with ids and dates only, never names."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "How to install"
 msgstr "How to install"
 
 #: src/components/notifications/settings/kinds.tsx
-msgid "In Kept"
-msgstr "In Kept"
+msgid "In SheepKeep"
+msgstr "In SheepKeep"
 
 #: src/components/notifications/settings/channels.tsx
 msgid "It answered {code}."
@@ -14685,24 +14685,24 @@ msgstr "It's no longer there."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
-msgid "Kept last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
-msgstr "Kept last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
+msgid "SheepKeep last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
+msgstr "SheepKeep last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept sends at most 5 tests an hour, across all your channels and devices. Try again later."
-msgstr "Kept sends at most 5 tests an hour, across all your channels and devices. Try again later."
+msgid "SheepKeep sends at most 5 tests an hour, across all your channels and devices. Try again later."
+msgstr "SheepKeep sends at most 5 tests an hour, across all your channels and devices. Try again later."
 
 #: src/components/notifications/settings/calendar.tsx
-msgid "Kept shows it only this once. Anyone with it can read the titles and dates."
-msgstr "Kept shows it only this once. Anyone with it can read the titles and dates."
+msgid "SheepKeep shows it only this once. Anyone with it can read the titles and dates."
+msgstr "SheepKeep shows it only this once. Anyone with it can read the titles and dates."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept shows it only this once. Your receiver checks each message's Kept-Signature header with it."
-msgstr "Kept shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
+msgstr "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept stops posting to it. Its secret can't be used again."
-msgstr "Kept stops posting to it. Its secret can't be used again."
+msgid "SheepKeep stops posting to it. Its secret can't be used again."
+msgstr "SheepKeep stops posting to it. Its secret can't be used again."
 
 #: src/components/notifications/settings/calendar.tsx
 msgid "Last fetched {fetched}"
@@ -14717,8 +14717,8 @@ msgid "Link made {made}"
 msgstr "Link made {made}"
 
 #: src/components/notifications/settings/calendar.tsx
-msgid "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when Kept can be reached from the internet."
-msgstr "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when Kept can be reached from the internet."
+msgid "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when SheepKeep can be reached from the internet."
+msgstr "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when SheepKeep can be reached from the internet."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Mail isn't configured on this server, so no email goes out yet."
@@ -14774,16 +14774,16 @@ msgid "Notifications are blocked"
 msgstr "Notifications are blocked"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Notifications are blocked for Kept in this browser's settings. Allow them there, then come back."
-msgstr "Notifications are blocked for Kept in this browser's settings. Allow them there, then come back."
+msgid "Notifications are blocked for SheepKeep in this browser's settings. Allow them there, then come back."
+msgstr "Notifications are blocked for SheepKeep in this browser's settings. Allow them there, then come back."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Notifications are on for this device"
 msgstr "Notifications are on for this device"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "On iPhone and iPad, notifications work only from the installed app. Add Kept to your Home Screen, open it from there and turn them on. Until then, email reaches you."
-msgstr "On iPhone and iPad, notifications work only from the installed app. Add Kept to your Home Screen, open it from there and turn them on. Until then, email reaches you."
+msgid "On iPhone and iPad, notifications work only from the installed app. Add SheepKeep to your Home Screen, open it from there and turn them on. Until then, email reaches you."
+msgstr "On iPhone and iPad, notifications work only from the installed app. Add SheepKeep to your Home Screen, open it from there and turn them on. Until then, email reaches you."
 
 #: src/components/notifications/settings/notification-settings.tsx
 msgid "Once a month: what AI did for you and what it used."
@@ -14839,8 +14839,8 @@ msgid "Reminders have stopped going out"
 msgstr "Reminders have stopped going out"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Reminders pop up here even when Kept is closed. Your browser asks first."
-msgstr "Reminders pop up here even when Kept is closed. Your browser asks first."
+msgid "Reminders pop up here even when SheepKeep is closed. Your browser asks first."
+msgstr "Reminders pop up here even when SheepKeep is closed. Your browser asks first."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Remove {name}"
@@ -14903,8 +14903,8 @@ msgid "Test sent"
 msgstr "Test sent"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "That device stops receiving push from Kept. Turn it on again from the device itself."
-msgstr "That device stops receiving push from Kept. Turn it on again from the device itself."
+msgid "That device stops receiving push from SheepKeep. Turn it on again from the device itself."
+msgstr "That device stops receiving push from SheepKeep. Turn it on again from the device itself."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "The mail server didn't take it. Try again later."
@@ -14915,8 +14915,8 @@ msgid "The test didn't arrive"
 msgstr "The test didn't arrive"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "This browser can't receive notifications from Kept. Email still reaches you."
-msgstr "This browser can't receive notifications from Kept. Email still reaches you."
+msgid "This browser can't receive notifications from SheepKeep. Email still reaches you."
+msgstr "This browser can't receive notifications from SheepKeep. Email still reaches you."
 
 #: src/components/notifications/settings/notification-settings.tsx
 msgid "Times are in <0>{zone}</0>, your time zone."
@@ -14980,12 +14980,12 @@ msgid "What's coming up arrives together, once a day."
 msgstr "What's coming up arrives together, once a day."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Where Kept posts. Only its host is shown after this."
-msgstr "Where Kept posts. Only its host is shown after this."
+msgid "Where SheepKeep posts. Only its host is shown after this."
+msgstr "Where SheepKeep posts. Only its host is shown after this."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Your account has no email address, so Kept tells you here, in the app."
-msgstr "Your account has no email address, so Kept tells you here, in the app."
+msgid "Your account has no email address, so SheepKeep tells you here, in the app."
+msgstr "Your account has no email address, so SheepKeep tells you here, in the app."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Your account has no email address."
@@ -15179,8 +15179,8 @@ msgid "Claims under {name}"
 msgstr "Claims under {name}"
 
 #: src/components/reports/claim-pack.tsx
-msgid "Copy it now: Kept shows it only this once."
-msgstr "Copy it now: Kept shows it only this once."
+msgid "Copy it now: SheepKeep shows it only this once."
+msgstr "Copy it now: SheepKeep shows it only this once."
 
 #: src/components/reports/claim-pack.tsx
 msgid "Couldn't check on the claim pack"
@@ -15299,12 +15299,12 @@ msgid "Keep the notes under {NOTES_MAX} characters."
 msgstr "Keep the notes under {NOTES_MAX} characters."
 
 #: src/components/reports/insurance-report.tsx
-msgid "Kept converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
-msgstr "Kept converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
+msgid "SheepKeep converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
+msgstr "SheepKeep converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
 
 #: src/components/money/exchange-rates.tsx
-msgid "Kept converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
-msgstr "Kept converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
+msgid "SheepKeep converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
+msgstr "SheepKeep converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
 
 #: src/components/reports/claim-pack.tsx
 msgid "Kept until {keptUntil}."
@@ -15504,8 +15504,8 @@ msgid "The things stay as they are; only the incident and its references go. You
 msgstr "The things stay as they are; only the incident and its references go. You can undo this for 7 days from the history."
 
 #: src/components/reports/claim-pack.tsx
-msgid "This browser can't save files here. Open Kept in Safari to download it."
-msgstr "This browser can't save files here. Open Kept in Safari to download it."
+msgid "This browser can't save files here. Open SheepKeep in Safari to download it."
+msgstr "This browser can't save files here. Open SheepKeep in Safari to download it."
 
 #: src/components/reports/claim-pack.tsx
 msgid "This claim pack has expired"
@@ -16326,8 +16326,8 @@ msgid "{typed} {unit} is lower than {before} {unit} on {on}. Readings can't go d
 msgstr "{typed} {unit} is lower than {before} {unit} on {on}. Readings can't go down: check the digits, or record that the meter was replaced."
 
 #: src/components/readings/log-reading-sheet.tsx
-msgid "A new meter starts again from 0. Kept adds what the old one had reached, so the history keeps going up."
-msgstr "A new meter starts again from 0. Kept adds what the old one had reached, so the history keeps going up."
+msgid "A new meter starts again from 0. SheepKeep adds what the old one had reached, so the history keeps going up."
+msgstr "A new meter starts again from 0. SheepKeep adds what the old one had reached, so the history keeps going up."
 
 #: src/components/things/create-sheet.tsx
 msgid "Add the first reading"
@@ -16430,16 +16430,16 @@ msgid "Kept as proof"
 msgstr "Kept as proof"
 
 #: src/components/readings/log-reading-sheet.tsx
-msgid "Kept checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
-msgstr "Kept checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
+msgid "SheepKeep checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
+msgstr "SheepKeep checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
 
 #: src/components/services/invoice-suggestions.tsx
-msgid "Kept couldn't read the invoice. Type the lines."
-msgstr "Kept couldn't read the invoice. Type the lines."
+msgid "SheepKeep couldn't read the invoice. Type the lines."
+msgstr "SheepKeep couldn't read the invoice. Type the lines."
 
 #: src/components/things/create-sheet.tsx
-msgid "Kept tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
-msgstr "Kept tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
+msgid "SheepKeep tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
+msgstr "SheepKeep tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
 
 #: src/components/capture/capture-screen.tsx
 msgid "Label photos go on <0>{0}</0>"
@@ -16486,8 +16486,8 @@ msgid "Nothing on this phone has a meter yet"
 msgstr "Nothing on this phone has a meter yet"
 
 #: src/components/home/quick-log.tsx
-msgid "Open Kept once while online, so this phone has your things and their meters."
-msgstr "Open Kept once while online, so this phone has your things and their meters."
+msgid "Open SheepKeep once while online, so this phone has your things and their meters."
+msgstr "Open SheepKeep once while online, so this phone has your things and their meters."
 
 #: src/components/readings/log-reading-sheet.tsx
 msgid "Optional. It joins the meter's proof photos."
@@ -16677,8 +16677,8 @@ msgid "Its values show to everyone who can see the thing, and history keeps them
 msgstr "Its values show to everyone who can see the thing, and history keeps them from now on."
 
 #: src/components/registries/convert-field-sheet.household.tsx
-msgid "Secrets are values Kept must be able to recover. Save the recovery kit on the status page, then make the field secret again."
-msgstr "Secrets are values Kept must be able to recover. Save the recovery kit on the status page, then make the field secret again."
+msgid "Secrets are values SheepKeep must be able to recover. Save the recovery kit on the status page, then make the field secret again."
+msgstr "Secrets are values SheepKeep must be able to recover. Save the recovery kit on the status page, then make the field secret again."
 
 #: src/components/registries/convert-field-sheet.household.tsx
 msgid "The person who runs this server needs to save the recovery kit before secrets can be kept. Ask them, then make the field secret again."
@@ -16842,12 +16842,12 @@ msgid "Set a minimum"
 msgstr "Set a minimum"
 
 #: src/components/consumables/stock.household.tsx
-msgid "No minimum. Set one and Kept lists it as low when fewer are left."
-msgstr "No minimum. Set one and Kept lists it as low when fewer are left."
+msgid "No minimum. Set one and SheepKeep lists it as low when fewer are left."
+msgstr "No minimum. Set one and SheepKeep lists it as low when fewer are left."
 
 #: src/routes/_app/settings.export.tsx
-msgid "One file per location: everything in it, the original photos and documents, and a copy you can read without Kept. Import it into this Kept or another one."
-msgstr "One file per location: everything in it, the original photos and documents, and a copy you can read without Kept. Import it into this Kept or another one."
+msgid "One file per location: everything in it, the original photos and documents, and a copy you can read without SheepKeep. Import it into this SheepKeep or another one."
+msgstr "One file per location: everything in it, the original photos and documents, and a copy you can read without SheepKeep. Import it into this SheepKeep or another one."
 
 #: src/components/export/export-sheet.tsx
 #: src/routes/_app/settings.export.tsx
@@ -16861,8 +16861,8 @@ msgid "Export my data"
 msgstr "Export my data"
 
 #: src/routes/_app/settings.export.tsx
-msgid "Each download link is made when you click Download and lasts 5 minutes; Kept checks you're still an owner or admin every time. Exports are kept 7 days."
-msgstr "Each download link is made when you click Download and lasts 5 minutes; Kept checks you're still an owner or admin every time. Exports are kept 7 days."
+msgid "Each download link is made when you click Download and lasts 5 minutes; SheepKeep checks you're still an owner or admin every time. Exports are kept 7 days."
+msgstr "Each download link is made when you click Download and lasts 5 minutes; SheepKeep checks you're still an owner or admin every time. Exports are kept 7 days."
 
 #: src/routes/_app/settings.index.tsx
 msgid "Your data"
@@ -16877,16 +16877,16 @@ msgid "Someone changed this import in the meantime. It has been reloaded; check 
 msgstr "Someone changed this import in the meantime. It has been reloaded; check it and try again."
 
 #: src/components/import/archive-run.tsx
-msgid "Kept can't read this archive"
-msgstr "Kept can't read this archive"
+msgid "SheepKeep can't read this archive"
+msgstr "SheepKeep can't read this archive"
 
 #: src/components/import/archive-run.tsx
 msgid "Nothing was imported"
 msgstr "Nothing was imported"
 
 #: src/components/import/archive-run.tsx
-msgid "It isn't an export Kept can read. Export it again and try once more."
-msgstr "It isn't an export Kept can read. Export it again and try once more."
+msgid "It isn't an export SheepKeep can read. Export it again and try once more."
+msgstr "It isn't an export SheepKeep can read. Export it again and try once more."
 
 #: src/components/import/archive-run.tsx
 #: src/components/import/archive-step.tsx
@@ -17155,8 +17155,8 @@ msgid "Homebox's export has no currency. Choosing one relabels the amounts; it d
 msgstr "Homebox's export has no currency. Choosing one relabels the amounts; it doesn't convert them."
 
 #: src/components/import/homebox-choices.tsx
-msgid "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in Kept. An instance admin can turn it on in Admin → Currencies."
-msgstr "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in Kept. An instance admin can turn it on in Admin → Currencies."
+msgid "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in SheepKeep. An instance admin can turn it on in Admin → Currencies."
+msgstr "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in SheepKeep. An instance admin can turn it on in Admin → Currencies."
 
 #: src/components/import/homebox-choices.tsx
 msgid "This location counts in <0>{locationCurrency}</0>; prices in another currency are kept as they are."
@@ -17211,8 +17211,8 @@ msgid "Keep in notes"
 msgstr "Keep in notes"
 
 #: src/components/import/homebox-choices.tsx
-msgid "Homebox's types are matched to Kept's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
-msgstr "Homebox's types are matched to Kept's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
+msgid "Homebox's types are matched to SheepKeep's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
+msgstr "Homebox's types are matched to SheepKeep's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
 
 #: src/components/import/homebox-choices.tsx
 msgid "number"
@@ -17231,8 +17231,8 @@ msgid "text"
 msgstr "text"
 
 #: src/components/import/homebox-choices.tsx
-msgid "A Kept type"
-msgstr "A Kept type"
+msgid "A SheepKeep type"
+msgstr "A SheepKeep type"
 
 #: src/components/import/homebox-choices.tsx
 msgid "Created"
@@ -17251,8 +17251,8 @@ msgid "{0, plural, one {# item} other {# items}}"
 msgstr "{0, plural, one {# item} other {# items}}"
 
 #: src/components/import/homebox-choices.tsx
-msgid "Kept type for {name}"
-msgstr "Kept type for {name}"
+msgid "SheepKeep type for {name}"
+msgstr "SheepKeep type for {name}"
 
 #: src/components/import/homebox-choices.tsx
 msgid "Create \"{name}\""
@@ -17347,8 +17347,8 @@ msgid "Couldn't connect"
 msgstr "Couldn't connect"
 
 #: src/components/import/kept-choices.tsx
-msgid "A Kept <0>{0}</0> export{1}{2}"
-msgstr "A Kept <0>{0}</0> export{1}{2}"
+msgid "A SheepKeep <0>{0}</0> export{1}{2}"
+msgstr "A SheepKeep <0>{0}</0> export{1}{2}"
 
 #: src/components/import/kept-choices.tsx
 msgid "{0, plural, one {event in the history} other {events in the history}}"
@@ -17396,28 +17396,28 @@ msgid "Nobody is invited by the import: invite each person yourself, with their 
 msgstr "Nobody is invited by the import: invite each person yourself, with their email."
 
 #: src/components/import/labels.ts
-msgid "Not imported: a file type Kept doesn't keep."
-msgstr "Not imported: a file type Kept doesn't keep."
+msgid "Not imported: a file type SheepKeep doesn't keep."
+msgstr "Not imported: a file type SheepKeep doesn't keep."
 
 #: src/components/import/labels.ts
 msgid "The file isn't in the archive, so it's left out."
 msgstr "The file isn't in the archive, so it's left out."
 
 #: src/components/import/labels.ts
-msgid "The file is larger than Kept takes, so it's left out."
-msgstr "The file is larger than Kept takes, so it's left out."
+msgid "The file is larger than SheepKeep takes, so it's left out."
+msgstr "The file is larger than SheepKeep takes, so it's left out."
 
 #: src/components/import/labels.ts
-msgid "Not something Kept reads from an export; ignored."
-msgstr "Not something Kept reads from an export; ignored."
+msgid "Not something SheepKeep reads from an export; ignored."
+msgstr "Not something SheepKeep reads from an export; ignored."
 
 #: src/components/import/labels.ts
 msgid "Archived in Homebox, left out."
 msgstr "Archived in Homebox, left out."
 
 #: src/components/import/labels.ts
-msgid "Counted one by one in Kept; Homebox's quantity is kept in the notes."
-msgstr "Counted one by one in Kept; Homebox's quantity is kept in the notes."
+msgid "Counted one by one in SheepKeep; Homebox's quantity is kept in the notes."
+msgstr "Counted one by one in SheepKeep; Homebox's quantity is kept in the notes."
 
 #: src/components/import/labels.ts
 msgid "Quantity 0 became 1: Homebox gives 0 when none was set."
@@ -17428,20 +17428,20 @@ msgid "Homebox keeps numbers whole, so any decimals were already lost there."
 msgstr "Homebox keeps numbers whole, so any decimals were already lost there."
 
 #: src/components/import/labels.ts
-msgid "Kept has no icon like Homebox's; the type's own icon is used."
-msgstr "Kept has no icon like Homebox's; the type's own icon is used."
+msgid "SheepKeep has no icon like Homebox's; the type's own icon is used."
+msgstr "SheepKeep has no icon like Homebox's; the type's own icon is used."
 
 #: src/components/import/labels.ts
-msgid "A Kept template can't hold money or secrets; the rest of the template is imported."
-msgstr "A Kept template can't hold money or secrets; the rest of the template is imported."
+msgid "A SheepKeep template can't hold money or secrets; the rest of the template is imported."
+msgstr "A SheepKeep template can't hold money or secrets; the rest of the template is imported."
 
 #: src/components/import/labels.ts
-msgid "This currency isn't turned on in Kept; the prices are kept in the notes."
-msgstr "This currency isn't turned on in Kept; the prices are kept in the notes."
+msgid "This currency isn't turned on in SheepKeep; the prices are kept in the notes."
+msgstr "This currency isn't turned on in SheepKeep; the prices are kept in the notes."
 
 #: src/components/import/labels.ts
-msgid "Kept can't hold this record yet; its text is kept in the thing's notes."
-msgstr "Kept can't hold this record yet; its text is kept in the thing's notes."
+msgid "SheepKeep can't hold this record yet; its text is kept in the thing's notes."
+msgstr "SheepKeep can't hold this record yet; its text is kept in the thing's notes."
 
 #: src/components/import/labels.ts
 msgid "A location inside an item became a container."
@@ -17488,12 +17488,12 @@ msgid "It's incomplete: the download or the copy stopped before the end."
 msgstr "It's incomplete: the download or the copy stopped before the end."
 
 #: src/components/import/labels.ts
-msgid "It's from a newer version than this Kept reads. Update Kept, then import it."
-msgstr "It's from a newer version than this Kept reads. Update Kept, then import it."
+msgid "It's from a newer version than this SheepKeep reads. Update SheepKeep, then import it."
+msgstr "It's from a newer version than this SheepKeep reads. Update SheepKeep, then import it."
 
 #: src/components/import/labels.ts
-msgid "It's protected with a ZIP password, which Kept can't open. Export it again without one."
-msgstr "It's protected with a ZIP password, which Kept can't open. Export it again without one."
+msgid "It's protected with a ZIP password, which SheepKeep can't open. Export it again without one."
+msgstr "It's protected with a ZIP password, which SheepKeep can't open. Export it again without one."
 
 #: src/components/import/labels.ts
 msgid "One of its data files is too large to read."
@@ -17516,8 +17516,8 @@ msgid "A Kept export"
 msgstr "A Kept export"
 
 #: src/components/import/source-step.tsx
-msgid "A location exported from this Kept or another one. It comes in as a new location."
-msgstr "A location exported from this Kept or another one. It comes in as a new location."
+msgid "A location exported from this SheepKeep or another one. It comes in as a new location."
+msgstr "A location exported from this SheepKeep or another one. It comes in as a new location."
 
 #: src/components/import/target-step.tsx
 msgid "Give the new location a name."
@@ -17677,8 +17677,8 @@ msgid "Things in the Trash"
 msgstr "Things in the Trash"
 
 #: src/components/export/export-sheet.tsx
-msgid "A copy you can read without Kept"
-msgstr "A copy you can read without Kept"
+msgid "A copy you can read without SheepKeep"
+msgstr "A copy you can read without SheepKeep"
 
 #: src/components/export/export-sheet.tsx
 msgid "with the inventory PDF"
@@ -17701,8 +17701,8 @@ msgid "Encrypted with a passphrase you choose. The readable copy never holds the
 msgstr "Encrypted with a passphrase you choose. The readable copy never holds them."
 
 #: src/components/export/export-sheet.tsx
-msgid "Anyone with this file and the passphrase can read every secret in it. Kept can't recover a forgotten passphrase."
-msgstr "Anyone with this file and the passphrase can read every secret in it. Kept can't recover a forgotten passphrase."
+msgid "Anyone with this file and the passphrase can read every secret in it. SheepKeep can't recover a forgotten passphrase."
+msgstr "Anyone with this file and the passphrase can read every secret in it. SheepKeep can't recover a forgotten passphrase."
 
 #: src/components/export/export-sheet.tsx
 msgid "Export <0>{name}</0>"
@@ -17749,8 +17749,8 @@ msgid "Five exports an hour at most. Try again a little later."
 msgstr "Five exports an hour at most. Try again a little later."
 
 #: src/components/export/labels.ts
-msgid "Secrets leave Kept only once the recovery kit is saved. An instance admin saves it from the status page."
-msgstr "Secrets leave Kept only once the recovery kit is saved. An instance admin saves it from the status page."
+msgid "Secrets leave SheepKeep only once the recovery kit is saved. An instance admin saves it from the status page."
+msgstr "Secrets leave SheepKeep only once the recovery kit is saved. An instance admin saves it from the status page."
 
 #: src/components/export/labels.ts
 msgid "Use a passphrase of at least 12 characters, the same both times."
@@ -17889,8 +17889,8 @@ msgid "{name}, {unit}"
 msgstr "{name}, {unit}"
 
 #: src/components/vehicles/list.tsx
-msgid "A car, a motorbike or a generator: Kept keeps its odometer, what's due, fuel and running costs."
-msgstr "A car, a motorbike or a generator: Kept keeps its odometer, what's due, fuel and running costs."
+msgid "A car, a motorbike or a generator: SheepKeep keeps its odometer, what's due, fuel and running costs."
+msgstr "A car, a motorbike or a generator: SheepKeep keeps its odometer, what's due, fuel and running costs."
 
 #: src/components/vehicles/readings-tab.tsx
 msgid "Accepted"
@@ -18247,8 +18247,8 @@ msgid "{label}: {plain}"
 msgstr "{label}: {plain}"
 
 #: src/components/connections/revoke.tsx
-msgid "{name} can't reach your Kept any more"
-msgstr "{name} can't reach your Kept any more"
+msgid "{name} can't reach your SheepKeep any more"
+msgstr "{name} can't reach your SheepKeep any more"
 
 #: src/components/connections/oauth-apps.tsx
 msgid "{scope} · <0>{where}</0> · allowed {granted} · not used yet"
@@ -18275,12 +18275,12 @@ msgid "{scope} · <0>{where}</0> · used {used}"
 msgstr "{scope} · <0>{where}</0> · used {used}"
 
 #: src/routes/oauth/consent.tsx
-msgid "<0>{name}</0> wants to use your Kept"
-msgstr "<0>{name}</0> wants to use your Kept"
+msgid "<0>{name}</0> wants to use your SheepKeep"
+msgstr "<0>{name}</0> wants to use your SheepKeep"
 
 #: src/components/oidc-sign-in.tsx
-msgid "<0>{who}</0> hasn't confirmed your email address, so Kept can't use it. Confirm it there, then try again."
-msgstr "<0>{who}</0> hasn't confirmed your email address, so Kept can't use it. Confirm it there, then try again."
+msgid "<0>{who}</0> hasn't confirmed your email address, so SheepKeep can't use it. Confirm it there, then try again."
+msgstr "<0>{who}</0> hasn't confirmed your email address, so SheepKeep can't use it. Confirm it there, then try again."
 
 #: src/components/ai/what-uses-ai.tsx
 msgid "~{0} tokens"
@@ -18299,8 +18299,8 @@ msgid "A reminder is due"
 msgstr "A reminder is due"
 
 #: src/routes/_app/help.tsx
-msgid "A Shortcut that asks for the reading and sends it to Kept with a token."
-msgstr "A Shortcut that asks for the reading and sends it to Kept with a token."
+msgid "A Shortcut that asks for the reading and sends it to SheepKeep with a token."
+msgstr "A Shortcut that asks for the reading and sends it to SheepKeep with a token."
 
 #: src/components/webhooks/list.tsx
 msgid "A signed message to your own server when things change here. It carries ids and the names of changed fields, never names, places or values."
@@ -18356,8 +18356,8 @@ msgid "Add webhook"
 msgstr "Add webhook"
 
 #: src/components/connections/shortcut-recipe.tsx
-msgid "Add your car to Kept with an odometer reading first; its address appears here then."
-msgstr "Add your car to Kept with an odometer reading first; its address appears here then."
+msgid "Add your car to SheepKeep with an odometer reading first; its address appears here then."
+msgstr "Add your car to SheepKeep with an odometer reading first; its address appears here then."
 
 #: src/components/webhooks/list.tsx
 msgid "Added by <0>{0}</0>"
@@ -18437,8 +18437,8 @@ msgid "Copy it now. You won't see it again; rotate it if it's lost."
 msgstr "Copy it now. You won't see it again; rotate it if it's lost."
 
 #: src/components/connections/token-create.tsx
-msgid "Copy it now. You won't see this again: Kept keeps only a fingerprint of it."
-msgstr "Copy it now. You won't see this again: Kept keeps only a fingerprint of it."
+msgid "Copy it now. You won't see this again: SheepKeep keeps only a fingerprint of it."
+msgstr "Copy it now. You won't see this again: SheepKeep keeps only a fingerprint of it."
 
 #: src/components/webhooks/edit.tsx
 msgid "Copy secret"
@@ -18534,8 +18534,8 @@ msgid "Find things and read what's recorded. No changes, no secret fields."
 msgstr "Find things and read what's recorded. No changes, no secret fields."
 
 #: src/components/admin/oidc-status.tsx
-msgid "Fix it, then restart Kept. Everything else works meanwhile."
-msgstr "Fix it, then restart Kept. Everything else works meanwhile."
+msgid "Fix it, then restart SheepKeep. Everything else works meanwhile."
+msgstr "Fix it, then restart SheepKeep. Everything else works meanwhile."
 
 #: src/components/webhooks/words.tsx
 msgid "Gave up"
@@ -18562,36 +18562,36 @@ msgid "Issuer"
 msgstr "Issuer"
 
 #: src/components/connections/oauth-apps.tsx
-msgid "It stops reaching your Kept at once. To use it again, connect it again from the app."
-msgstr "It stops reaching your Kept at once. To use it again, connect it again from the app."
+msgid "It stops reaching your SheepKeep at once. To use it again, connect it again from the app."
+msgstr "It stops reaching your SheepKeep at once. To use it again, connect it again from the app."
 
 #: src/routes/invite.tsx
 msgid "Join with <0>{oidcName}</0>"
 msgstr "Join with <0>{oidcName}</0>"
 
 #: src/components/admin/embeddings-source.tsx
-msgid "Kept downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
-msgstr "Kept downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
+msgid "SheepKeep downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
+msgstr "SheepKeep downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
 
 #: src/components/oidc-sign-in.tsx
-msgid "Kept needs an address that can receive mail for an account."
-msgstr "Kept needs an address that can receive mail for an account."
+msgid "SheepKeep needs an address that can receive mail for an account."
+msgstr "SheepKeep needs an address that can receive mail for an account."
 
 #: src/components/oidc-sign-in.tsx
-msgid "Kept never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
-msgstr "Kept never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
+msgid "SheepKeep never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
+msgstr "SheepKeep never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
 
 #: src/components/admin/embeddings-source.tsx
-msgid "Kept runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
-msgstr "Kept runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
+msgid "SheepKeep runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
+msgstr "SheepKeep runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
 
 #: src/components/webhooks/edit.tsx
-msgid "Kept signs every delivery with this secret, so your server can tell it came from Kept."
-msgstr "Kept signs every delivery with this secret, so your server can tell it came from Kept."
+msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
+msgstr "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
 
 #: src/components/webhooks/list.tsx
-msgid "Kept stops sending to it, and its deliveries are forgotten."
-msgstr "Kept stops sending to it, and its deliveries are forgotten."
+msgid "SheepKeep stops sending to it, and its deliveries are forgotten."
+msgstr "SheepKeep stops sending to it, and its deliveries are forgotten."
 
 #: src/components/ai/key-scope.tsx
 msgid "Keyword only (semantic search is off on this server)"
@@ -18676,8 +18676,8 @@ msgid "No changes by connections"
 msgstr "No changes by connections"
 
 #: src/components/oidc-sign-in.tsx
-msgid "No Kept account uses that sign-in yet"
-msgstr "No Kept account uses that sign-in yet"
+msgid "No SheepKeep account uses that sign-in yet"
+msgstr "No SheepKeep account uses that sign-in yet"
 
 #: src/components/connections/tokens.tsx
 msgid "No tokens yet"
@@ -18841,8 +18841,8 @@ msgid "Server address"
 msgstr "Server address"
 
 #: src/components/admin/oidc-status.tsx
-msgid "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart Kept."
-msgstr "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart Kept."
+msgid "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart SheepKeep."
+msgstr "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart SheepKeep."
 
 #: src/components/connections/shortcut-recipe.tsx
 msgid "Set Request Body to JSON with two text fields: <0>value</0>, the number you typed, and <1>takenAt</1>, the Current Date formatted as ISO 8601 with the time."
@@ -18861,8 +18861,8 @@ msgid "Sign-in with OIDC"
 msgstr "Sign-in with OIDC"
 
 #: src/components/admin/oidc-status.tsx
-msgid "Signing in this way reaches only an account already linked to it, or someone invited here. Kept never joins accounts because their emails match."
-msgstr "Signing in this way reaches only an account already linked to it, or someone invited here. Kept never joins accounts because their emails match."
+msgid "Signing in this way reaches only an account already linked to it, or someone invited here. SheepKeep never joins accounts because their emails match."
+msgstr "Signing in this way reaches only an account already linked to it, or someone invited here. SheepKeep never joins accounts because their emails match."
 
 #: src/components/oidc-sign-in.tsx
 msgid "Signing in with <0>{who}</0> didn't work"
@@ -18877,8 +18877,8 @@ msgid "Start connecting again from the app."
 msgstr "Start connecting again from the app."
 
 #: src/components/connections/shortcut-recipe.tsx
-msgid "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in Kept, with undo, as if you'd logged it here."
-msgstr "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in Kept, with undo, as if you'd logged it here."
+msgid "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in SheepKeep, with undo, as if you'd logged it here."
+msgstr "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in SheepKeep, with undo, as if you'd logged it here."
 
 #: src/routes/_app/settings.connections.tsx
 msgid "Tell your own server when things change here."
@@ -18897,8 +18897,8 @@ msgid "That email address can't be used"
 msgstr "That email address can't be used"
 
 #: src/routes/oauth/consent.tsx
-msgid "That's the name the app gives itself. Kept can't confirm who made it."
-msgstr "That's the name the app gives itself. Kept can't confirm who made it."
+msgid "That's the name the app gives itself. SheepKeep can't confirm who made it."
+msgstr "That's the name the app gives itself. SheepKeep can't confirm who made it."
 
 #: src/routes/oauth/consent.tsx
 msgid "The app could move what it finds in one into another, so people in one could see what came from the other. Connect it to one location unless you mean that."
@@ -18929,8 +18929,8 @@ msgid "The old secret stopped working. Put this one on your server; every delive
 msgstr "The old secret stopped working. Put this one on your server; every delivery from now on is signed with it."
 
 #: src/components/admin/oidc-status.tsx
-msgid "The provider couldn't be reached when Kept started."
-msgstr "The provider couldn't be reached when Kept started."
+msgid "The provider couldn't be reached when SheepKeep started."
+msgstr "The provider couldn't be reached when SheepKeep started."
 
 #: src/components/admin/oidc-status.tsx
 msgid "The provider says it's a different issuer from KEPT_OIDC_ISSUER."
@@ -18957,8 +18957,8 @@ msgid "Things indexed for search"
 msgstr "Things indexed for search"
 
 #: src/components/oidc-sign-in.tsx
-msgid "This Kept lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
-msgstr "This Kept lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
+msgid "This SheepKeep lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
+msgstr "This SheepKeep lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
 
 #: src/routes/oauth/consent.tsx
 msgid "This request isn't valid any more"
@@ -19068,8 +19068,8 @@ msgid "Your server didn't answer"
 msgstr "Your server didn't answer"
 
 #: src/components/webhooks/edit.tsx
-msgid "Your server's address. Kept sends a signed POST there."
-msgstr "Your server's address. Kept sends a signed POST there."
+msgid "Your server's address. SheepKeep sends a signed POST there."
+msgstr "Your server's address. SheepKeep sends a signed POST there."
 
 #: src/routes/_app/assistant.$threadId.tsx
 msgid "Delete this thread"
@@ -19124,8 +19124,8 @@ msgstr "Ask the assistant about “{0}”"
 
 #: src/assistant/composer.tsx
 #: src/components/capture/name-field.tsx
-msgid "Kept can't use the microphone"
-msgstr "Kept can't use the microphone"
+msgid "SheepKeep can't use the microphone"
+msgstr "SheepKeep can't use the microphone"
 
 #: src/assistant/composer.tsx
 #: src/components/capture/name-field.tsx
@@ -19293,8 +19293,8 @@ msgid "{count} of {total} ×"
 msgstr "{count} of {total} ×"
 
 #: src/assistant/confirm-card.tsx
-msgid "Something Kept can't name"
-msgstr "Something Kept can't name"
+msgid "Something SheepKeep can't name"
+msgstr "Something SheepKeep can't name"
 
 #. placeholder {0}: verbs[row.verb]
 #. placeholder {1}: isolate(row.target?.name ?? '')
@@ -19362,8 +19362,8 @@ msgid "Only ticked rows are saved"
 msgstr "Only ticked rows are saved"
 
 #: src/assistant/confirm-card.tsx
-msgid "Changes for you to confirm, drawn by Kept"
-msgstr "Changes for you to confirm, drawn by Kept"
+msgid "Changes for you to confirm, drawn by SheepKeep"
+msgstr "Changes for you to confirm, drawn by SheepKeep"
 
 #: src/assistant/confirm-card.tsx
 msgid "Time left to confirm"
@@ -19429,8 +19429,8 @@ msgid "Viewers can ask; changes need an admin"
 msgstr "Viewers can ask; changes need an admin"
 
 #: src/assistant/conversation.tsx
-msgid "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card Kept shows you."
-msgstr "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card Kept shows you."
+msgid "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card SheepKeep shows you."
+msgstr "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card SheepKeep shows you."
 
 #: src/assistant/conversation.tsx
 msgid "Say or type a list, like “in the garage I have a drill, a ladder and two paint cans”, and add them all with one Confirm."
@@ -19528,8 +19528,8 @@ msgid "Backups"
 msgstr "Backups"
 
 #: src/routes/_app/settings.device.tsx
-msgid "Lock Kept on this device"
-msgstr "Lock Kept on this device"
+msgid "Lock SheepKeep on this device"
+msgstr "Lock SheepKeep on this device"
 
 #: src/components/history/labels.ts
 msgid "Issued on"
@@ -19552,12 +19552,12 @@ msgid "Starter schedules added"
 msgstr "Starter schedules added"
 
 #: src/components/vehicles/overview.tsx
-msgid "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; Kept nudges you at # day.} other {A fresh one keeps ~{next} honest; Kept nudges you at # days.}}"
-msgstr "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; Kept nudges you at # day.} other {A fresh one keeps ~{next} honest; Kept nudges you at # days.}}"
+msgid "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; SheepKeep nudges you at # day.} other {A fresh one keeps ~{next} honest; SheepKeep nudges you at # days.}}"
+msgstr "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; SheepKeep nudges you at # day.} other {A fresh one keeps ~{next} honest; SheepKeep nudges you at # days.}}"
 
 #: src/components/vehicles/overview.tsx
-msgid "{nudgeDays, plural, one {Kept nudges you at # day.} other {Kept nudges you at # days.}}"
-msgstr "{nudgeDays, plural, one {Kept nudges you at # day.} other {Kept nudges you at # days.}}"
+msgid "{nudgeDays, plural, one {SheepKeep nudges you at # day.} other {SheepKeep nudges you at # days.}}"
+msgstr "{nudgeDays, plural, one {SheepKeep nudges you at # day.} other {SheepKeep nudges you at # days.}}"
 
 #: src/routes/_app/admin.alerts.tsx
 msgid "A location's webhook keeps failing"
@@ -19613,8 +19613,8 @@ msgid "Download the recovery kit"
 msgstr "Download the recovery kit"
 
 #: src/components/ops/kit-download.tsx
-msgid "Everything needed to bring Kept back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
-msgstr "Everything needed to bring Kept back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
+msgid "Everything needed to bring SheepKeep back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
+msgstr "Everything needed to bring SheepKeep back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
 
 #: src/components/ops/kit-download.tsx
 msgid "Keep it off this server"
@@ -19665,8 +19665,8 @@ msgid "Keep the recovery kit somewhere else"
 msgstr "Keep the recovery kit somewhere else"
 
 #: src/routes/_app/admin.status.tsx
-msgid "Kept encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. Kept asks for this before the first secret, AI key or backup."
-msgstr "Kept encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. Kept asks for this before the first secret, AI key or backup."
+msgid "SheepKeep encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. SheepKeep asks for this before the first secret, AI key or backup."
+msgstr "SheepKeep encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. SheepKeep asks for this before the first secret, AI key or backup."
 
 #: src/routes/_app/admin.status.tsx
 msgid "Changed since you downloaded it"
@@ -19721,8 +19721,8 @@ msgid "App lock"
 msgstr "App lock"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Ask for a PIN when Kept opens and after five minutes away. Keeping a location offline needs it."
-msgstr "Ask for a PIN when Kept opens and after five minutes away. Keeping a location offline needs it."
+msgid "Ask for a PIN when SheepKeep opens and after five minutes away. Keeping a location offline needs it."
+msgstr "Ask for a PIN when SheepKeep opens and after five minutes away. Keeping a location offline needs it."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "Change PIN"
@@ -19765,8 +19765,8 @@ msgid "Face ID"
 msgstr "Face ID"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Face ID or fingerprint can unlock Kept now"
-msgstr "Face ID or fingerprint can unlock Kept now"
+msgid "Face ID or fingerprint can unlock SheepKeep now"
+msgstr "Face ID or fingerprint can unlock SheepKeep now"
 
 #: src/components/device/lock-screen.tsx
 msgid "Face ID or fingerprint didn’t work. Enter your PIN."
@@ -19805,24 +19805,24 @@ msgid "Keeping {0} offline didn’t finish"
 msgstr "Keeping {0} offline didn’t finish"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Kept app lock"
-msgstr "Kept app lock"
+msgid "SheepKeep app lock"
+msgstr "SheepKeep app lock"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Kept locks on this device now"
-msgstr "Kept locks on this device now"
+msgid "SheepKeep locks on this device now"
+msgstr "SheepKeep locks on this device now"
 
 #: src/components/device/kept-extras.tsx
 msgid "Kept offline is locked behind your PIN."
 msgstr "Kept offline is locked behind your PIN."
 
 #: src/components/device/kept-extras.tsx
-msgid "Kept on this device"
-msgstr "Kept on this device"
+msgid "SheepKeep on this device"
+msgstr "SheepKeep on this device"
 
 #: src/routes/_app/settings.index.tsx
-msgid "Lock Kept with a PIN, and keep a location available offline."
-msgstr "Lock Kept with a PIN, and keep a location available offline."
+msgid "Lock SheepKeep with a PIN, and keep a location available offline."
+msgstr "Lock SheepKeep with a PIN, and keep a location available offline."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "Not available in this browser"
@@ -19833,8 +19833,8 @@ msgid "Now turn on Face ID or fingerprint again"
 msgstr "Now turn on Face ID or fingerprint again"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "On this phone Face ID or fingerprint opens Kept, but prices and documents kept offline still ask for the PIN."
-msgstr "On this phone Face ID or fingerprint opens Kept, but prices and documents kept offline still ask for the PIN."
+msgid "On this phone Face ID or fingerprint opens SheepKeep, but prices and documents kept offline still ask for the PIN."
+msgstr "On this phone Face ID or fingerprint opens SheepKeep, but prices and documents kept offline still ask for the PIN."
 
 #: src/components/device/lock-screen.tsx
 msgid "PIN"
@@ -19861,8 +19861,8 @@ msgid "That is more than this device can keep offline."
 msgstr "That is more than this device can keep offline."
 
 #: src/components/device/app-lock-settings.tsx
-msgid "The app lock needs storage this browser doesn’t give Kept."
-msgstr "The app lock needs storage this browser doesn’t give Kept."
+msgid "The app lock needs storage this browser doesn’t give SheepKeep."
+msgstr "The app lock needs storage this browser doesn’t give SheepKeep."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "The PIN keeps out someone holding this phone. Forgot it? Sign out and sign in again."
@@ -19909,16 +19909,16 @@ msgid "Use Face ID or fingerprint"
 msgstr "Use Face ID or fingerprint"
 
 #: src/components/device/keep-offline.tsx
-msgid "Whoever unlocks Kept on this phone sees prices and documents for this location."
-msgstr "Whoever unlocks Kept on this phone sees prices and documents for this location."
+msgid "Whoever unlocks SheepKeep on this phone sees prices and documents for this location."
+msgstr "Whoever unlocks SheepKeep on this phone sees prices and documents for this location."
 
 #: src/components/device/keep-offline.tsx
-msgid "Whoever unlocks Kept on this phone sees prices and documents for this location. About {0} to download."
-msgstr "Whoever unlocks Kept on this phone sees prices and documents for this location. About {0} to download."
+msgid "Whoever unlocks SheepKeep on this phone sees prices and documents for this location. About {0} to download."
+msgstr "Whoever unlocks SheepKeep on this phone sees prices and documents for this location. About {0} to download."
 
 #: src/components/device/keep-offline.tsx
-msgid "Whoever unlocks Kept sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
-msgstr "Whoever unlocks Kept sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
+msgid "Whoever unlocks SheepKeep sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
+msgstr "Whoever unlocks SheepKeep sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
 
 #: src/components/device/keep-offline.tsx
 msgid "Wrong PIN."
@@ -19970,8 +19970,8 @@ msgid "Access key ID"
 msgstr "Access key ID"
 
 #: src/components/ops/backup-target-form.tsx
-msgid "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk Kept's data is on."
-msgstr "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk Kept's data is on."
+msgid "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk SheepKeep's data is on."
+msgstr "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk SheepKeep's data is on."
 
 #: src/components/ops/backup-target-form.tsx
 msgid "An OpenSSH private key. It replaces the saved key when you save."
@@ -19982,8 +19982,8 @@ msgid "Another run holds the repository. Try again when it finishes."
 msgstr "Another run holds the repository. Try again when it finishes."
 
 #: src/components/ops/backup-target-form.tsx
-msgid "At least 12 characters. Without it nobody can read the backups, Kept included."
-msgstr "At least 12 characters. Without it nobody can read the backups, Kept included."
+msgid "At least 12 characters. Without it nobody can read the backups, SheepKeep included."
+msgstr "At least 12 characters. Without it nobody can read the backups, SheepKeep included."
 
 #: src/components/ops/backup-target-form.tsx
 msgid "Backup password"
@@ -20020,8 +20020,8 @@ msgid "Backups need a password: no password, no backup."
 msgstr "Backups need a password: no password, no backup."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Backups should run every night. Check the runs in Backups, and that Kept's worker is running."
-msgstr "Backups should run every night. Check the runs in Backups, and that Kept's worker is running."
+msgid "Backups should run every night. Check the runs in Backups, and that SheepKeep's worker is running."
+msgstr "Backups should run every night. Check the runs in Backups, and that SheepKeep's worker is running."
 
 #: src/components/ops/ops-words.ts
 msgid "Before upgrade"
@@ -20036,8 +20036,8 @@ msgid "Can't check this build"
 msgstr "Can't check this build"
 
 #: src/components/ops/backup-target-form.tsx
-msgid "Change the locked settings in the server's configuration (<0>{0}</0>) and restart Kept."
-msgstr "Change the locked settings in the server's configuration (<0>{0}</0>) and restart Kept."
+msgid "Change the locked settings in the server's configuration (<0>{0}</0>) and restart SheepKeep."
+msgstr "Change the locked settings in the server's configuration (<0>{0}</0>) and restart SheepKeep."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Check for new versions"
@@ -20136,8 +20136,8 @@ msgid "Every night at <0>{time}</0> UTC, keeping {daily} daily, {weekly} weekly 
 msgstr "Every night at <0>{time}</0> UTC, keeping {daily} daily, {weekly} weekly and {monthly} monthly snapshots."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Every week, Kept checks that every snapshot can be read."
-msgstr "Every week, Kept checks that every snapshot can be read."
+msgid "Every week, SheepKeep checks that every snapshot can be read."
+msgstr "Every week, SheepKeep checks that every snapshot can be read."
 
 #: src/components/ops/status-tiles.tsx
 msgid "File bucket versioning"
@@ -20160,8 +20160,8 @@ msgid "GitHub shows no published release for this server's source repository. It
 msgstr "GitHub shows no published release for this server's source repository. It may be private, or have none yet."
 
 #: src/components/ops/status-tiles.tsx
-msgid "GitHub's answer wasn't what Kept expected. Kept asks again tomorrow."
-msgstr "GitHub's answer wasn't what Kept expected. Kept asks again tomorrow."
+msgid "GitHub's answer wasn't what SheepKeep expected. SheepKeep asks again tomorrow."
+msgstr "GitHub's answer wasn't what SheepKeep expected. SheepKeep asks again tomorrow."
 
 #: src/components/ops/status-tiles.tsx
 msgid "GitHub's limit reached"
@@ -20176,32 +20176,32 @@ msgid "Keep the saved one"
 msgstr "Keep the saved one"
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept {v} is available"
-msgstr "Kept {v} is available"
+msgid "SheepKeep {v} is available"
+msgstr "SheepKeep {v} is available"
 
 #: src/components/ops/update-line.tsx
-msgid "Kept <0>{version}</0> is available"
-msgstr "Kept <0>{version}</0> is available"
+msgid "SheepKeep <0>{version}</0> is available"
+msgstr "SheepKeep <0>{version}</0> is available"
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept allows one release back. Upgrade again when the problem that made you roll back is fixed."
-msgstr "Kept allows one release back. Upgrade again when the problem that made you roll back is fixed."
+msgid "SheepKeep allows one release back. Upgrade again when the problem that made you roll back is fixed."
+msgstr "SheepKeep allows one release back. Upgrade again when the problem that made you roll back is fixed."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept checks it with each backup."
-msgstr "Kept checks it with each backup."
+msgid "SheepKeep checks it with each backup."
+msgstr "SheepKeep checks it with each backup."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept doesn't ask for new versions. Turn it on in Admin → Sign-up."
-msgstr "Kept doesn't ask for new versions. Turn it on in Admin → Sign-up."
+msgid "SheepKeep doesn't ask for new versions. Turn it on in Admin → Sign-up."
+msgstr "SheepKeep doesn't ask for new versions. Turn it on in Admin → Sign-up."
 
 #: src/components/ops/ops-words.ts
-msgid "Kept got no answer from the backup storage. Check the address, the credentials and the network."
-msgstr "Kept got no answer from the backup storage. Check the address, the credentials and the network."
+msgid "SheepKeep got no answer from the backup storage. Check the address, the credentials and the network."
+msgstr "SheepKeep got no answer from the backup storage. Check the address, the credentials and the network."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept warns at {warnAt}%."
-msgstr "Kept warns at {warnAt}%."
+msgid "SheepKeep warns at {warnAt}%."
+msgstr "SheepKeep warns at {warnAt}%."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Last checked {checked}"
@@ -20282,8 +20282,8 @@ msgid "Not known yet"
 msgstr "Not known yet"
 
 #: src/components/ops/snapshots-list.tsx
-msgid "Not made by Kept"
-msgstr "Not made by Kept"
+msgid "Not made by SheepKeep"
+msgstr "Not made by SheepKeep"
 
 #: src/components/ops/status-tiles.tsx
 msgid "Not measured yet"
@@ -20294,12 +20294,12 @@ msgid "Nothing on this server is backed up. Choose where backups go (another dis
 msgstr "Nothing on this server is backed up. Choose where backups go (another disk, an S3 bucket or an SFTP server) and a password in Backups."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "Off. Kept never asks; check the releases page yourself."
-msgstr "Off. Kept never asks; check the releases page yourself."
+msgid "Off. SheepKeep never asks; check the releases page yourself."
+msgstr "Off. SheepKeep never asks; check the releases page yourself."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "On. Once a day the server asks GitHub for Kept's newest release, sending nothing but the request. Admin → Status says when one is out."
-msgstr "On. Once a day the server asks GitHub for Kept's newest release, sending nothing but the request. Admin → Status says when one is out."
+msgid "On. Once a day the server asks GitHub for SheepKeep's newest release, sending nothing but the request. Admin → Status says when one is out."
+msgstr "On. Once a day the server asks GitHub for SheepKeep's newest release, sending nothing but the request. Admin → Status says when one is out."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Once a month, restore into a scratch database and compare: <0>{command}</0>"
@@ -20474,16 +20474,16 @@ msgid "The backup stopped before it finished: the server restarted or ran out of
 msgstr "The backup stopped before it finished: the server restarted or ran out of memory. The next backup runs as usual."
 
 #: src/components/ops/ops-words.ts
-msgid "The database dump tool doesn't match the database's version. Use Kept's own image."
-msgstr "The database dump tool doesn't match the database's version. Use Kept's own image."
+msgid "The database dump tool doesn't match the database's version. Use SheepKeep's own image."
+msgstr "The database dump tool doesn't match the database's version. Use SheepKeep's own image."
 
 #: src/components/ops/ops-words.ts
 msgid "The dump was much smaller than the last good one. Older snapshots were kept."
 msgstr "The dump was much smaller than the last good one. Older snapshots were kept."
 
 #: src/components/ops/status-tiles.tsx
-msgid "The last check got no answer. Kept asks again tomorrow."
-msgstr "The last check got no answer. Kept asks again tomorrow."
+msgid "The last check got no answer. SheepKeep asks again tomorrow."
+msgstr "The last check got no answer. SheepKeep asks again tomorrow."
 
 #: src/components/ops/ops-words.ts
 msgid "The repository is locked by another run. If none is running, {unlock} removes the lock."
@@ -20502,8 +20502,8 @@ msgid "The server's environment sets that, so it can't be changed here."
 msgstr "The server's environment sets that, so it can't be changed here."
 
 #: src/components/ops/backup-target-form.tsx
-msgid "The server's own key, as ssh-keyscan prints it without the host name. Kept connects to no other."
-msgstr "The server's own key, as ssh-keyscan prints it without the host name. Kept connects to no other."
+msgid "The server's own key, as ssh-keyscan prints it without the host name. SheepKeep connects to no other."
+msgstr "The server's own key, as ssh-keyscan prints it without the host name. SheepKeep connects to no other."
 
 #: src/components/ops/ops-words.ts
 msgid "The snapshot was taken, but something needs a look. The server's log has the details."
@@ -20522,20 +20522,20 @@ msgid "They need a decision: retry or discard."
 msgstr "They need a decision: retry or discard."
 
 #: src/components/ops/backup-target-form.tsx
-msgid "This needs a secure (HTTPS) connection to Kept."
-msgstr "This needs a secure (HTTPS) connection to Kept."
+msgid "This needs a secure (HTTPS) connection to SheepKeep."
+msgstr "This needs a secure (HTTPS) connection to SheepKeep."
 
 #: src/components/ops/update-line.tsx
-msgid "This server runs <0>{current}</0>. Upgrading is the release notes' steps; Kept never updates itself."
-msgstr "This server runs <0>{current}</0>. Upgrading is the release notes' steps; Kept never updates itself."
+msgid "This server runs <0>{current}</0>. Upgrading is the release notes' steps; SheepKeep never updates itself."
+msgstr "This server runs <0>{current}</0>. Upgrading is the release notes' steps; SheepKeep never updates itself."
 
 #: src/components/ops/status-tiles.tsx
-msgid "This server's source code address isn't a GitHub repository, so Kept doesn't ask."
-msgstr "This server's source code address isn't a GitHub repository, so Kept doesn't ask."
+msgid "This server's source code address isn't a GitHub repository, so SheepKeep doesn't ask."
+msgstr "This server's source code address isn't a GitHub repository, so SheepKeep doesn't ask."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Too many requests came from this server's address. Kept asks again tomorrow."
-msgstr "Too many requests came from this server's address. Kept asks again tomorrow."
+msgid "Too many requests came from this server's address. SheepKeep asks again tomorrow."
+msgstr "Too many requests came from this server's address. SheepKeep asks again tomorrow."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Up to date"
@@ -20595,8 +20595,8 @@ msgid "Low since {day}"
 msgstr "Low since {day}"
 
 #: src/components/webhooks/edit.tsx
-msgid "Kept can't reach that address. Check it for typos."
-msgstr "Kept can't reach that address. Check it for typos."
+msgid "SheepKeep can't reach that address. Check it for typos."
+msgstr "SheepKeep can't reach that address. Check it for typos."
 
 #: src/assistant/conversation.tsx
 msgid "You have no AI of your own to answer here. Ask from a location's page, where its AI answers."
@@ -20631,8 +20631,8 @@ msgid "Other names requested for an import"
 msgstr "Other names requested for an import"
 
 #: src/components/history/labels.ts
-msgid "Kept set up"
-msgstr "Kept set up"
+msgid "SheepKeep set up"
+msgstr "SheepKeep set up"
 
 #: src/components/history/labels.ts
 msgid "Instance settings changed"
@@ -20846,8 +20846,8 @@ msgid "This account was made for you by someone who runs a location. Ask them to
 msgstr "This account was made for you by someone who runs a location. Ask them to remove it."
 
 #: src/components/delete-account.tsx
-msgid "You're the only person who runs this Kept. Make someone else an instance admin first."
-msgstr "You're the only person who runs this Kept. Make someone else an instance admin first."
+msgid "You're the only person who runs this SheepKeep. Make someone else an instance admin first."
+msgstr "You're the only person who runs this SheepKeep. Make someone else an instance admin first."
 
 #: src/components/delete-account.tsx
 msgid "You own these locations. Hand each one to someone else, or delete it, first."
@@ -20874,8 +20874,8 @@ msgid "Keep my account"
 msgstr "Keep my account"
 
 #: src/components/page.tsx
-msgid "Your account is going to be deleted. Keep it to use Kept again."
-msgstr "Your account is going to be deleted. Keep it to use Kept again."
+msgid "Your account is going to be deleted. Keep it to use SheepKeep again."
+msgstr "Your account is going to be deleted. Keep it to use SheepKeep again."
 
 #: src/components/page.tsx
 msgid "Your account can't be deleted yet."
@@ -20934,16 +20934,16 @@ msgid "Unlink"
 msgstr "Unlink"
 
 #: src/components/sign-in-methods.tsx
-msgid "Once linked, that account signs you in here. Kept never links one because the email matches."
-msgstr "Once linked, that account signs you in here. Kept never links one because the email matches."
+msgid "Once linked, that account signs you in here. SheepKeep never links one because the email matches."
+msgstr "Once linked, that account signs you in here. SheepKeep never links one because the email matches."
 
 #: src/components/admin/oidc-status.tsx
 msgid "Sign-in with Google"
 msgstr "Sign-in with Google"
 
 #: src/components/admin/oidc-status.tsx
-msgid "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart Kept."
-msgstr "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart Kept."
+msgid "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart SheepKeep."
+msgstr "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart SheepKeep."
 
 #: src/components/admin/oidc-status.tsx
 msgid "Redirect URI to register with Google"
@@ -20954,12 +20954,12 @@ msgid "Google sign-in reaches only an account already linked to it, or someone i
 msgstr "Google sign-in reaches only an account already linked to it, or someone invited here. Nobody gets in on their own."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "That server is on a private network, which this Kept doesn't allow. An instance admin can allow it."
-msgstr "That server is on a private network, which this Kept doesn't allow. An instance admin can allow it."
+msgid "That server is on a private network, which this SheepKeep doesn't allow. An instance admin can allow it."
+msgstr "That server is on a private network, which this SheepKeep doesn't allow. An instance admin can allow it."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept stops sending to it, and forgets its settings."
-msgstr "Kept stops sending to it, and forgets its settings."
+msgid "SheepKeep stops sending to it, and forgets its settings."
+msgstr "SheepKeep stops sending to it, and forgets its settings."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Add ntfy"
@@ -20970,8 +20970,8 @@ msgid "Add Telegram"
 msgstr "Add Telegram"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "You have {MAX_RELAY_CHANNELS}, the most Kept allows."
-msgstr "You have {MAX_RELAY_CHANNELS}, the most Kept allows."
+msgid "You have {MAX_RELAY_CHANNELS}, the most SheepKeep allows."
+msgstr "You have {MAX_RELAY_CHANNELS}, the most SheepKeep allows."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Reminders on your phone through ntfy.sh or your own ntfy server."
@@ -21022,20 +21022,20 @@ msgid "Optional, to tell them apart."
 msgstr "Optional, to tell them apart."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept keeps these settings encrypted and never shows them again."
-msgstr "Kept keeps these settings encrypted and never shows them again."
+msgid "SheepKeep keeps these settings encrypted and never shows them again."
+msgstr "SheepKeep keeps these settings encrypted and never shows them again."
 
 #: src/components/reports/print-sheet.tsx
 msgid "It's also on its way to your email."
 msgstr "It's also on its way to your email."
 
 #: src/components/reports/print-sheet.tsx
-msgid "Kept emails this location's inventory every Monday morning."
-msgstr "Kept emails this location's inventory every Monday morning."
+msgid "SheepKeep emails this location's inventory every Monday morning."
+msgstr "SheepKeep emails this location's inventory every Monday morning."
 
 #: src/components/reports/print-sheet.tsx
-msgid "Kept emails this location's inventory on the 1st of every month."
-msgstr "Kept emails this location's inventory on the 1st of every month."
+msgid "SheepKeep emails this location's inventory on the 1st of every month."
+msgstr "SheepKeep emails this location's inventory on the 1st of every month."
 
 #: src/components/reports/print-sheet.tsx
 msgid "Email it to me"
@@ -21066,8 +21066,8 @@ msgid "Skipped: you'd made five reports that hour."
 msgstr "Skipped: you'd made five reports that hour."
 
 #: src/components/notifications/settings/scheduled-reports.tsx
-msgid "Skipped: that part of Kept is off in this location."
-msgstr "Skipped: that part of Kept is off in this location."
+msgid "Skipped: that part of SheepKeep is off in this location."
+msgstr "Skipped: that part of SheepKeep is off in this location."
 
 #: src/components/notifications/settings/scheduled-reports.tsx
 msgid "Skipped: you can't make this report there any more."
@@ -21078,8 +21078,8 @@ msgid "Stop this report?"
 msgstr "Stop this report?"
 
 #: src/components/notifications/settings/scheduled-reports.tsx
-msgid "Kept stops emailing it. You can print it any time."
-msgstr "Kept stops emailing it. You can print it any time."
+msgid "SheepKeep stops emailing it. You can print it any time."
+msgstr "SheepKeep stops emailing it. You can print it any time."
 
 #: src/components/notifications/settings/scheduled-reports.tsx
 msgid "Stop"
@@ -21122,12 +21122,12 @@ msgid "This isn't a LubeLogger export of fuel, services or odometer."
 msgstr "This isn't a LubeLogger export of fuel, services or odometer."
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "Kept can't read this file. Export it from LubeLogger again as CSV."
-msgstr "Kept can't read this file. Export it from LubeLogger again as CSV."
+msgid "SheepKeep can't read this file. Export it from LubeLogger again as CSV."
+msgstr "SheepKeep can't read this file. Export it from LubeLogger again as CSV."
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "Kept can't read this file."
-msgstr "Kept can't read this file."
+msgid "SheepKeep can't read this file."
+msgstr "SheepKeep can't read this file."
 
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "Imported {0} records"
@@ -21174,8 +21174,8 @@ msgid "Check"
 msgstr "Check"
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "no date Kept can read"
-msgstr "no date Kept can read"
+msgid "no date SheepKeep can read"
+msgstr "no date SheepKeep can read"
 
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
@@ -21202,8 +21202,8 @@ msgid "a cost below zero"
 msgstr "a cost below zero"
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "Kept refused it"
-msgstr "Kept refused it"
+msgid "SheepKeep refused it"
+msgstr "SheepKeep refused it"
 
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "What it will do"
@@ -21246,8 +21246,8 @@ msgid "That address is on a private network. An instance admin can allow it in A
 msgstr "That address is on a private network. An instance admin can allow it in Admin → Settings."
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept couldn't reach that server. Check the host and port."
-msgstr "Kept couldn't reach that server. Check the host and port."
+msgid "SheepKeep couldn't reach that server. Check the host and port."
+msgstr "SheepKeep couldn't reach that server. Check the host and port."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "The server's encryption didn't check out. Check the host and the security."
@@ -21266,8 +21266,8 @@ msgid "The server took too long to answer."
 msgstr "The server took too long to answer."
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept couldn't sign in to the mailbox."
-msgstr "Kept couldn't sign in to the mailbox."
+msgid "SheepKeep couldn't sign in to the mailbox."
+msgstr "SheepKeep couldn't sign in to the mailbox."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "The person who connected it no longer administers this location."
@@ -21306,16 +21306,16 @@ msgid "Remove this mailbox?"
 msgstr "Remove this mailbox?"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept stops checking it. The receipts it already made stay."
-msgstr "Kept stops checking it. The receipts it already made stay."
+msgid "SheepKeep stops checking it. The receipts it already made stay."
+msgstr "SheepKeep stops checking it. The receipts it already made stay."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Mailbox"
 msgstr "Mailbox"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept stopped checking this mailbox"
-msgstr "Kept stopped checking this mailbox"
+msgid "SheepKeep stopped checking this mailbox"
+msgstr "SheepKeep stopped checking this mailbox"
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Save it again to turn it back on."
@@ -21334,8 +21334,8 @@ msgid "Checked {0}"
 msgstr "Checked {0}"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Not checked yet. Kept checks every 10 minutes."
-msgstr "Not checked yet. Kept checks every 10 minutes."
+msgid "Not checked yet. SheepKeep checks every 10 minutes."
+msgstr "Not checked yet. SheepKeep checks every 10 minutes."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Connected by {0}"
@@ -21358,8 +21358,8 @@ msgid "Connect a mailbox"
 msgstr "Connect a mailbox"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
-msgstr "Kept checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
+msgid "SheepKeep checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
+msgstr "SheepKeep checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "IMAP server"
@@ -21402,8 +21402,8 @@ msgid "Optional, comma-separated. A filter against noise, not a security check: 
 msgstr "Optional, comma-separated. A filter against noise, not a security check: a From address can be forged."
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept couldn't connect"
-msgstr "Kept couldn't connect"
+msgid "SheepKeep couldn't connect"
+msgstr "SheepKeep couldn't connect"
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Recent mail"
@@ -21418,8 +21418,8 @@ msgid "No mail read yet"
 msgstr "No mail read yet"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Messages that arrive in the folder show here once Kept has read them."
-msgstr "Messages that arrive in the folder show here once Kept has read them."
+msgid "Messages that arrive in the folder show here once SheepKeep has read them."
+msgstr "Messages that arrive in the folder show here once SheepKeep has read them."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Add Apprise"
@@ -21458,12 +21458,12 @@ msgid "Condition report PDF"
 msgstr "Condition report PDF"
 
 #: src/components/condition/pdf-sheet.tsx
-msgid "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time Kept received each photo."
-msgstr "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time Kept received each photo."
+msgid "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time SheepKeep received each photo."
+msgstr "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time SheepKeep received each photo."
 
 #: src/components/condition/pdf-sheet.tsx
-msgid "Each room's condition, note and photos, with the time Kept received each photo."
-msgstr "Each room's condition, note and photos, with the time Kept received each photo."
+msgid "Each room's condition, note and photos, with the time SheepKeep received each photo."
+msgstr "Each room's condition, note and photos, with the time SheepKeep received each photo."
 
 #: src/components/condition/pdf-sheet.tsx
 msgid "This report isn't finished, and the PDF says so."
@@ -21622,8 +21622,8 @@ msgid "Day of the walk-through"
 msgstr "Day of the walk-through"
 
 #: src/routes/s.$token.tsx
-msgid "Shared from Kept · read-only"
-msgstr "Shared from Kept · read-only"
+msgid "Shared from SheepKeep · read-only"
+msgstr "Shared from SheepKeep · read-only"
 
 #: src/routes/s.$token.tsx
 msgid "Shared with you"
@@ -21750,8 +21750,8 @@ msgid "Anyone with this link can open it until {until}."
 msgstr "Anyone with this link can open it until {until}."
 
 #: src/components/sharelinks/share-sheet.tsx
-msgid "Copy it now. Kept shows this link once; make a new one if it's lost."
-msgstr "Copy it now. Kept shows this link once; make a new one if it's lost."
+msgid "Copy it now. SheepKeep shows this link once; make a new one if it's lost."
+msgstr "Copy it now. SheepKeep shows this link once; make a new one if it's lost."
 
 #: src/components/sharelinks/share-sheet.tsx
 msgid "See this location's share links"
@@ -22443,8 +22443,8 @@ msgid "Throw away these changes?"
 msgstr "Throw away these changes?"
 
 #: src/map/map-view.tsx
-msgid "The map goes back to how it was. Rooms and floors you added stay in Kept."
-msgstr "The map goes back to how it was. Rooms and floors you added stay in Kept."
+msgid "The map goes back to how it was. Rooms and floors you added stay in SheepKeep."
+msgstr "The map goes back to how it was. Rooms and floors you added stay in SheepKeep."
 
 #: src/map/map-view.tsx
 msgid "Throw away"
@@ -22655,8 +22655,8 @@ msgid "{what} by {how} in {where}"
 msgstr "{what} by {how} in {where}"
 
 #: src/components/notifications/settings/kinds.tsx
-msgid "In Kept is off, so nothing is sent."
-msgstr "In Kept is off, so nothing is sent."
+msgid "In SheepKeep is off, so nothing is sent."
+msgstr "In SheepKeep is off, so nothing is sent."
 
 #: src/components/notifications/settings/kinds.tsx
 msgid "Due dates"
@@ -22687,8 +22687,8 @@ msgid "Applies to every location, ones you add later too. Pick a location to cha
 msgstr "Applies to every location, ones you add later too. Pick a location to change it there only."
 
 #: src/components/notifications/settings/kinds.tsx
-msgid "You're a member here: Kept starts with only the loans you record."
-msgstr "You're a member here: Kept starts with only the loans you record."
+msgid "You're a member here: SheepKeep starts with only the loans you record."
+msgstr "You're a member here: SheepKeep starts with only the loans you record."
 
 #: src/components/notifications/settings/kinds.tsx
 msgid "You're a viewer here: only members joining and leaving."
@@ -22894,8 +22894,8 @@ msgid "The camera is off in this demo"
 msgstr "The camera is off in this demo"
 
 #: src/components/capture/file-fallback.tsx
-msgid "In your own Kept, Capture opens the camera here. Photos you pick stay in this tab."
-msgstr "In your own Kept, Capture opens the camera here. Photos you pick stay in this tab."
+msgid "In your own SheepKeep, Capture opens the camera here. Photos you pick stay in this tab."
+msgstr "In your own SheepKeep, Capture opens the camera here. Photos you pick stay in this tab."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "The app lock is off in this demo."
@@ -22906,8 +22906,8 @@ msgid "Downloads are off in this demo."
 msgstr "Downloads are off in this demo."
 
 #: src/components/reports/progress.tsx
-msgid "Your own Kept makes the PDF here. This demo has no files."
-msgstr "Your own Kept makes the PDF here. This demo has no files."
+msgid "Your own SheepKeep makes the PDF here. This demo has no files."
+msgstr "Your own SheepKeep makes the PDF here. This demo has no files."
 
 #: src/assistant/conversation.tsx
 msgid "Sample answers in this demo: no AI is asked."
@@ -22938,8 +22938,8 @@ msgid "Disconnect Paperless?"
 msgstr "Disconnect Paperless?"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "The {links} links to its documents go too. Documents copied into Kept stay."
-msgstr "The {links} links to its documents go too. Documents copied into Kept stay."
+msgid "The {links} links to its documents go too. Documents copied into SheepKeep stay."
+msgstr "The {links} links to its documents go too. Documents copied into SheepKeep stay."
 
 #: src/components/paperless/connection-settings.tsx
 msgid "Members can no longer link its documents."
@@ -22986,8 +22986,8 @@ msgid "Connect Paperless-ngx"
 msgstr "Connect Paperless-ngx"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. Kept stores the document's number and title, not the file, unless someone copies it into Kept."
-msgstr "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. Kept stores the document's number and title, not the file, unless someone copies it into Kept."
+msgid "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. SheepKeep stores the document's number and title, not the file, unless someone copies it into SheepKeep."
+msgstr "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. SheepKeep stores the document's number and title, not the file, unless someone copies it into SheepKeep."
 
 #: src/components/paperless/connection-settings.tsx
 msgid "Paperless address"
@@ -23002,16 +23002,16 @@ msgid "Plain http"
 msgstr "Plain http"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "Kept accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
-msgstr "Kept accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
+msgid "SheepKeep accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
+msgstr "SheepKeep accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
 
 #: src/components/paperless/connection-settings.tsx
 msgid "API token"
 msgstr "API token"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "In Paperless, open My Profile and press the circular arrow by the API token. Kept sees what that user sees."
-msgstr "In Paperless, open My Profile and press the circular arrow by the API token. Kept sees what that user sees."
+msgid "In Paperless, open My Profile and press the circular arrow by the API token. SheepKeep sees what that user sees."
+msgstr "In Paperless, open My Profile and press the circular arrow by the API token. SheepKeep sees what that user sees."
 
 #: src/components/paperless/documents.tsx
 msgid "From Paperless-ngx"
@@ -23026,8 +23026,8 @@ msgid "Paperless can't be reached"
 msgstr "Paperless can't be reached"
 
 #: src/components/paperless/documents.tsx
-msgid "The titles below are as Kept last saw them."
-msgstr "The titles below are as Kept last saw them."
+msgid "The titles below are as SheepKeep last saw them."
+msgstr "The titles below are as SheepKeep last saw them."
 
 #: src/components/paperless/documents.tsx
 msgid "No Paperless documents of this kind."
@@ -23042,8 +23042,8 @@ msgid "Paperless documents"
 msgstr "Paperless documents"
 
 #: src/components/paperless/documents.tsx
-msgid "Copied into Kept"
-msgstr "Copied into Kept"
+msgid "Copied into SheepKeep"
+msgstr "Copied into SheepKeep"
 
 #: src/components/paperless/documents.tsx
 msgid "Couldn't copy it"
@@ -23054,8 +23054,8 @@ msgid "Unlink this document?"
 msgstr "Unlink this document?"
 
 #: src/components/paperless/documents.tsx
-msgid "It comes off {name}. Paperless keeps it, and the copy in Kept stays."
-msgstr "It comes off {name}. Paperless keeps it, and the copy in Kept stays."
+msgid "It comes off {name}. Paperless keeps it, and the copy in SheepKeep stays."
+msgstr "It comes off {name}. Paperless keeps it, and the copy in SheepKeep stays."
 
 #: src/components/paperless/documents.tsx
 msgid "It comes off {name}. Paperless keeps it."
@@ -23070,8 +23070,8 @@ msgid "Open in Paperless"
 msgstr "Open in Paperless"
 
 #: src/components/paperless/documents.tsx
-msgid "Copy into Kept"
-msgstr "Copy into Kept"
+msgid "Copy into SheepKeep"
+msgstr "Copy into SheepKeep"
 
 #: src/components/paperless/documents.tsx
 msgid "Unlink {0}"
@@ -23122,8 +23122,8 @@ msgid "Use https:// for a Paperless outside your network. Over http the token wo
 msgstr "Use https:// for a Paperless outside your network. Over http the token would travel unencrypted."
 
 #: src/components/paperless/words.ts
-msgid "Kept couldn't reach Paperless at that address."
-msgstr "Kept couldn't reach Paperless at that address."
+msgid "SheepKeep couldn't reach Paperless at that address."
+msgstr "SheepKeep couldn't reach Paperless at that address."
 
 #: src/components/paperless/words.ts
 msgid "Paperless didn't answer within 10 seconds."
@@ -23142,16 +23142,16 @@ msgid "That address doesn't answer like Paperless-ngx."
 msgstr "That address doesn't answer like Paperless-ngx."
 
 #: src/components/paperless/words.ts
-msgid "Kept needs Paperless-ngx 2.16 or later."
-msgstr "Kept needs Paperless-ngx 2.16 or later."
+msgid "SheepKeep needs Paperless-ngx 2.16 or later."
+msgstr "SheepKeep needs Paperless-ngx 2.16 or later."
 
 #: src/components/paperless/words.ts
 msgid "Paperless no longer has this document, or the token's user can't see it."
 msgstr "Paperless no longer has this document, or the token's user can't see it."
 
 #: src/components/paperless/words.ts
-msgid "That document is larger than Kept takes."
-msgstr "That document is larger than Kept takes."
+msgid "That document is larger than SheepKeep takes."
+msgstr "That document is larger than SheepKeep takes."
 
 #: src/components/history/labels.ts
 msgid "Paperless connected"
@@ -23170,8 +23170,8 @@ msgid "Paperless document unlinked"
 msgstr "Paperless document unlinked"
 
 #: src/components/history/labels.ts
-msgid "Paperless document copied into Kept"
-msgstr "Paperless document copied into Kept"
+msgid "Paperless document copied into SheepKeep"
+msgstr "Paperless document copied into SheepKeep"
 
 #: src/map/labels.ts
 msgid "Small device"
@@ -23766,8 +23766,8 @@ msgid "Add the box"
 msgstr "Add the box"
 
 #: src/components/moving/sheets.tsx
-msgid "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in Kept."
-msgstr "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in Kept."
+msgid "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in SheepKeep."
+msgstr "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in SheepKeep."
 
 #: src/components/moving/sheets.tsx
 msgid "Add a box first."
@@ -24709,16 +24709,16 @@ msgid "Capture & Inbox"
 msgstr "Capture & Inbox"
 
 #: src/components/hints/hint-copy.ts
-msgid "Check what Kept read, fix anything wrong, then tap Accept."
-msgstr "Check what Kept read, fix anything wrong, then tap Accept."
+msgid "Check what SheepKeep read, fix anything wrong, then tap Accept."
+msgstr "Check what SheepKeep read, fix anything wrong, then tap Accept."
 
 #: src/components/hints/hint-copy.ts
-msgid "Choose how reminders reach you: in Kept, by email, push or a channel."
-msgstr "Choose how reminders reach you: in Kept, by email, push or a channel."
+msgid "Choose how reminders reach you: in SheepKeep, by email, push or a channel."
+msgstr "Choose how reminders reach you: in SheepKeep, by email, push or a channel."
 
 #: src/components/hints/hint-copy.ts
-msgid "Choose what reaches you, and how: in Kept, by email, push or a channel."
-msgstr "Choose what reaches you, and how: in Kept, by email, push or a channel."
+msgid "Choose what reaches you, and how: in SheepKeep, by email, push or a channel."
+msgstr "Choose what reaches you, and how: in SheepKeep, by email, push or a channel."
 
 #: src/components/sheet/sheet-view.tsx
 msgid "Discard my change"
@@ -24833,8 +24833,8 @@ msgid "Pick what it is, then add the file to the thing it belongs to."
 msgstr "Pick what it is, then add the file to the thing it belongs to."
 
 #: src/components/hints/hint-copy.ts
-msgid "Pick where it comes from: a spreadsheet, Homebox or another Kept."
-msgstr "Pick where it comes from: a spreadsheet, Homebox or another Kept."
+msgid "Pick where it comes from: a spreadsheet, Homebox or another SheepKeep."
+msgstr "Pick where it comes from: a spreadsheet, Homebox or another SheepKeep."
 
 #: src/components/hints/hint-copy.ts
 msgid "Receipts, manuals and warranty cards from every thing and room."
@@ -24901,8 +24901,8 @@ msgid "Tap Mark returned when it comes back."
 msgstr "Tap Mark returned when it comes back."
 
 #: src/components/hints/hint-copy.ts
-msgid "Tap Scan and point the camera at a Kept label. What it's on opens."
-msgstr "Tap Scan and point the camera at a Kept label. What it's on opens."
+msgid "Tap Scan and point the camera at a SheepKeep label. What it's on opens."
+msgstr "Tap Scan and point the camera at a SheepKeep label. What it's on opens."
 
 #: src/components/hints/hint-copy.ts
 msgid "The file"
@@ -24993,16 +24993,16 @@ msgid "Keep room photos after review"
 msgstr "Keep room photos after review"
 
 #: src/routes/_app/settings.location.$id.general.tsx
-msgid "When you photograph a room, Kept cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
-msgstr "When you photograph a room, Kept cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
+msgid "When you photograph a room, SheepKeep cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
+msgstr "When you photograph a room, SheepKeep cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
 
 #: src/map/card.tsx
 msgid "Photograph this room"
 msgstr "Photograph this room"
 
 #: src/map/map-view.tsx
-msgid "Placed by Kept from room photos: move them where they stand."
-msgstr "Placed by Kept from room photos: move them where they stand."
+msgid "Placed by SheepKeep from room photos: move them where they stand."
+msgstr "Placed by SheepKeep from room photos: move them where they stand."
 
 #: src/components/inbox/inbox-list.tsx
 #: src/components/inbox/room-review.tsx
@@ -25078,8 +25078,8 @@ msgid "Reading photo {0} of {1}…"
 msgstr "Reading photo {0} of {1}…"
 
 #: src/components/inbox/room-review.tsx
-msgid "Kept couldn't read these photos. Retry, or take them again."
-msgstr "Kept couldn't read these photos. Retry, or take them again."
+msgid "SheepKeep couldn't read these photos. Retry, or take them again."
+msgstr "SheepKeep couldn't read these photos. Retry, or take them again."
 
 #: src/components/inbox/room-review.tsx
 msgid "AI capture is off here, so nothing was listed. The photos wait on <0>{name}</0>."
@@ -25150,16 +25150,16 @@ msgid "{0, plural, one {# new thing to review below} other {# new things to revi
 msgstr "{0, plural, one {# new thing to review below} other {# new things to review below}}"
 
 #: src/components/inbox/room-review.tsx
-msgid "{0, plural, one {# already in Kept} other {# already in Kept}}"
-msgstr "{0, plural, one {# already in Kept} other {# already in Kept}}"
+msgid "{0, plural, one {# already in SheepKeep} other {# already in SheepKeep}}"
+msgstr "{0, plural, one {# already in SheepKeep} other {# already in SheepKeep}}"
 
 #: src/components/inbox/room-review.tsx
 msgid "{0, plural, one {# piece of furniture to add as a place} other {# pieces of furniture to add as places}}"
 msgstr "{0, plural, one {# piece of furniture to add as a place} other {# pieces of furniture to add as places}}"
 
 #: src/components/history/labels.ts
-msgid "Photographed {name} for Kept to list what is in it"
-msgstr "Photographed {name} for Kept to list what is in it"
+msgid "Photographed {name} for SheepKeep to list what is in it"
+msgstr "Photographed {name} for SheepKeep to list what is in it"
 
 #: src/components/hints/hint-copy.ts
 msgid "Thing, receipt, label, reading or room. Pick one before the photo."
@@ -25170,8 +25170,8 @@ msgid "A whole room"
 msgstr "A whole room"
 
 #: src/components/hints/hint-copy.ts
-msgid "Up to five photos of a room. AI lists what's in them as drafts, skipping what Kept already has."
-msgstr "Up to five photos of a room. AI lists what's in them as drafts, skipping what Kept already has."
+msgid "Up to five photos of a room. AI lists what's in them as drafts, skipping what SheepKeep already has."
+msgstr "Up to five photos of a room. AI lists what's in them as drafts, skipping what SheepKeep already has."
 
 #: src/components/capture/capture-screen.tsx
 msgid "Five photos at most. Send these, then take the next wall."
@@ -25182,8 +25182,8 @@ msgid "Room sent"
 msgstr "Room sent"
 
 #: src/components/capture/capture-screen.tsx
-msgid "Kept lists what is in it in your Inbox."
-msgstr "Kept lists what is in it in your Inbox."
+msgid "SheepKeep lists what is in it in your Inbox."
+msgstr "SheepKeep lists what is in it in your Inbox."
 
 #: src/components/capture/room-tray.tsx
 msgid "{n, plural, one {About # photo} other {About # photos}}"
@@ -25226,8 +25226,8 @@ msgid "Remove photo {0}"
 msgstr "Remove photo {0}"
 
 #: src/components/capture/room-tray.tsx
-msgid "In Try Kept no AI runs: every room photo gives the same sample results."
-msgstr "In Try Kept no AI runs: every room photo gives the same sample results."
+msgid "In Try SheepKeep no AI runs: every room photo gives the same sample results."
+msgstr "In Try SheepKeep no AI runs: every room photo gives the same sample results."
 
 #: src/components/capture/room-tray.tsx
 msgid "Use a sample room photo"
@@ -25594,8 +25594,8 @@ msgid "Blank labels can be claimed from Scan, one at a time."
 msgstr "Blank labels can be claimed from Scan, one at a time."
 
 #: src/components/scan/session/summary.tsx
-msgid "Not in your Kept ({0})"
-msgstr "Not in your Kept ({0})"
+msgid "Not in your SheepKeep ({0})"
+msgstr "Not in your SheepKeep ({0})"
 
 #: src/components/scan/session/summary.tsx
 msgid "Check later ({0})"
@@ -25803,8 +25803,8 @@ msgid "Import it as a spreadsheet"
 msgstr "Import it as a spreadsheet"
 
 #: src/components/import/mapping-step.tsx
-msgid "Kept reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
-msgstr "Kept reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
+msgid "SheepKeep reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
+msgstr "SheepKeep reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
 
 #: src/components/import/choices-step.tsx
 msgid "One with a sale still ends sold."
@@ -26039,8 +26039,8 @@ msgid "Open the previous count ({0})"
 msgstr "Open the previous count ({0})"
 
 #: src/components/counts/count-page.tsx
-msgid "Counts saved before Kept 1.14 didn't record what was missing or elsewhere."
-msgstr "Counts saved before Kept 1.14 didn't record what was missing or elsewhere."
+msgid "Counts saved before SheepKeep 1.14 didn't record what was missing or elsewhere."
+msgstr "Counts saved before SheepKeep 1.14 didn't record what was missing or elsewhere."
 
 #: src/components/counts/count-page.tsx
 msgid "now in <0>{now}</0>"
@@ -26207,8 +26207,8 @@ msgid "Stayed here: {0}"
 msgstr "Stayed here: {0}"
 
 #: src/components/lending/lend-sheet.tsx
-msgid "Optional. Kept reminds you, never them, two days before and when it's overdue."
-msgstr "Optional. Kept reminds you, never them, two days before and when it's overdue."
+msgid "Optional. SheepKeep reminds you, never them, two days before and when it's overdue."
+msgstr "Optional. SheepKeep reminds you, never them, two days before and when it's overdue."
 
 #: src/components/lending/lend-sheet.tsx
 msgid "What goes with it"
@@ -26510,8 +26510,8 @@ msgid "Indigo"
 msgstr "Indigo"
 
 #: src/components/import/labels.ts
-msgid "Its tags aren't kept: in Kept only things have tags."
-msgstr "Its tags aren't kept: in Kept only things have tags."
+msgid "Its tags aren't kept: in SheepKeep only things have tags."
+msgstr "Its tags aren't kept: in SheepKeep only things have tags."
 
 #: src/components/tags/colour-choice.tsx
 msgid "No colour"
@@ -26597,16 +26597,16 @@ msgid "Keep the code as"
 msgstr "Keep the code as"
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores it as the serial number."
-msgstr "Kept stores it as the serial number."
+msgid "SheepKeep stores it as the serial number."
+msgstr "SheepKeep stores it as the serial number."
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores it as the serial number or the barcode: you pick."
-msgstr "Kept stores it as the serial number or the barcode: you pick."
+msgid "SheepKeep stores it as the serial number or the barcode: you pick."
+msgstr "SheepKeep stores it as the serial number or the barcode: you pick."
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores the barcode and serial number with it."
-msgstr "Kept stores the barcode and serial number with it."
+msgid "SheepKeep stores the barcode and serial number with it."
+msgstr "SheepKeep stores the barcode and serial number with it."
 
 #: src/routes/invite.tsx
 msgid "Add one in Sign-in and security"
@@ -26621,8 +26621,8 @@ msgid "They add one in Sign-in and security"
 msgstr "They add one in Sign-in and security"
 
 #: src/routes/_app/settings.two-factor.tsx
-msgid "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
-msgstr "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
+msgid "SheepKeep emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
+msgstr "SheepKeep emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
 
 #: src/routes/_app/settings.two-factor.tsx
 msgid "After this, signing in with a sign-in link or Google also asks for a 6-digit code from an authenticator app (1Password, Google Authenticator, Aegis…)."
@@ -26678,8 +26678,8 @@ msgid "Use {NAME_MAX} characters or fewer."
 msgstr "Use {NAME_MAX} characters or fewer."
 
 #: src/components/sign-in-security.household.tsx
-msgid "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; Kept never sees it."
-msgstr "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; Kept never sees it."
+msgid "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; SheepKeep never sees it."
+msgstr "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; SheepKeep never sees it."
 
 #: src/components/sign-in-security.household.tsx
 msgid "So you can tell your passkeys apart."
@@ -26814,8 +26814,8 @@ msgid "Unlock with Face ID or fingerprint"
 msgstr "Unlock with Face ID or fingerprint"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Unlocks Kept on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
-msgstr "Unlocks Kept on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
+msgid "Unlocks SheepKeep on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
+msgstr "Unlocks SheepKeep on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
 
 #: src/components/history/labels.ts
 msgid "Added a passkey"
@@ -26894,8 +26894,8 @@ msgid "Not confirmed as printed"
 msgstr "Not confirmed as printed"
 
 #: src/components/labels/printed-ok.tsx
-msgid "Once these labels have printed, confirm it here, so Kept stops counting them as unprinted."
-msgstr "Once these labels have printed, confirm it here, so Kept stops counting them as unprinted."
+msgid "Once these labels have printed, confirm it here, so SheepKeep stops counting them as unprinted."
+msgstr "Once these labels have printed, confirm it here, so SheepKeep stops counting them as unprinted."
 
 #: src/components/labels/start-cell.tsx
 msgid "Each label: QR code and short ID. The codes are made when you print."
@@ -27134,8 +27134,8 @@ msgid "A location that came in as a box, as chosen."
 msgstr "A location that came in as a box, as chosen."
 
 #: src/components/import/labels.ts
-msgid "Its description isn't kept: places in Kept have no notes."
-msgstr "Its description isn't kept: places in Kept have no notes."
+msgid "Its description isn't kept: places in SheepKeep have no notes."
+msgstr "Its description isn't kept: places in SheepKeep have no notes."
 
 #: src/components/import/repair.tsx
 msgid "{joined}, and {more} more"
@@ -27150,8 +27150,8 @@ msgid "Repair this import"
 msgstr "Repair this import"
 
 #: src/components/import/repair.tsx
-msgid "It was imported before Kept read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
-msgstr "It was imported before Kept read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
+msgid "It was imported before SheepKeep read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
+msgstr "It was imported before SheepKeep read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
 
 #: src/components/import/repair.tsx
 msgid "{0, plural, one {Archive the # thing that had quantity 0 in Homebox} other {Archive the # things that had quantity 0 in Homebox}}"
@@ -27225,16 +27225,16 @@ msgid "Open {expected}"
 msgstr "Open {expected}"
 
 #: src/components/origin-mismatch.tsx
-msgid "This Kept is set up for <0>{expected}</0>. Open it there."
-msgstr "This Kept is set up for <0>{expected}</0>. Open it there."
+msgid "This SheepKeep is set up for <0>{expected}</0>. Open it there."
+msgstr "This SheepKeep is set up for <0>{expected}</0>. Open it there."
 
 #: src/components/page.tsx
-msgid "This Kept is set up for a different address. Open it at the address you were given."
-msgstr "This Kept is set up for a different address. Open it at the address you were given."
+msgid "This SheepKeep is set up for a different address. Open it at the address you were given."
+msgstr "This SheepKeep is set up for a different address. Open it at the address you were given."
 
 #: src/components/page.tsx
-msgid "This Kept is set up for {address}. Open it there."
-msgstr "This Kept is set up for {address}. Open it there."
+msgid "This SheepKeep is set up for {address}. Open it there."
+msgstr "This SheepKeep is set up for {address}. Open it there."
 
 #: src/components/import/archive-step.tsx
 msgid "In Homebox, open Collection → Tools → Backup & Restore and choose Create Backup. When the backup is listed, Download it: that .zip is the file."
@@ -27245,8 +27245,8 @@ msgid "Homebox v0.26.1 or newer (v0.27.0 recommended): Collection → Tools → 
 msgstr "Homebox v0.26.1 or newer (v0.27.0 recommended): Collection → Tools → Backup & Restore → Create Backup → Download. Older than v0.26: import its spreadsheet export, or update a copy of Homebox first."
 
 #: src/components/connections/token-create.tsx
-msgid "On a home network without HTTPS, the person who runs this Kept can make one on the server: kept admin token create."
-msgstr "On a home network without HTTPS, the person who runs this Kept can make one on the server: kept admin token create."
+msgid "On a home network without HTTPS, the person who runs this SheepKeep can make one on the server: kept admin token create."
+msgstr "On a home network without HTTPS, the person who runs this SheepKeep can make one on the server: kept admin token create."
 
 #: src/components/import/archive-run.tsx
 msgid "Open the map"
@@ -27265,8 +27265,8 @@ msgid "Allow private addresses in Admin → Settings"
 msgstr "Allow private addresses in Admin → Settings"
 
 #: src/components/sign-in-security.household.tsx
-msgid "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put Kept on HTTPS to add one."
-msgstr "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put Kept on HTTPS to add one."
+msgid "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put SheepKeep on HTTPS to add one."
+msgstr "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put SheepKeep on HTTPS to add one."
 
 #: src/components/import/entity-report.tsx
 msgid "{0, plural, one {secret value left out of the export} other {secret values left out of the export}}"
@@ -27281,8 +27281,8 @@ msgid "Over plain HTTP, secret values stay out of the export. Each one is marked
 msgstr "Over plain HTTP, secret values stay out of the export. Each one is marked as left out, and the rest imports as usual."
 
 #: src/components/import/kept-choices.tsx
-msgid "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at Kept’s HTTPS address."
-msgstr "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at Kept’s HTTPS address."
+msgid "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at SheepKeep’s HTTPS address."
+msgstr "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at SheepKeep’s HTTPS address."
 
 #: src/components/places/sub-places.tsx
 msgid "{0} moved to {1} of {2}"
@@ -27509,8 +27509,8 @@ msgid "Show the whole house"
 msgstr "Show the whole house"
 
 #: src/graph/graph-view.tsx
-msgid "The graph is drawn from Kept’s server. The list has everything offline."
-msgstr "The graph is drawn from Kept’s server. The list has everything offline."
+msgid "The graph is drawn from SheepKeep’s server. The list has everything offline."
+msgstr "The graph is drawn from SheepKeep’s server. The list has everything offline."
 
 #: src/graph/graph-view.tsx
 msgid "Where you are in the graph"
@@ -27733,8 +27733,8 @@ msgid "Slide {n} of {total}"
 msgstr "Slide {n} of {total}"
 
 #: src/components/whats-new.tsx
-msgid "What's new in Kept"
-msgstr "What's new in Kept"
+msgid "What's new in SheepKeep"
+msgstr "What's new in SheepKeep"
 
 #: src/components/whats-new.tsx
 msgid "Version <0>{version}</0>"
@@ -28137,8 +28137,8 @@ msgid "Set a room’s size"
 msgstr "Set a room’s size"
 
 #: src/map/floor-plan/panel.tsx
-msgid "Kept read the first 60 rooms. Add the rest by drawing."
-msgstr "Kept read the first 60 rooms. Add the rest by drawing."
+msgid "SheepKeep read the first 60 rooms. Add the rest by drawing."
+msgstr "SheepKeep read the first 60 rooms. Add the rest by drawing."
 
 #: src/map/floor-plan/panel.tsx
 msgid "Keep the plan with <0>{location}</0>"
@@ -28181,8 +28181,8 @@ msgid "Add {room}"
 msgstr "Add {room}"
 
 #: src/map/floor-plan/start-sheet.tsx
-msgid "A photo, a screenshot or a PDF of a plan. Kept reads the rooms and their sizes; you check them before anything is added."
-msgstr "A photo, a screenshot or a PDF of a plan. Kept reads the rooms and their sizes; you check them before anything is added."
+msgid "A photo, a screenshot or a PDF of a plan. SheepKeep reads the rooms and their sizes; you check them before anything is added."
+msgstr "A photo, a screenshot or a PDF of a plan. SheepKeep reads the rooms and their sizes; you check them before anything is added."
 
 #: src/map/floor-plan/start-sheet.tsx
 msgid "Use a sample floor plan"
@@ -28209,8 +28209,8 @@ msgid "Up to ~{tokens} tokens"
 msgstr "Up to ~{tokens} tokens"
 
 #: src/map/floor-plan/start-sheet.tsx
-msgid "Kept sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
-msgstr "Kept sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
+msgid "SheepKeep sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
+msgstr "SheepKeep sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
 
 #: src/map/floor-plan/start-sheet.tsx
 msgid "Read the plan"
@@ -28252,8 +28252,8 @@ msgstr "Choose a type"
 msgid "Couldn't save the label image. Try again."
 msgstr "Couldn't save the label image. Try again."
 
-msgid "Kept label"
-msgstr "Kept label"
+msgid "SheepKeep label"
+msgstr "SheepKeep label"
 
 msgid "Loading the label"
 msgstr "Loading the label"
@@ -28279,12 +28279,12 @@ msgid "What the file can hold"
 msgstr "What the file can hold"
 
 #: src/components/import/csv-help.tsx
-msgid "The first row names the columns, in any of Kept's languages. Kept matches the names it knows, and you choose the rest in the next step. Only a name is needed."
-msgstr "The first row names the columns, in any of Kept's languages. Kept matches the names it knows, and you choose the rest in the next step. Only a name is needed."
+msgid "The first row names the columns, in any of SheepKeep's languages. SheepKeep matches the names it knows, and you choose the rest in the next step. Only a name is needed."
+msgstr "The first row names the columns, in any of SheepKeep's languages. SheepKeep matches the names it knows, and you choose the rest in the next step. Only a name is needed."
 
 #: src/components/import/csv-help.tsx
-msgid "The columns Kept reads"
-msgstr "The columns Kept reads"
+msgid "The columns SheepKeep reads"
+msgstr "The columns SheepKeep reads"
 
 #: src/components/import/csv-help.tsx
 msgid "A field of your own types, such as Wattage"
@@ -28371,8 +28371,8 @@ msgid "Used for <0>{personal}</0>, your private threads, and questions that span
 msgstr "Used for <0>{personal}</0>, your private threads, and questions that span owners."
 
 #: src/components/delete-account.tsx
-msgid "You asked for it, with your own location and everything in it. Until then nothing else in Kept opens. Keep the account to go back to it as it was."
-msgstr "You asked for it, with your own location and everything in it. Until then nothing else in Kept opens. Keep the account to go back to it as it was."
+msgid "You asked for it, with your own location and everything in it. Until then nothing else in SheepKeep opens. Keep the account to go back to it as it was."
+msgstr "You asked for it, with your own location and everything in it. Until then nothing else in SheepKeep opens. Keep the account to go back to it as it was."
 
 #: src/components/delete-account.tsx
 msgid "Your account, your own location <0>{personal}</0> and everything in it are deleted 30 days from now. Until then you can sign in and keep the account; nothing else opens."
@@ -28825,8 +28825,8 @@ msgid "Resize places"
 msgstr "Resize places"
 
 #: src/components/import/labels.ts
-msgid "{count, plural, one {# link keeps its Homebox title: Kept couldn't get one from Paperless.} other {# links keep their Homebox titles: Kept couldn't get them from Paperless.}}"
-msgstr "{count, plural, one {# link keeps its Homebox title: Kept couldn't get one from Paperless.} other {# links keep their Homebox titles: Kept couldn't get them from Paperless.}}"
+msgid "{count, plural, one {# link keeps its Homebox title: SheepKeep couldn't get one from Paperless.} other {# links keep their Homebox titles: SheepKeep couldn't get them from Paperless.}}"
+msgstr "{count, plural, one {# link keeps its Homebox title: SheepKeep couldn't get one from Paperless.} other {# links keep their Homebox titles: SheepKeep couldn't get them from Paperless.}}"
 
 #: src/routes/signin/index.tsx
 msgid "Passkeys work only at <0/>, because browsers tie a passkey to one address. Here, use your password or an email link."
@@ -29056,8 +29056,8 @@ msgid "Connect Home Assistant"
 msgstr "Connect Home Assistant"
 
 #: src/components/connections/token-create.tsx
-msgid "Home Assistant reads Kept as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
-msgstr "Home Assistant reads Kept as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
+msgid "Home Assistant reads SheepKeep as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
+msgstr "Home Assistant reads SheepKeep as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
 
 #: src/components/connections/token-create.tsx
 msgid "Home Assistant is connected"
@@ -29338,8 +29338,8 @@ msgid "An attached file exceeds the server upload limit."
 msgstr "An attached file exceeds the server upload limit."
 
 #: src/native/main.tsx
-msgid "An attached file format is not supported by Kept."
-msgstr "An attached file format is not supported by Kept."
+msgid "An attached file format is not supported by SheepKeep."
+msgstr "An attached file format is not supported by SheepKeep."
 
 #: src/native/main.tsx
 msgid "An uploaded file did not match its saved checksum. Retry or review the capture."
@@ -29379,16 +29379,16 @@ msgid "Close camera"
 msgstr "Close camera"
 
 #: src/native/main.tsx
-msgid "Connect to Kept to review recent batches."
-msgstr "Connect to Kept to review recent batches."
+msgid "Connect to SheepKeep to review recent batches."
+msgstr "Connect to SheepKeep to review recent batches."
 
 #: src/native/main.tsx
 msgid "Connect to your inventory"
 msgstr "Connect to your inventory"
 
 #: src/native/label-panel.tsx
-msgid "Connect to your Kept server over HTTPS to enroll NFC tags."
-msgstr "Connect to your Kept server over HTTPS to enroll NFC tags."
+msgid "Connect to your SheepKeep server over HTTPS to enroll NFC tags."
+msgstr "Connect to your SheepKeep server over HTTPS to enroll NFC tags."
 
 #: src/native/main.tsx
 msgid "Continue finding"
@@ -29399,8 +29399,8 @@ msgid "Continue scanning"
 msgstr "Continue scanning"
 
 #: src/native/main.tsx
-msgid "Could not connect to Kept. Check the server address and try again."
-msgstr "Could not connect to Kept. Check the server address and try again."
+msgid "Could not connect to SheepKeep. Check the server address and try again."
+msgstr "Could not connect to SheepKeep. Check the server address and try again."
 
 #: src/native/main.tsx
 msgid "Sign-in cancelled."
@@ -29411,8 +29411,8 @@ msgid "Could not create the box. Check your connection and selected location."
 msgstr "Could not create the box. Check your connection and selected location."
 
 #: src/native/main.tsx
-msgid "Could not search Kept. Try again."
-msgstr "Could not search Kept. Try again."
+msgid "Could not search SheepKeep. Try again."
+msgstr "Could not search SheepKeep. Try again."
 
 #: src/native/main.tsx
 msgid "Could not sign out."
@@ -29519,24 +29519,24 @@ msgid "Keep my description"
 msgstr "Keep my description"
 
 #: src/native/main.tsx
-msgid "Kept could not read the saved session."
-msgstr "Kept could not read the saved session."
+msgid "SheepKeep could not read the saved session."
+msgstr "SheepKeep could not read the saved session."
 
 #: src/native/capture-form.tsx
-msgid "Kept could not save on this iPhone. Check available storage and try again."
-msgstr "Kept could not save on this iPhone. Check available storage and try again."
+msgid "SheepKeep could not save on this iPhone. Check available storage and try again."
+msgstr "SheepKeep could not save on this iPhone. Check available storage and try again."
 
 #: src/native/label-panel.tsx
-msgid "Kept QR label"
-msgstr "Kept QR label"
+msgid "SheepKeep QR label"
+msgstr "SheepKeep QR label"
 
 #: src/native/main.tsx
-msgid "Kept server address"
-msgstr "Kept server address"
+msgid "SheepKeep server address"
+msgstr "SheepKeep server address"
 
 #: src/native/label-panel.tsx
-msgid "Kept tag verified."
-msgstr "Kept tag verified."
+msgid "SheepKeep tag verified."
+msgstr "SheepKeep tag verified."
 
 #: src/native/label-panel.tsx
 #: src/native/record.tsx
@@ -29580,16 +29580,16 @@ msgid "No matching inventory."
 msgstr "No matching inventory."
 
 #: src/native/label-panel.tsx
-msgid "Not a Kept label."
-msgstr "Not a Kept label."
+msgid "Not a SheepKeep label."
+msgstr "Not a SheepKeep label."
 
 #: src/native/main.tsx
 msgid "Nothing in this batch needs review."
 msgstr "Nothing in this batch needs review."
 
 #: src/native/main.tsx
-msgid "Offline. Changes stay on this iPhone until Kept is reachable."
-msgstr "Offline. Changes stay on this iPhone until Kept is reachable."
+msgid "Offline. Changes stay on this iPhone until SheepKeep is reachable."
+msgstr "Offline. Changes stay on this iPhone until SheepKeep is reachable."
 
 #: src/native/main.tsx
 msgid "Only part of your inventory is cached."
@@ -29731,8 +29731,8 @@ msgid "Sign out with unsynced captures?"
 msgstr "Sign out with unsynced captures?"
 
 #: src/native/main.tsx
-msgid "Signed out on this iPhone. Kept could not revoke the server session while offline."
-msgstr "Signed out on this iPhone. Kept could not revoke the server session while offline."
+msgid "Signed out on this iPhone. SheepKeep could not revoke the server session while offline."
+msgstr "Signed out on this iPhone. SheepKeep could not revoke the server session while offline."
 
 #: src/native/main.tsx
 msgid "Stay signed in"
@@ -29814,8 +29814,8 @@ msgid "This is a different label. Scan another tag."
 msgstr "This is a different label. Scan another tag."
 
 #: src/native/main.tsx
-msgid "This Kept was restored or replaced. Pending captures from the previous server state are held for review."
-msgstr "This Kept was restored or replaced. Pending captures from the previous server state are held for review."
+msgid "This SheepKeep was restored or replaced. Pending captures from the previous server state are held for review."
+msgstr "This SheepKeep was restored or replaced. Pending captures from the previous server state are held for review."
 
 #: src/native/label-panel.tsx
 msgid "This label could not be checked offline, so it is not confirmed as a different box."
@@ -29831,8 +29831,8 @@ msgstr "This label has not been assigned."
 
 #: src/native/label-panel.tsx
 #: src/native/main.tsx
-msgid "This label is unavailable in your Kept."
-msgstr "This label is unavailable in your Kept."
+msgid "This label is unavailable in your SheepKeep."
+msgstr "This label is unavailable in your SheepKeep."
 
 #: src/native/label-panel.tsx
 msgid "This NFC tag is blank."
@@ -29847,8 +29847,8 @@ msgid "This NFC tag is too small for the label URL."
 msgstr "This NFC tag is too small for the label URL."
 
 #: src/native/label-panel.tsx
-msgid "This tag already contains the verified Kept label."
-msgstr "This tag already contains the verified Kept label."
+msgid "This tag already contains the verified SheepKeep label."
+msgstr "This tag already contains the verified SheepKeep label."
 
 #: src/native/label-panel.tsx
 msgid "This tag already holds information. Writing will replace its contents."
@@ -29856,12 +29856,12 @@ msgstr "This tag already holds information. Writing will replace its contents."
 
 #: src/native/label-panel.tsx
 #: src/native/main.tsx
-msgid "This tag belongs to a different Kept server."
-msgstr "This tag belongs to a different Kept server."
+msgid "This tag belongs to a different SheepKeep server."
+msgstr "This tag belongs to a different SheepKeep server."
 
 #: src/native/label-panel.tsx
-msgid "This tag does not contain a Kept label URL."
-msgstr "This tag does not contain a Kept label URL."
+msgid "This tag does not contain a SheepKeep label URL."
+msgstr "This tag does not contain a SheepKeep label URL."
 
 #: src/native/label-panel.tsx
 msgid "This tag does not support NDEF."
@@ -29920,8 +29920,8 @@ msgstr "Your iPhone storage is full. Free up space and try again."
 msgid "Your session ended. Sign in again to see your pending captures."
 msgstr "Your session ended. Sign in again to see your pending captures."
 
-msgid "Connected Kept for iPhone"
-msgstr "Connected Kept for iPhone"
+msgid "Connected SheepKeep for iPhone"
+msgstr "Connected SheepKeep for iPhone"
 
 msgid "Entries saved in this batch: {saved}"
 msgstr "Entries saved in this batch: {saved}"
@@ -29934,12 +29934,12 @@ msgid "Discarded: {batchDiscardedCount}"
 msgstr "Discarded: {batchDiscardedCount}"
 
 #: src/native/label-panel.tsx
-msgid "That code matches more than one item, so Kept cannot confirm whether it is this box. Scan another tag."
-msgstr "That code matches more than one item, so Kept cannot confirm whether it is this box. Scan another tag."
+msgid "That code matches more than one item, so SheepKeep cannot confirm whether it is this box. Scan another tag."
+msgstr "That code matches more than one item, so SheepKeep cannot confirm whether it is this box. Scan another tag."
 
 #: src/native/main.tsx
-msgid "This Kept server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade Kept, then retry. Nothing was changed or removed."
-msgstr "This Kept server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade Kept, then retry. Nothing was changed or removed."
+msgid "This SheepKeep server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade SheepKeep, then retry. Nothing was changed or removed."
+msgstr "This SheepKeep server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade SheepKeep, then retry. Nothing was changed or removed."
 
 #: src/native/main.tsx
 msgid "Discard held {0}?"
@@ -29958,8 +29958,8 @@ msgid "Held captures: {0}"
 msgstr "Held captures: {0}"
 
 #: src/native/main.tsx
-msgid "These captures were saved before this Kept server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
-msgstr "These captures were saved before this Kept server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
+msgid "These captures were saved before this SheepKeep server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
+msgstr "These captures were saved before this SheepKeep server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -30055,8 +30055,8 @@ msgid "Sign in with Apple for iPhone"
 msgstr "Sign in with Apple for iPhone"
 
 #: src/native/main.tsx
-msgid "Update this Kept server to sign in with Apple."
-msgstr "Update this Kept server to sign in with Apple."
+msgid "Update this SheepKeep server to sign in with Apple."
+msgstr "Update this SheepKeep server to sign in with Apple."
 
 #: src/native/record.tsx
 msgid "Add to this room"
@@ -30319,8 +30319,8 @@ msgid "This record will be available in Unplaced."
 msgstr "This record will be available in Unplaced."
 
 #: src/native/edit-record.tsx
-msgid "Update this Kept server to use this action."
-msgstr "Update this Kept server to use this action."
+msgid "Update this SheepKeep server to use this action."
+msgstr "Update this SheepKeep server to use this action."
 
 #: src/native/record.tsx
 msgid "Use as cover"
@@ -30346,3 +30346,9 @@ msgstr "Ask the server operator to configure a destination, then set a backup pa
 #: src/components/ops/status-tiles.tsx
 msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
 msgstr "Ask the server operator to configure a destination, then set a backup password in Backups."
+
+
+#: src/components/history/labels.ts
+#: src/components/history/timeline.tsx
+msgid "SheepKeep"
+msgstr "SheepKeep"

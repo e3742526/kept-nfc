@@ -65,7 +65,7 @@ export function useNotifyKindLabels(): Record<NotifyKind, string> {
 export function useChannelLabels(): Record<PreferenceChannel, string> {
   const { t } = useLingui();
   return {
-    inapp: t`In Kept`,
+    inapp: t`In SheepKeep`,
     email: t`Email`,
     webpush: t`Push`,
     webhook: t`Webhook`,
@@ -87,7 +87,7 @@ export const KIND_GROUPS: ReadonlyArray<{ id: string; kinds: readonly NotifyKind
   { id: 'ai', kinds: ['ai_cap', 'ai_summary'] },
 ];
 
-/** The columns: In Kept, Email and Push always; each added kind of channel once you have one. */
+/** The columns: In SheepKeep, Email and Push always; each added kind of channel once you have one. */
 export function columnsFor(channels: readonly Channel[]): PreferenceChannel[] {
   const has = (kind: Channel['kind']) => channels.some((c) => c.kind === kind);
   return [
@@ -225,7 +225,7 @@ export function KindsByLocation({ settings }: { settings: NotificationSettings }
         <span className="block text-[12px] text-ink-3">{row.reason}</span>
       ) : row.pref && !row.pref.inapp ? (
         <span className="block text-[12px] text-ink-3">
-          <Trans>In Kept is off, so nothing is sent.</Trans>
+          <Trans>In SheepKeep is off, so nothing is sent.</Trans>
         </span>
       ) : row.kind === 'ai_summary' ? (
         <span className="block text-[12px] text-ink-3">
@@ -377,7 +377,7 @@ function ScopeNote({ role }: { role: Role | null }) {
         Applies to every location, ones you add later too. Pick a location to change it there only.
       </Trans>
     ) : role === 'member' ? (
-      <Trans>You're a member here: Kept starts with only the loans you record.</Trans>
+      <Trans>You're a member here: SheepKeep starts with only the loans you record.</Trans>
     ) : role === 'viewer' ? (
       <Trans>You're a viewer here: only members joining and leaving.</Trans>
     ) : null;

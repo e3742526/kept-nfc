@@ -74,7 +74,9 @@ test('a Homebox 0.27 upgrade comes over as Homebox had it, into Essentials', asy
     // Not made until Import.
     const before = await api(page).get<{ locations: { name: string }[] }>('/api/v1/locations');
     expect(before.locations.map((l) => l.name)).not.toContain(name);
-    await expect(page.getByRole('combobox', { name: 'Kept type for Item' })).toHaveValue('No type');
+    await expect(page.getByRole('combobox', { name: 'SheepKeep type for Item' })).toHaveValue(
+      'No type',
+    );
     await expect(page.getByText('global.item')).toHaveCount(0);
     await expect(page.getByRole('radio', { name: 'Keep 0 or archive' })).toBeChecked();
     await page.getByRole('button', { name: 'Choose all', exact: true }).click();

@@ -72,7 +72,7 @@ function Status({
       title: t`Disconnect Paperless?`,
       body:
         links > 0
-          ? t`The ${links} links to its documents go too. Documents copied into Kept stay.`
+          ? t`The ${links} links to its documents go too. Documents copied into SheepKeep stay.`
           : t`Members can no longer link its documents.`,
       confirmLabel: t`Disconnect`,
       destructive: true,
@@ -176,8 +176,8 @@ function ConnectionForm({
         <p className="m-0 text-ink-2">
           <Trans>
             Members can then link a thing or a place to its receipts, manuals and warranty cards in
-            Paperless, without uploading them twice. Kept stores the document's number and title,
-            not the file, unless someone copies it into Kept.
+            Paperless, without uploading them twice. SheepKeep stores the document's number and
+            title, not the file, unless someone copies it into SheepKeep.
           </Trans>
         </p>
       )}
@@ -197,8 +197,8 @@ function ConnectionForm({
         {isPlainHttp(url) ? (
           <Notice tone="warn" title={<Trans>Plain http</Trans>}>
             <Trans>
-              Kept accepts http only for an address on your own network, and only when an instance
-              admin allows private addresses. The token travels unencrypted there.
+              SheepKeep accepts http only for an address on your own network, and only when an
+              instance admin allows private addresses. The token travels unencrypted there.
             </Trans>
           </Notice>
         ) : null}
@@ -207,7 +207,7 @@ function ConnectionForm({
           description={
             connection
               ? t`Saved. Leave it empty to keep it.`
-              : t`In Paperless, open My Profile and press the circular arrow by the API token. Kept sees what that user sees.`
+              : t`In Paperless, open My Profile and press the circular arrow by the API token. SheepKeep sees what that user sees.`
           }
           value={token}
           onChange={setToken}
@@ -217,7 +217,7 @@ function ConnectionForm({
         {problem ? (
           <Notice
             tone="danger"
-            title={<Trans>Kept couldn't connect</Trans>}
+            title={<Trans>SheepKeep couldn't connect</Trans>}
             action={isPrivateAddressError(save.error) ? <PrivateAddressLink /> : undefined}
           >
             {problem}

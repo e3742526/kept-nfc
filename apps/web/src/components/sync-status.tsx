@@ -105,18 +105,18 @@ export function SyncStatus() {
   if (status) {
     const time = status.asOf ? asOfTime(status.asOf, formatLocale(locale, digits)) : null;
     if (status.problem === 'client_outdated')
-      lines.push({ key: 'outdated', tone: 'warn', text: t`Update Kept to finish syncing.` });
+      lines.push({ key: 'outdated', tone: 'warn', text: t`Update SheepKeep to finish syncing.` });
     else if (status.problem === 'server_outdated')
       lines.push({
         key: 'outdated',
         tone: 'warn',
-        text: t`Kept on the server is older than this app; ask your admin.`,
+        text: t`SheepKeep on the server is older than this app; ask your admin.`,
       });
     else if (status.problem === 'storage_full')
       lines.push({
         key: 'full',
         tone: 'danger',
-        text: t`This phone is out of space for Kept. Free some space to keep capturing offline.`,
+        text: t`This phone is out of space for SheepKeep. Free some space to keep capturing offline.`,
       });
     if (status.problem === 'offline')
       lines.push({
@@ -150,13 +150,13 @@ export function SyncStatus() {
       lines.push({
         key: 'truncated',
         tone: 'neutral',
-        text: t`Only part of your Kept is on this phone.`,
+        text: t`Only part of your SheepKeep is on this phone.`,
       });
     if (status.persisted === false && waiting > 0)
       lines.push({
         key: 'persist',
         tone: 'neutral',
-        text: t`This browser may clear Kept's offline copy after weeks unused. Open Kept to sync soon.`,
+        text: t`This browser may clear SheepKeep's offline copy after weeks unused. Open SheepKeep to sync soon.`,
       });
   }
 

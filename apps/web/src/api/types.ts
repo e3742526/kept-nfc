@@ -537,7 +537,7 @@ export type AdminAlert = {
 export type AdminStatus = {
   version: string;
   dbOk: boolean;
-  /** D272: present (true) only when Kept runs as the Home Assistant app. */
+  /** D272: present (true) only when SheepKeep runs as the Home Assistant app. */
   homeAssistant?: true;
   alerts: number;
   recoveryKitAcknowledged: boolean;

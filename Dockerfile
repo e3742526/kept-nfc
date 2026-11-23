@@ -275,7 +275,7 @@ COPY --from=ha-os / /
 
 ARG VERSION=0.0.0-dev
 ARG REVISION=
-ARG SOURCE=https://github.com/keptinventory/kept
+ARG SOURCE=https://github.com/e3742526/kept-nfc
 
 LABEL org.opencontainers.image.title="Kept for Home Assistant" \
       org.opencontainers.image.description="Kept, a home inventory you can self-host, as a Home Assistant app with its own database" \
@@ -330,7 +330,7 @@ COPY --from=os / /
 # Stamped by the build (D147, D186). REVISION is the commit; SOURCE the repository.
 ARG VERSION=0.0.0-dev
 ARG REVISION=
-ARG SOURCE=https://github.com/keptinventory/kept
+ARG SOURCE=https://github.com/e3742526/kept-nfc
 
 LABEL org.opencontainers.image.title="Kept" \
       org.opencontainers.image.description="Kept: a home inventory you can self-host" \

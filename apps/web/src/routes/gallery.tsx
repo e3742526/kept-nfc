@@ -94,8 +94,8 @@ function Gallery() {
         </h1>
         <p className="m-0 max-w-[66ch] text-ink-2">
           <Trans>
-            Every control Kept's screens are built from, on React Aria. Switch the theme and the
-            language above: everything here should mirror cleanly.
+            Every control SheepKeep's screens are built from, on React Aria. Switch the theme and
+            the language above: everything here should mirror cleanly.
           </Trans>
         </p>
       </header>

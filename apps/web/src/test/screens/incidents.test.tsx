@@ -301,7 +301,7 @@ describe('the claim pack', () => {
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Create link' }));
     expect(
-      await screen.findByText('Copy it now: Kept shows it only this once.'),
+      await screen.findByText('Copy it now: SheepKeep shows it only this once.'),
     ).toBeInTheDocument();
     expect(screen.getByText(/\/x\/mock-/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeInTheDocument();

@@ -71,7 +71,7 @@ function KitSheet({ onClose }: { onClose: () => void }) {
     >
       <p className="m-0 text-ink-2">
         <Trans>
-          Everything needed to bring Kept back on a new server: the secret keys, the backup's
+          Everything needed to bring SheepKeep back on a new server: the secret keys, the backup's
           location, its password and storage keys, and the restore steps.
         </Trans>
       </p>

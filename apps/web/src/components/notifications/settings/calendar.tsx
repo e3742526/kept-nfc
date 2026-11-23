@@ -65,7 +65,7 @@ export function CalendarFeeds() {
         <Notice tone="warn" title={<Trans>Copy the link now</Trans>}>
           <div className="grid gap-2">
             <Trans>
-              Kept shows it only this once. Anyone with it can read the titles and dates.
+              SheepKeep shows it only this once. Anyone with it can read the titles and dates.
             </Trans>
             <code className="ltr block rounded-lg border border-line bg-surface p-2.5 text-start font-mono text-[13px] text-ink break-all">
               {created}
@@ -114,7 +114,7 @@ export function CalendarFeeds() {
       <p className="m-0 text-small text-ink-3 [text-wrap:pretty]">
         <Trans>
           Locations that require two-factor are left out of the feed. Google Calendar fetches the
-          link from Google's servers, so it works there only when Kept can be reached from the
+          link from Google's servers, so it works there only when SheepKeep can be reached from the
           internet.
         </Trans>
       </p>

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Kept NFC</string>
+	<string>SheepKeep</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -39,11 +39,11 @@
 		<true/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Kept connects to your inventory server when it is on your local network.</string>
+	<string>SheepKeep connects to your inventory server when it is on your local network.</string>
 	<key>NFCReaderUsageDescription</key>
-	<string>Identify your inventory labels and write Kept links to NFC tags.</string>
+	<string>Identify your inventory labels and write SheepKeep links to NFC tags.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Take inventory photos and scan printed Kept labels.</string>
+	<string>Take inventory photos and scan printed SheepKeep labels.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose existing photos to add to your inventory.</string>
 	<key>UIApplicationSceneManifest</key>

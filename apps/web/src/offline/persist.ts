@@ -16,7 +16,7 @@ import { TRY } from '@/try/flag';
 
 /** The phone has no room for this write, even after the thumbnail cache was emptied. */
 export class StorageFullError extends Error {
-  constructor(message = 'The phone is out of storage for Kept.') {
+  constructor(message = 'The phone is out of storage for SheepKeep.') {
     super(message);
     this.name = 'StorageFullError';
   }

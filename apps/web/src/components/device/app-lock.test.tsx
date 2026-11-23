@@ -123,7 +123,7 @@ describe('the lock screen', () => {
 describe('This device', () => {
   it('turns the lock on with a PIN typed twice', async () => {
     const { user } = await renderApp('/settings/device');
-    await user.click(await screen.findByRole('switch', { name: 'Lock Kept on this device' }));
+    await user.click(await screen.findByRole('switch', { name: 'Lock SheepKeep on this device' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('Choose a PIN of 6 to 12 digits.');
     await typePin(user, PIN);
@@ -154,7 +154,9 @@ describe('This device', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('switch', { name: 'Use Face ID or fingerprint' })).toBeNull();
     expect(
-      screen.getByText(/Unlocks Kept on this device only\. To sign in with a passkey, add one in/),
+      screen.getByText(
+        /Unlocks SheepKeep on this device only\. To sign in with a passkey, add one in/,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign-in and security' })).toHaveAttribute(
       'href',
@@ -191,7 +193,7 @@ describe('This device', () => {
     await user.click(toggle);
     const dialog = await screen.findByRole('alertdialog');
     expect(dialog).toHaveTextContent(
-      'Whoever unlocks Kept on this phone sees prices and documents',
+      'Whoever unlocks SheepKeep on this phone sees prices and documents',
     );
     expect(dialog).toHaveTextContent(/About .+ to download/);
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -285,7 +287,7 @@ describe('the download size before keeping a location', () => {
     await user.click(toggle);
     const dialog = await screen.findByRole('alertdialog');
     expect(dialog).toHaveTextContent(
-      'Whoever unlocks Kept on this phone sees prices and documents',
+      'Whoever unlocks SheepKeep on this phone sees prices and documents',
     );
     expect(dialog).not.toHaveTextContent(/to download/);
   });

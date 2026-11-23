@@ -592,7 +592,7 @@ export function applyOptimistic(rows: Map<string, SnapThing>, e: QueueEntry) {
   }
 }
 
-/** A re-issued Kept label's live target (`byCode`'s last step): the first legacy hit. */
+/** A re-issued SheepKeep label's live target (`byCode`'s last step): the first legacy hit. */
 export function reissuedHit(hits: readonly LegacyHit[]): CodeHit | undefined {
   const h = hits[0];
   if (!h) return undefined;

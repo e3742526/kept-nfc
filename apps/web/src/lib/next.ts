@@ -12,7 +12,7 @@ export const nextSearch = (search: Record<string, unknown>): { next?: string } =
 
 import { appHref } from './base-path';
 
-/** Kept's iPhone consent page is served by Fastify, outside the React router. */
+/** SheepKeep's iPhone consent page is served by Fastify, outside the React router. */
 export function finishSignIn(next: string | undefined, navigate: (href: string) => void): void {
   const target = safeNext(next) ?? '/';
   const href = appHref(target);

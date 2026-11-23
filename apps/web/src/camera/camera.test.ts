@@ -122,7 +122,7 @@ describe('"Suggest where I am" (D153)', () => {
 });
 
 describe('label recognition (D137)', () => {
-  it('finds a Kept code in what the scanner read, from any host', () => {
+  it('finds a SheepKeep code in what the scanner read, from any host', () => {
     expect(keptCodeIn([{ rawValue: 'https://kept.example.org/l/3KD7PX', format: 'qr_code' }])).toBe(
       '3KD7PX',
     );

@@ -316,7 +316,7 @@ export type Person = {
   id: string;
   ownerAccountId: string;
   displayName: string;
-  /** Set when the person is also a Kept user. */
+  /** Set when the person is also a SheepKeep user. */
   userId: string | null;
   rowVersion: number;
 };
@@ -1198,7 +1198,7 @@ export type MeterReplacedBody = { at: string; offset: string };
 
 export type DerivativeState = 'ready' | 'pending' | 'unavailable' | 'not_applicable';
 
-/** PUT /api/v1/files/:fileId?locationId=&class= (raw body; `X-Kept-Sha256`) → 201 or 200. */
+/** PUT /api/v1/files/:fileId?locationId=&class= (raw body; `X-SheepKeep-Sha256`) → 201 or 200. */
 export type FileView = {
   id: string;
   sha256: string;

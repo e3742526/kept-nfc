@@ -84,7 +84,7 @@ export function LoanRowView({
       await copyText(text);
       toast({
         title: t`Reminder copied`,
-        description: t`Send it however you like. Kept never sends it.`,
+        description: t`Send it however you like. SheepKeep never sends it.`,
         tone: 'ok',
       });
     } catch {

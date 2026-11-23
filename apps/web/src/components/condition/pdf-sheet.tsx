@@ -71,7 +71,7 @@ function PdfForm({
   });
   const startError = (e: unknown) =>
     isApiError(e) && e.code === 'rate_limited'
-      ? t`Kept makes at most five reports an hour. Try again later.`
+      ? t`SheepKeep makes at most five reports an hour. Try again later.`
       : errorText(e);
 
   if (runId)
@@ -108,11 +108,11 @@ function PdfForm({
         {compareWith ? (
           <Trans>
             Both walk-throughs room by room, the earlier one first: each room's condition, note and
-            photos, with the time Kept received each photo.
+            photos, with the time SheepKeep received each photo.
           </Trans>
         ) : (
           <Trans>
-            Each room's condition, note and photos, with the time Kept received each photo.
+            Each room's condition, note and photos, with the time SheepKeep received each photo.
           </Trans>
         )}
       </p>

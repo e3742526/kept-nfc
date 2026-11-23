@@ -55,7 +55,7 @@ export function KeptExtras({ thingId }: { thingId: string }) {
   if (!data) return null;
   if (data.locked) {
     return (
-      <Section title={<Trans>Kept on this device</Trans>}>
+      <Section title={<Trans>SheepKeep on this device</Trans>}>
         <div className="grid gap-2 rounded-[10px] border border-line bg-surface p-3.5">
           <p className="m-0 text-small text-ink-2">
             <Trans>Enter your PIN to open the prices and documents kept on this device.</Trans>
@@ -114,7 +114,7 @@ export function KeptExtras({ thingId }: { thingId: string }) {
       ? money(extra.purchase.price, extra.purchase.currency)
       : null;
   return (
-    <Section title={<Trans>Kept on this device</Trans>}>
+    <Section title={<Trans>SheepKeep on this device</Trans>}>
       <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-[10px] border border-line bg-surface p-3.5 text-[15px]">
         {extra.purchase ? (
           <>

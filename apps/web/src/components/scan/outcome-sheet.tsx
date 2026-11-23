@@ -124,7 +124,7 @@ export function ScanAnswer(props: AnswerProps) {
     case 'not_in_your_kept':
       return (
         <AnswerFrame label={t`Scan result`} onCamera={onCamera}>
-          <Headline icon={<QrIcon />} title={<Trans>Not in your Kept</Trans>} />
+          <Headline icon={<QrIcon />} title={<Trans>Not in your SheepKeep</Trans>} />
           <p className="m-0 text-ink-2">
             <Trans>Nothing in the locations you belong to has this label.</Trans>
           </p>
@@ -146,9 +146,9 @@ export function ScanAnswer(props: AnswerProps) {
     case 'not_kept':
       return (
         <AnswerFrame label={t`Scan result`} onCamera={onCamera}>
-          <Headline icon={<QrIcon />} title={<Trans>Not a Kept label</Trans>} />
+          <Headline icon={<QrIcon />} title={<Trans>Not a SheepKeep label</Trans>} />
           <p className="m-0 text-ink-2">
-            <Trans>This code isn't one of Kept's labels. It says:</Trans>
+            <Trans>This code isn't one of SheepKeep's labels. It says:</Trans>
           </p>
           <ReadText text={res.text} />
           <AgainOrDone onAgain={onAgain} onDone={onDone} />

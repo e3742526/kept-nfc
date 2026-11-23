@@ -89,7 +89,7 @@ export function Advanced({
             }
             description={
               kind && kind !== 'openai_compatible' ? (
-                <Trans>Kept fills in {kindName(kind)}'s address.</Trans>
+                <Trans>SheepKeep fills in {kindName(kind)}'s address.</Trans>
               ) : undefined
             }
           />
@@ -126,7 +126,9 @@ export function Advanced({
           <ModelsForm key={provider.id} scope={scope} provider={provider} />
         ) : (
           <p className="m-0 text-small text-ink-2">
-            <Trans>Save a key first: Kept then loads the provider's models to choose from.</Trans>
+            <Trans>
+              Save a key first: SheepKeep then loads the provider's models to choose from.
+            </Trans>
           </p>
         )}
         {children}

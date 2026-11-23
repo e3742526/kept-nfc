@@ -217,10 +217,14 @@ export function ArchiveRunView({
     const why = refusal(run.reason);
     return (
       <div className="grid gap-5">
-        <StepHeader step={3} total={total} title={<Trans>Kept can't read this archive</Trans>} />
+        <StepHeader
+          step={3}
+          total={total}
+          title={<Trans>SheepKeep can't read this archive</Trans>}
+        />
         <Notice tone="danger" title={<Trans>Nothing was imported</Trans>}>
           {why ?? (
-            <Trans>It isn't an export Kept can read. Export it again and try once more.</Trans>
+            <Trans>It isn't an export SheepKeep can read. Export it again and try once more.</Trans>
           )}
         </Notice>
         <StepFooter>

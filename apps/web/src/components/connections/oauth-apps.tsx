@@ -55,7 +55,7 @@ export function OAuthAppRow({ app }: { app: TokenRow }) {
           token={app}
           label={t`Revoke`}
           title={t`Disconnect ${appName}?`}
-          body={t`It stops reaching your Kept at once. To use it again, connect it again from the app.`}
+          body={t`It stops reaching your SheepKeep at once. To use it again, connect it again from the app.`}
         />
       )}
     </div>

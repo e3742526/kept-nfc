@@ -385,7 +385,9 @@ describe('native outbox staging and replay', () => {
       .fn()
       .mockRejectedValueOnce(new ApiError(401, 'unauthenticated', 'Expired'))
       .mockRejectedValueOnce(
-        new ApiError(409, 'conflict', 'Conflict', { hint: 'This Kept was restored or replaced.' }),
+        new ApiError(409, 'conflict', 'Conflict', {
+          hint: 'This SheepKeep was restored or replaced.',
+        }),
       )
       .mockResolvedValueOnce({
         results: [

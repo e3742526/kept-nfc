@@ -31,7 +31,7 @@ export function ScheduledReports() {
       case 'rate_limited':
         return t`Skipped: you'd made five reports that hour.`;
       case 'module_off':
-        return t`Skipped: that part of Kept is off in this location.`;
+        return t`Skipped: that part of SheepKeep is off in this location.`;
       default:
         return t`Skipped: you can't make this report there any more.`;
     }
@@ -40,7 +40,7 @@ export function ScheduledReports() {
   const stop = async (s: ReportSchedule) => {
     const ok = await confirm({
       title: t`Stop this report?`,
-      body: t`Kept stops emailing it. You can print it any time.`,
+      body: t`SheepKeep stops emailing it. You can print it any time.`,
       confirmLabel: t`Stop`,
       destructive: true,
     });

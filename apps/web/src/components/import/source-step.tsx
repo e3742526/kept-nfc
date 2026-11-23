@@ -51,7 +51,7 @@ export function SourceStep({
           title: <Trans>A Kept export</Trans>,
           body: (
             <Trans>
-              A location exported from this Kept or another one. It comes in as a new location.
+              A location exported from this SheepKeep or another one. It comes in as a new location.
             </Trans>
           ),
         },

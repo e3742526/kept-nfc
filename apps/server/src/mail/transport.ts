@@ -31,9 +31,9 @@ export function profileLocaleLookup(db: Queryable): LocaleLookup {
   };
 }
 
-/** `Kept <no-reply@host>` for the public URL's host, when KEPT_SMTP_FROM isn't set. */
+/** `SheepKeep <no-reply@host>` for the public URL's host, when KEPT_SMTP_FROM isn't set. */
 export function defaultFrom(publicUrl: string): string {
-  return `Kept <no-reply@${new URL(publicUrl).hostname}>`;
+  return `SheepKeep <no-reply@${new URL(publicUrl).hostname}>`;
 }
 
 export type SmtpOptions = {
@@ -41,7 +41,7 @@ export type SmtpOptions = {
   url: string;
   /** KEPT_SMTP_FROM, or defaultFrom(). */
   from: string;
-  /** KEPT_PUBLIC_URL: where the mails' links point and which Kept they say sent them. */
+  /** KEPT_PUBLIC_URL: where the mails' links point and which SheepKeep they say sent them. */
   publicUrl: string;
   /** The recipient's locale when the mail doesn't carry one. Failures count as "unknown". */
   localeOf?: LocaleLookup;

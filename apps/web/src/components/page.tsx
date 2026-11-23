@@ -106,7 +106,7 @@ export function Page({
           iOS status strip), so the two read as one band and nothing scrolls through (D132 kit
           .appbar). */}
       {/* From tablets up the tools wrap under the title rather than squeeze it: inside Home
-          Assistant's panel, with Kept's sidebar open, a thing's name was one letter a line. */}
+          Assistant's panel, with SheepKeep's sidebar open, a thing's name was one letter a line. */}
       <header className="sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b border-line bg-paper px-3 py-2 md:min-h-16 md:flex-wrap md:px-6">
         {backTarget ? (
           <Link
@@ -504,9 +504,9 @@ export function useErrorText() {
         // Opened at another address than the one this Kept is set up for (KEPT_PUBLIC_URL).
         const expected = expectedOriginOf(e);
         if (!expected)
-          return t`This Kept is set up for a different address. Open it at the address you were given.`;
+          return t`This SheepKeep is set up for a different address. Open it at the address you were given.`;
         const address = isolate(expected);
-        return t`This Kept is set up for ${address}. Open it there.`;
+        return t`This SheepKeep is set up for ${address}. Open it there.`;
       }
       case 'not_found':
         return t`This isn't here any more, or you can't see it.`;
@@ -545,7 +545,7 @@ export function useErrorText() {
       case 'two_factor_required':
         return t`A location you belong to asks for two-factor. Add a passkey first, then turn the authenticator app off.`;
       case 'account_deletion_pending':
-        return t`Your account is going to be deleted. Keep it to use Kept again.`;
+        return t`Your account is going to be deleted. Keep it to use SheepKeep again.`;
       case 'account_deletion_blocked':
         return t`Your account can't be deleted yet.`;
       case 'token_invalid':
@@ -555,10 +555,10 @@ export function useErrorText() {
       case 'validation':
         return t`Some of that isn't valid. Check the fields and try again.`;
       case 'database_unavailable':
-        return t`Kept can't reach its database right now. Try again in a minute.`;
+        return t`SheepKeep can't reach its database right now. Try again in a minute.`;
       case 'https_required':
         // D181: secret reveal, exports, tokens and the recovery kit are refused over plain HTTP.
-        return t`This needs a secure (HTTPS) connection to Kept.`;
+        return t`This needs a secure (HTTPS) connection to SheepKeep.`;
       default:
         return t`Something went wrong on the server. Try again in a moment.`;
     }

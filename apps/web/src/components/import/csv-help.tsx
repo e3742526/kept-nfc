@@ -43,13 +43,13 @@ export function CsvHelp() {
       </h2>
       <p className="m-0 text-small text-ink-2">
         <Trans>
-          The first row names the columns, in any of Kept's languages. Kept matches the names it
-          knows, and you choose the rest in the next step. Only a name is needed.
+          The first row names the columns, in any of SheepKeep's languages. SheepKeep matches the
+          names it knows, and you choose the rest in the next step. Only a name is needed.
         </Trans>
       </p>
-      <AiDisclosure title={<Trans>The columns Kept reads</Trans>}>
+      <AiDisclosure title={<Trans>The columns SheepKeep reads</Trans>}>
         <div className="grid gap-3 px-1 pt-1 text-small">
-          <ul aria-label={t`The columns Kept reads`} className="m-0 grid list-disc gap-1 ps-5">
+          <ul aria-label={t`The columns SheepKeep reads`} className="m-0 grid list-disc gap-1 ps-5">
             {LISTED.map((f) => (
               <li key={f}>{fieldLabel(f)}</li>
             ))}

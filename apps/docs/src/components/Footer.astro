@@ -1,0 +1,23 @@
+---
+import StarlightFooter from '@astrojs/starlight/components/Footer.astro';
+
+const repo = 'https://github.com/e3742526/kept-nfc';
+---
+
+<footer class="project-notice">
+  <a href={repo}>SheepKeep source</a> ·
+  <a href={`${repo}/blob/main/UPSTREAM.md`}>Kept upstream and compatibility</a> ·
+  <a href={`${repo}/blob/main/LICENSE`}>GNU AGPL v3</a>
+  <p>Kept’s original guides and release links describe the upstream project.</p>
+</footer>
+<StarlightFooter />
+
+<style>
+  .project-notice {
+    border-block-start: 1px solid var(--sl-color-hairline);
+    margin-block: 2rem 1rem;
+    padding-block-start: .75rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+</style>

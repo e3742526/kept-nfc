@@ -119,7 +119,7 @@ describe('a Homebox export', () => {
     const types = await screen.findByRole('list', { name: 'Homebox types' });
     expect(within(types).getByText('Kitchen gear')).toBeInTheDocument();
     // A new type reads with its name in the picker (#320).
-    expect(screen.getByRole('combobox', { name: 'Kept type for Kitchen gear' })).toHaveValue(
+    expect(screen.getByRole('combobox', { name: 'SheepKeep type for Kitchen gear' })).toHaveValue(
       'New type "Kitchen gear"',
     );
     expect(screen.getAllByRole('textbox', { name: 'Name of the new type' })[0]).toHaveValue(
@@ -127,7 +127,9 @@ describe('a Homebox export', () => {
     );
     // Homebox's catch-all, global.item, reads as Item and comes in without a type.
     expect(within(types).queryByText('global.item')).toBeNull();
-    expect(screen.getByRole('combobox', { name: 'Kept type for Item' })).toHaveValue('No type');
+    expect(screen.getByRole('combobox', { name: 'SheepKeep type for Item' })).toHaveValue(
+      'No type',
+    );
     expect(screen.getByText('3 items are marked insured.')).toBeInTheDocument();
     // Archived items come in archived unless you say otherwise.
     expect(screen.getByRole('radio', { name: 'Archived' })).toBeChecked();
@@ -217,10 +219,10 @@ describe('a Homebox export', () => {
         state,
       },
     );
-    expect(await findHeading("Kept can't read this archive")).toBeInTheDocument();
+    expect(await findHeading("SheepKeep can't read this archive")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "It's protected with a ZIP password, which Kept can't open. Export it again without one.",
+        "It's protected with a ZIP password, which SheepKeep can't open. Export it again without one.",
       ),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Choose another file' }));
@@ -392,7 +394,7 @@ describe('a Homebox export, from 1.13.1 (#320)', () => {
 
   it('offers a typed name as a new type, as New type… does', async () => {
     const { user, mock } = await adjust();
-    const picker = screen.getByRole('combobox', { name: 'Kept type for Item' });
+    const picker = screen.getByRole('combobox', { name: 'SheepKeep type for Item' });
     await user.clear(picker);
     await user.type(picker, 'Gadgets');
     expect(screen.queryByText('No matches')).toBeNull();
@@ -425,7 +427,7 @@ describe('a Homebox export, from 1.13.1 (#320)', () => {
 
   it('matches what was typed with spaces around it, never "No matches"', async () => {
     const { user } = await adjust();
-    const picker = screen.getByRole('combobox', { name: 'Kept type for Item' });
+    const picker = screen.getByRole('combobox', { name: 'SheepKeep type for Item' });
     for (const text of ['Appliance  ', '  APPLIANCE']) {
       await user.clear(picker);
       await user.type(picker, text);
@@ -627,7 +629,7 @@ describe('a Kept export with secrets, over plain HTTP', () => {
     expect(screen.getByText('It holds encrypted secrets')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at Kept’s HTTPS address.',
+        'Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at SheepKeep’s HTTPS address.',
       ),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText('Passphrase')).toBeNull();

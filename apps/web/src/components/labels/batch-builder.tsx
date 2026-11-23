@@ -303,13 +303,13 @@ export function BatchBuilder({
           <p className="m-0 text-small text-ink-2">
             {sheet ? (
               <Trans>
-                Opens the print dialog at {stockTitle}, scale 100%. Afterwards Kept asks "Printed
-                OK?" and records the print date.
+                Opens the print dialog at {stockTitle}, scale 100%. Afterwards SheepKeep asks
+                "Printed OK?" and records the print date.
               </Trans>
             ) : (
               <Trans>
                 Opens the print dialog: choose your label printer and this label size. Afterwards
-                Kept asks "Printed OK?" and records the print date.
+                SheepKeep asks "Printed OK?" and records the print date.
               </Trans>
             )}
           </p>

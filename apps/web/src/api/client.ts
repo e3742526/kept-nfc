@@ -24,7 +24,7 @@ export class ApiError extends Error {
    * changedBy}` (D156), a 409's `{counts}` (contents_choice_required) or `{existingId}`.
    */
   readonly details: Record<string, unknown>;
-  /** Kept's `code` when this client doesn't know it yet (`code` then falls back to the status). */
+  /** SheepKeep's `code` when this client doesn't know it yet (`code` then falls back to the status). */
   readonly serverCode: string | undefined;
 
   constructor(
@@ -55,7 +55,7 @@ export function isApiError(value: unknown): value is ApiError {
   return value instanceof ApiError;
 }
 
-/** Better Auth answers with HTTP statuses and its own codes; map them onto Kept's. */
+/** Better Auth answers with HTTP statuses and its own codes; map them onto SheepKeep's. */
 function codeFromStatus(status: number, authCode: string | undefined): ErrorCode {
   if (authCode === 'MFA_REQUIRED') return 'mfa_required';
   if (status === 401) return 'unauthenticated';

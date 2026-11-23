@@ -32,6 +32,7 @@ import {
   WrenchIcon,
 } from '@/components/icons';
 import { IconTile, LinkButton, List, LoadingRows, Page, Row, Section } from '@/components/page';
+import { ProjectNotice } from '@/components/project-notice';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { WHATS_NEW, whatsNew } from '@/components/whats-new';
@@ -66,7 +67,7 @@ function HelpPage() {
               }
               title={<Trans>Install on your phone</Trans>}
               subtitle={
-                <Trans>Kept opens from its own icon, full screen, and works offline.</Trans>
+                <Trans>SheepKeep opens from its own icon, full screen, and works offline.</Trans>
               }
               trailing={
                 <Button size="small" variant="secondary" onPress={() => setInstall(true)}>
@@ -79,12 +80,12 @@ function HelpPage() {
         <InstallSheet isOpen={install} onClose={() => setInstall(false)} />
       </Section>
 
-      <Section title={<Trans>Share into Kept</Trans>}>
+      <Section title={<Trans>Share into SheepKeep</Trans>}>
         <List>
           <ShareNote icon={<ShareIcon />} title={<Trans>Android</Trans>}>
             <Trans>
-              Once Kept is installed it's in the Share sheet. Share photos or PDFs to it from any
-              app, and they open in Capture.
+              Once SheepKeep is installed it's in the Share sheet. Share photos or PDFs to it from
+              any app, and they open in Capture.
             </Trans>
           </ShareNote>
           <ShareNote icon={<GalleryIcon />} title={<Trans>iPhone, iPad</Trans>}>
@@ -111,7 +112,7 @@ function HelpPage() {
               title={<Trans>Log your odometer from an iPhone Shortcut</Trans>}
               subtitle={
                 <Trans>
-                  A Shortcut that asks for the reading and sends it to Kept with a token.
+                  A Shortcut that asks for the reading and sends it to SheepKeep with a token.
                 </Trans>
               }
               trailing={
@@ -147,6 +148,7 @@ function HelpPage() {
           </li>
         </List>
       </Section>
+      <ProjectNotice />
     </Page>
   );
 }
@@ -338,7 +340,7 @@ function ChapterRow({
   );
 }
 
-/** What's new in Kept: this version's highlights again, the card shown after an update. */
+/** What's new in SheepKeep: this version's highlights again, the card shown after an update. */
 function WhatsNewRow({ version }: { version: string }) {
   return (
     <li>
@@ -348,7 +350,7 @@ function WhatsNewRow({ version }: { version: string }) {
             <StarIcon />
           </IconTile>
         }
-        title={<Trans>What's new in Kept</Trans>}
+        title={<Trans>What's new in SheepKeep</Trans>}
         subtitle={
           <Trans>
             Version <span className="ltr tabular-nums">{version}</span>: its highlights.

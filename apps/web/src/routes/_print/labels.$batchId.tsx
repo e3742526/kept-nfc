@@ -114,7 +114,7 @@ function PrintLabelsPage() {
     setSharing(true);
     try {
       const files = prepared.data ?? (await labelPngs(stock, data?.labels ?? []));
-      const how = await shareOrDownload(files, t`Kept labels`);
+      const how = await shareOrDownload(files, t`SheepKeep labels`);
       if (how === 'downloaded') toast({ title: t`Saved the label images`, tone: 'ok' });
       if (how === 'refused')
         toast({ title: t`Couldn't share the label images. Try again.`, tone: 'danger' });

@@ -84,7 +84,7 @@ function MissingRates({
         </ul>
         <p className="m-0">
           <Trans>
-            Kept converts only with a rate you entered, never an estimate. Add one dated on or
+            SheepKeep converts only with a rate you entered, never an estimate. Add one dated on or
             before the report's day, or make the report without a converted total.
           </Trans>
         </p>
@@ -243,7 +243,7 @@ function InsuranceForm({
   };
   const startError = (err: unknown) =>
     isApiError(err) && err.code === 'rate_limited'
-      ? t`Kept makes at most five reports an hour. Try again later.`
+      ? t`SheepKeep makes at most five reports an hour. Try again later.`
       : errorText(err);
 
   if (runId)
@@ -349,7 +349,9 @@ function InsuranceForm({
           {canShareFiles([csv]) ? (
             <Trans>Share it to save it to Files or send it on.</Trans>
           ) : (
-            <Trans>This browser can't save files here. Open Kept in Safari to export it.</Trans>
+            <Trans>
+              This browser can't save files here. Open SheepKeep in Safari to export it.
+            </Trans>
           )}
         </Notice>
       ) : null}

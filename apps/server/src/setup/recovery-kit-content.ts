@@ -110,7 +110,7 @@ function backupLines(half: KitBackupHalf): string[] {
 /** The commands from "Read your inventory with restic alone", with this backup filled in. */
 function resticAloneLines(half: KitBackupHalf): string[] {
   const steps = [
-    'Read your inventory with restic alone (any computer with restic, no Kept, no network for',
+    'Read your inventory with restic alone (any computer with restic, no SheepKeep, no network for',
     'a directory copied onto it):',
   ];
   if (half.state !== 'configured') {
@@ -144,8 +144,8 @@ function resticAloneLines(half: KitBackupHalf): string[] {
 
 function restoreLines(half: KitBackupHalf): string[] {
   return [
-    'To bring Kept back on a new server ("Restore and the drill" in Kept\'s documentation):',
-    '  1. Install Kept as the install guide says, but before its first start set',
+    'To bring SheepKeep back on a new server ("Restore and the drill" in Kept\'s documentation):',
+    '  1. Build SheepKeep as the project README describes, but before its first start set',
     '     KEPT_SECRET_KEY and KEPT_AUTH_SECRET (and the version and retired keys, when listed)',
     '     to the values above. Without them, secret values and AI keys stay unreadable.',
     half.state === 'configured'
@@ -168,7 +168,7 @@ export function recoveryKitLines(kit: RecoveryKitInput): string[] {
     'everything except secret values and AI keys.',
     '',
     `Instance: ${kit.publicUrl ?? '(no public address set)'}`,
-    `Kept: ${kit.version}${kit.revision ? ` (revision ${kit.revision})` : ''}`,
+    `SheepKeep: ${kit.version}${kit.revision ? ` (revision ${kit.revision})` : ''}`,
     `Made: ${kit.generatedAt.toISOString()}`,
     '',
     '== Keys ==',
@@ -212,7 +212,7 @@ export function renderRecoveryKitHtml(kit: RecoveryKitInput): string {
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<meta name="robots" content="noindex">',
-    '<title>Kept recovery kit</title>',
+    '<title>SheepKeep recovery kit</title>',
     '<style>',
     'body{margin:2rem;color:#111;background:#fff;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace}',
     'pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}',

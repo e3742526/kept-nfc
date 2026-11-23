@@ -191,7 +191,7 @@ export async function enrolPasskey(
   const credential = (await navigator.credentials.create({
     publicKey: {
       challenge: randomBytes(32),
-      rp: { name: 'Kept' },
+      rp: { name: 'SheepKeep' },
       user: { id: randomBytes(16), name, displayName: name },
       pubKeyCredParams: [
         { type: 'public-key', alg: -7 },

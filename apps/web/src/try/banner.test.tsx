@@ -22,7 +22,7 @@ describe('TryBanner', () => {
     await user.click(screen.getByRole('button', { name: 'Reset' }));
     expect(onReset).toHaveBeenCalledOnce();
     // Vite's base in a test is `/`; on the docs site it is /try/kept/app/ (flag.test.ts).
-    expect(screen.getByRole('link', { name: 'Install Kept' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Install SheepKeep' })).toHaveAttribute(
       'href',
       '/install/compose/',
     );
@@ -33,7 +33,7 @@ describe('TryBanner', () => {
     setLocale('ar');
     await renderUI(<TryBanner show onReset={() => {}} />, { locale: 'ar' });
     expect(screen.getByRole('button', { name: 'إعادة تعيين' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'ثبّت Kept' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'ثبّت SheepKeep' })).toHaveAttribute(
       'href',
       '/ar/install/compose/',
     );

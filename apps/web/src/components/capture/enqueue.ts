@@ -183,7 +183,7 @@ export async function enqueueFiles(
   return out;
 }
 
-/** "Shared into Kept" → captures: RECEIPT or THING, one per file, in the chosen place (D140). */
+/** "Shared into SheepKeep" → captures: RECEIPT or THING, one per file, in the chosen place (D140). */
 export function keepShared(
   store: OfflineStore,
   share: SharedInto,

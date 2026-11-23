@@ -145,7 +145,7 @@ export function StartPlanSheet({
       <div className="grid gap-4 text-[15px]">
         <p className="m-0 text-ink-2 [overflow-wrap:anywhere]">
           <Trans>
-            A photo, a screenshot or a PDF of a plan. Kept reads the rooms and their sizes; you
+            A photo, a screenshot or a PDF of a plan. SheepKeep reads the rooms and their sizes; you
             check them before anything is added.
           </Trans>
         </p>
@@ -219,7 +219,7 @@ export function StartPlanSheet({
             {name ? (
               <p className="m-0 [overflow-wrap:anywhere]">
                 <Trans>
-                  Kept sends the plan, without its location data, to <bdi>{name}</bdi>. It is
+                  SheepKeep sends the plan, without its location data, to <bdi>{name}</bdi>. It is
                   deleted when you finish, unless you keep it.
                 </Trans>
               </p>

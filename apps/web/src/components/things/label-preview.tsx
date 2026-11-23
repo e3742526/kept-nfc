@@ -71,7 +71,7 @@ export default function LabelPreview() {
     setSaving(true);
     try {
       const files = prepared.data ?? (await labelPngs(stock, [label]));
-      const how = await shareOrDownload(files, t`Kept label`);
+      const how = await shareOrDownload(files, t`SheepKeep label`);
       if (how === 'downloaded') toast({ title: t`Saved the label image`, tone: 'ok' });
       if (how === 'refused')
         toast({ title: t`Couldn't save the label image. Try again.`, tone: 'danger' });

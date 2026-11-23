@@ -106,7 +106,7 @@ describe('the passkey', () => {
   it('with PRF at creation, also opens the data key', async () => {
     const { create, get } = stubCredentials({ prf: 'create' });
     const { record, dataKey } = await createLock('482913', FAST);
-    const withKey = await enrolPasskey(record, dataKey, 'Kept app lock');
+    const withKey = await enrolPasskey(record, dataKey, 'SheepKeep app lock');
     expect(create).toHaveBeenCalledOnce();
     const options = (create.mock.calls[0] as unknown as [CredentialCreationOptions])[0].publicKey;
     expect(options?.authenticatorSelection?.userVerification).toBe('required');
@@ -120,7 +120,7 @@ describe('the passkey', () => {
   it('with the secret only at assertion, asks once more during setup', async () => {
     const { get } = stubCredentials({ prf: 'get-only' });
     const { record, dataKey } = await createLock('482913', FAST);
-    const withKey = await enrolPasskey(record, dataKey, 'Kept app lock');
+    const withKey = await enrolPasskey(record, dataKey, 'SheepKeep app lock');
     expect(get).toHaveBeenCalledOnce();
     expect(withKey.passkey?.wrapped).not.toBeNull();
   });
@@ -128,7 +128,7 @@ describe('the passkey', () => {
   it('without PRF, unlocks the app but not the data key', async () => {
     stubCredentials({ prf: 'none' });
     const { record, dataKey } = await createLock('482913', FAST);
-    const withPasskey = await enrolPasskey(record, dataKey, 'Kept app lock');
+    const withPasskey = await enrolPasskey(record, dataKey, 'SheepKeep app lock');
     expect(withPasskey.passkey).not.toBeNull();
     expect(withPasskey.passkey?.wrapped).toBeNull();
     expect(await unlockWithPasskey(withPasskey)).toBeNull();
@@ -137,7 +137,7 @@ describe('the passkey', () => {
   it('refuses when verification fails', async () => {
     const { get } = stubCredentials({ prf: 'create' });
     const { record, dataKey } = await createLock('482913', FAST);
-    const withKey = await enrolPasskey(record, dataKey, 'Kept app lock');
+    const withKey = await enrolPasskey(record, dataKey, 'SheepKeep app lock');
     get.mockRejectedValueOnce(new DOMException('no', 'NotAllowedError'));
     await expect(unlockWithPasskey(withKey)).rejects.toThrow();
   });

@@ -135,7 +135,7 @@ describe('the notification centre', () => {
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
     expect(writeText.mock.calls[0]?.[0]).toContain('Hi Murdock');
     expect(
-      await screen.findByText('Send it however you like. Kept never sends it.'),
+      await screen.findByText('Send it however you like. SheepKeep never sends it.'),
     ).toBeInTheDocument();
   });
 

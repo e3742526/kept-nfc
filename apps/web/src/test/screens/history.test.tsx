@@ -265,7 +265,7 @@ describe('activity', () => {
     ).toBeInTheDocument();
   });
 
-  it('a person whose name is gone reads "A former member", never "Kept"', async () => {
+  it('a person whose name is gone reads "A former member", never "SheepKeep"', async () => {
     const state = ownerScenario();
     const event = (n: number, actor: { type: 'user' | 'system'; displayName: null }) => ({
       id: `01926f00-0000-7000-8000-0000000efb${n}0`,
@@ -293,7 +293,7 @@ describe('activity', () => {
     ).toHaveTextContent('A former member');
     expect(
       within(list).getByRole('article', { name: 'Marked Old kettle as given away' }),
-    ).toHaveTextContent('Kept');
+    ).toHaveTextContent('SheepKeep');
   });
 
   it('#319: a place turned into a box reads as a box, and offers no Undo once undone', async () => {
@@ -486,7 +486,7 @@ describe('activity', () => {
       'thing.enrich': 'Other names added',
       'import.enrich': 'Other names requested for an import',
       'import.homebox_connect': 'Connected to Homebox',
-      'instance.setup': 'Kept set up',
+      'instance.setup': 'SheepKeep set up',
       'instance.settings_update': 'Instance settings changed',
       'instance.backup': 'Backup made',
       'instance.backup_run': 'Backup started by hand',

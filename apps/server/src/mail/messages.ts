@@ -29,7 +29,7 @@ import { VI, VI_CHROME } from './messages-vi.js';
 
 export type { Chrome, Message, MessageContext } from './message-kit.js';
 
-// What each mail says, in each language Kept mails in (D81, D106). The web app's catalogues are
+// What each mail says, in each language SheepKeep mails in (D81, D106). The web app's catalogues are
 // Lingui's, on the web side; server mail has this small typed table instead, keyed by the
 // recipient's profile locale (mail/transport.ts). A kind missing from a language is a type
 // error, so a new mail kind can't ship untranslated. The test checks every kind renders in each.
@@ -56,9 +56,9 @@ const EN_NOT_YOU = 'If this wasn’t you, reset your password now from the sign-
 
 const EN_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'passkey-added': () => ({
-    subject: 'A passkey was added to your Kept account',
+    subject: 'A passkey was added to your SheepKeep account',
     paragraphs: [
-      'A new passkey was added to your Kept account, and every other device was signed out.',
+      'A new passkey was added to your SheepKeep account, and every other device was signed out.',
     ],
     footnote:
       'If this wasn’t you, reset your password now and remove the passkey in Settings → Sign-in and security.',
@@ -66,21 +66,21 @@ const EN_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'two-factor-disabled': () => ({
     subject: 'Two-factor sign-in was turned off',
     paragraphs: [
-      'Two-factor authentication was turned off for your Kept account, and every other device was signed out.',
+      'Two-factor authentication was turned off for your SheepKeep account, and every other device was signed out.',
     ],
     footnote: 'If this wasn’t you, reset your password now and turn two-factor back on.',
   }),
   'passkey-removed': () => ({
-    subject: 'A passkey was removed from your Kept account',
+    subject: 'A passkey was removed from your SheepKeep account',
     paragraphs: [
-      'A passkey was removed from your Kept account, and every other device was signed out. It no longer signs you in.',
+      'A passkey was removed from your SheepKeep account, and every other device was signed out. It no longer signs you in.',
     ],
     footnote: EN_NOT_YOU,
   }),
   'two-factor-enabled': () => ({
     subject: 'Two-factor sign-in was turned on',
     paragraphs: [
-      'Two-factor authentication was turned on for your Kept account, and every other device was signed out. Signing in now asks for a code from your authenticator app.',
+      'Two-factor authentication was turned on for your SheepKeep account, and every other device was signed out. Signing in now asks for a code from your authenticator app.',
     ],
     footnote:
       'If this wasn’t you, reset your password now and check Settings → Sign-in and security.',
@@ -88,36 +88,36 @@ const EN_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'two-factor-replaced': () => ({
     subject: 'Two-factor sign-in was set up again',
     paragraphs: [
-      'Two-factor authentication for your Kept account was set up again with a new authenticator app, and every other device was signed out. The old app’s codes and the old backup codes no longer work.',
+      'Two-factor authentication for your SheepKeep account was set up again with a new authenticator app, and every other device was signed out. The old app’s codes and the old backup codes no longer work.',
     ],
     footnote:
       'If this wasn’t you, reset your password now and check Settings → Sign-in and security.',
   }),
   'backup-codes-new': () => ({
-    subject: 'New backup codes were made for your Kept account',
+    subject: 'New backup codes were made for your SheepKeep account',
     paragraphs: [
-      'New two-factor backup codes were made for your Kept account, and every other device was signed out. The old backup codes no longer work.',
+      'New two-factor backup codes were made for your SheepKeep account, and every other device was signed out. The old backup codes no longer work.',
     ],
     footnote: EN_NOT_YOU,
   }),
   'sign-in-unlinked': () => ({
-    subject: 'A sign-in was unlinked from your Kept account',
+    subject: 'A sign-in was unlinked from your SheepKeep account',
     paragraphs: [
-      'An outside sign-in (such as Google) was unlinked from your Kept account, and every other device was signed out. It no longer signs you in.',
+      'An outside sign-in (such as Google) was unlinked from your SheepKeep account, and every other device was signed out. It no longer signs you in.',
     ],
     footnote: EN_NOT_YOU,
   }),
   'password-changed': () => ({
-    subject: 'Your Kept password was changed',
+    subject: 'Your SheepKeep password was changed',
     paragraphs: [
-      'The password for your Kept account was changed, and every other device was signed out.',
+      'The password for your SheepKeep account was changed, and every other device was signed out.',
     ],
     footnote: EN_NOT_YOU,
   }),
   'unverified-account-reset': () => ({
     subject: 'Your email address is confirmed',
     paragraphs: [
-      'Your Kept password was reset from this mailbox, which confirms that the account’s email address is yours.',
+      'Your SheepKeep password was reset from this mailbox, which confirms that the account’s email address is yours.',
       'The address hadn’t been confirmed before, so in case someone else set the account up, every passkey, two-factor setting and signed-in device added before now has been removed.',
     ],
     footnote:
@@ -126,7 +126,7 @@ const EN_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'unverified-account-link': () => ({
     subject: 'Your email address is confirmed',
     paragraphs: [
-      'You signed in to Kept with a link sent to this mailbox, which confirms that the account’s email address is yours.',
+      'You signed in to SheepKeep with a link sent to this mailbox, which confirms that the account’s email address is yours.',
       'The address hadn’t been confirmed before, so in case someone else set the account up, its password, passkeys, two-factor settings and every other signed-in device have been removed.',
     ],
     footnote:
@@ -136,13 +136,13 @@ const EN_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
 
 const EN_ADMIN: Record<AdminAction, (locationName: string) => Message> = {
   disabled: () => ({
-    subject: 'Your Kept account was disabled',
+    subject: 'Your SheepKeep account was disabled',
     paragraphs: [
-      'An administrator of this Kept disabled your account. You can’t sign in until it is enabled again.',
+      'An administrator of this SheepKeep disabled your account. You can’t sign in until it is enabled again.',
     ],
   }),
   enabled: () => ({
-    subject: 'Your Kept account was enabled again',
+    subject: 'Your SheepKeep account was enabled again',
     paragraphs: ['An administrator enabled your account again. You can sign in as before.'],
   }),
   'two-factor-reset': () => ({
@@ -153,19 +153,19 @@ const EN_ADMIN: Record<AdminAction, (locationName: string) => Message> = {
     ],
   }),
   'signed-out-everywhere': () => ({
-    subject: 'You were signed out of Kept everywhere',
+    subject: 'You were signed out of SheepKeep everywhere',
     paragraphs: [
       'An administrator signed your account out on every device. Sign in again to carry on.',
     ],
   }),
   'instance-admin-granted': () => ({
-    subject: 'You are now an administrator of this Kept',
+    subject: 'You are now an administrator of this SheepKeep',
     paragraphs: [
-      'You were made an instance administrator: you can now manage this Kept’s users and settings.',
+      'You were made an instance administrator: you can now manage this SheepKeep’s users and settings.',
     ],
   }),
   'instance-admin-revoked': () => ({
-    subject: 'You are no longer an administrator of this Kept',
+    subject: 'You are no longer an administrator of this SheepKeep',
     paragraphs: [
       'Your instance administrator rights were removed. Your own locations and everything in them are unchanged.',
     ],
@@ -173,24 +173,24 @@ const EN_ADMIN: Record<AdminAction, (locationName: string) => Message> = {
   'password-reset-issued': () => ({
     subject: 'A password reset was issued for your account',
     paragraphs: [
-      'The person who runs this Kept issued a one-time password reset for your account and signed it out everywhere.',
+      'The person who runs this SheepKeep issued a one-time password reset for your account and signed it out everywhere.',
       'They will give you the code to choose a new password with.',
     ],
   }),
   'location-ownership-received': (name) => ({
     subject: `You now own ${name}`,
-    paragraphs: [`The person who runs this Kept made you the owner of ${name}.`],
+    paragraphs: [`The person who runs this SheepKeep made you the owner of ${name}.`],
   }),
   'location-ownership-moved': (name) => ({
     subject: `${name} has a new owner`,
     paragraphs: [
-      `The person who runs this Kept moved ${name} to a new owner. You stay in it as an admin.`,
+      `The person who runs this SheepKeep moved ${name} to a new owner. You stay in it as an admin.`,
     ],
   }),
   'token-created': () => ({
     subject: 'A token was made for your account',
     paragraphs: [
-      'The person who runs this Kept made a personal token for your account on the server, for an app such as Home Assistant or an AI assistant. It can do what you can, in the locations it was made for.',
+      'The person who runs this SheepKeep made a personal token for your account on the server, for an app such as Home Assistant or an AI assistant. It can do what you can, in the locations it was made for.',
       'If you didn’t ask for it, revoke it in Settings → Connections.',
     ],
   }),
@@ -224,7 +224,7 @@ function enCap(level: 80 | 100, c: AiCapFacts, ctx: MessageContext, footnote: st
   const cap = enCapOf(c);
   if (level === 80) {
     return {
-      subject: `Kept: 80% of ${cap} used this month`,
+      subject: `SheepKeep: 80% of ${cap} used this month`,
       paragraphs: [
         `${capitalise(cap)} is at ${enUsed(c)} so far this month.`,
         'When it reaches the cap, AI pauses until the 1st of next month. Captures still save, and their photos are read once AI resumes.',
@@ -234,7 +234,7 @@ function enCap(level: 80 | 100, c: AiCapFacts, ctx: MessageContext, footnote: st
     };
   }
   return {
-    subject: `Kept: AI paused until ${day(c.pausedUntil)}`,
+    subject: `SheepKeep: AI paused until ${day(c.pausedUntil)}`,
     paragraphs: [
       `${capitalise(cap)} is reached: ${enUsed(c)} this month.`,
       `AI is paused until ${day(c.pausedUntil)}. Captures still save, and their photos are read when it resumes. To resume sooner, raise or remove the cap.`,
@@ -246,16 +246,18 @@ function enCap(level: 80 | 100, c: AiCapFacts, ctx: MessageContext, footnote: st
 
 const EN: CoreTable = {
   'magic-link': (m) => ({
-    subject: 'Your Kept sign-in link',
-    paragraphs: ['Use this link to sign in to Kept. It works once, within the next 15 minutes.'],
+    subject: 'Your SheepKeep sign-in link',
+    paragraphs: [
+      'Use this link to sign in to SheepKeep. It works once, within the next 15 minutes.',
+    ],
     action: { label: 'Sign in', url: m.url },
     footnote:
       'If you didn’t ask to sign in, ignore this email. Nobody can sign in without the link.',
   }),
   'password-reset': (m) => ({
-    subject: 'Reset your Kept password',
+    subject: 'Reset your SheepKeep password',
     paragraphs: [
-      'Someone asked to reset the password of this Kept account. Use this link to choose a new one. It works once, within the next hour.',
+      'Someone asked to reset the password of this SheepKeep account. Use this link to choose a new one. It works once, within the next hour.',
     ],
     action: { label: 'Choose a new password', url: m.url },
     footnote: 'If this wasn’t you, ignore this email: your password stays as it is.',
@@ -263,31 +265,31 @@ const EN: CoreTable = {
   'email-change-confirm': (m) => ({
     subject: 'Confirm your new email address',
     paragraphs: [
-      `Someone signed in to your Kept account asked to move it to ${m.newEmail}. If that was you, confirm it with this link within the next hour.`,
+      `Someone signed in to your SheepKeep account asked to move it to ${m.newEmail}. If that was you, confirm it with this link within the next hour.`,
     ],
     action: { label: 'Confirm the change', url: m.url },
     footnote:
       'If it wasn’t you, don’t use the link: your account stays on this address. You may want to change your password.',
   }),
   'email-change-verify': (m) => ({
-    subject: 'Verify your email address for Kept',
-    paragraphs: ['Use this link to finish moving your Kept account to this address.'],
+    subject: 'Verify your email address for SheepKeep',
+    paragraphs: ['Use this link to finish moving your SheepKeep account to this address.'],
     action: { label: 'Verify this address', url: m.url },
     footnote: 'If you didn’t expect this, ignore it: nothing changes until the link is used.',
   }),
   'email-changed': (m) => ({
-    subject: 'Your Kept email address was changed',
+    subject: 'Your SheepKeep email address was changed',
     paragraphs: [
-      `Your Kept account now uses ${m.newEmail}. This address no longer receives its mail.`,
+      `Your SheepKeep account now uses ${m.newEmail}. This address no longer receives its mail.`,
     ],
-    footnote: 'If you didn’t make this change, contact the person who runs your Kept.',
+    footnote: 'If you didn’t make this change, contact the person who runs your SheepKeep.',
   }),
   'account-deletion': (m) => {
     const day = mailDay('en', m.purgeAfter, m.timezone);
     return {
-      subject: `Your Kept account will be deleted on ${day}`,
+      subject: `Your SheepKeep account will be deleted on ${day}`,
       paragraphs: [
-        `You asked for your Kept account to be deleted. It goes on ${day}, with your Personal location and everything in it.`,
+        `You asked for your SheepKeep account to be deleted. It goes on ${day}, with your Personal location and everything in it.`,
         'Until then, signing in shows that date and lets you keep the account. What you added to other people’s locations stays there.',
       ],
       footnote:
@@ -304,8 +306,8 @@ const EN: CoreTable = {
       subject: m.place ? `${name}: ${m.place}` : name,
       paragraphs: [
         m.attached
-          ? 'Kept made the report you asked for. It is attached as a PDF.'
-          : 'Kept made the report you asked for, but it is too large to attach. Print it again from Kept to download it.',
+          ? 'SheepKeep made the report you asked for. It is attached as a PDF.'
+          : 'SheepKeep made the report you asked for, but it is too large to attach. Print it again from SheepKeep to download it.',
       ],
       footnote:
         'Scheduled reports are listed in Settings → Me → Notifications, where you can stop them.',
@@ -313,13 +315,13 @@ const EN: CoreTable = {
   },
   invite: (m) => ({
     subject: m.inviterName
-      ? `${m.inviterName} invited you to ${m.locationName} on Kept`
-      : `You’re invited to ${m.locationName} on Kept`,
+      ? `${m.inviterName} invited you to ${m.locationName} on SheepKeep`
+      : `You’re invited to ${m.locationName} on SheepKeep`,
     paragraphs: [
       m.inviterName
         ? `${m.inviterName} invited you to join ${m.locationName} as ${EN_ROLE[m.role]}.`
         : `You’re invited to join ${m.locationName} as ${EN_ROLE[m.role]}.`,
-      'Kept keeps track of the things you own, where they are, and what’s due for them.',
+      'SheepKeep keeps track of the things you own, where they are, and what’s due for them.',
     ],
     action: { label: 'Accept the invitation', url: m.url },
     footnote: 'If you weren’t expecting this, ignore it: nothing happens unless you accept.',
@@ -327,7 +329,7 @@ const EN: CoreTable = {
   'sign-up-existing': (_m, ctx) => ({
     subject: 'Someone tried to sign up with your email address',
     paragraphs: [
-      'Someone tried to create a Kept account with this address, which already has one. No new account was made.',
+      'Someone tried to create a SheepKeep account with this address, which already has one. No new account was made.',
       'If it was you, sign in instead. If you’ve forgotten your password, you can reset it from the sign-in page.',
     ],
     action: { label: 'Sign in', url: page(ctx, '/signin') },
@@ -338,11 +340,11 @@ const EN: CoreTable = {
     const when = mailTime('en', m.at, m.timeZone);
     const device = deviceName(m, (browser, os) => `${browser} on ${os}`);
     return {
-      subject: 'A backup code was used to sign in to your Kept account',
+      subject: 'A backup code was used to sign in to your SheepKeep account',
       paragraphs: [
         device
-          ? `A backup code was used to sign in to your Kept account on ${when}, from ${device}.`
-          : `A backup code was used to sign in to your Kept account on ${when}.`,
+          ? `A backup code was used to sign in to your SheepKeep account on ${when}, from ${device}.`
+          : `A backup code was used to sign in to your SheepKeep account on ${when}.`,
         m.left === 0
           ? 'That was your last backup code. Make new ones in Settings → Sign-in and security → New backup codes.'
           : m.left === 1
@@ -377,14 +379,14 @@ const EN: CoreTable = {
     ),
   'admin-alert': (m, ctx) => {
     const footnote =
-      'You get this as an administrator of this Kept. It is sent at most once a day while the problem lasts.';
+      'You get this as an administrator of this SheepKeep. It is sent at most once a day while the problem lasts.';
     if (m.alert === 'ai_instance_cap_warning' || m.alert === 'ai_instance_cap_reached') {
       const c = capFactsOf(m.details);
       if (c) return enCap(m.alert === 'ai_instance_cap_warning' ? 80 : 100, c, ctx, footnote);
     }
     if (m.alert === 'ai_instance_key_rejected') {
       return {
-        subject: 'Kept: the server’s AI key was rejected',
+        subject: 'SheepKeep: the server’s AI key was rejected',
         paragraphs: [
           `${String(m.details.provider ?? 'The provider')} rejected this server’s AI key, so the AI work it pays for is waiting.`,
           'Replace the key in the admin AI settings. Waiting work carries on once a new key is saved.',
@@ -395,7 +397,7 @@ const EN: CoreTable = {
     }
     if (m.alert === 'failed_jobs_rising') {
       return {
-        subject: 'Kept: background jobs are failing',
+        subject: 'SheepKeep: background jobs are failing',
         paragraphs: [
           `${num(m.details.failedLastHour)} background jobs failed in the last hour.`,
           'The failed jobs list shows what failed and why; from there you can retry or discard them.',
@@ -406,12 +408,12 @@ const EN: CoreTable = {
     }
     if (m.alert === 'backup_failed') {
       return {
-        subject: 'Kept: the nightly backup failed',
+        subject: 'SheepKeep: the nightly backup failed',
         paragraphs: [
           `The nightly backup didn’t finish: ${String(m.details.error ?? '')}`,
           m.details.lastOk
             ? `The last good backup finished on ${day(m.details.lastOk)}. Until one succeeds again, nothing written since then is in a backup.`
-            : 'No backup has succeeded yet, so nothing in this Kept is backed up.',
+            : 'No backup has succeeded yet, so nothing in this SheepKeep is backed up.',
         ],
         action: { label: 'Open the status page', url: page(ctx, '/admin/status') },
         footnote,
@@ -419,12 +421,12 @@ const EN: CoreTable = {
     }
     if (m.alert === 'backup_stale') {
       return {
-        subject: 'Kept: no backup for more than 36 hours',
+        subject: 'SheepKeep: no backup for more than 36 hours',
         paragraphs: [
           m.details.lastOkAt
-            ? `The last good backup finished on ${day(m.details.lastOkAt)}. Kept backs up every night, so the nightly backup has stopped working.`
+            ? `The last good backup finished on ${day(m.details.lastOkAt)}. SheepKeep backs up every night, so the nightly backup has stopped working.`
             : 'Backups are set up, but none has finished yet.',
-          'The backups page lists each run and why it failed. If Kept’s background worker isn’t running, start it again.',
+          'The backups page lists each run and why it failed. If SheepKeep’s background worker isn’t running, start it again.',
         ],
         action: { label: 'Open backups', url: page(ctx, '/admin/backups') },
         footnote,
@@ -434,13 +436,13 @@ const EN: CoreTable = {
       const d = diskFacts(m.details);
       return {
         subject: d.backup
-          ? 'Kept: the backup disk is nearly full'
-          : 'Kept: the data disk is nearly full',
+          ? 'SheepKeep: the backup disk is nearly full'
+          : 'SheepKeep: the data disk is nearly full',
         paragraphs: [
           `It is ${d.percent}% full, with ${d.gb} GB left.`,
           d.backup
             ? 'When it fills, the nightly backup fails. Free some space, give it a bigger disk, or keep fewer backups in the backup settings.'
-            : 'When it fills, Kept can’t save new photos or documents, and its database may stop. Free some space or give it a bigger disk.',
+            : 'When it fills, SheepKeep can’t save new photos or documents, and its database may stop. Free some space or give it a bigger disk.',
         ],
         action: { label: 'Open the status page', url: page(ctx, '/admin/status') },
         footnote,
@@ -448,9 +450,9 @@ const EN: CoreTable = {
     }
     if (m.alert === 'bucket_versioning_off') {
       return {
-        subject: 'Kept: versioning is off on the file bucket',
+        subject: 'SheepKeep: versioning is off on the file bucket',
         paragraphs: [
-          'Kept keeps its files in an S3 bucket, and the nightly backup leaves them there. Versioning is off on that bucket, so a file deleted or overwritten by mistake, or by someone with its key, can’t be brought back.',
+          'SheepKeep keeps its files in an S3 bucket, and the nightly backup leaves them there. Versioning is off on that bucket, so a file deleted or overwritten by mistake, or by someone with its key, can’t be brought back.',
           'Turn versioning on for the bucket at your storage provider. This stops once the next backup finds it on.',
         ],
         action: { label: 'Open the status page', url: page(ctx, '/admin/status') },
@@ -459,7 +461,7 @@ const EN: CoreTable = {
     }
     if (m.alert === 'restore_drill_due') {
       return {
-        subject: 'Kept: time for a restore drill',
+        subject: 'SheepKeep: time for a restore drill',
         paragraphs: [
           m.details.lastDrillAt
             ? `The last restore drill was on ${day(m.details.lastDrillAt)}, more than 30 days ago.`
@@ -472,7 +474,7 @@ const EN: CoreTable = {
     }
     if (m.alert === 'backup_verify_failed') {
       return {
-        subject: 'Kept: the weekly backup check found a problem',
+        subject: 'SheepKeep: the weekly backup check found a problem',
         paragraphs: [
           `The weekly check of the backup repository failed: ${String(m.details.error ?? '')}`,
           'Your backups may not restore as they are. Open Backups to see what it found, and check again once it is fixed.',
@@ -483,9 +485,9 @@ const EN: CoreTable = {
     }
     if (m.alert === 'backup_suspicious_size') {
       return {
-        subject: 'Kept: the latest backup looks too small',
+        subject: 'SheepKeep: the latest backup looks too small',
         paragraphs: [
-          'The latest backup came out much smaller than the last good one. Kept kept it, but removed no older backups, so the good ones stay.',
+          'The latest backup came out much smaller than the last good one. SheepKeep kept it, but removed no older backups, so the good ones stay.',
           'If a lot was deleted on purpose, nothing is wrong and the next backups clear this. If not, find out what changed before restoring anything.',
         ],
         action: { label: 'Open backups', url: page(ctx, '/admin/backups') },
@@ -494,10 +496,10 @@ const EN: CoreTable = {
     }
     if (m.alert === 'webhook_failing') {
       return {
-        subject: 'Kept: a location’s webhook keeps failing',
+        subject: 'SheepKeep: a location’s webhook keeps failing',
         paragraphs: [
-          `A webhook set up in one of this Kept’s locations has failed every delivery since ${day(m.details.since)}, so Kept has marked it failing.`,
-          'Kept keeps trying it with each new event. The location’s owners and admins see it, and can fix or remove it, under Location settings → Webhooks.',
+          `A webhook set up in one of this SheepKeep’s locations has failed every delivery since ${day(m.details.since)}, so SheepKeep has marked it failing.`,
+          'SheepKeep keeps trying it with each new event. The location’s owners and admins see it, and can fix or remove it, under Location settings → Webhooks.',
         ],
         action: { label: 'Open the status page', url: page(ctx, '/admin/status') },
         footnote,
@@ -505,12 +507,12 @@ const EN: CoreTable = {
     }
     if (m.alert === 'reminders_not_scanned') {
       return {
-        subject: 'Kept: reminders have stopped going out',
+        subject: 'SheepKeep: reminders have stopped going out',
         paragraphs: [
           m.details.lastOkAt
-            ? `Kept last checked for due reminders on ${day(m.details.lastOkAt)}, more than 2 hours ago. Until it checks again, nobody gets new reminders.`
-            : 'Kept hasn’t finished a single check for due reminders yet, so nobody gets reminders.',
-          'The check runs every 15 minutes in Kept’s background worker. The failed jobs list shows why it stopped; if the worker isn’t running, start it again.',
+            ? `SheepKeep last checked for due reminders on ${day(m.details.lastOkAt)}, more than 2 hours ago. Until it checks again, nobody gets new reminders.`
+            : 'SheepKeep hasn’t finished a single check for due reminders yet, so nobody gets reminders.',
+          'The check runs every 15 minutes in SheepKeep’s background worker. The failed jobs list shows why it stopped; if the worker isn’t running, start it again.',
         ],
         action: { label: 'Open failed jobs', url: page(ctx, '/admin/jobs') },
         footnote,
@@ -518,20 +520,20 @@ const EN: CoreTable = {
     }
     if (m.alert === 'llm_default_partition') {
       return {
-        subject: 'Kept: AI call records need attention',
+        subject: 'SheepKeep: AI call records need attention',
         paragraphs: [
           `${num(m.details.rows)} AI call records (${day(m.details.oldest)} to ${day(m.details.newest)}) were stored outside their monthly partition.`,
-          'Kept can’t create that month’s partition until they are moved into it, so the nightly AI maintenance job will keep failing. Moving them is a database task for the person who runs this Kept.',
+          'SheepKeep can’t create that month’s partition until they are moved into it, so the nightly AI maintenance job will keep failing. Moving them is a database task for the person who runs this SheepKeep.',
         ],
         action: { label: 'Open the status page', url: page(ctx, '/admin/status') },
         footnote,
       };
     }
     return {
-      subject: 'Kept: audit events need attention',
+      subject: 'SheepKeep: audit events need attention',
       paragraphs: [
         `${num(m.details.rows)} audit events (${day(m.details.oldest)} to ${day(m.details.newest)}) were stored outside their monthly partition.`,
-        'Kept can’t create that month’s partition until they are moved into it, so the nightly maintenance job will keep failing. Moving them is a database task for the person who runs this Kept.',
+        'SheepKeep can’t create that month’s partition until they are moved into it, so the nightly maintenance job will keep failing. Moving them is a database task for the person who runs this SheepKeep.',
       ],
       action: { label: 'Open the status page', url: page(ctx, '/admin/status') },
       footnote,
@@ -567,27 +569,29 @@ function arBackupCodesLeft(n: number): string {
 
 const AR_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'passkey-added': () => ({
-    subject: 'أُضيف مفتاح مرور إلى حسابك على Kept',
-    paragraphs: ['أُضيف مفتاح مرور جديد إلى حسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى.'],
+    subject: 'أُضيف مفتاح مرور إلى حسابك على SheepKeep',
+    paragraphs: [
+      'أُضيف مفتاح مرور جديد إلى حسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى.',
+    ],
     footnote:
       'إذا لم تكن أنت، فأعد تعيين كلمة المرور فورًا واحذف مفتاح المرور من الإعدادات، قسم «تسجيل الدخول والأمان».',
   }),
   'two-factor-disabled': () => ({
     subject: 'أُوقف التحقق بخطوتين',
-    paragraphs: ['أُوقف التحقق بخطوتين لحسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى.'],
+    paragraphs: ['أُوقف التحقق بخطوتين لحسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى.'],
     footnote: 'إذا لم تكن أنت، فأعد تعيين كلمة المرور فورًا وأعد تفعيل التحقق بخطوتين.',
   }),
   'passkey-removed': () => ({
-    subject: 'حُذف مفتاح مرور من حسابك على Kept',
+    subject: 'حُذف مفتاح مرور من حسابك على SheepKeep',
     paragraphs: [
-      'حُذف مفتاح مرور من حسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم يعد هذا المفتاح يُدخلك إلى حسابك.',
+      'حُذف مفتاح مرور من حسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم يعد هذا المفتاح يُدخلك إلى حسابك.',
     ],
     footnote: AR_NOT_YOU,
   }),
   'two-factor-enabled': () => ({
     subject: 'فُعِّل التحقق بخطوتين',
     paragraphs: [
-      'فُعِّل التحقق بخطوتين لحسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى. يطلب تسجيل الدخول الآن رمزًا من تطبيق المصادقة.',
+      'فُعِّل التحقق بخطوتين لحسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى. يطلب تسجيل الدخول الآن رمزًا من تطبيق المصادقة.',
     ],
     footnote:
       'إذا لم تكن أنت، فأعد تعيين كلمة المرور فورًا وراجع الإعدادات، قسم «تسجيل الدخول والأمان».',
@@ -595,34 +599,34 @@ const AR_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'two-factor-replaced': () => ({
     subject: 'أُعيد إعداد التحقق بخطوتين',
     paragraphs: [
-      'أُعيد إعداد التحقق بخطوتين لحسابك على Kept بتطبيق مصادقة جديد، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم تعد رموز التطبيق القديم ولا الرموز الاحتياطية القديمة تعمل.',
+      'أُعيد إعداد التحقق بخطوتين لحسابك على SheepKeep بتطبيق مصادقة جديد، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم تعد رموز التطبيق القديم ولا الرموز الاحتياطية القديمة تعمل.',
     ],
     footnote:
       'إذا لم تكن أنت، فأعد تعيين كلمة المرور فورًا وراجع الإعدادات، قسم «تسجيل الدخول والأمان».',
   }),
   'backup-codes-new': () => ({
-    subject: 'أُنشئت رموز احتياطية جديدة لحسابك على Kept',
+    subject: 'أُنشئت رموز احتياطية جديدة لحسابك على SheepKeep',
     paragraphs: [
-      'أُنشئت رموز احتياطية جديدة للتحقق بخطوتين لحسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم تعد الرموز الاحتياطية القديمة تعمل.',
+      'أُنشئت رموز احتياطية جديدة للتحقق بخطوتين لحسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم تعد الرموز الاحتياطية القديمة تعمل.',
     ],
     footnote: AR_NOT_YOU,
   }),
   'sign-in-unlinked': () => ({
-    subject: 'أُلغي ربط طريقة دخول بحسابك على Kept',
+    subject: 'أُلغي ربط طريقة دخول بحسابك على SheepKeep',
     paragraphs: [
-      'أُلغي ربط طريقة دخول خارجية (مثل Google) بحسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم تعد تُدخلك إلى حسابك.',
+      'أُلغي ربط طريقة دخول خارجية (مثل Google) بحسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى. لم تعد تُدخلك إلى حسابك.',
     ],
     footnote: AR_NOT_YOU,
   }),
   'password-changed': () => ({
-    subject: 'تغيّرت كلمة مرورك على Kept',
-    paragraphs: ['تغيّرت كلمة المرور لحسابك على Kept، وسُجِّل الخروج من جميع الأجهزة الأخرى.'],
+    subject: 'تغيّرت كلمة مرورك على SheepKeep',
+    paragraphs: ['تغيّرت كلمة المرور لحسابك على SheepKeep، وسُجِّل الخروج من جميع الأجهزة الأخرى.'],
     footnote: AR_NOT_YOU,
   }),
   'unverified-account-reset': () => ({
     subject: 'تأكّد عنوان بريدك الإلكتروني',
     paragraphs: [
-      'أُعيد تعيين كلمة مرورك على Kept من خلال هذا البريد، وهذا يؤكد أن عنوان البريد الإلكتروني للحساب يخصّك.',
+      'أُعيد تعيين كلمة مرورك على SheepKeep من خلال هذا البريد، وهذا يؤكد أن عنوان البريد الإلكتروني للحساب يخصّك.',
       'لم يكن العنوان مؤكَّدًا من قبل، لذا حُذفت احتياطًا جميع مفاتيح المرور وإعدادات التحقق بخطوتين والأجهزة المسجَّلة التي أُضيفت قبل الآن، تحسّبًا لأن يكون شخص آخر قد أنشأ الحساب.',
     ],
     footnote:
@@ -631,7 +635,7 @@ const AR_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
   'unverified-account-link': () => ({
     subject: 'تأكّد عنوان بريدك الإلكتروني',
     paragraphs: [
-      'سجّلت الدخول إلى Kept برابط أُرسل إلى هذا البريد، وهذا يؤكد أن عنوان البريد الإلكتروني للحساب يخصّك.',
+      'سجّلت الدخول إلى SheepKeep برابط أُرسل إلى هذا البريد، وهذا يؤكد أن عنوان البريد الإلكتروني للحساب يخصّك.',
       'لم يكن العنوان مؤكَّدًا من قبل، لذا حُذفت احتياطًا كلمة مرور الحساب ومفاتيح المرور وإعدادات التحقق بخطوتين وجميع الأجهزة المسجَّلة الأخرى، تحسّبًا لأن يكون شخص آخر قد أنشأ الحساب.',
     ],
     footnote: 'اختر كلمة مرور جديدة من إعدادات حسابك، وأعد إعداد التحقق بخطوتين إن كنت تستخدمه.',
@@ -640,11 +644,11 @@ const AR_SECURITY: Record<SecurityEvent, (ctx: MessageContext) => Message> = {
 
 const AR_ADMIN: Record<AdminAction, (locationName: string) => Message> = {
   disabled: () => ({
-    subject: 'عُطِّل حسابك على Kept',
-    paragraphs: ['عطّل أحد مسؤولي Kept حسابك، ولن تتمكن من تسجيل الدخول حتى يُعاد تفعيله.'],
+    subject: 'عُطِّل حسابك على SheepKeep',
+    paragraphs: ['عطّل أحد مسؤولي SheepKeep حسابك، ولن تتمكن من تسجيل الدخول حتى يُعاد تفعيله.'],
   }),
   enabled: () => ({
-    subject: 'أُعيد تفعيل حسابك على Kept',
+    subject: 'أُعيد تفعيل حسابك على SheepKeep',
     paragraphs: ['أعاد أحد المسؤولين تفعيل حسابك، ويمكنك تسجيل الدخول كالمعتاد.'],
   }),
   'two-factor-reset': () => ({
@@ -655,36 +659,40 @@ const AR_ADMIN: Record<AdminAction, (locationName: string) => Message> = {
     ],
   }),
   'signed-out-everywhere': () => ({
-    subject: 'سُجِّل خروجك من Kept على جميع الأجهزة',
+    subject: 'سُجِّل خروجك من SheepKeep على جميع الأجهزة',
     paragraphs: ['سجّل أحد المسؤولين خروج حسابك من جميع الأجهزة. سجّل الدخول مجددًا للمتابعة.'],
   }),
   'instance-admin-granted': () => ({
-    subject: 'أصبحت من مسؤولي Kept',
-    paragraphs: ['أصبحت من مسؤولي هذه النسخة من Kept، ويمكنك الآن إدارة مستخدميها وإعداداتها.'],
+    subject: 'أصبحت من مسؤولي SheepKeep',
+    paragraphs: [
+      'أصبحت من مسؤولي هذه النسخة من SheepKeep، ويمكنك الآن إدارة مستخدميها وإعداداتها.',
+    ],
   }),
   'instance-admin-revoked': () => ({
-    subject: 'لم تعد من مسؤولي Kept',
+    subject: 'لم تعد من مسؤولي SheepKeep',
     paragraphs: ['أُزيلت صلاحيات المسؤول من حسابك. لم يتغيّر شيء في أماكنك ولا في ما تحتويه.'],
   }),
   'password-reset-issued': () => ({
     subject: 'صدر رمز لإعادة تعيين كلمة مرورك',
     paragraphs: [
-      'أصدر الشخص الذي يدير Kept رمزًا يُستخدم مرة واحدة لإعادة تعيين كلمة مرور حسابك، وسجّل خروجه من جميع الأجهزة.',
+      'أصدر الشخص الذي يدير SheepKeep رمزًا يُستخدم مرة واحدة لإعادة تعيين كلمة مرور حسابك، وسجّل خروجه من جميع الأجهزة.',
       'سيعطيك هذا الرمز لتختار به كلمة مرور جديدة.',
     ],
   }),
   'location-ownership-received': (name) => ({
     subject: `أصبحت مالك «${name}»`,
-    paragraphs: [`جعلك الشخص الذي يدير Kept مالكًا لـ«${name}».`],
+    paragraphs: [`جعلك الشخص الذي يدير SheepKeep مالكًا لـ«${name}».`],
   }),
   'location-ownership-moved': (name) => ({
     subject: `انتقلت ملكية «${name}»`,
-    paragraphs: [`نقل الشخص الذي يدير Kept ملكية «${name}» إلى مالك جديد، وتبقى فيه بصفة مشرف.`],
+    paragraphs: [
+      `نقل الشخص الذي يدير SheepKeep ملكية «${name}» إلى مالك جديد، وتبقى فيه بصفة مشرف.`,
+    ],
   }),
   'token-created': () => ({
     subject: 'أُنشئ رمز وصول لحسابك',
     paragraphs: [
-      'أنشأ الشخص الذي يدير Kept رمز وصول شخصيًا لحسابك من الخادم، لتطبيق مثل Home Assistant أو مساعد ذكاء اصطناعي. يستطيع ما تستطيعه أنت، في المواقع التي أُنشئ لها.',
+      'أنشأ الشخص الذي يدير SheepKeep رمز وصول شخصيًا لحسابك من الخادم، لتطبيق مثل Home Assistant أو مساعد ذكاء اصطناعي. يستطيع ما تستطيعه أنت، في المواقع التي أُنشئ لها.',
       'إن لم تطلبه، فألغِه من الإعدادات ← الربط.',
     ],
   }),
@@ -718,7 +726,7 @@ function arCap(level: 80 | 100, c: AiCapFacts, ctx: MessageContext, footnote: st
   const cap = arCapOf(c);
   if (level === 80) {
     return {
-      subject: `Kept: استُخدم 80% من ${cap} هذا الشهر`,
+      subject: `SheepKeep: استُخدم 80% من ${cap} هذا الشهر`,
       paragraphs: [
         `بلغ استخدام ${cap} ${arUsed(c)} حتى الآن هذا الشهر.`,
         'عند بلوغ السقف يتوقف الذكاء الاصطناعي حتى أول الشهر القادم. تُحفظ الالتقاطات كالمعتاد، وتُقرأ صورها عند استئنافه.',
@@ -728,7 +736,7 @@ function arCap(level: 80 | 100, c: AiCapFacts, ctx: MessageContext, footnote: st
     };
   }
   return {
-    subject: `Kept: الذكاء الاصطناعي متوقف حتى ${day(c.pausedUntil)}`,
+    subject: `SheepKeep: الذكاء الاصطناعي متوقف حتى ${day(c.pausedUntil)}`,
     paragraphs: [
       `بلغ ${cap} حدّه: ${arUsed(c)} هذا الشهر.`,
       `توقف الذكاء الاصطناعي حتى ${day(c.pausedUntil)}. تُحفظ الالتقاطات كالمعتاد، وتُقرأ صورها عند استئنافه. لاستئنافه قبل ذلك، ارفع السقف أو أزله.`,
@@ -740,17 +748,17 @@ function arCap(level: 80 | 100, c: AiCapFacts, ctx: MessageContext, footnote: st
 
 const AR: CoreTable = {
   'magic-link': (m) => ({
-    subject: 'رابط تسجيل الدخول إلى Kept',
+    subject: 'رابط تسجيل الدخول إلى SheepKeep',
     paragraphs: [
-      'استخدم هذا الرابط لتسجيل الدخول إلى Kept. يعمل مرة واحدة خلال الدقائق الخمس عشرة القادمة.',
+      'استخدم هذا الرابط لتسجيل الدخول إلى SheepKeep. يعمل مرة واحدة خلال الدقائق الخمس عشرة القادمة.',
     ],
     action: { label: 'تسجيل الدخول', url: m.url },
     footnote: 'إذا لم تطلب تسجيل الدخول، فتجاهل هذه الرسالة. لا يستطيع أحد الدخول بدون هذا الرابط.',
   }),
   'password-reset': (m) => ({
-    subject: 'إعادة تعيين كلمة مرورك على Kept',
+    subject: 'إعادة تعيين كلمة مرورك على SheepKeep',
     paragraphs: [
-      'طلب أحدهم إعادة تعيين كلمة المرور لهذا الحساب على Kept. استخدم هذا الرابط لاختيار كلمة مرور جديدة، وهو يعمل مرة واحدة خلال الساعة القادمة.',
+      'طلب أحدهم إعادة تعيين كلمة المرور لهذا الحساب على SheepKeep. استخدم هذا الرابط لاختيار كلمة مرور جديدة، وهو يعمل مرة واحدة خلال الساعة القادمة.',
     ],
     action: { label: 'اختيار كلمة مرور جديدة', url: m.url },
     footnote: 'إذا لم تكن أنت، فتجاهل هذه الرسالة: ستبقى كلمة مرورك كما هي.',
@@ -758,31 +766,31 @@ const AR: CoreTable = {
   'email-change-confirm': (m) => ({
     subject: 'أكّد عنوان بريدك الإلكتروني الجديد',
     paragraphs: [
-      `طلب شخص مسجَّل الدخول إلى حسابك على Kept نقل الحساب إلى العنوان ${m.newEmail}. إذا كنت أنت، فأكّد ذلك بهذا الرابط خلال الساعة القادمة.`,
+      `طلب شخص مسجَّل الدخول إلى حسابك على SheepKeep نقل الحساب إلى العنوان ${m.newEmail}. إذا كنت أنت، فأكّد ذلك بهذا الرابط خلال الساعة القادمة.`,
     ],
     action: { label: 'تأكيد التغيير', url: m.url },
     footnote:
       'إذا لم تكن أنت، فلا تستخدم الرابط: سيبقى حسابك على هذا العنوان. وقد ترغب في تغيير كلمة مرورك.',
   }),
   'email-change-verify': (m) => ({
-    subject: 'تحقّق من عنوان بريدك الإلكتروني على Kept',
-    paragraphs: ['استخدم هذا الرابط لإتمام نقل حسابك على Kept إلى هذا العنوان.'],
+    subject: 'تحقّق من عنوان بريدك الإلكتروني على SheepKeep',
+    paragraphs: ['استخدم هذا الرابط لإتمام نقل حسابك على SheepKeep إلى هذا العنوان.'],
     action: { label: 'تأكيد هذا العنوان', url: m.url },
     footnote: 'إذا لم تكن تتوقع هذه الرسالة، فتجاهلها: لن يتغيّر شيء ما لم يُستخدم الرابط.',
   }),
   'email-changed': (m) => ({
-    subject: 'تغيّر عنوان بريدك الإلكتروني على Kept',
+    subject: 'تغيّر عنوان بريدك الإلكتروني على SheepKeep',
     paragraphs: [
-      `أصبح حسابك على Kept يستخدم العنوان ${m.newEmail}، ولن تصل رسائله إلى هذا العنوان بعد الآن.`,
+      `أصبح حسابك على SheepKeep يستخدم العنوان ${m.newEmail}، ولن تصل رسائله إلى هذا العنوان بعد الآن.`,
     ],
-    footnote: 'إذا لم تُجرِ هذا التغيير، فتواصل مع الشخص الذي يدير Kept لديك.',
+    footnote: 'إذا لم تُجرِ هذا التغيير، فتواصل مع الشخص الذي يدير SheepKeep لديك.',
   }),
   'account-deletion': (m) => {
     const day = mailDay('ar', m.purgeAfter, m.timezone);
     return {
-      subject: `سيُحذف حسابك على Kept في ${day}`,
+      subject: `سيُحذف حسابك على SheepKeep في ${day}`,
       paragraphs: [
-        `طلبتَ حذف حسابك على Kept. سيُحذف في ${day}، ومعه موقعك الشخصي وكل ما فيه.`,
+        `طلبتَ حذف حسابك على SheepKeep. سيُحذف في ${day}، ومعه موقعك الشخصي وكل ما فيه.`,
         'وحتى ذلك الحين، يعرض لك تسجيل الدخول هذا التاريخ ويتيح لك الإبقاء على حسابك. أما ما أضفته إلى مواقع الآخرين فيبقى فيها.',
       ],
       footnote: 'إذا لم تطلب ذلك، فسجّل الدخول الآن واختر «الإبقاء على حسابي»، ثم غيّر كلمة المرور.',
@@ -796,21 +804,21 @@ const AR: CoreTable = {
       subject: m.place ? `${name}: ${m.place}` : name,
       paragraphs: [
         m.attached
-          ? 'أعدّ Kept التقرير الذي طلبته، وهو مرفق بصيغة PDF.'
-          : 'أعدّ Kept التقرير الذي طلبته، لكنه أكبر من أن يُرفق. اطبعه مجددًا من Kept لتنزيله.',
+          ? 'أعدّ SheepKeep التقرير الذي طلبته، وهو مرفق بصيغة PDF.'
+          : 'أعدّ SheepKeep التقرير الذي طلبته، لكنه أكبر من أن يُرفق. اطبعه مجددًا من SheepKeep لتنزيله.',
       ],
       footnote: 'التقارير المجدولة موجودة في الإعدادات ← أنا ← الإشعارات، ويمكنك إيقافها من هناك.',
     };
   },
   invite: (m) => ({
     subject: m.inviterName
-      ? `${m.inviterName} يدعوك إلى «${m.locationName}» على Kept`
-      : `دعوة للانضمام إلى «${m.locationName}» على Kept`,
+      ? `${m.inviterName} يدعوك إلى «${m.locationName}» على SheepKeep`
+      : `دعوة للانضمام إلى «${m.locationName}» على SheepKeep`,
     paragraphs: [
       m.inviterName
         ? `دعاك ${m.inviterName} للانضمام إلى «${m.locationName}» بصفة ${AR_ROLE[m.role]}.`
         : `أنت مدعوّ للانضمام إلى «${m.locationName}» بصفة ${AR_ROLE[m.role]}.`,
-      'يساعدك Kept على تتبّع أغراضك وأماكنها وما يستحقّ لها من مواعيد.',
+      'يساعدك SheepKeep على تتبّع أغراضك وأماكنها وما يستحقّ لها من مواعيد.',
     ],
     action: { label: 'قبول الدعوة', url: m.url },
     footnote: 'إذا لم تكن تتوقع هذه الدعوة، فتجاهلها: لن يحدث شيء ما لم تقبلها.',
@@ -818,7 +826,7 @@ const AR: CoreTable = {
   'sign-up-existing': (_m, ctx) => ({
     subject: 'محاولة إنشاء حساب بعنوان بريدك الإلكتروني',
     paragraphs: [
-      'حاول أحدهم إنشاء حساب على Kept بهذا العنوان، وله حساب بالفعل. لم يُنشأ أي حساب جديد.',
+      'حاول أحدهم إنشاء حساب على SheepKeep بهذا العنوان، وله حساب بالفعل. لم يُنشأ أي حساب جديد.',
       'إذا كنت أنت، فسجّل الدخول بدلًا من ذلك. وإن نسيت كلمة المرور، فيمكنك إعادة تعيينها من صفحة تسجيل الدخول.',
     ],
     action: { label: 'تسجيل الدخول', url: page(ctx, '/signin') },
@@ -829,11 +837,11 @@ const AR: CoreTable = {
     const when = mailTime('ar', m.at, m.timeZone);
     const device = deviceName(m, (browser, os) => `${browser} على ${os}`);
     return {
-      subject: 'استُخدم رمز احتياطي لتسجيل الدخول إلى حسابك على Kept',
+      subject: 'استُخدم رمز احتياطي لتسجيل الدخول إلى حسابك على SheepKeep',
       paragraphs: [
         device
-          ? `استُخدم رمز احتياطي لتسجيل الدخول إلى حسابك على Kept بتاريخ ${when}، من ${device}.`
-          : `استُخدم رمز احتياطي لتسجيل الدخول إلى حسابك على Kept بتاريخ ${when}.`,
+          ? `استُخدم رمز احتياطي لتسجيل الدخول إلى حسابك على SheepKeep بتاريخ ${when}، من ${device}.`
+          : `استُخدم رمز احتياطي لتسجيل الدخول إلى حسابك على SheepKeep بتاريخ ${when}.`,
         arBackupCodesLeft(m.left),
         'إذا استخدمته لأن تطبيق المصادقة لم يعد معك، فأعد إعداد التحقق بخطوتين بتطبيق جديد من الإعدادات، قسم «تسجيل الدخول والأمان»، بزر «إعداد من جديد». وستحصل بذلك على رموز احتياطية جديدة أيضًا.',
       ],
@@ -864,14 +872,14 @@ const AR: CoreTable = {
     ),
   'admin-alert': (m, ctx) => {
     const footnote =
-      'يصلك هذا بصفتك من مسؤولي Kept، ويُرسَل مرة واحدة في اليوم على الأكثر ما دامت المشكلة قائمة.';
+      'يصلك هذا بصفتك من مسؤولي SheepKeep، ويُرسَل مرة واحدة في اليوم على الأكثر ما دامت المشكلة قائمة.';
     if (m.alert === 'ai_instance_cap_warning' || m.alert === 'ai_instance_cap_reached') {
       const c = capFactsOf(m.details);
       if (c) return arCap(m.alert === 'ai_instance_cap_warning' ? 80 : 100, c, ctx, footnote);
     }
     if (m.alert === 'ai_instance_key_rejected') {
       return {
-        subject: 'Kept: رُفض مفتاح الذكاء الاصطناعي لهذا الخادم',
+        subject: 'SheepKeep: رُفض مفتاح الذكاء الاصطناعي لهذا الخادم',
         paragraphs: [
           `رفض ${String(m.details.provider ?? 'المزوّد')} مفتاح الذكاء الاصطناعي لهذا الخادم، لذا ينتظر عمل الذكاء الاصطناعي الذي يدفع المفتاح تكلفته.`,
           'استبدل المفتاح من إعدادات الذكاء الاصطناعي في لوحة الإدارة، وسيُستأنف العمل المنتظر بعد حفظ مفتاح جديد.',
@@ -882,7 +890,7 @@ const AR: CoreTable = {
     }
     if (m.alert === 'failed_jobs_rising') {
       return {
-        subject: 'Kept: تتعثّر مهام في الخلفية',
+        subject: 'SheepKeep: تتعثّر مهام في الخلفية',
         paragraphs: [
           `فشلت ${num(m.details.failedLastHour)} من المهام في الخلفية خلال الساعة الماضية.`,
           'تعرض قائمة المهام الفاشلة ما فشل وسببه، ويمكنك منها إعادة تشغيل المهام أو حذفها.',
@@ -893,12 +901,12 @@ const AR: CoreTable = {
     }
     if (m.alert === 'backup_failed') {
       return {
-        subject: 'Kept: فشل النسخ الاحتياطي الليلي',
+        subject: 'SheepKeep: فشل النسخ الاحتياطي الليلي',
         paragraphs: [
           `لم يكتمل النسخ الاحتياطي الليلي: ${String(m.details.error ?? '')}`,
           m.details.lastOk
             ? `اكتملت آخر نسخة احتياطية ناجحة في ${day(m.details.lastOk)}. وإلى أن تنجح نسخة جديدة، لا يوجد في أي نسخة احتياطية شيء مما كُتب بعد ذلك.`
-            : 'لم تنجح أي نسخة احتياطية حتى الآن، لذا لا شيء في Kept محفوظ في نسخة احتياطية.',
+            : 'لم تنجح أي نسخة احتياطية حتى الآن، لذا لا شيء في SheepKeep محفوظ في نسخة احتياطية.',
         ],
         action: { label: 'فتح صفحة الحالة', url: page(ctx, '/admin/status') },
         footnote,
@@ -906,12 +914,12 @@ const AR: CoreTable = {
     }
     if (m.alert === 'backup_stale') {
       return {
-        subject: 'Kept: لا نسخة احتياطية منذ أكثر من 36 ساعة',
+        subject: 'SheepKeep: لا نسخة احتياطية منذ أكثر من 36 ساعة',
         paragraphs: [
           m.details.lastOkAt
-            ? `اكتملت آخر نسخة احتياطية ناجحة في ${day(m.details.lastOkAt)}. يأخذ Kept نسخة احتياطية كل ليلة، لذا فالنسخ الاحتياطي الليلي متوقّف.`
+            ? `اكتملت آخر نسخة احتياطية ناجحة في ${day(m.details.lastOkAt)}. يأخذ SheepKeep نسخة احتياطية كل ليلة، لذا فالنسخ الاحتياطي الليلي متوقّف.`
             : 'النسخ الاحتياطي مُعدّ، لكن لم تكتمل أي نسخة بعد.',
-          'تعرض صفحة النسخ الاحتياطية كل عملية وسبب فشلها. وإذا لم يكن عامل الخلفية لدى Kept يعمل فأعد تشغيله.',
+          'تعرض صفحة النسخ الاحتياطية كل عملية وسبب فشلها. وإذا لم يكن عامل الخلفية لدى SheepKeep يعمل فأعد تشغيله.',
         ],
         action: { label: 'فتح النسخ الاحتياطية', url: page(ctx, '/admin/backups') },
         footnote,
@@ -921,13 +929,13 @@ const AR: CoreTable = {
       const d = diskFacts(m.details);
       return {
         subject: d.backup
-          ? 'Kept: قرص النسخ الاحتياطية يكاد يمتلئ'
-          : 'Kept: قرص البيانات يكاد يمتلئ',
+          ? 'SheepKeep: قرص النسخ الاحتياطية يكاد يمتلئ'
+          : 'SheepKeep: قرص البيانات يكاد يمتلئ',
         paragraphs: [
           `امتلأ بنسبة ${d.percent}%، وبقي فيه ${d.gb} غيغابايت.`,
           d.backup
             ? 'عندما يمتلئ يفشل النسخ الاحتياطي الليلي. أفرغ بعض المساحة، أو استخدم قرصًا أكبر، أو احتفظ بعدد أقل من النسخ في إعدادات النسخ الاحتياطي.'
-            : 'عندما يمتلئ لن يستطيع Kept حفظ صور أو مستندات جديدة، وقد تتوقّف قاعدة بياناته. أفرغ بعض المساحة أو استخدم قرصًا أكبر.',
+            : 'عندما يمتلئ لن يستطيع SheepKeep حفظ صور أو مستندات جديدة، وقد تتوقّف قاعدة بياناته. أفرغ بعض المساحة أو استخدم قرصًا أكبر.',
         ],
         action: { label: 'فتح صفحة الحالة', url: page(ctx, '/admin/status') },
         footnote,
@@ -935,9 +943,9 @@ const AR: CoreTable = {
     }
     if (m.alert === 'bucket_versioning_off') {
       return {
-        subject: 'Kept: تعدّد الإصدارات متوقّف في حاوية الملفات',
+        subject: 'SheepKeep: تعدّد الإصدارات متوقّف في حاوية الملفات',
         paragraphs: [
-          'يحفظ Kept ملفاته في حاوية S3، ولا ينسخها النسخ الاحتياطي الليلي منها. وتعدّد الإصدارات متوقّف في تلك الحاوية، لذا لا يمكن استعادة ملف حُذف أو استُبدل خطأً، أو على يد من يملك مفتاحها.',
+          'يحفظ SheepKeep ملفاته في حاوية S3، ولا ينسخها النسخ الاحتياطي الليلي منها. وتعدّد الإصدارات متوقّف في تلك الحاوية، لذا لا يمكن استعادة ملف حُذف أو استُبدل خطأً، أو على يد من يملك مفتاحها.',
           'فعّل تعدّد الإصدارات للحاوية لدى مزوّد التخزين. تتوقّف هذه الرسالة حين تجده النسخة الاحتياطية التالية مفعّلًا.',
         ],
         action: { label: 'فتح صفحة الحالة', url: page(ctx, '/admin/status') },
@@ -946,7 +954,7 @@ const AR: CoreTable = {
     }
     if (m.alert === 'restore_drill_due') {
       return {
-        subject: 'Kept: حان وقت تجربة الاستعادة',
+        subject: 'SheepKeep: حان وقت تجربة الاستعادة',
         paragraphs: [
           m.details.lastDrillAt
             ? `كانت آخر تجربة استعادة في ${day(m.details.lastDrillAt)}، أي قبل أكثر من 30 يومًا.`
@@ -959,7 +967,7 @@ const AR: CoreTable = {
     }
     if (m.alert === 'backup_verify_failed') {
       return {
-        subject: 'Kept: وجد الفحص الأسبوعي للنسخ الاحتياطية مشكلة',
+        subject: 'SheepKeep: وجد الفحص الأسبوعي للنسخ الاحتياطية مشكلة',
         paragraphs: [
           `فشل الفحص الأسبوعي لمستودع النسخ الاحتياطية: ${String(m.details.error ?? '')}`,
           'قد لا تُستعاد نسخك الاحتياطية كما هي. افتح النسخ الاحتياطية لترى ما وجده، ثم أعد الفحص بعد إصلاحه.',
@@ -970,9 +978,9 @@ const AR: CoreTable = {
     }
     if (m.alert === 'backup_suspicious_size') {
       return {
-        subject: 'Kept: آخر نسخة احتياطية تبدو أصغر من المعتاد',
+        subject: 'SheepKeep: آخر نسخة احتياطية تبدو أصغر من المعتاد',
         paragraphs: [
-          'جاءت آخر نسخة احتياطية أصغر بكثير من آخر نسخة ناجحة. احتفظ بها Kept، لكنه لم يحذف أي نسخة أقدم، فتبقى النسخ الجيدة.',
+          'جاءت آخر نسخة احتياطية أصغر بكثير من آخر نسخة ناجحة. احتفظ بها SheepKeep، لكنه لم يحذف أي نسخة أقدم، فتبقى النسخ الجيدة.',
           'إن كان كثير من البيانات قد حُذف عمدًا فلا مشكلة، وستزيل النسخ التالية هذا التنبيه. وإلا فتحقّق مما تغيّر قبل أن تستعيد أي شيء.',
         ],
         action: { label: 'فتح النسخ الاحتياطية', url: page(ctx, '/admin/backups') },
@@ -981,10 +989,10 @@ const AR: CoreTable = {
     }
     if (m.alert === 'webhook_failing') {
       return {
-        subject: 'Kept: خطاف ويب في أحد المواقع يفشل باستمرار',
+        subject: 'SheepKeep: خطاف ويب في أحد المواقع يفشل باستمرار',
         paragraphs: [
-          `فشلت كل عمليات الإرسال لخطاف ويب أُعدّ في أحد مواقع Kept منذ ${day(m.details.since)}، لذا وسمه Kept بأنه يفشل.`,
-          'يواصل Kept المحاولة مع كل حدث جديد. يراه مالكو الموقع ومشرفوه في إعدادات الموقع ← خطافات الويب، ويمكنهم إصلاحه أو إزالته.',
+          `فشلت كل عمليات الإرسال لخطاف ويب أُعدّ في أحد مواقع SheepKeep منذ ${day(m.details.since)}، لذا وسمه SheepKeep بأنه يفشل.`,
+          'يواصل SheepKeep المحاولة مع كل حدث جديد. يراه مالكو الموقع ومشرفوه في إعدادات الموقع ← خطافات الويب، ويمكنهم إصلاحه أو إزالته.',
         ],
         action: { label: 'فتح صفحة الحالة', url: page(ctx, '/admin/status') },
         footnote,
@@ -992,12 +1000,12 @@ const AR: CoreTable = {
     }
     if (m.alert === 'reminders_not_scanned') {
       return {
-        subject: 'Kept: توقّف إرسال التذكيرات',
+        subject: 'SheepKeep: توقّف إرسال التذكيرات',
         paragraphs: [
           m.details.lastOkAt
-            ? `آخر مرة تحقّق فيها Kept من التذكيرات المستحقة كانت في ${day(m.details.lastOkAt)}، أي قبل أكثر من ساعتين. ولن يتلقّى أحد تذكيرات جديدة حتى يتحقّق منها مجددًا.`
-            : 'لم يُكمل Kept أي تحقّق من التذكيرات المستحقة حتى الآن، لذا لا يتلقّى أحد أي تذكيرات.',
-          'يجري هذا التحقّق كل 15 دقيقة في عامل الخلفية لدى Kept. تعرض قائمة المهام الفاشلة سبب توقّفه، وإذا لم يكن عامل الخلفية يعمل فأعد تشغيله.',
+            ? `آخر مرة تحقّق فيها SheepKeep من التذكيرات المستحقة كانت في ${day(m.details.lastOkAt)}، أي قبل أكثر من ساعتين. ولن يتلقّى أحد تذكيرات جديدة حتى يتحقّق منها مجددًا.`
+            : 'لم يُكمل SheepKeep أي تحقّق من التذكيرات المستحقة حتى الآن، لذا لا يتلقّى أحد أي تذكيرات.',
+          'يجري هذا التحقّق كل 15 دقيقة في عامل الخلفية لدى SheepKeep. تعرض قائمة المهام الفاشلة سبب توقّفه، وإذا لم يكن عامل الخلفية يعمل فأعد تشغيله.',
         ],
         action: { label: 'فتح المهام الفاشلة', url: page(ctx, '/admin/jobs') },
         footnote,
@@ -1005,20 +1013,20 @@ const AR: CoreTable = {
     }
     if (m.alert === 'llm_default_partition') {
       return {
-        subject: 'Kept: سجلّات استدعاءات الذكاء الاصطناعي تحتاج إلى متابعة',
+        subject: 'SheepKeep: سجلّات استدعاءات الذكاء الاصطناعي تحتاج إلى متابعة',
         paragraphs: [
           `حُفظ ${num(m.details.rows)} من سجلّات استدعاءات الذكاء الاصطناعي (من ${day(m.details.oldest)} إلى ${day(m.details.newest)}) خارج قسمها الشهري.`,
-          'لا يستطيع Kept إنشاء قسم ذلك الشهر حتى تُنقل إليه، لذا ستستمر مهمة صيانة الذكاء الاصطناعي الليلية في الفشل. نقلها مهمة على مستوى قاعدة البيانات يتولاها الشخص الذي يدير Kept.',
+          'لا يستطيع SheepKeep إنشاء قسم ذلك الشهر حتى تُنقل إليه، لذا ستستمر مهمة صيانة الذكاء الاصطناعي الليلية في الفشل. نقلها مهمة على مستوى قاعدة البيانات يتولاها الشخص الذي يدير SheepKeep.',
         ],
         action: { label: 'فتح صفحة الحالة', url: page(ctx, '/admin/status') },
         footnote,
       };
     }
     return {
-      subject: 'Kept: سجلّ التدقيق يحتاج إلى متابعة',
+      subject: 'SheepKeep: سجلّ التدقيق يحتاج إلى متابعة',
       paragraphs: [
         `حُفظ ${num(m.details.rows)} من أحداث سجلّ التدقيق (من ${day(m.details.oldest)} إلى ${day(m.details.newest)}) خارج قسمها الشهري.`,
-        'لا يستطيع Kept إنشاء قسم ذلك الشهر حتى تُنقل إليه، لذا ستستمر مهمة الصيانة الليلية في الفشل. نقلها مهمة على مستوى قاعدة البيانات يتولاها الشخص الذي يدير Kept.',
+        'لا يستطيع SheepKeep إنشاء قسم ذلك الشهر حتى تُنقل إليه، لذا ستستمر مهمة الصيانة الليلية في الفشل. نقلها مهمة على مستوى قاعدة البيانات يتولاها الشخص الذي يدير SheepKeep.',
       ],
       action: { label: 'فتح صفحة الحالة', url: page(ctx, '/admin/status') },
       footnote,
@@ -1041,15 +1049,15 @@ export const CHROME: Record<MailLocale, Chrome> = {
   ar: {
     dir: 'rtl',
     linkFallback: 'إذا لم يعمل الزر، فانسخ هذا الرابط والصقه في المتصفح:',
-    sentBy: (host) => `أُرسلت من Kept على ${host}.`,
-    about: (site) => `Kept، جرد المنزل مفتوح المصدر: ${site}`,
+    sentBy: (host) => `أُرسلت من SheepKeep على ${host}.`,
+    about: (site) => `SheepKeep، جرد المنزل مفتوح المصدر: ${site}`,
   },
   de: DE_CHROME,
   en: {
     dir: 'ltr',
     linkFallback: 'If the button doesn’t work, copy this address into your browser:',
-    sentBy: (host) => `Sent by Kept at ${host}.`,
-    about: (site) => `Kept, the open-source home inventory: ${site}`,
+    sentBy: (host) => `Sent by SheepKeep at ${host}.`,
+    about: (site) => `SheepKeep, the open-source home inventory: ${site}`,
   },
   es: ES_CHROME,
   fr: FR_CHROME,

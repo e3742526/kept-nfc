@@ -48,7 +48,7 @@ const isMoney = (v: unknown): v is Money =>
   typeof v === 'object' && v !== null && 'amount' in v && 'currency' in v;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-/** A suggested value as it reads: money in the reader's digits, days on Kept's calendar. */
+/** A suggested value as it reads: money in the reader's digits, days on SheepKeep's calendar. */
 export function useSuggestedValue() {
   const money = useMoney();
   const fmt = useFormat();

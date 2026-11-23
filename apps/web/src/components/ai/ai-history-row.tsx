@@ -40,7 +40,7 @@ export function AiHistoryRow({ event }: { event: HistoryEvent }) {
             </>
           ) : (
             <>
-              <Trans>Kept (background)</Trans>
+              <Trans>SheepKeep (background)</Trans>
               <span aria-hidden="true">{sep().trim()}</span>
             </>
           )}

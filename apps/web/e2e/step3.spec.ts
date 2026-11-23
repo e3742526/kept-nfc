@@ -333,7 +333,7 @@ test('offline, the Search screen finds things kept on the phone', async ({ brows
   await context.close();
 });
 
-test('scan: the camera reads a seeded label and opens it (seen now); a random code is not in your Kept; offline, an unknown one waits', async ({
+test('scan: the camera reads a seeded label and opens it (seen now); a random code is not in your SheepKeep; offline, an unknown one waits', async ({
   browser,
 }) => {
   onlyOn('phone');
@@ -377,8 +377,8 @@ test('scan: the camera reads a seeded label and opens it (seen now); a random co
   };
   await typeCode(NOWHERE[0] as string);
   const result = page.getByRole('region', { name: 'Scan result' });
-  await expect(result.getByRole('heading', { name: 'Not in your Kept' })).toBeVisible();
-  await axe(page, 'Scan: not in your Kept');
+  await expect(result.getByRole('heading', { name: 'Not in your SheepKeep' })).toBeVisible();
+  await axe(page, 'Scan: not in your SheepKeep');
   await result.getByRole('button', { name: 'Scan again' }).click();
 
   await context.setOffline(true);

@@ -13,7 +13,7 @@ import { adminGate, httpsGate } from './guard';
 import { ops } from './state';
 
 const KIT_TEXT = [
-  'Kept recovery kit (mock)',
+  'SheepKeep recovery kit (mock)',
   '',
   'This is the mock server: a real kit holds the secret keys, the backup repository,',
   'its password and its storage credentials, and the restore steps.',

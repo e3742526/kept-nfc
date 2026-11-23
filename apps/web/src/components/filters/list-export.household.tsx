@@ -210,7 +210,7 @@ export function ListExport({ params }: ListExportProps) {
                   <Trans>Share it to save it to Files or send it on.</Trans>
                 ) : (
                   <Trans>
-                    This browser can't save files here. Open Kept in Safari to export it.
+                    This browser can't save files here. Open SheepKeep in Safari to export it.
                   </Trans>
                 )}
               </p>
@@ -281,7 +281,7 @@ function PrintList({ params, onClose }: ListExportProps & { onClose: () => void 
 
   const failure = (e: unknown) =>
     isApiError(e) && e.code === 'rate_limited'
-      ? t`Kept makes at most five reports an hour. Try again later.`
+      ? t`SheepKeep makes at most five reports an hour. Try again later.`
       : errorText(e);
 
   return (

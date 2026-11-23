@@ -26,7 +26,7 @@ describe('first-run setup', () => {
     await user.type(screen.getByLabelText('Email'), 'ibrahim@example.com');
     await user.type(screen.getByLabelText('Password'), 'correct horse battery');
     await user.click(screen.getByRole('button', { name: 'Create account' }));
-    await findHeading('How should this Kept work?');
+    await findHeading('How should this SheepKeep work?');
     expect(mock.lastCall('POST', paths.setup)?.body).toEqual({
       code: 'K7Q2M9',
       email: 'ibrahim@example.com',
@@ -78,7 +78,7 @@ describe('first-run setup', () => {
     await user.type(screen.getByLabelText('Email'), 'ibrahim@example.com');
     await user.type(screen.getByLabelText('Password'), 'correct horse battery');
     await user.click(screen.getByRole('button', { name: 'Create account' }));
-    await findHeading('How should this Kept work?');
+    await findHeading('How should this SheepKeep work?');
     expect(mock.lastCall('POST', paths.setup)?.body).toEqual({
       email: 'ibrahim@example.com',
       password: 'correct horse battery',
@@ -115,7 +115,7 @@ describe('first-run setup', () => {
 describe('sign in', () => {
   it('asks for both fields', async () => {
     const { user } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(screen.getByText('Enter your email or username.')).toBeInTheDocument();
     expect(screen.getByText('Enter your password.')).toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('sign in', () => {
 
   it('says a wrong password plainly, without saying which part was wrong', async () => {
     const { user } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.type(screen.getByLabelText('Email or username'), 'ibrahim@example.com');
     await user.type(screen.getByLabelText('Password'), 'nope');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -136,7 +136,7 @@ describe('sign in', () => {
     const state = signedOutScenario();
     state.me.user.twoFactorEnabled = false;
     const { user, mock } = await renderApp('/signin', { state });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.type(screen.getByLabelText('Email or username'), 'peter');
     await user.type(screen.getByLabelText('Password'), 'correct horse battery');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -151,7 +151,7 @@ describe('sign in', () => {
     const { user, router } = await renderApp('/signin?next=%2Fsettings', {
       state: signedOutScenario(),
     });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.type(screen.getByLabelText('Email or username'), 'ibrahim@example.com');
     await user.type(screen.getByLabelText('Password'), 'correct horse battery');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -164,7 +164,7 @@ describe('sign in', () => {
 
   it('sends a magic link and says to check email', async () => {
     const { user, mock } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.click(screen.getByRole('button', { name: 'Email me a sign-in link' }));
     expect(screen.getByText('Enter your email address to get a sign-in link.')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Email or username'), 'ibrahim@example.com');
@@ -186,7 +186,7 @@ describe('sign in', () => {
             new MockReply(429, { code: 'SIGN_IN_DELAYED', message: 'Too many', retryAfter: 30 }),
         ),
     });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.type(screen.getByLabelText('Email or username'), 'ibrahim@example.com');
     await user.type(screen.getByLabelText('Password'), 'x');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -246,7 +246,7 @@ describe('magic-link confirm', () => {
     const state = signedOutScenario();
     state.me.user.twoFactorEnabled = false;
     const { user, mock } = await renderApp(`/auth/confirm#token=${MAGIC_TOKEN}`, { state });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     expect(mock.lastCall('POST', paths.auth.magicLinkVerify)).toBeUndefined();
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await findHeading('Home')).toBeInTheDocument();
@@ -257,7 +257,7 @@ describe('magic-link confirm', () => {
     const { user } = await renderApp(`/auth/confirm#token=${MAGIC_TOKEN}`, {
       state: signedOutScenario(),
     });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await findHeading("Confirm it's you")).toBeInTheDocument();
   });
@@ -266,7 +266,7 @@ describe('magic-link confirm', () => {
     const { user } = await renderApp('/auth/confirm#token=stale-token-1', {
       state: signedOutScenario(),
     });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await screen.findByText('This link no longer works')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled());
@@ -281,7 +281,7 @@ describe('magic-link confirm', () => {
 describe('password reset', () => {
   it('"Forgot your password?" needs an email, then says to check it', async () => {
     const { user, mock } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.click(screen.getByRole('button', { name: 'Forgot your password?' }));
     expect(
       screen.getByText('Enter your email address to reset your password.'),
@@ -331,7 +331,7 @@ describe('password reset', () => {
 describe('one-time code (managed accounts)', () => {
   it('sets the password with the code, then signs in', async () => {
     const { user, mock } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await user.click(screen.getByRole('link', { name: 'I have a one-time code' }));
     await findHeading('Sign in with a one-time code');
     await user.click(screen.getByRole('button', { name: 'Set password and sign in' }));

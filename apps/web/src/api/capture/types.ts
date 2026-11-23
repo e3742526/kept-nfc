@@ -89,7 +89,7 @@ export type CreateCaptureBody = {
   templateId?: string;
   /** A scanned blank label to claim for the new container (D43). */
   claimCode?: string;
-  /** ROOM: the Kept labels the phone read in the photos (upper case). */
+  /** ROOM: the SheepKeep labels the phone read in the photos (upper case). */
   codes?: string[];
 };
 
@@ -124,7 +124,7 @@ export type CaptureBatchParams = {
 /** POST /api/v1/captures/batches/:batchId/undo: your unreviewed drafts go to the trash. */
 export type BatchUndoResult = { trashed: string[] };
 
-/** PUT /api/v1/files/:fileId/display (raw JPEG, `X-Kept-Sha256`) → the file with new derivatives. */
+/** PUT /api/v1/files/:fileId/display (raw JPEG, `X-SheepKeep-Sha256`) → the file with new derivatives. */
 export type DisplayUploadResult = FileView;
 
 // ----- extraction and the AI line (D206) -------------------------------------------------------
@@ -301,7 +301,7 @@ export type InboxRoom = {
   drafts: { made: number; waiting: number; failed: number };
   /** Storage furniture proposed as places in the room; `placeId` once added. */
   places: { index: number; name: string; photo: number; placeId: string | null }[];
-  /** Things already in Kept, and whether they were marked seen from the card. */
+  /** Things already in SheepKeep, and whether they were marked seen from the card. */
   already: {
     thingId: string;
     name: string;
@@ -858,7 +858,7 @@ export type AiModelListing = {
 
 export type AiScope = 'me' | 'location' | 'account' | 'instance';
 
-/** GET /api/v1/ai/explain?scope&locationId: "What uses AI in Kept". */
+/** GET /api/v1/ai/explain?scope&locationId: "What uses AI in SheepKeep". */
 export type AiExplain = {
   actions: {
     task: LedgerTask;
@@ -1056,7 +1056,7 @@ export type AiCallParams = {
    * the caller's `x-kept-timezone`) or `YYYY-MM-DD..YYYY-MM-DD` (either end may be empty).
    */
   at?: string;
-  /** Person ids; `background` for "Kept (background)". */
+  /** Person ids; `background` for "SheepKeep (background)". */
   person?: string | string[];
   location?: string | string[];
   task?: LedgerTask | LedgerTask[];

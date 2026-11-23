@@ -76,7 +76,7 @@ describe('Instance admin', () => {
   it('Barcode lookup: off by default, the switch saves, and the environment locks it', async () => {
     const { user, mock } = await renderApp('/admin/settings');
     const toggle = await screen.findByRole('switch', {
-      name: /Look up products Kept doesn't know/,
+      name: /Look up products SheepKeep doesn't know/,
     });
     expect(toggle).not.toBeChecked();
     await user.click(toggle);
@@ -93,7 +93,7 @@ describe('Instance admin', () => {
     locked.admin.settings.barcodeContact = { value: 'ops@kept.example', locked: true };
     await renderApp('/admin/settings', { state: locked });
     expect(
-      await screen.findByRole('switch', { name: /Look up products Kept doesn't know/ }),
+      await screen.findByRole('switch', { name: /Look up products SheepKeep doesn't know/ }),
     ).toBeDisabled();
     expect(screen.getByRole('textbox', { name: 'Contact for the lookups' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Save contact' })).toBeNull();
@@ -131,7 +131,7 @@ describe('Instance admin', () => {
     await user.click(screen.getByRole('button', { name: 'Add' }));
     expect(screen.getByText("That is this server's own address.")).toBeInTheDocument();
     await user.clear(field);
-    await user.type(field, 'Kept.Home.Example');
+    await user.type(field, 'SheepKeep.Home.Example');
     await user.click(screen.getByRole('button', { name: 'Add' }));
     await waitFor(() =>
       expect(mock.lastCall('PUT', paths.admin.settings)?.body).toEqual({
@@ -145,7 +145,7 @@ describe('Instance admin', () => {
       expect(mock.lastCall('PUT', paths.admin.settings)?.body).toEqual({ formerHostnames: [] }),
     );
     expect(
-      await screen.findByText('None. Kept answers only at its own address.'),
+      await screen.findByText('None. SheepKeep answers only at its own address.'),
     ).toBeInTheDocument();
   });
 
@@ -249,7 +249,7 @@ describe('Instance admin', () => {
     expect(screen.getByText('Kept safe')).toBeInTheDocument();
   });
 
-  it('Status: says when Kept runs as a Home Assistant app, and only then', async () => {
+  it('Status: says when SheepKeep runs as a Home Assistant app, and only then', async () => {
     const state = ownerScenario();
     state.admin.status.homeAssistant = true;
     await renderApp('/admin/status', { state });
@@ -304,7 +304,7 @@ describe('Instance admin', () => {
     ];
     await renderApp('/admin/alerts', { state });
     expect((await screen.findAllByText('Reminders have stopped going out')).length).toBe(2);
-    expect(screen.getByText(/^Kept last checked for due reminders /)).toBeInTheDocument();
+    expect(screen.getByText(/^SheepKeep last checked for due reminders /)).toBeInTheDocument();
     expect(screen.getByText(/^No check for due reminders has finished yet/)).toBeInTheDocument();
   });
 

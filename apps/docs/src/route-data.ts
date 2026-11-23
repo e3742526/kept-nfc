@@ -1,6 +1,6 @@
 /**
  * Starlight route middleware (astro.config.mjs, `routeMiddleware`): the share card. Starlight
- * already writes og:title, og:description, og:site_name ("Kept") and twitter:card
+ * already writes og:title, og:description, og:site_name ("SheepKeep") and twitter:card
  * (summary_large_image) for every page; this adds what a pasted link needs to show a picture, and
  * corrects what Starlight can't know:
  *
@@ -13,7 +13,7 @@
  * - on the landing pages, a schema.org `SoftwareApplication` as JSON-LD: free (price 0), AGPL-3.0,
  *   category `HomeApplication` (one of the values Google's software-app structured data accepts,
  *   read 2026-10-15), and the share card as its screenshot when the build knows its site. No
- *   rating or review: Kept has none to state, and Google shows a rich result only with one, so
+ *   rating or review: SheepKeep has none to state, and Google shows a rich result only with one, so
  *   this describes the app without asking for one.
  * - on Arabic pages, a preload of IBM Plex Sans Arabic 400 (43 KB, the body text): without it
  *   the font is found only once the stylesheet is parsed, and Lighthouse's mobile run measured the
@@ -60,17 +60,17 @@ const API_GROUP = 'API reference';
 const CARDS: Record<string, { file: string; alt: string }> = {
   en: {
     file: 'social-card.png',
-    alt: "Kept, an inventory of everything you own and where it is: the app's home screen on a desktop and a phone",
+    alt: "SheepKeep, an inventory of everything you own and where it is: the app's home screen on a desktop and a phone",
   },
   ar: {
-    file: 'social-card-ar.png',
-    alt: 'Kept، جرد لكل ما تملكه وأين هو: موقع «بيت العائلة» في التطبيق على حاسوب وهاتف',
+    file: 'social-card.png',
+    alt: 'SheepKeep، جرد لكل ما تملكه وأين هو: موقع «بيت العائلة» في التطبيق على حاسوب وهاتف',
   },
 };
 
 const LICENSE = 'https://www.gnu.org/licenses/agpl-3.0.html';
-const REPOSITORY = 'https://github.com/keptinventory/kept';
-const ORGANIZATION = 'https://github.com/keptinventory';
+const REPOSITORY = 'https://github.com/e3742526/kept-nfc';
+const ORGANIZATION = 'https://github.com/e3742526';
 
 /**
  * The pages each language has of its own, by locale code, as paths under /<locale>/ ('' is the
@@ -163,9 +163,9 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
     const op = /^(\/\S+?)(?: \((\w+)\))?$/.exec(title);
     const text =
       path === 'api'
-        ? "Kept's HTTP API reference, generated from its OpenAPI document: every endpoint, by method and path."
+        ? "SheepKeep's HTTP API reference, generated from its OpenAPI document: every endpoint, by method and path."
         : op
-          ? `Kept HTTP API: ${op[2] ? `${op[2]} ` : ''}${op[1]}. Its parameters, request body and responses.`
+          ? `SheepKeep HTTP API: ${op[2] ? `${op[2]} ` : ''}${op[1]}. Its parameters, request body and responses.`
           : null;
     if (text) {
       meta('name', 'description', text);
@@ -173,7 +173,7 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
     }
     if (path === 'api') {
       const tag = head.find((t) => t.tag === 'title');
-      if (tag) tag.content = 'HTTP API reference | Kept';
+      if (tag) tag.content = 'HTTP API reference | SheepKeep';
       meta('property', 'og:title', 'HTTP API reference');
     }
   }
@@ -216,14 +216,14 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
     const org = {
       '@type': 'Organization',
       '@id': `${home ?? ORGANIZATION}#organization`,
-      name: 'Kept',
+      name: 'SheepKeep',
       url: home ?? ORGANIZATION,
       ...(context.site ? { logo: new URL(`${base}/favicon.svg`, context.site).href } : {}),
       sameAs: [ORGANIZATION, REPOSITORY],
     };
     const app = {
       '@type': 'SoftwareApplication',
-      name: 'Kept',
+      name: 'SheepKeep',
       description: route.entry.data.description,
       applicationCategory: 'HomeApplication',
       operatingSystem:
@@ -240,7 +240,7 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
     const site = {
       '@type': 'WebSite',
       ...(home ? { '@id': `${home}#website` } : {}),
-      name: 'Kept',
+      name: 'SheepKeep',
       ...(home ? { url: home } : {}),
       inLanguage: route.entryMeta.lang,
       publisher: { '@id': org['@id'] },

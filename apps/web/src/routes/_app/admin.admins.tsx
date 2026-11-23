@@ -56,7 +56,9 @@ function AdminsPage() {
         </List>
         {last ? (
           <p className="m-0 text-small text-ink-3">
-            <Trans>Kept needs at least one instance admin, so the last one can't be removed.</Trans>
+            <Trans>
+              SheepKeep needs at least one instance admin, so the last one can't be removed.
+            </Trans>
           </p>
         ) : null}
       </Section>
@@ -83,7 +85,7 @@ function AdminRow({ user, self, last }: { user: AdminUser; self: boolean; last: 
     onError: (e) =>
       isApiError(e) && e.status === 409
         ? toast({
-            title: t`Kept needs at least one instance admin`,
+            title: t`SheepKeep needs at least one instance admin`,
             description: t`Make someone else an admin first, then remove ${who}.`,
             tone: 'danger',
           })

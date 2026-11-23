@@ -384,7 +384,7 @@ export function Prices({
                 other="# prices proposed from the listing. Nothing is saved until you save them."
               />
             ) : (
-              <Trans>The listing has no prices Kept can use.</Trans>
+              <Trans>The listing has no prices SheepKeep can use.</Trans>
             )}
           </p>
           {proposed.map((p) => (

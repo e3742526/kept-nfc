@@ -103,7 +103,7 @@ export function reportsRoutes(state: MockState): MockRoute[] {
     );
   };
 
-  /** 1.10.5 (#141): an email Kept can't send is refused, as the server does. */
+  /** 1.10.5 (#141): an email SheepKeep can't send is refused, as the server does. */
   const mailRefusal = () =>
     !state.household.settings.smtpConfigured
       ? err(409, 'mail_not_configured', "Email isn't set up on this server.")

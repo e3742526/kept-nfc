@@ -182,7 +182,7 @@ const esc = (s: unknown) =>
     (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
   );
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-/** The pin colours: Kept's danger, info and warn, as the chips and dots use them. */
+/** The pin colours: SheepKeep's danger, info and warn, as the chips and dots use them. */
 const PIN_VAR: Record<MapAttentionKind, string> = {
   low: '--danger',
   lent: '--info',

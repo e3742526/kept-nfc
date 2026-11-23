@@ -134,9 +134,9 @@ export type CaptureScreenProps = {
   detect?: Detect | null;
   decode?: Decode;
   iphone?: boolean;
-  /** The Kept codes in a room's photos (camera/still-codes.ts by default). */
+  /** The SheepKeep codes in a room's photos (camera/still-codes.ts by default). */
   readCodes?: (photos: Blob[]) => Promise<string[]>;
-  /** The capture screen's share slot: `onKeep` for "Shared into Kept". */
+  /** The capture screen's share slot: `onKeep` for "Shared into SheepKeep". */
   renderShare?: (onKeep: (share: SharedInto, mode: SharedMode) => Promise<void>) => ReactNode;
 };
 
@@ -812,7 +812,7 @@ export function CaptureScreen({
     setAnnounce((n) => n + 1);
   };
 
-  /** ROOM: the tray as one capture, with the Kept labels read in its photos. */
+  /** ROOM: the tray as one capture, with the SheepKeep labels read in its photos. */
   const sendRoom = () => {
     if (!target || roomShots.length === 0 || roomBlock) return;
     const photos = roomShots;
@@ -846,7 +846,7 @@ export function CaptureScreen({
         void refreshCounts();
         toast({
           title: t`Room sent`,
-          description: t`Kept lists what is in it in your Inbox.`,
+          description: t`SheepKeep lists what is in it in your Inbox.`,
           tone: 'ok',
         });
       } finally {
@@ -855,7 +855,7 @@ export function CaptureScreen({
     });
   };
 
-  /** "Shared into Kept" (T23's sheet): one capture per file, into the chip's place. */
+  /** "Shared into SheepKeep" (T23's sheet): one capture per file, into the chip's place. */
   const keepShare = useCallback(
     async (share: SharedInto, m: SharedMode) => {
       if (!target) return;
@@ -1147,7 +1147,7 @@ export function CaptureScreen({
         {noPlace ? (
           <div className="absolute inset-0 grid place-items-center p-4 text-center text-[#BDB7AC] text-[14px]">
             <Trans>
-              Nothing on this phone yet. Open Kept once while online to bring your places.
+              Nothing on this phone yet. Open SheepKeep once while online to bring your places.
             </Trans>
           </div>
         ) : null}
@@ -1223,7 +1223,7 @@ export function CaptureScreen({
         className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3.5 pt-3 pb-[max(1.125rem,env(safe-area-inset-bottom))]"
       >
         <GalleryImport icon={<GalleryIcon />} onFiles={(f) => takeFiles(f, false)} />
-        {/* Try Kept (D246): the shutter stays, disabled; the gallery picker beside it works. */}
+        {/* Try SheepKeep (D246): the shutter stays, disabled; the gallery picker beside it works. */}
         {cam.state === 'problem' && cam.problem !== 'demo' ? (
           <FilePick
             camera

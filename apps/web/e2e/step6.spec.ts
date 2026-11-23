@@ -79,7 +79,7 @@ test('the assistant proposes a move, Confirm moves the cable and Undo puts it ba
     .fill('Move the HDMI cable to Box 3');
   await box.getByRole('button', { name: 'Send', exact: true }).click();
 
-  const card = box.getByRole('group', { name: 'Changes for you to confirm, drawn by Kept' });
+  const card = box.getByRole('group', { name: 'Changes for you to confirm, drawn by SheepKeep' });
   await expect(card).toBeVisible({ timeout: 60_000 });
   await expect(card.getByRole('checkbox', { name: /Include: Move/ })).toBeChecked();
   const link = card.getByRole('link', { name: 'HDMI cable, 2 m' });
@@ -172,7 +172,7 @@ test('a spoken list (stub recogniser) becomes one card adding three things; Conf
   if (await stop.isVisible()) await stop.click();
   await box.getByRole('button', { name: 'Send', exact: true }).click();
 
-  const card = box.getByRole('group', { name: 'Changes for you to confirm, drawn by Kept' });
+  const card = box.getByRole('group', { name: 'Changes for you to confirm, drawn by SheepKeep' });
   await expect(card).toBeVisible({ timeout: 60_000 });
   await expect(card.getByRole('checkbox', { name: /Include: Add/ })).toHaveCount(3);
   await expect(card).toContainText('New place');
@@ -297,7 +297,7 @@ test('a read token reads the API and /mcp, and once revoked gets 401 on both', a
   await expect(confirm).toBeVisible();
   await confirm.getByRole('button', { name: 'Revoke', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Notifications' })).toContainText(
-    "can't reach your Kept any more",
+    "can't reach your SheepKeep any more",
   );
 
   const after = await bearer.get('/api/v1/locations');

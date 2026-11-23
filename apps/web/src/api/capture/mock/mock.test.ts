@@ -179,7 +179,7 @@ describe('the capture mock', () => {
     expect(named.inboxItemId).toBeUndefined();
   });
 
-  it('scan outcomes: open, claim, not in your Kept, barcode, not a Kept label', async () => {
+  it('scan outcomes: open, claim, not in your SheepKeep, barcode, not a SheepKeep label', async () => {
     expect(await api.resolveScan({ text: 'https://old.example/l/7KQ4MZ' })).toMatchObject({
       outcome: 'open',
       target: { kind: 'thing' },

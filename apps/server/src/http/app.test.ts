@@ -277,7 +277,7 @@ describe('buildApp()', () => {
     expect(res.statusCode).toBe(200);
     const doc = res.json();
     expect(doc.openapi).toMatch(/^3\./);
-    expect(doc.info).toEqual({ title: 'Kept API', version: '1.2.3' });
+    expect(doc.info).toEqual({ title: 'SheepKeep API', version: '1.2.3' });
     expect(Object.keys(doc.paths)).toContain('/test/echo');
     expect(Object.keys(doc.paths)).not.toContain('/healthz');
     expect(Object.keys(doc.paths)).not.toContain(OPENAPI_PATH);

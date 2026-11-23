@@ -162,7 +162,7 @@ function PickMeterSheet({
       ) : list.length === 0 ? (
         <EmptyState title={<Trans>Nothing on this phone has a meter yet</Trans>}>
           <Trans>
-            Open Kept once while online, so this phone has your things and their meters.
+            Open SheepKeep once while online, so this phone has your things and their meters.
           </Trans>
         </EmptyState>
       ) : (

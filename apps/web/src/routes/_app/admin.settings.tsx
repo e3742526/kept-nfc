@@ -131,17 +131,17 @@ function SettingsPage() {
             >
               <span className="grid gap-0.5 py-1">
                 <span className="font-semibold">
-                  <Trans>Look up products Kept doesn't know by their barcode</Trans>
+                  <Trans>Look up products SheepKeep doesn't know by their barcode</Trans>
                 </span>
                 <span className="text-small text-ink-3">
                   {barcodeLookup.value ? (
                     <Trans>
-                      On. A scanned product barcode Kept doesn't know is looked up in Open Food
+                      On. A scanned product barcode SheepKeep doesn't know is looked up in Open Food
                       Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent.
                     </Trans>
                   ) : (
                     <Trans>
-                      Off. A scanned product barcode finds only what Kept already holds.
+                      Off. A scanned product barcode finds only what SheepKeep already holds.
                     </Trans>
                   )}
                 </span>
@@ -176,11 +176,11 @@ function SettingsPage() {
                   <span className="text-small text-ink-3">
                     {updateCheck.value ? (
                       <Trans>
-                        On. Once a day the server asks GitHub for Kept's newest release, sending
-                        nothing but the request. Admin → Status says when one is out.
+                        On. Once a day the server asks GitHub for SheepKeep's newest release,
+                        sending nothing but the request. Admin → Status says when one is out.
                       </Trans>
                     ) : (
-                      <Trans>Off. Kept never asks; check the releases page yourself.</Trans>
+                      <Trans>Off. SheepKeep never asks; check the releases page yourself.</Trans>
                     )}
                   </span>
                 </span>
@@ -269,7 +269,7 @@ function SettingsPage() {
   );
 }
 
-/** The contact the lookups name (`User-Agent: Kept/<version> (<contact>)`). */
+/** The contact the lookups name (`User-Agent: SheepKeep/<version> (<contact>)`). */
 function ContactField({ setting }: { setting: AdminSetting<string | null> }) {
   const { t } = useLingui();
   const save = useSave();
@@ -300,8 +300,8 @@ function ContactField({ setting }: { setting: AdminSetting<string | null> }) {
         inputProps={{ dir: 'ltr', autoComplete: 'email', spellCheck: false }}
         description={
           <Trans>
-            The databases ask each app for a contact. Kept sends this email with each lookup, and
-            nothing else about you.
+            The databases ask each app for a contact. SheepKeep sends this email with each lookup,
+            and nothing else about you.
           </Trans>
         }
         {...(error ? { errorMessage: error } : {})}
@@ -352,8 +352,8 @@ function FormerHostnames({ hosts }: { hosts: string[] }) {
     <div className="grid gap-3">
       <p className="m-0 text-small text-ink-2">
         <Trans>
-          When Kept moves to a new address, list the old names here and point them at this server. A
-          label printed under an old address still opens: the request is sent to this one.
+          When SheepKeep moves to a new address, list the old names here and point them at this
+          server. A label printed under an old address still opens: the request is sent to this one.
         </Trans>
       </p>
       {hosts.length ? (
@@ -379,7 +379,7 @@ function FormerHostnames({ hosts }: { hosts: string[] }) {
         </List>
       ) : (
         <p className="m-0 text-small text-ink-3">
-          <Trans>None. Kept answers only at its own address.</Trans>
+          <Trans>None. SheepKeep answers only at its own address.</Trans>
         </p>
       )}
       <form noValidate onSubmit={add} className="grid gap-2">

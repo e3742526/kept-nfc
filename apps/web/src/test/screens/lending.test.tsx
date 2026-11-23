@@ -63,7 +63,7 @@ describe('the lending list', () => {
     expect(text).toContain(DRILL);
     expect(text).toContain('It was due back on');
     expect(
-      await screen.findByText('Send it however you like. Kept never sends it.'),
+      await screen.findByText('Send it however you like. SheepKeep never sends it.'),
     ).toBeInTheDocument();
   });
 

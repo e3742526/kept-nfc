@@ -262,7 +262,7 @@ describe('the sync engine', () => {
     mock.on(
       'PUT',
       inventoryPaths.file(':id'),
-      () => new MockReply(400, { error: 'Not a file Kept takes.', code: 'validation' }),
+      () => new MockReply(400, { error: 'Not a file SheepKeep takes.', code: 'validation' }),
     );
     await engine.run();
     const [p, c] = await store.entries();

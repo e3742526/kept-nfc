@@ -138,7 +138,7 @@ export function PageAside({ children }: { children: ReactNode }) {
           </Button>
         </Tip>
         {/* Laid out at its final width while the column's width animates, so the rows don't
-            rewrap, as the sidebar does. Kept mounted when folded: its folds and scroll stay. */}
+            rewrap, as the sidebar does. SheepKeep mounted when folded: its folds and scroll stay. */}
         <div className="overflow-x-clip tree-folded:hidden">
           <div
             id={panelId}

@@ -336,7 +336,7 @@ export function ImportStepper({
   );
 }
 
-/** A run in the URL: the CSV view for a CSV import, the archive flow for a Homebox or Kept
+/** A run in the URL: the CSV view for a CSV import, the archive flow for a Homebox or SheepKeep
  * export (both are step 3's `GET /imports/:id`). */
 function RunSwitch({
   runId,

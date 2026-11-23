@@ -135,7 +135,7 @@ export const signInMockRoutes: AreaRoutes = (state: MockState) => {
       if (refused) return refused;
       state.enrolling = true;
       return {
-        totpURI: `otpauth://totp/Kept:${state.me.user.email}?secret=JBSWY3DPEHPK3PXP&issuer=Kept`,
+        totpURI: `otpauth://totp/SheepKeep:${state.me.user.email}?secret=JBSWY3DPEHPK3PXP&issuer=SheepKeep`,
         backupCodes: state.backupCodes,
       };
     }),
@@ -160,7 +160,7 @@ export const signInMockRoutes: AreaRoutes = (state: MockState) => {
       if (!state.me.user.twoFactorEnabled) return err(409, 'conflict', 'Two-factor is off.');
       s().settingUpAgain = true;
       return {
-        totpURI: `otpauth://totp/Kept:${state.me.user.email}?secret=${MOCK_NEW_SECRET}&issuer=Kept`,
+        totpURI: `otpauth://totp/SheepKeep:${state.me.user.email}?secret=${MOCK_NEW_SECRET}&issuer=SheepKeep`,
       };
     }),
     route('POST', paths.myTwoFactor.setUpAgainVerify, ({ body }) => {
@@ -191,7 +191,7 @@ export const signInMockRoutes: AreaRoutes = (state: MockState) => {
         return reply(403, { code: 'SESSION_NOT_FRESH', message: 'Session is not fresh' });
       return {
         challenge: 'bW9jay1jaGFsbGVuZ2U',
-        rp: { name: 'Kept', id: 'localhost' },
+        rp: { name: 'SheepKeep', id: 'localhost' },
         user: { id: 'bW9jay11c2Vy', name: state.me.user.email, displayName: 'Ibrahim' },
         pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
         authenticatorSelection: { residentKey: 'required', userVerification: 'required' },

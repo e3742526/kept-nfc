@@ -53,9 +53,9 @@ describe('digits', () => {
 
 describe('small helpers', () => {
   it('secretOf groups the otpauth secret in fours', () => {
-    expect(secretOf('otpauth://totp/Kept:a@b.c?secret=JBSWY3DPEHPK3PXP&issuer=Kept')).toBe(
-      'JBSW Y3DP EHPK 3PXP',
-    );
+    expect(
+      secretOf('otpauth://totp/SheepKeep:a@b.c?secret=JBSWY3DPEHPK3PXP&issuer=SheepKeep'),
+    ).toBe('JBSW Y3DP EHPK 3PXP');
     expect(secretOf('not a uri')).toBe('');
   });
 

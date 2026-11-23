@@ -351,7 +351,11 @@ function LoanPanel({ loan, onReturn }: { loan: Loan; onReturn: () => void }) {
         <KV label={out ? t`Lent to` : t`Lent by`}>
           <bdi>{loan.person.name}</bdi>
           {sep()}
-          {loan.person.isMember ? <Trans>uses Kept</Trans> : <Trans>contact, no account</Trans>}
+          {loan.person.isMember ? (
+            <Trans>uses SheepKeep</Trans>
+          ) : (
+            <Trans>contact, no account</Trans>
+          )}
         </KV>
         <KV label={t`Recorded by`}>
           <bdi>{loan.createdBy.displayName}</bdi>, {fmt.longDay(loan.startedAt)}
@@ -434,11 +438,13 @@ function LoanPanel({ loan, onReturn }: { loan: Loan; onReturn: () => void }) {
         <p className="m-0 text-small text-ink-3">
           {loan.dueOn ? (
             <Trans>
-              Kept reminds you on {fmt.day(loan.dueOn)}. It never messages {bdi(person)}; the
+              SheepKeep reminds you on {fmt.day(loan.dueOn)}. It never messages {bdi(person)}; the
               reminder text is yours to send.
             </Trans>
           ) : (
-            <Trans>Kept never messages {bdi(person)}; the reminder text is yours to send.</Trans>
+            <Trans>
+              SheepKeep never messages {bdi(person)}; the reminder text is yours to send.
+            </Trans>
           )}
         </p>
       ) : null}

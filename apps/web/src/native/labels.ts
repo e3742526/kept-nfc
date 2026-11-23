@@ -37,7 +37,7 @@ export function approvedLabel(text: string, origin: string) {
   return { status: 'approved', code } as const;
 }
 
-/** Rejects `/l/...` URLs pointing at a different Kept server even when scanned as QR codes. */
+/** Rejects `/l/...` URLs pointing at a different SheepKeep server even when scanned as QR codes. */
 function checkQrUrlOrigin(text: string, origin: string) {
   let url: URL;
   try {

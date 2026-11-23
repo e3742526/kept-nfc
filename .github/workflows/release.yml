@@ -60,6 +60,7 @@ permissions:
 
 env:
   TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  KEPT_RELEASE_REGISTRY: ${{ vars.SHEEPKEEP_RELEASE_REGISTRY }}
 
 # One release at a time, never cancelled half-published. A re-pushed tag waits, then stops in its
 # first minutes: the version is already in the registry (release.sh's preflight).
@@ -266,15 +267,12 @@ jobs:
           PREVIOUS: ${{ steps.release.outputs.previous_tag }}
           REGISTRY: ${{ steps.release.outputs.registry }}
           CHART_REPO: ${{ steps.release.outputs.chart_repo }}
-          SIGNED: ${{ steps.release.outputs.signed }}
         run: |
           body=$RUNNER_TEMP/release-body.md
           # The page (scripts/release/compose-notes.mjs): the changelog section's highlights and
           # changes (documentation and internal work folded), how to upgrade, the contributors,
-          # the full changelog link, then the whole release record folded. Docker Hub gets its
-          # copy only of a signed release (the dockerhub job).
-          mirror=docker.io/keptinventory/kept
-          [[ $SIGNED == true ]] || mirror=
+          # the full changelog link, then the whole release record folded.
+          mirror=
           node scripts/release/compose-notes.mjs --version "$VERSION" --section "$SECTION" \
             --record "$NOTES" ${PREVIOUS:+--from "$PREVIOUS"} --to HEAD --image "$REGISTRY" \
             --mirror "$mirror" --chart "oci://$CHART_REPO/kept" \
@@ -289,7 +287,7 @@ jobs:
           # re-check finds a release an earlier attempt managed to create, so a lost response
           # stops retrying instead of failing on "already exists".
           tries=0
-          until gh release create "$TAG" -R "$GITHUB_REPOSITORY" --verify-tag --title "Kept $VERSION" \
+          until gh release create "$TAG" -R "$GITHUB_REPOSITORY" --verify-tag --title "SheepKeep $VERSION" \
             --notes-file "$body" ${flags[@]+"${flags[@]}"} "$NOTICES" "$NOTES"; do
             tries=$((tries + 1))
             if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
@@ -310,7 +308,7 @@ jobs:
   # The same release on Docker Hub (dockerhub.yml): copied by digest and signed with the same key.
   dockerhub:
     needs: [preflight, publish]
-    if: needs.preflight.outputs.unsigned != '1'
+    if: github.repository == 'keptinventory/kept' && needs.preflight.outputs.unsigned != '1'
     permissions:
       contents: read
       packages: read

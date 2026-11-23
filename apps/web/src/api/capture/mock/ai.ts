@@ -76,7 +76,7 @@ const NO_PROVIDER: AiStatus = {
   modelMissing: false,
 };
 
-/** "What uses AI in Kept", in the AI settings screen's order. */
+/** "What uses AI in SheepKeep", in the AI settings screen's order. */
 const EXPLAIN_TASKS: LedgerTask[] = [
   'extract_thing',
   'extract_receipt',
@@ -1040,7 +1040,7 @@ export function aiRoutes(state: MockState): MockRoute[] {
           c.providerKind,
           c.model,
           c.location?.name ?? '',
-          c.person === 'background' ? 'Kept (background)' : (c.person?.name ?? ''),
+          c.person === 'background' ? 'SheepKeep (background)' : (c.person?.name ?? ''),
           c.paidBy.label,
           c.paidBy.fellBack,
           c.sent,

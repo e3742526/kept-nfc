@@ -572,7 +572,7 @@ describe('select and move', () => {
     expect(await screen.findByText('Moved to Shelves')).toBeInTheDocument();
   });
 
-  it('Undo after a bulk move undoes every thing it moved (X-Kept-Audit-Event)', async () => {
+  it('Undo after a bulk move undoes every thing it moved (X-SheepKeep-Audit-Event)', async () => {
     const { user, mock } = await renderApp(`/loc/${IDS.home}`);
     const before = new Map(
       mock.state.inventory.things

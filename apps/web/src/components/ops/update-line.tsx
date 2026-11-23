@@ -20,7 +20,7 @@ export function UpdateLine() {
       tone="info"
       title={
         <Trans>
-          Kept <span className="ltr">{version}</span> is available
+          SheepKeep <span className="ltr">{version}</span> is available
         </Trans>
       }
       action={
@@ -37,7 +37,7 @@ export function UpdateLine() {
       {current ? (
         <Trans>
           This server runs <span className="ltr">{current}</span>. Upgrading is the release notes'
-          steps; Kept never updates itself.
+          steps; SheepKeep never updates itself.
         </Trans>
       ) : null}
     </Notice>

@@ -161,7 +161,7 @@ export function importRoutes(state: MockState): MockRoute[] {
         return err(
           400,
           'checksum_mismatch',
-          "The bytes that arrived don't match X-Kept-Sha256. Upload the file again.",
+          "The bytes that arrived don't match X-SheepKeep-Sha256. Upload the file again.",
         );
       if (!run.archiveReadyAt) {
         run.archiveReadyAt = now();
@@ -179,7 +179,7 @@ export function importRoutes(state: MockState): MockRoute[] {
         run.error = 'archive_invalid';
         run.reason = 'symlink';
         touch(run);
-        return err(400, 'archive_invalid', "Kept can't read this archive.", undefined, {
+        return err(400, 'archive_invalid', "SheepKeep can't read this archive.", undefined, {
           reason: 'symlink',
         });
       }

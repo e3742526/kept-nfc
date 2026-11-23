@@ -84,8 +84,8 @@ function RepairForm({ runId, plan }: { runId: string; plan: ImportRepairPlan }) 
       </h3>
       <p className="m-0 text-small text-ink-2">
         <Trans>
-          It was imported before Kept read Homebox the way it does now. Choose what to put right;
-          one Undo takes it all back.
+          It was imported before SheepKeep read Homebox the way it does now. Choose what to put
+          right; one Undo takes it all back.
         </Trans>
       </p>
       <div className="grid gap-1">

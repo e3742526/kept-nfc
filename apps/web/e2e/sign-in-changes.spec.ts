@@ -143,7 +143,7 @@ test('each change signs the other device out, keeps this one, and mails a notice
     await expect(toasts(a.page)).toContainText('Passkey added');
     await expectSignedOut(b.page);
     await expectSignedIn(a.page);
-    await expectMail(login, 'A passkey was added to your Kept account', since);
+    await expectMail(login, 'A passkey was added to your SheepKeep account', since);
   });
 
   let secret = '';
@@ -175,7 +175,7 @@ test('each change signs the other device out, keeps this one, and mails a notice
     await a.page.getByRole('button', { name: "I've saved them" }).click();
     await expectSignedOut(b.page);
     await expectSignedIn(a.page);
-    await expectMail(login, 'New backup codes were made for your Kept account', since);
+    await expectMail(login, 'New backup codes were made for your SheepKeep account', since);
   });
 
   await test.step('two-factor turned off (a wrong password first)', async () => {
@@ -211,7 +211,7 @@ test('each change signs the other device out, keeps this one, and mails a notice
     await expect(row.getByText('Not linked')).toBeVisible();
     await expectSignedOut(b.page);
     await expectSignedIn(a.page);
-    await expectMail(login, 'A sign-in was unlinked from your Kept account', since);
+    await expectMail(login, 'A sign-in was unlinked from your SheepKeep account', since);
     const left = await asAuth((q) => q('SELECT 1 FROM auth.account WHERE id = $1', [google]));
     expect(left.rows).toHaveLength(0);
   });
@@ -230,7 +230,7 @@ test('each change signs the other device out, keeps this one, and mails a notice
     await expect(toasts(a.page)).toContainText('Passkey removed');
     await expectSignedOut(b.page);
     await expectSignedIn(a.page);
-    await expectMail(login, 'A passkey was removed from your Kept account', since);
+    await expectMail(login, 'A passkey was removed from your SheepKeep account', since);
   });
 
   await test.step('without a password, unlinking the last way in is refused with the reason', async () => {

@@ -20,7 +20,7 @@ test.use({
 
 async function signIn(page: Page, login: string) {
   await page.goto('/signin');
-  await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
   await page.getByLabel('Email or username', { exact: true }).fill(login);
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();

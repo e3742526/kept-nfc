@@ -72,7 +72,7 @@ function ExportPage() {
           <p className="m-0 text-ink-2">
             <Trans>
               One file per location: everything in it, the original photos and documents, and a copy
-              you can read without Kept. Import it into this Kept or another one.
+              you can read without SheepKeep. Import it into this SheepKeep or another one.
             </Trans>
           </p>
           <div className="flex flex-wrap gap-2" data-tour="export-actions">
@@ -100,8 +100,8 @@ function ExportPage() {
           />
           <p className="m-0 text-small text-ink-2">
             <Trans>
-              Each download link is made when you click Download and lasts 5 minutes; Kept checks
-              you're still an owner or admin every time. Exports are kept 7 days.
+              Each download link is made when you click Download and lasts 5 minutes; SheepKeep
+              checks you're still an owner or admin every time. Exports are kept 7 days.
             </Trans>
           </p>
           {open ? (

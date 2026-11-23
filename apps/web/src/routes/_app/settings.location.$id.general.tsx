@@ -178,9 +178,9 @@ function RoomPhotosForm({ location }: { location: LocationDetail }) {
         </Switch>
         <p className="m-0 text-small text-ink-2">
           <Trans>
-            When you photograph a room, Kept cuts a picture for each thing it finds. Once you close
-            the room in the inbox, the full photos are deleted, unless this is on: then they stay on
-            the room's page.
+            When you photograph a room, SheepKeep cuts a picture for each thing it finds. Once you
+            close the room in the inbox, the full photos are deleted, unless this is on: then they
+            stay on the room's page.
           </Trans>
         </p>
       </div>

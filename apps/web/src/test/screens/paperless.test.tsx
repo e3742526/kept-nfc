@@ -137,12 +137,12 @@ describe("a thing's Paperless documents", () => {
     expect(await within(list).findByText('Drill warranty card')).toBeInTheDocument();
 
     const row = within(list).getByText('Drill warranty card').closest('li') as HTMLElement;
-    await user.click(within(row).getByRole('button', { name: 'Copy into Kept' }));
-    expect(await within(row).findByText('Copied into Kept')).toBeInTheDocument();
+    await user.click(within(row).getByRole('button', { name: 'Copy into SheepKeep' }));
+    expect(await within(row).findByText('Copied into SheepKeep')).toBeInTheDocument();
 
     await user.click(within(row).getByRole('button', { name: 'Unlink Drill warranty card' }));
     const confirm = await screen.findByRole('alertdialog');
-    expect(within(confirm).getByText(/the copy in Kept stays/)).toBeInTheDocument();
+    expect(within(confirm).getByText(/the copy in SheepKeep stays/)).toBeInTheDocument();
     await user.click(within(confirm).getByRole('button', { name: 'Unlink' }));
     await waitFor(() => expect(within(list).queryByText('Drill warranty card')).toBeNull());
     expectLogicalOnly();

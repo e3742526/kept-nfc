@@ -203,7 +203,7 @@ export function SignInMethods({ error, via }: { error?: string; via?: OutsidePro
       {outside.length > 0 && (
         <p className="m-0 text-small text-ink-3">
           <Trans>
-            Once linked, that account signs you in here. Kept never links one because the email
+            Once linked, that account signs you in here. SheepKeep never links one because the email
             matches.
           </Trans>
         </p>

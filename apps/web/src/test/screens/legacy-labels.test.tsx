@@ -49,14 +49,14 @@ describe('an old Homebox label', () => {
     await waitFor(() => expect(pathOf(router)).toBe(`/t/${T.drill}`));
   });
 
-  it('an unknown asset is not in your Kept', async () => {
+  it('an unknown asset is not in your SheepKeep', async () => {
     await renderApp('/a/000-999');
     expect(await findHeading('Old Homebox label')).toBeInTheDocument();
-    expect(await screen.findByText(/Not in your Kept/)).toBeInTheDocument();
+    expect(await screen.findByText(/Not in your SheepKeep/)).toBeInTheDocument();
   });
 });
 
-describe('a re-issued Kept label, offline', () => {
+describe('a re-issued SheepKeep label, offline', () => {
   it('opens from the phone by its old code', async () => {
     const page = firstPage();
     const drill = page.changes.things[0];

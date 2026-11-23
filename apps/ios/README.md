@@ -1,4 +1,4 @@
-# Kept NFC iOS Client (MVP 1)
+# SheepKeep for iPhone
 
 Bundled Capacitor iOS client with native Swift storage, Keychain credentials, Core NFC tag reading/writing/Find mode, camera and document capture, Quick Look media viewing, and durable offline synchronization against an existing Kept backend.
 
@@ -63,7 +63,7 @@ pnpm --filter @kept/ios sync
 pnpm --filter @kept/ios open
 ```
 
-Build the ordinary server web bundle (`pnpm --filter @kept/web build`) for Apple linking and Kept MFA. Use a server build that supports [the Apple sign-in contract](../../docs/mvp1/integration-contract.md#session-and-capability).
+Build the ordinary server web bundle (`pnpm --filter @kept/web build`) for Apple linking and MFA. Use a server build that supports [the Apple sign-in contract](../../docs/mvp1/integration-contract.md#session-and-capability).
 
 ### 3. Build & Launch on iOS Simulator
 
@@ -72,7 +72,7 @@ xcodebuild \
   -project apps/ios/ios/App/App.xcodeproj \
   -scheme App \
   -configuration Debug \
-  -destination 'platform=iOS Simulator,name=Kept NFC MVP' \
+  -destination 'generic/platform=iOS Simulator' \
   -derivedDataPath .tmp/ios-derived \
   CODE_SIGNING_ALLOWED=NO \
   build
@@ -96,7 +96,7 @@ xcrun simctl launch <SIMULATOR_UDID> info.keptinventory.nfc
 1. Open `apps/ios/ios/App/App.xcodeproj` in Xcode (Xcode 26+ recommended, deployment target iOS 15.0+).
 2. Select target **App** → **Signing & Capabilities**:
    - Choose your Apple Developer Team (`<TEAM_ID>`).
-   - Use bundle identifier `info.keptinventory.nfc`. Kept verifies this exact Apple token audience.
+   - Use bundle identifier `info.keptinventory.nfc`. The server verifies this exact Apple token audience.
    - Enable **Sign in with Apple** on that App ID in Apple Developer and refresh the development and distribution provisioning profiles. The server verifies the native identity token using Apple's public keys. This flow requires no Services ID, Apple callback URL or Apple private key. [Apple capability setup](https://developer.apple.com/help/account/identifiers/enable-app-capabilities/#enable-sign-in-with-apple).
    - Confirm **Near Field Communication Tag Reading** capability is enabled (maps to `com.apple.developer.nfc.readersession.formats` = `NDEF` in `App/KeptNFC.entitlements`).
    - Confirm **Keychain Sharing** / default app keychain access works for `KeptKeychain` (`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`).

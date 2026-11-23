@@ -62,7 +62,7 @@ export function RegistryList({ kind, scope }: { kind: RegistryPathKind; scope: A
       return [vendorKinds[v.kind], v.address].filter(Boolean).join(sep());
     }
     if (kind === 'people' && (item as RegistryItem['people']).userId)
-      return <Trans>Has a Kept account</Trans>;
+      return <Trans>Has a SheepKeep account</Trans>;
     if (kind === 'tags') {
       const n = (item as Tag).thingCount;
       if (n !== undefined) return plural(n, { one: '# thing', other: '# things' });

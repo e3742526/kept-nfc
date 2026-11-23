@@ -111,13 +111,15 @@ function ConsentForm({ query, consent }: { query: string; consent: OAuthConsent 
     <AuthFrame
       title={
         <Trans>
-          <bdi>{name}</bdi> wants to use your Kept
+          <bdi>{name}</bdi> wants to use your SheepKeep
         </Trans>
       }
       intro={
         <span className="grid gap-1">
           <span>
-            <Trans>That's the name the app gives itself. Kept can't confirm who made it.</Trans>
+            <Trans>
+              That's the name the app gives itself. SheepKeep can't confirm who made it.
+            </Trans>
           </span>
           {client.uri ? (
             <span dir="ltr" className="break-all text-start font-mono text-[13px] text-ink-2">

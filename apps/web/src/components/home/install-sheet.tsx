@@ -59,13 +59,15 @@ export function InstallSheet({ isOpen, onClose }: { isOpen: boolean; onClose: ()
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
-      title={t`Install Kept on your phone`}
+      title={t`Install SheepKeep on your phone`}
     >
       {({ close }) => (
         <div className="grid gap-4">
           {servedOverHttp() ? (
             <Notice tone="warn" title={<Trans>Needs HTTPS first</Trans>}>
-              <Trans>Over plain HTTP, phones won't install Kept. Put Kept on HTTPS first.</Trans>
+              <Trans>
+                Over plain HTTP, phones won't install SheepKeep. Put SheepKeep on HTTPS first.
+              </Trans>
             </Notice>
           ) : null}
           {canPrompt ? (
@@ -74,7 +76,7 @@ export function InstallSheet({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               className="w-full"
               onPress={() => void promptInstall().then((accepted) => accepted && close())}
             >
-              <Trans>Install Kept</Trans>
+              <Trans>Install SheepKeep</Trans>
             </Button>
           ) : null}
           <Tabs selectedKey={platform} onSelectionChange={(k: Key) => setPlatform(k as Platform)}>
@@ -105,7 +107,7 @@ export function InstallSheet({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 </Step>
                 <Step n={3}>
                   <Trans>
-                    Tap <strong>Add</strong>, then open Kept from its new icon.
+                    Tap <strong>Add</strong>, then open SheepKeep from its new icon.
                   </Trans>
                 </Step>
               </ol>
@@ -127,7 +129,7 @@ export function InstallSheet({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                   </Trans>
                 </Step>
                 <Step n={3}>
-                  <Trans>Open Kept from its new icon.</Trans>
+                  <Trans>Open SheepKeep from its new icon.</Trans>
                 </Step>
               </ol>
             </TabPanel>
@@ -136,7 +138,7 @@ export function InstallSheet({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 <Step n={1}>
                   <Trans>
                     In Chrome or Edge, click the install icon at the end of the address bar, or open
-                    the menu and choose <strong>Install Kept</strong>.
+                    the menu and choose <strong>Install SheepKeep</strong>.
                   </Trans>
                 </Step>
                 <Step n={2}>
@@ -156,15 +158,15 @@ export function InstallSheet({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 </div>
                 <div className="text-small text-ink-2">
                   <Trans>
-                    On iPhone, notifications only reach Kept once it's on your Home Screen. Until
-                    then, reminders can come by email.
+                    On iPhone, notifications only reach SheepKeep once it's on your Home Screen.
+                    Until then, reminders can come by email.
                   </Trans>
                 </div>
               </div>
             </div>
           ) : null}
           <p className="m-0 text-small text-ink-2">
-            <Trans>This step ticks itself the first time you open Kept from its icon.</Trans>
+            <Trans>This step ticks itself the first time you open SheepKeep from its icon.</Trans>
           </p>
           <Button variant="primary" className="w-full" onPress={close}>
             <Trans>Got it</Trans>

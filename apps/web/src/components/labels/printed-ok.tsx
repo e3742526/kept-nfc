@@ -144,7 +144,8 @@ export function NotConfirmedBar({ batch }: { batch: LabelBatch }) {
         }
       >
         <Trans>
-          Once these labels have printed, confirm it here, so Kept stops counting them as unprinted.
+          Once these labels have printed, confirm it here, so SheepKeep stops counting them as
+          unprinted.
         </Trans>
       </Notice>
     </section>

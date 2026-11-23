@@ -115,11 +115,11 @@ export function PositionForm({
   };
 
   const note = !secure
-    ? t`Over plain HTTP, phones block the camera, installing Kept, push notifications and location.`
+    ? t`Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location.`
     : reading === 'finding'
       ? t`Finding where you are…`
       : reading === 'denied'
-        ? t`Location access is off for Kept in this browser's settings.`
+        ? t`Location access is off for SheepKeep in this browser's settings.`
         : reading === 'unavailable'
           ? t`Not available on this device.`
           : reading === 'failed'

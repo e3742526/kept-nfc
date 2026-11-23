@@ -27,7 +27,7 @@ import { principalOf } from './auth.js';
 // (~1 ms for 25 tools). The factory reads the verified AuthInfo and registers **only** the tools
 // that token may call in its locations (toolsFor(), tools/context.ts): a write tool for a write
 // token where its role and the modules allow it, never a tool of a module that is off. Each
-// callback calls runTool(), which checks all of that again per call (D180) and answers Kept's
+// callback calls runTool(), which checks all of that again per call (D180) and answers SheepKeep's
 // envelope; a refusal comes back as `isError` with `{error, hint}` for the model to read.
 //
 // Answers carry the envelope once, as text (≤ 8 KB, T1's fit()): no `outputSchema` and no
@@ -88,7 +88,7 @@ async function callTool(
 export function mcpFactory(deps: McpServerDeps) {
   return async (ctx: McpRequestContext): Promise<McpServer> => {
     const server = new McpServer(
-      { name: 'Kept', version: KEPT_VERSION },
+      { name: 'Kept', title: 'SheepKeep', version: KEPT_VERSION },
       { instructions: SERVER_INSTRUCTIONS.en, maxToolInputElements: MCP_MAX_TOOL_INPUT_ELEMENTS },
     );
     server.registerResource(

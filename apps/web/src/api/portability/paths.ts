@@ -17,7 +17,7 @@ const seg = (value: string) => encodeURIComponent(value);
 export const portabilityPaths = {
   // ----- archive imports --------------------
   importsArchive: `${V1}/imports/archive`,
-  /** The raw `application/zip` body, with Content-Length and X-Kept-Sha256. */
+  /** The raw `application/zip` body, with Content-Length and X-SheepKeep-Sha256. */
   importArchive: (id: string) => `${V1}/imports/${seg(id)}/archive`,
   importInspect: (id: string) => `${V1}/imports/${seg(id)}/inspect`,
   importTarget: (id: string) => `${V1}/imports/${seg(id)}/target`,

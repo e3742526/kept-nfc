@@ -41,7 +41,7 @@ export function TryBanner({
             'no-underline focus-visible:outline-2 focus-visible:outline-info focus-visible:outline-offset-2',
           )}
         >
-          <Trans>Install Kept</Trans>
+          <Trans>Install SheepKeep</Trans>
         </a>
       </span>
     </div>

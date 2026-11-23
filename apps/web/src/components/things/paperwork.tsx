@@ -41,7 +41,7 @@ import { WarrantiesBlock } from './household-lazy';
 import { useRoleLabels } from './labels';
 import { UploadButton } from './upload';
 
-/** A row of the Paperwork list: a file in Kept, or a document linked from Paperless. */
+/** A row of the Paperwork list: a file in SheepKeep, or a document linked from Paperless. */
 type PaperworkItem = { type: 'file'; file: AttachmentView } | { type: 'link'; link: PaperlessLink };
 
 /** The files' pages with the links after the last file, for ListSurface. While more files are

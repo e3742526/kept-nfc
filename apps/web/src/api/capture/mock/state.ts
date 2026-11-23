@@ -69,7 +69,7 @@ export type StoredBatch = {
   thingIds: string[];
 };
 
-/** A code from outside Kept (D146 Homebox labels; own codes later, D208) on a thing or place. */
+/** A code from outside SheepKeep (D146 Homebox labels; own codes later, D208) on a thing or place. */
 export type StoredLegacyCode = {
   locationId: string;
   source: 'homebox' | 'csv' | 'own';

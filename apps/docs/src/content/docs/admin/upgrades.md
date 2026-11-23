@@ -14,7 +14,11 @@ docker compose pull
 docker compose up -d
 ```
 
-Your own build from a checkout instead: `git pull`, `docker build -t kept:local .`, then
+For SheepKeep built from source, run `git pull`, then
+`docker build --build-arg REVISION="$(git rev-parse HEAD)" -t sheepkeep:local .`, and
+`KEPT_IMAGE=sheepkeep:local docker compose up -d`. Use the existing Compose project and data volumes.
+
+For an upstream Kept build from its checkout, run `git pull`, `docker build -t kept:local .`, then
 `docker compose up -d` with `KEPT_IMAGE=kept:local`.
 
 A release can change `compose.yaml` too; its notes say so. Download the release's file over yours

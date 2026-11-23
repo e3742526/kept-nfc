@@ -80,7 +80,7 @@ export function useRunWords() {
       case 'no_repository':
         return t`There is no repository at the target yet. Test creates one.`;
       case 'pg_version_mismatch':
-        return t`The database dump tool doesn't match the database's version. Use Kept's own image.`;
+        return t`The database dump tool doesn't match the database's version. Use SheepKeep's own image.`;
       case 'backup_interrupted':
         return t`The backup stopped before it finished: the server restarted or ran out of memory. The next backup runs as usual.`;
       case 'pg_tool_failed':
@@ -107,7 +107,7 @@ export function useTestWords() {
       case 'unreachable':
         return {
           title: t`Couldn't reach it`,
-          body: t`Kept got no answer from the backup storage. Check the address, the credentials and the network.`,
+          body: t`SheepKeep got no answer from the backup storage. Check the address, the credentials and the network.`,
         };
       case 'locked':
         return {

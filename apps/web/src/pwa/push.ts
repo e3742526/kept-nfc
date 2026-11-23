@@ -28,12 +28,12 @@ export type PushBlocker =
   | 'ios_not_installed'
   /** This browser has no Push API or notifications. */
   | 'unsupported'
-  /** The person, or the browser, blocked notifications for Kept. */
+  /** The person, or the browser, blocked notifications for SheepKeep. */
   | 'denied'
-  /** Try Kept on the docs site (D246): no worker, so no push. */
+  /** Try SheepKeep on the docs site (D246): no worker, so no push. */
   | 'demo';
 
-/** Whether Kept runs as the installed app (a Home Screen web app or an installed PWA). */
+/** Whether SheepKeep runs as the installed app (a Home Screen web app or an installed PWA). */
 export function isStandalone(): boolean {
   if (typeof window === 'undefined') return false;
   const nav = navigator as Navigator & { standalone?: boolean };
@@ -93,12 +93,12 @@ export function keyBytes(base64url: string): Uint8Array<ArrayBuffer> {
 
 export class PushDenied extends Error {
   constructor() {
-    super('Notifications are blocked for Kept.');
+    super('Notifications are blocked for SheepKeep.');
   }
 }
 export class PushUnavailable extends Error {
   constructor() {
-    super('This browser can not receive push notifications from Kept.');
+    super('This browser can not receive push notifications from SheepKeep.');
   }
 }
 

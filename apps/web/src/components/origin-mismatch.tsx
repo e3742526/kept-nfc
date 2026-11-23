@@ -35,8 +35,8 @@ export function MainAddress({ main }: { main: string }) {
 function Sentence({ expected }: { expected: string }) {
   return (
     <Trans>
-      This Kept is set up for <bdi className="ltr [overflow-wrap:anywhere]">{expected}</bdi>. Open
-      it there.
+      This SheepKeep is set up for <bdi className="ltr [overflow-wrap:anywhere]">{expected}</bdi>.
+      Open it there.
     </Trans>
   );
 }

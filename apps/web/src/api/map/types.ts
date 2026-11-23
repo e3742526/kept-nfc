@@ -29,7 +29,7 @@ export type MapNodeLayout = {
   /** A thing on a wall (#138): how high its middle hangs, in centimetres; null when it stands.
    * Missing from a map read before #138. */
   height?: number | null;
-  /** Kept put it here by itself (a room photo's accepted thing, #194): the next arrange shows it
+  /** SheepKeep put it here by itself (a room photo's accepted thing, #194): the next arrange shows it
    * to nudge. Optional: older servers and the demo leave it out. */
   placedByKept?: boolean;
 };
@@ -57,7 +57,7 @@ export type MapNodeView = {
    * server leaves it out (no tape then). */
   labelPrinted?: boolean;
   roomId: string;
-  /** The nearest room or node above it in Kept's tree. */
+  /** The nearest room or node above it in SheepKeep's tree. */
   parentId: string;
   kindKey: string | null;
   typeKey: string | null;

@@ -63,7 +63,7 @@ describe('the Room card', () => {
       }),
     );
     if (coded) {
-      const already = await within(card).findByRole('region', { name: 'Already in Kept' });
+      const already = await within(card).findByRole('region', { name: 'Already in SheepKeep' });
       // A label read in the photos: ticked already.
       expect(
         within(already).getByRole('checkbox', { name: new RegExp(coded.name ?? '') }),

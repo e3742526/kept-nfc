@@ -33,7 +33,7 @@ function Frame({ title, children }: { title: string; children: React.ReactNode }
       <div className="mx-auto grid w-full max-w-3xl content-start gap-5 px-4 pt-4 pb-10 md:px-8 md:pt-8">
         <div className="flex items-center justify-between gap-3">
           <Logo />
-          <span className="text-small text-ink-3">{t`Shared from Kept · read-only`}</span>
+          <span className="text-small text-ink-3">{t`Shared from SheepKeep · read-only`}</span>
         </div>
         <h1 className="m-0 break-words font-semibold text-[26px] text-ink leading-tight">
           {title}

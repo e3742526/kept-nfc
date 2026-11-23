@@ -307,7 +307,7 @@ export function GroupChart({
     groupBy === 'task'
       ? taskLabel(g.key as LedgerTask)
       : groupBy === 'person' && g.key === 'background'
-        ? t`Kept (background)`
+        ? t`SheepKeep (background)`
         : g.label || t`No location`;
   const groups = [...q.data.groups].sort((a, b) => tokensOf(b) - tokensOf(a));
   const max = Math.max(1, ...groups.map(tokensOf));

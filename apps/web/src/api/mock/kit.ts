@@ -36,7 +36,7 @@ export type AreaRoutes = (state: MockState) => MockRoute[];
 
 export const reply = (status: number, body?: unknown) => new MockReply(status, body);
 
-/** Kept's error shape, with any extra top-level fields (`conflicts`, `counts`, …). */
+/** SheepKeep's error shape, with any extra top-level fields (`conflicts`, `counts`, …). */
 export const err = (
   status: number,
   code: string,
@@ -66,7 +66,7 @@ export function sessionGate(
     return err(
       403,
       'account_deletion_pending',
-      'This account is going to be deleted. Keep it to use Kept again.',
+      'This account is going to be deleted. Keep it to use SheepKeep again.',
       undefined,
       { purgeAfter: state.me.deletion.purgeAfter },
     );

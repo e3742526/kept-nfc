@@ -1,4 +1,4 @@
-// Kept's contents sheets for a move (1.x, D251), a fifth template on the D201 engine: one A4 page
+// SheepKeep's contents sheets for a move (1.x, D251), a fifth template on the D201 engine: one A4 page
 // per box, to tape to the box or keep in a folder. Everything comes from /data.json
 // (reports/move/view.ts builds it): strings arrive formatted in the reader's language and digits,
 // so no formatting happens here. A box's QR code is /qr/<container id>.svg, its label's code.
@@ -18,7 +18,7 @@
 #let sfx = (w) => if w == 600 { " SmBld" } else if w == 500 { " Medm" } else { "" }
 #let W(w) = sans.map(f => f + sfx(w))
 
-#set document(title: d.title + " — " + d.move, author: "Kept")
+#set document(title: d.title + " — " + d.move, author: "SheepKeep")
 #set text(font: sans, size: 10pt, fill: c.ink, lang: d.lang, dir: if isrtl { rtl } else { ltr }, hyphenate: false)
 #set par(leading: 0.6em)
 #set page(paper: "a4", margin: (top: 16mm, x: 16mm, bottom: 16mm), fill: c.paper,

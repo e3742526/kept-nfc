@@ -39,9 +39,9 @@ export const paths = {
     requestPasswordReset: `${AUTH}/request-password-reset`,
     /** Better Auth: `{token, newPassword}` from `/auth/reset#token=…`; signs out every session. */
     resetPassword: `${AUTH}/reset-password`,
-    /** Kept's second step of an email change: `{token}` → `{stage}` (auth/email-change.ts). */
+    /** SheepKeep's second step of an email change: `{token}` → `{stage}` (auth/email-change.ts). */
     emailChangeConfirm: `${AUTH}/email-change/confirm`,
-    /** Kept's own sign-up (Better Auth's /sign-up/email is off): 202 `{next: 'sign-in'}`. */
+    /** SheepKeep's own sign-up (Better Auth's /sign-up/email is off): 202 `{next: 'sign-in'}`. */
     signUp: `${AUTH}/sign-up`,
     /** A managed account's one-time code (D164): `{username, code, newPassword}` → 204. */
     resetCode: `${AUTH}/reset-code`,

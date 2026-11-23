@@ -1,4 +1,4 @@
-/** Try Kept: a link to one of Kept's own files says so instead of leaving for a 404. */
+/** Try SheepKeep: a link to one of SheepKeep's own files says so instead of leaving for a 404. */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { toastQueue } from '@/components/ui/toast';
 import { activateLocale } from '@/i18n/i18n';
@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe('isServerFile', () => {
-  it("is Kept's /f/ URLs on this origin only", () => {
+  it("is SheepKeep's /f/ URLs on this origin only", () => {
     const origin = 'https://keptinventory.info';
     expect(isServerFile('/f/mock-export-1', origin)).toBe(true);
     expect(isServerFile('https://keptinventory.info/f/x/thumb', origin)).toBe(true);

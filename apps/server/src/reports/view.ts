@@ -241,7 +241,7 @@ export function buildView(g: Gathered, options: ReportOptions, ctx: ViewContext)
       : '',
     generatedBy: g.requesterName,
     generatedLine: w.generated(g.requesterName, when),
-    footer: ['Kept', ctx.instance, when].filter((x) => x !== '').join(sep),
+    footer: ['SheepKeep', ctx.instance, when].filter((x) => x !== '').join(sep),
     counts: {
       things: f.int(g.things.length),
       places: f.int(places.length),

@@ -1,4 +1,4 @@
-/** The condition something went out or came back in (Kept's thing scale), optional. */
+/** The condition something went out or came back in (SheepKeep's thing scale), optional. */
 import type { Condition } from '@kept/shared';
 import { useConditionLabels } from '@/components/things/labels';
 import { Combobox } from '@/components/ui/combobox';

@@ -21,7 +21,7 @@ export type Block =
   | { type: 'paragraph'; children: Inline[] }
   | { type: 'list'; ordered: boolean; items: Inline[][] };
 
-/** A Kept id: a UUID or a 6-character short ID (D208). */
+/** A SheepKeep id: a UUID or a 6-character short ID (D208). */
 const ID =
   '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[0-9A-Za-z]{6}';
 const LINK = new RegExp(`\\[([^\\]\\n]{1,200})\\]\\(kept:(thing|place)\\/(${ID})\\)`, 'g');
@@ -42,7 +42,7 @@ function links(text: string): Inline[] {
   return out;
 }
 
-/** One line's inline content: bold spans, Kept links inside or outside them, the rest text. */
+/** One line's inline content: bold spans, SheepKeep links inside or outside them, the rest text. */
 export function inline(text: string): Inline[] {
   const out: Inline[] = [];
   let at = 0;
@@ -104,7 +104,7 @@ export function parse(text: string): Block[] {
   return blocks;
 }
 
-/** Every Kept link in the answer, in order, each once. */
+/** Every SheepKeep link in the answer, in order, each once. */
 export function linkedIds(blocks: Block[]): { kind: 'thing' | 'place'; id: string }[] {
   const seen = new Set<string>();
   const out: { kind: 'thing' | 'place'; id: string }[] = [];

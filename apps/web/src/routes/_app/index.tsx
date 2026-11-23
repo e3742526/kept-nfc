@@ -348,7 +348,7 @@ function FirstRun({
           </IconTile>
           <div className="grid gap-0.5">
             <div className="font-semibold text-[14px]">
-              <Trans>Joining someone's Kept?</Trans>
+              <Trans>Joining someone's SheepKeep?</Trans>
             </div>
             <div className="text-[13px] text-ink-2">
               <Trans>

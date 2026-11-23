@@ -238,7 +238,7 @@ export function VehiclesList() {
             }
           >
             <Trans>
-              A car, a motorbike or a generator: Kept keeps its odometer, what's due, fuel and
+              A car, a motorbike or a generator: SheepKeep keeps its odometer, what's due, fuel and
               running costs.
             </Trans>
           </EmptyState>

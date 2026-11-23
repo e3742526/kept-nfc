@@ -48,7 +48,7 @@ export default function SheetsForm({ onClose, move, containerIds }: SheetsFormPr
   });
   const startError = (e: unknown) =>
     isApiError(e) && e.code === 'rate_limited'
-      ? t`Kept makes at most five reports an hour. Try again later.`
+      ? t`SheepKeep makes at most five reports an hour. Try again later.`
       : errorText(e);
 
   if (runId)
@@ -86,7 +86,7 @@ export default function SheetsForm({ onClose, move, containerIds }: SheetsFormPr
       <p className="m-0 text-small text-ink-2">
         <Trans>
           A page per box: its number, the room it goes to, what's inside and its code. Tape it to
-          the box; scanning the code opens the box in Kept.
+          the box; scanning the code opens the box in SheepKeep.
         </Trans>
       </p>
       {n === 0 ? (

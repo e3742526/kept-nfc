@@ -387,7 +387,7 @@ function PackReady({ pack }: { pack: ClaimPack }) {
             <Trans>Your link</Trans>
           </h2>
           <p className="m-0 text-small text-ink-2">
-            <Trans>Copy it now: Kept shows it only this once.</Trans>
+            <Trans>Copy it now: SheepKeep shows it only this once.</Trans>
           </p>
           <p
             dir="ltr"
@@ -416,7 +416,7 @@ function PackReady({ pack }: { pack: ClaimPack }) {
               ) : (
                 <span className="self-center text-small text-ink-2">
                   <Trans>
-                    This browser can't save files here. Open Kept in Safari to download it.
+                    This browser can't save files here. Open SheepKeep in Safari to download it.
                   </Trans>
                 </span>
               )

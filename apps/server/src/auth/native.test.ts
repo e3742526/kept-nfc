@@ -12,7 +12,7 @@ import { resolveSession } from './session.js';
 const origin = 'https://kept.example.com';
 const subject = 'existing-apple-subject';
 
-describe('Kept for iPhone sign-in', () => {
+describe('SheepKeep for iPhone sign-in', () => {
   let db: TestDb;
   let test: TestApp;
   let user: SignedIn;
@@ -67,12 +67,12 @@ describe('Kept for iPhone sign-in', () => {
     const ticket = await appleTicket(test, subject);
     const anonymous = await test.app.inject({ url: ticket.url });
     expect(anonymous.statusCode).toBe(200);
-    expect(anonymous.body).toContain('Sign in to link your Kept account');
+    expect(anonymous.body).toContain('Sign in to link your SheepKeep account');
     expect(anonymous.headers['referrer-policy']).toBe('same-origin');
     const page = await test.app.inject({ url: ticket.url, headers: { cookie: user.cookie } });
     expect(page.statusCode).toBe(200);
     expect(page.body).toContain(
-      'Link Apple Account relay@privaterelay.appleid.com to Kept account ibrahim@kept.test',
+      'Link Apple Account relay@privaterelay.appleid.com to SheepKeep account ibrahim@kept.test',
     );
     expect(
       (await approveApple(test, ticket.form, user.cookie, 'https://elsewhere.example')).statusCode,
@@ -149,7 +149,7 @@ describe('Kept for iPhone sign-in', () => {
     ).toBe(200);
   });
 
-  it('requires Kept MFA for a returning Apple sign-in and revokes the resulting native session', async () => {
+  it('requires SheepKeep MFA for a returning Apple sign-in and revokes the resulting native session', async () => {
     await grant();
     const enrolled = await enrolTotp(test.auth, user);
     const ticket = await appleTicket(test, subject);
@@ -174,7 +174,7 @@ describe('Kept for iPhone sign-in', () => {
     const device = { cookie: jar(response) };
     const sessions = await call(test, '/api/v1/me/sessions', { as: device });
     const current = sessions.json().sessions.find((entry: { current: boolean }) => entry.current);
-    expect(current).toMatchObject({ userAgent: 'Kept for iPhone', secondFactor: true });
+    expect(current).toMatchObject({ userAgent: 'SheepKeep for iPhone', secondFactor: true });
     const revoke = await call(test, `/api/v1/me/sessions/${current.id}`, {
       method: 'DELETE',
       as: enrolled,

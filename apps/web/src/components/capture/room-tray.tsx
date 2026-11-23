@@ -45,7 +45,7 @@ export function RoomTray({
   block: RoomBlock;
   /** The provider that would read them; null when unknown here (offline). */
   provider: ProviderKind | null;
-  /** Try Kept: add the sample room photo (there is no camera there). */
+  /** Try SheepKeep: add the sample room photo (there is no camera there). */
   onSample?: () => void;
 }) {
   const { t } = useLingui();
@@ -112,7 +112,9 @@ export function RoomTray({
       {onSample ? (
         <div className="grid gap-1.5">
           <p className="m-0 text-[#BDB7AC]">
-            <Trans>In Try Kept no AI runs: every room photo gives the same sample results.</Trans>
+            <Trans>
+              In Try SheepKeep no AI runs: every room photo gives the same sample results.
+            </Trans>
           </p>
           <div>
             <Button

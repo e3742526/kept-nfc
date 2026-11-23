@@ -36,7 +36,7 @@ describe('Settings → Export', () => {
     await user.click(within(dialog).getByRole('switch', { name: 'Include secrets' }));
     expect(
       within(dialog).getByText(
-        "Anyone with this file and the passphrase can read every secret in it. Kept can't recover a forgotten passphrase.",
+        "Anyone with this file and the passphrase can read every secret in it. SheepKeep can't recover a forgotten passphrase.",
       ),
     ).toBeInTheDocument();
     const submit = within(dialog).getByRole('button', { name: 'Export Home' });
@@ -53,7 +53,7 @@ describe('Settings → Export', () => {
     await user.click(submit);
     expect(
       await within(dialog).findByText(
-        'Secrets leave Kept only once the recovery kit is saved. An instance admin saves it from the status page.',
+        'Secrets leave SheepKeep only once the recovery kit is saved. An instance admin saves it from the status page.',
       ),
     ).toBeInTheDocument();
     mock.state.me.instance.recoveryKitAcknowledged = true;

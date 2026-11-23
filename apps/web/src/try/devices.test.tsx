@@ -25,7 +25,7 @@ vi.mock('@/try/flag', async (original) => ({
 beforeAll(() => activateLocale('en'));
 afterEach(() => vi.restoreAllMocks());
 
-describe('Try Kept asks for no device', () => {
+describe('Try SheepKeep asks for no device', () => {
   it('never opens the camera', async () => {
     const getUserMedia = vi.fn();
     const env = { secure: true, media: { getUserMedia } };

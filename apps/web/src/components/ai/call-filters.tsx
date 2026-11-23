@@ -96,7 +96,8 @@ export function useAiCallFilters(scope: AiScope, locationId: string | undefined)
         by === 'person'
           ? {
               value: g.key,
-              label: g.key === 'background' ? t`Kept (background)` : g.label || t`A deleted person`,
+              label:
+                g.key === 'background' ? t`SheepKeep (background)` : g.label || t`A deleted person`,
             }
           : { value: g.label, label: g.label },
       );

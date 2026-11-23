@@ -27,7 +27,7 @@ async function show(text: string) {
 }
 
 describe('parse', () => {
-  it('reads paragraphs, lists and bold, and Kept links', () => {
+  it('reads paragraphs, lists and bold, and SheepKeep links', () => {
     const blocks = parse(
       `The **[HDMI cable](kept:thing/${ID})** is here.\n\n- one\n- two\n\n1. first\n2. second`,
     );

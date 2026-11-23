@@ -311,7 +311,7 @@ export function PlanPanel(props: PanelProps) {
       </div>
       {review.drafts.more ? (
         <p className="kplan-note">
-          <Trans>Kept read the first 60 rooms. Add the rest by drawing.</Trans>
+          <Trans>SheepKeep read the first 60 rooms. Add the rest by drawing.</Trans>
         </p>
       ) : null}
       {review.floors.map((fl) => (

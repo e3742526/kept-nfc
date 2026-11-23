@@ -29,7 +29,7 @@ const connectPath = '/native/connect';
 const epochKey = 'kept-native-sync-epoch';
 const applePrefix = 'kept-native-apple:';
 const grantPrefix = 'kept-native-apple:grant:';
-const setupAgent = 'Kept for iPhone setup';
+const setupAgent = 'SheepKeep for iPhone setup';
 const randomToken = () => randomBytes(32).toString('base64url');
 const token = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
 const AppleStart = z.strictObject({
@@ -44,7 +44,7 @@ const NativeContext = z.object({ account: z.uuid(), epoch: z.uuid() });
 
 type AuthQuery = Pick<pg.Pool, 'query'>;
 
-/** This marker lives in the auth database and changes whenever Kept restores a backup. */
+/** This marker lives in the auth database and changes whenever SheepKeep restores a backup. */
 export async function resetNativeSyncEpoch(db: AuthQuery): Promise<void> {
   await db.query(
     `INSERT INTO auth.verification (id, identifier, value, expires_at)
@@ -100,7 +100,7 @@ export async function nativeContextHook(req: FastifyRequest): Promise<void> {
     throw new AppError(
       'conflict',
       409,
-      'This Kept was restored or replaced. Review the pending captures before syncing.',
+      'This SheepKeep was restored or replaced. Review the pending captures before syncing.',
       { reason: 'restore_epoch_mismatch' },
     );
   }
@@ -167,7 +167,7 @@ async function redeem(
       : source.expires_at;
     await client.query(
       `INSERT INTO auth.session (id, user_id, token, created_at, updated_at, expires_at, user_agent)
-       VALUES ($1, $2, $3, $4, now(), $5, 'Kept for iPhone')`,
+       VALUES ($1, $2, $3, $4, now(), $5, 'SheepKeep for iPhone')`,
       [id, source.user_id, sessionToken, source.created_at, expiresAt],
     );
     if (source.method) {
@@ -227,7 +227,7 @@ async function sessionCookie(auth: Auth, sessionToken: string, maxAge?: number):
 function connectPage(content: string): string {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Connect Kept for iPhone</title></head><body><main><h1>Connect Kept for iPhone</h1>
+<title>Connect SheepKeep for iPhone</title></head><body><main><h1>Connect SheepKeep for iPhone</h1>
 ${content}</main></body></html>`;
 }
 
@@ -327,16 +327,16 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
         let content: string;
         if (owner) {
           content = source
-            ? `<p>Allow the iPhone app to use your Kept account.</p>${form(`Continue as ${source.email}`)}`
+            ? `<p>Allow the iPhone app to use your SheepKeep account.</p>${form(`Continue as ${source.email}`)}`
             : `<p>Continue with the Apple Account you just verified.</p>${form('Continue with Apple')}`;
         } else if (!ticket.email) {
           content =
             '<p>Apple did not provide a verified email address. Restart Sign in with Apple and share an email address to link your account.</p>';
         } else if (source) {
-          content = `<p>Link Apple Account ${htmlText(ticket.email)} to Kept account ${htmlText(source.email)}. Only continue if both accounts are yours.</p>${form('Link Apple Account and connect', true)}`;
+          content = `<p>Link Apple Account ${htmlText(ticket.email)} to SheepKeep account ${htmlText(source.email)}. Only continue if both accounts are yours.</p>${form('Link Apple Account and connect', true)}`;
         } else {
-          content = `<p>This Apple Account has not been linked to Kept. Sign in to your existing Kept account once to approve the link. You’ll use Apple for future iPhone sign-ins.</p>
-<a href="${login}">Sign in to link your Kept account</a>`;
+          content = `<p>This Apple Account has not been linked to SheepKeep. Sign in to your existing SheepKeep account once to approve the link. You’ll use Apple for future iPhone sign-ins.</p>
+<a href="${login}">Sign in to link your SheepKeep account</a>`;
         }
         return reply.type('text/html; charset=utf-8').send(connectPage(content));
       },
@@ -357,7 +357,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
         try {
           await client.query('BEGIN');
           const ticket = await readTicket(client, id, true);
-          // Serialize first links for the same Apple identity, even across distinct Kept users.
+          // Serialize first links for the same Apple identity, even across distinct SheepKeep users.
           await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [
             `${applePrefix}link:${ticket.subject}`,
           ]);
@@ -367,7 +367,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
               ? await eligibleSession(client, req.authSession.sessionId, true)
               : undefined;
           if (owner && !source) {
-            // An Apple proof can start exactly one short-lived browser session for Kept MFA.
+            // An Apple proof can start exactly one short-lived browser session for SheepKeep MFA.
             if (ticket.setupSession) throw unauthenticated();
             const setupId = newId();
             const sessionToken = randomToken();
@@ -398,7 +398,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
               throw new AppError(
                 'forbidden',
                 403,
-                'Sign in to Kept again before linking your Apple Account.',
+                'Sign in to SheepKeep again before linking your Apple Account.',
               );
             }
             const alreadyLinked = await client.query(
@@ -409,7 +409,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
               throw new AppError(
                 'conflict',
                 409,
-                'This Kept account already has an Apple Account linked.',
+                'This SheepKeep account already has an Apple Account linked.',
               );
             }
             const linkId = newId();

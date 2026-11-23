@@ -8,6 +8,8 @@ import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Page, SearchResponse } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
+import { BrandLockup } from '@/components/brand';
+import { ProjectNotice } from '@/components/project-notice';
 import { Button } from '@/components/ui/button';
 import { ConfirmProvider, useConfirm } from '@/components/ui/confirm';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -156,7 +158,7 @@ function Batches({
           onAuthError?.('restored');
           return;
         }
-        setStatus(t`Connect to Kept to review recent batches.`);
+        setStatus(t`Connect to SheepKeep to review recent batches.`);
       });
     return () => {
       live = false;
@@ -183,7 +185,7 @@ function Batches({
         onAuthError?.('restored');
         return;
       }
-      setStatus(t`Connect to Kept to review recent batches.`);
+      setStatus(t`Connect to SheepKeep to review recent batches.`);
     }
   }
 
@@ -323,7 +325,7 @@ export function Inventory({
         case 'location_revoked':
           return t`You no longer have write permission in that box’s location.`;
         case 'unsupported_media_type':
-          return t`An attached file format is not supported by Kept.`;
+          return t`An attached file format is not supported by SheepKeep.`;
         case 'payload_too_large':
           return t`An attached file exceeds the server upload limit.`;
         case 'checksum_mismatch':
@@ -333,7 +335,7 @@ export function Inventory({
             ? t`Could not sync this capture automatically. Retry or review it.`
             : t`The entry was created, but an attachment could not be verified yet. Retry to confirm.`;
         case 'compatibility_hold':
-          return t`This Kept server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade Kept, then retry. Nothing was changed or removed.`;
+          return t`This SheepKeep server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade SheepKeep, then retry. Nothing was changed or removed.`;
         default:
           return t`Could not sync this capture automatically. Retry or review it.`;
       }
@@ -369,7 +371,7 @@ export function Inventory({
           setOnline(false);
           setStatus(
             error instanceof ApiError && error.status === 0
-              ? t`Offline. Changes stay on this iPhone until Kept is reachable.`
+              ? t`Offline. Changes stay on this iPhone until SheepKeep is reachable.`
               : t`Could not sync. Pending captures are still on this iPhone.`,
           );
         } finally {
@@ -447,8 +449,8 @@ export function Inventory({
       if (!current) return;
       if (resolved.status === 'resolved') setScreen({ kind: 'record', target: resolved.target });
       else if (resolved.status === 'foreign')
-        setStatus(t`This tag belongs to a different Kept server.`);
-      else setStatus(t`This label is unavailable in your Kept.`);
+        setStatus(t`This tag belongs to a different SheepKeep server.`);
+      else setStatus(t`This label is unavailable in your SheepKeep.`);
     };
     const listen = adapters.lifecycle.onLink(() => {
       void readLink().catch(() => {});
@@ -485,7 +487,7 @@ export function Inventory({
             return;
           }
           if (error instanceof ApiError && error.status === 0) setCachedSearch(true);
-          else setStatus(t`Could not search Kept. Try again.`);
+          else setStatus(t`Could not search SheepKeep. Try again.`);
         });
     }, 200);
     return () => {
@@ -523,7 +525,7 @@ export function Inventory({
           onSignOut('restored');
           return;
         }
-        setStatus(t`Offline. Changes stay on this iPhone until Kept is reachable.`);
+        setStatus(t`Offline. Changes stay on this iPhone until SheepKeep is reachable.`);
       } finally {
         if (mounted.current) setWorking(false);
       }
@@ -852,9 +854,9 @@ export function Inventory({
             <p className="font-semibold">{t`Held captures: ${held.length}`}</p>
             <p className="text-small text-ink-2">
               <Trans>
-                These captures were saved before this Kept server was restored, so automatic replay
-                is paused to avoid creating duplicates. They stay on this iPhone until you export or
-                discard them. Saved on device does not mean backed up.
+                These captures were saved before this SheepKeep server was restored, so automatic
+                replay is paused to avoid creating duplicates. They stay on this iPhone until you
+                export or discard them. Saved on device does not mean backed up.
               </Trans>
             </p>
             <ul className="grid gap-2">
@@ -1237,7 +1239,7 @@ export function KeptPhone() {
           setAddress(saved.origin);
         }
       })
-      .catch(() => setStatus(t`Kept could not read the saved session.`))
+      .catch(() => setStatus(t`SheepKeep could not read the saved session.`))
       .finally(() => setBusy(false));
   }, [adapters, t]);
 
@@ -1254,10 +1256,10 @@ export function KeptPhone() {
           setStatus(t`Sign-in cancelled.`);
           break;
         case 'apple_sign_in_unsupported':
-          setStatus(t`Update this Kept server to sign in with Apple.`);
+          setStatus(t`Update this SheepKeep server to sign in with Apple.`);
           break;
         default:
-          setStatus(t`Could not connect to Kept. Check the server address and try again.`);
+          setStatus(t`Could not connect to SheepKeep. Check the server address and try again.`);
       }
     } finally {
       setBusy(false);
@@ -1274,13 +1276,13 @@ export function KeptPhone() {
         .then(({ revoked }) => {
           if (reason === 'restored') {
             setStatus(
-              t`This Kept was restored or replaced. Pending captures from the previous server state are held for review.`,
+              t`This SheepKeep was restored or replaced. Pending captures from the previous server state are held for review.`,
             );
           } else if (reason === 'expired') {
             setStatus(t`Your session ended. Sign in again to see your pending captures.`);
           } else if (!revoked) {
             setStatus(
-              t`Signed out on this iPhone. Kept could not revoke the server session while offline.`,
+              t`Signed out on this iPhone. SheepKeep could not revoke the server session while offline.`,
             );
           }
         })
@@ -1293,7 +1295,9 @@ export function KeptPhone() {
   return (
     <main className="kept-phone">
       <header className="mb-5 border-b border-line pb-4">
-        <h1 className="text-title font-semibold">Kept NFC</h1>
+        <h1 className="m-0">
+          <BrandLockup width={168} />
+        </h1>
         {connection && (
           <p className="break-all text-small text-ink-2">
             <bdi>{connection.origin}</bdi>
@@ -1315,7 +1319,7 @@ export function KeptPhone() {
             }}
           >
             <TextField
-              label={t`Kept server address`}
+              label={t`SheepKeep server address`}
               placeholder="https://kept.example.com"
               value={address}
               onChange={setAddress}
@@ -1333,6 +1337,9 @@ export function KeptPhone() {
           </form>
         </>
       )}
+      <footer className="mt-6 border-t border-line pt-4">
+        <ProjectNotice />
+      </footer>
       {status && (
         <p className="mt-4 text-ink-2" role="status">
           {status}
@@ -1346,7 +1353,7 @@ async function start() {
   await startLocale();
   watchSystemTheme();
   const root = document.getElementById('root');
-  if (!root) throw new Error('Missing Kept app root');
+  if (!root) throw new Error('Missing SheepKeep app root');
   createRoot(root).render(
     <I18nProvider i18n={i18n}>
       <NativePlatformProvider>

@@ -393,7 +393,7 @@ describe('the message table', () => {
         for (const [i, p] of m.paragraphs.entries()) expect(p, label).not.toBe(en.paragraphs[i]);
         if (en.action) expect(m.action?.label, label).not.toBe(en.action.label);
         // The product name is never translated.
-        if (en.subject.includes('Kept')) expect(m.subject, label).toContain('Kept');
+        if (en.subject.includes('SheepKeep')) expect(m.subject, label).toContain('SheepKeep');
       }
     }
   });
@@ -410,7 +410,7 @@ describe('the message table', () => {
     ) as MailBody;
     expect(messageFor(scan, 'en', ctx).action?.url).toBe(`${PUBLIC_URL}/admin/jobs`);
     expect(messageFor(scan, 'en', ctx).paragraphs[0]).toContain('2031-01-02');
-    expect(messageFor(scan, 'ar', ctx).subject).toBe('Kept: توقّف إرسال التذكيرات');
+    expect(messageFor(scan, 'ar', ctx).subject).toBe('SheepKeep: توقّف إرسال التذكيرات');
     expect(messageFor({ kind: 'sign-up-existing', to: 'a@x.test' }, 'en', ctx).action?.url).toBe(
       `${PUBLIC_URL}/signin`,
     );
@@ -421,9 +421,9 @@ describe('the backup-code notice (#419)', () => {
   it('says when, on what, how many codes are left, and what to do', () => {
     const m = messageFor(backupCodeUsed(), 'en', ctx);
     expect(m).toEqual({
-      subject: 'A backup code was used to sign in to your Kept account',
+      subject: 'A backup code was used to sign in to your SheepKeep account',
       paragraphs: [
-        'A backup code was used to sign in to your Kept account on 15 January 2031 at 16:05 EET, from Safari on iPhone.',
+        'A backup code was used to sign in to your SheepKeep account on 15 January 2031 at 16:05 EET, from Safari on iPhone.',
         'You have 9 backup codes left.',
         'If you used it because your authenticator app is gone, set two-factor up again with a new app in Settings → Sign-in and security → Set up again. That gives you new backup codes too.',
       ],
@@ -441,7 +441,7 @@ describe('the backup-code notice (#419)', () => {
       messageFor(backupCodeUsed({ browser: null, os: null, timeZone: 'Not/A_Zone' }), 'en', ctx)
         .paragraphs[0],
     ).toBe(
-      'A backup code was used to sign in to your Kept account on 15 January 2031 at 14:05 UTC.',
+      'A backup code was used to sign in to your SheepKeep account on 15 January 2031 at 14:05 UTC.',
     );
     expect(messageFor(backupCodeUsed({ os: null }), 'en', ctx).paragraphs[0]).toContain(
       'from Safari.',
@@ -633,11 +633,11 @@ describe('AI cap notices and alerts', () => {
   it('says how much of which cap, the pause date, and links to AI settings', () => {
     const [warning, reached] = caps as MailBody[];
     const w = messageFor(warning as MailBody, 'en', ctx);
-    expect(w.subject).toBe('Kept: 80% of Home’s AI cap used this month');
+    expect(w.subject).toBe('SheepKeep: 80% of Home’s AI cap used this month');
     expect(w.paragraphs[0]).toContain('USD 4.0039 of USD 5');
     expect(w.action?.url).toBe(`${PUBLIC_URL}/settings/ai`);
     const r = messageFor(reached as MailBody, 'en', ctx);
-    expect(r.subject).toBe('Kept: AI paused until 2031-02-01');
+    expect(r.subject).toBe('SheepKeep: AI paused until 2031-02-01');
     expect(r.paragraphs[0]).toContain('1,000,400 of 1,000,000 tokens');
     expect(r.action?.label).toBe('Resume now');
     expect(messageFor(reached as MailBody, 'ar', ctx).paragraphs[0]).toContain('1,000,400');
@@ -689,7 +689,7 @@ describe('renderMail', () => {
 });
 
 describe('the branded HTML', () => {
-  const SITE = 'https://keptinventory.info/';
+  const SITE = 'https://github.com/e3742526/kept-nfc';
   const every = MAIL_LOCALES.flatMap((locale) =>
     EVERY_MAIL.map((mail) => {
       const message = messageFor(mail, locale, ctx);
@@ -712,14 +712,12 @@ describe('the branded HTML', () => {
     return (hi + 0.05) / (lo + 0.05);
   };
 
-  it('draws the mark and the KEPT wordmark in every mail, without an image', () => {
+  it('renders the SheepKeep wordmark in every mail without an image', () => {
     for (const { locale, mail, html } of every) {
       const l = label(locale, mail);
-      expect(html, l).toMatch(/<table[^>]*data-kept-mark=""[^>]*dir="ltr"/);
-      expect(html, l).toMatch(/data-kept-tile=""[^>]*>[\s\S]*?>K<\/div>/);
-      // The punched hole is a block, so it stays at the tape's top left in Arabic mail too.
-      expect(html, l).toMatch(/class="k-hole" style="display:block;/);
-      expect(html, l).toContain('>KEPT</td>');
+      expect(html, l).toMatch(
+        /<strong[^>]*dir="ltr"[^>]*data-kept-mark=""[^>]*>SheepKeep<\/strong>/,
+      );
       expect(html, l).not.toMatch(/<img|<svg|<picture|background-image|url\(/i);
     }
   });
@@ -756,18 +754,22 @@ describe('the branded HTML', () => {
     for (const [fg, bg] of pairs) expect(contrast(fg, bg), `${fg} on ${bg}`).toBeGreaterThan(4.5);
   });
 
-  it('links the footer to the instance and to keptinventory.info, in every language', () => {
+  it('links the footer to the instance and to the SheepKeep source repository, in every language', () => {
     for (const { locale, mail, html } of every) {
       const l = label(locale, mail);
       expect(html, l).toMatch(new RegExp(`<a [^>]*href="${PUBLIC_URL}/"[^>]*>kept\\.test</a>`));
-      expect(html, l).toMatch(new RegExp(`<a [^>]*href="${SITE}"[^>]*>keptinventory\\.info</a>`));
+      expect(html, l).toMatch(
+        new RegExp(`<a [^>]*href="${SITE}"[^>]*>github\\.com/e3742526/kept-nfc</a>`),
+      );
     }
-    const abouts = new Set(MAIL_LOCALES.map((l) => CHROME[l].about('keptinventory.info')));
+    const abouts = new Set(
+      MAIL_LOCALES.map((l) => CHROME[l].about('github.com/e3742526/kept-nfc')),
+    );
     expect(abouts.size).toBe(MAIL_LOCALES.length);
-    expect(CHROME.ar.about('keptinventory.info')).toMatch(ARABIC);
+    expect(CHROME.ar.about('github.com/e3742526/kept-nfc')).toMatch(ARABIC);
   });
 
-  it('points at no address but the instance’s own and keptinventory.info', () => {
+  it('points at no address but the instance’s own and the SheepKeep source repository', () => {
     for (const { locale, mail, html } of every) {
       const urls = html.match(/https?:\/\/[^\s"'<>)]+/g) ?? [];
       expect(urls.length, label(locale, mail)).toBeGreaterThan(0);
@@ -801,13 +803,13 @@ describe('the branded HTML', () => {
     expect(html).toMatch(/<table role="presentation"[^>]*dir="rtl"/);
     expect(html).toContain('text-align:right');
     expect(html).not.toContain('text-align:left');
-    expect(html).toMatch(/data-kept-mark=""[^>]*dir="ltr"/);
+    expect(html).toMatch(/dir="ltr"[^>]*data-kept-mark=""/);
     const en = renderMail(messageFor(EVERY_MAIL[0] as MailBody, 'en', ctx), 'en', PUBLIC_URL);
     expect(en.html).toContain('text-align:left');
     expect(en.html).not.toMatch(/<div[^>]*max-width/);
   });
 
-  it('keeps the text part plain, its footer naming the instance and keptinventory.info', () => {
+  it('keeps the text part plain, its footer naming the instance and the SheepKeep source repository', () => {
     for (const { locale, mail, text } of every) {
       const l = label(locale, mail);
       const footer = text.slice(text.lastIndexOf('-- \n'));
@@ -833,7 +835,7 @@ describe('createMailer', () => {
   });
 
   it('defaults the From to no-reply at the public host', () => {
-    expect(defaultFrom('https://kept.example.org/')).toBe('Kept <no-reply@kept.example.org>');
+    expect(defaultFrom('https://kept.example.org/')).toBe('SheepKeep <no-reply@kept.example.org>');
   });
 });
 
@@ -847,7 +849,7 @@ describe('over SMTP, to Mailpit', () => {
     await db.reset();
     smtp = smtpMailer({
       url: MAILPIT_SMTP_URL,
-      from: 'Kept <kept@kept.test>',
+      from: 'SheepKeep <kept@kept.test>',
       publicUrl: PUBLIC_URL,
       localeOf: profileLocaleLookup(db.pools.system),
     });
@@ -860,8 +862,8 @@ describe('over SMTP, to Mailpit', () => {
     const url = `${PUBLIC_URL}/auth/confirm#token=abc`;
     await smtp.send({ kind: 'magic-link', to, url });
     const [msg] = await mailpitWait(to);
-    expect(msg?.Subject).toBe('Your Kept sign-in link');
-    expect(msg?.From).toEqual({ Name: 'Kept', Address: 'kept@kept.test' });
+    expect(msg?.Subject).toBe('Your SheepKeep sign-in link');
+    expect(msg?.From).toEqual({ Name: 'SheepKeep', Address: 'kept@kept.test' });
     expect(msg?.Text).toContain(url);
     expect(msg?.HTML).toContain(`href="${url}"`);
   });
@@ -880,9 +882,9 @@ describe('over SMTP, to Mailpit', () => {
     await smtp.send({ kind: 'security-notice', to, event: 'password-changed' });
     await smtp.send({ kind: 'security-notice', to, event: 'password-changed', locale: 'en' });
     const [ar, en] = await mailpitWait(to, 2);
-    expect(ar?.Subject).toBe('تغيّرت كلمة مرورك على Kept');
+    expect(ar?.Subject).toBe('تغيّرت كلمة مرورك على SheepKeep');
     expect(ar?.HTML).toContain('dir="rtl"');
-    expect(en?.Subject).toBe('Your Kept password was changed');
+    expect(en?.Subject).toBe('Your SheepKeep password was changed');
   });
 
   it("mails the owner of a location about a new member, in the owner's language", async () => {

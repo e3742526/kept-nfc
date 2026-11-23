@@ -376,14 +376,14 @@ export function syncRoutes(state: MockState): MockRoute[] {
       for (const op of b.ops) {
         const status = payloadVersionStatus(op.payloadVersion);
         if (status === 'client_outdated')
-          return err(409, 'client_outdated', 'Update Kept to finish syncing.', undefined, {
+          return err(409, 'client_outdated', 'Update SheepKeep to finish syncing.', undefined, {
             minPayloadVersion: MIN_PAYLOAD_VERSION,
           });
         if (status === 'server_outdated')
           return err(
             409,
             'server_outdated',
-            'Kept on the server is older than this app; ask your admin.',
+            'SheepKeep on the server is older than this app; ask your admin.',
           );
       }
       const results = b.ops.map((op) => {

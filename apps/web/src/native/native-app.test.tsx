@@ -948,7 +948,7 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
 
     const address = 'https://kept.example.com';
-    const serverField = await screen.findByLabelText('Kept server address');
+    const serverField = await screen.findByLabelText('SheepKeep server address');
     await user.type(serverField, address);
     const signIn = screen.getByRole('button', { name: 'Sign in with Apple' });
     await user.click(signIn);
@@ -958,12 +958,12 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(signIn);
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'Could not connect to Kept. Check the server address and try again.',
+      'Could not connect to SheepKeep. Check the server address and try again.',
     );
 
     await user.click(signIn);
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'Update this Kept server to sign in with Apple.',
+      'Update this SheepKeep server to sign in with Apple.',
     );
     expect(serverField).toHaveValue(address);
 
@@ -1059,7 +1059,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
 
-    const serverField = await screen.findByLabelText('Kept server address');
+    const serverField = await screen.findByLabelText('SheepKeep server address');
     await user.type(serverField, 'https://kept.example.com');
     await user.click(screen.getByRole('button', { name: 'Sign in with Apple' }));
 
@@ -1167,7 +1167,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByText(/Writing was interrupted/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Verify tag now' }));
     expect(
-      await screen.findByText('This tag already contains the verified Kept label.'),
+      await screen.findByText('This tag already contains the verified SheepKeep label.'),
     ).toBeInTheDocument();
 
     // Find mode: continuous session handles nonmatch, repeated, offline unresolved, timeout, and match.
@@ -1718,10 +1718,10 @@ describe('KeptPhone mobile workflows', () => {
 
     env.renderApp();
     expect(
-      await screen.findByText(/This Kept server is older and cannot accept this capture yet/i),
+      await screen.findByText(/This SheepKeep server is older and cannot accept this capture yet/i),
     ).toBeInTheDocument();
     expect(screen.getByText('Hold for upgrade')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Kept server address')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('SheepKeep server address')).not.toBeInTheDocument();
     expect(env.events.uploadedFiles).toHaveLength(0);
 
     // Upgrade server and retry manually.

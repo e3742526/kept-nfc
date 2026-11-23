@@ -36,6 +36,10 @@ const noScript = [
 ---
 
 <div class="kd-install" data-install>
+  <p>
+    <a href={hashOf('source')}>Build SheepKeep from source</a>. The prebuilt container, chart,
+    and Home Assistant package below are upstream Kept releases.
+  </p>
   <nav class="kd-picker not-content" aria-label={t.picker}>
     {
       groups.map(({ group, label, paths }) => (

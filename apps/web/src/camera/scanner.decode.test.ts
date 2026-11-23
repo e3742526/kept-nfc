@@ -163,7 +163,7 @@ describe('the wasm scanner on fixture images', () => {
     expect(createHash('sha256').update(wasm).digest('hex')).toBe(ponyfill.ZXING_WASM_SHA256);
   });
 
-  it('reads a Kept label from any host, as the label prints it', async () => {
+  it('reads a SheepKeep label from any host, as the label prints it', async () => {
     const [read] = await detector().detect(qrImage('https://old.example/l/7KQ4MZ'));
     expect(read).toMatchObject({ rawValue: 'https://old.example/l/7KQ4MZ', format: 'qr_code' });
     expect(parseScan(read?.rawValue ?? '', read?.format)).toEqual({ kind: 'kept', code: '7KQ4MZ' });
@@ -236,7 +236,7 @@ describe('the wasm scanner on fixture images', () => {
     });
   });
 
-  it('still reads a Kept label printed as a Data Matrix as the label', async () => {
+  it('still reads a SheepKeep label printed as a Data Matrix as the label', async () => {
     const [read] = await detector().detect(
       await written('https://kept.example/l/7KQ4MZ', 'DataMatrix'),
     );

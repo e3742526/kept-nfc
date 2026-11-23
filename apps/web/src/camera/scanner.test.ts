@@ -124,7 +124,7 @@ describe('the decoder', () => {
 });
 
 describe('the wasm reader’s formats, frame by frame', () => {
-  it('reads Kept labels, product barcodes and Code 128 on every frame', () => {
+  it('reads SheepKeep labels, product barcodes and Code 128 on every frame', () => {
     for (const formats of WASM_FRAMES)
       expect(formats).toEqual(expect.arrayContaining([...HOT_FORMATS]));
   });

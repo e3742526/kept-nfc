@@ -96,7 +96,7 @@ export function createMockApi(state: MockState): MockApi {
   }));
   add('POST', paths.setup, ({ body }) => {
     const b = body as SetupBody;
-    if (!state.setupNeeded) return err(409, 'conflict', 'Kept is already set up.');
+    if (!state.setupNeeded) return err(409, 'conflict', 'SheepKeep is already set up.');
     const codeless = state.homeAssistant?.codeNeeded === false;
     if (!codeless && (b.code ?? '').replace(/-/g, '').toUpperCase() !== state.setupCode)
       return err(400, 'setup_code_invalid', 'The setup code is not valid.');
@@ -552,7 +552,7 @@ export function createMockApi(state: MockState): MockApi {
     const u = state.admin.users.find((x) => x.id === params.userId);
     if (!u?.instanceAdmin) return err(404, 'not_found', 'Not found.');
     if (state.admin.users.filter((x) => x.instanceAdmin).length <= 1)
-      return err(409, 'conflict', 'Kept needs at least one instance admin.');
+      return err(409, 'conflict', 'SheepKeep needs at least one instance admin.');
     u.instanceAdmin = false;
     if (u.id === state.me.user.id) state.me.user.instanceAdmin = false;
     return reply(204);

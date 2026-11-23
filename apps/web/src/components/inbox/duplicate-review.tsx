@@ -99,7 +99,7 @@ export function DuplicateReview({ item, current, blocked }: ItemProps) {
     >
       <div className="grid gap-2 @md:grid-cols-2">
         <Side label={t`This draft`} thing={draft} by={item.createdBy.displayName} />
-        <Side label={t`Already in Kept`} thing={d.other} />
+        <Side label={t`Already in SheepKeep`} thing={d.other} />
       </div>
       <p className="m-0 text-small text-ink-2">
         {d.reason === 'serial' ? (
@@ -149,7 +149,7 @@ export function DuplicateReview({ item, current, blocked }: ItemProps) {
                         </Trans>
                       ) : (
                         <Trans>
-                          The one already in Kept, <bdi>{th.name}</bdi>
+                          The one already in SheepKeep, <bdi>{th.name}</bdi>
                         </Trans>
                       )}
                     </span>

@@ -28,9 +28,9 @@ function freshOwner() {
 describe('AI settings', () => {
   it('opens with What uses AI, then where the key lives, and marks the page opened', async () => {
     const { mock } = await renderApp('/settings/ai', { state: freshOwner() });
-    expect(await screen.findByText('What uses AI in Kept')).toBeInTheDocument();
+    expect(await screen.findByText('What uses AI in SheepKeep')).toBeInTheDocument();
     expect(await screen.findByText('Each captured photo')).toBeInTheDocument();
-    expect(screen.getByText(/Measured by Kept on/)).toBeInTheDocument();
+    expect(screen.getByText(/Measured by SheepKeep on/)).toBeInTheDocument();
     expect(screen.getByText(/This key pays for all of/)).toHaveTextContent('Home, Garage');
     expect(screen.getByRole('heading', { name: 'Recommended: Groq' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Get a Groq key' })).toHaveAttribute(
@@ -77,7 +77,7 @@ describe('AI settings', () => {
     await user.click(screen.getByRole('button', { name: 'Save and test' }));
     expect(
       await screen.findByText(
-        "Kept can't tell which provider this key is for. Choose it under Advanced.",
+        "SheepKeep can't tell which provider this key is for. Choose it under Advanced.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Advanced' })).toHaveAttribute(
@@ -193,7 +193,7 @@ describe('AI settings', () => {
 
   it('a member sees who pays and their own month, no key box, and is told whom to ask', async () => {
     await renderApp('/settings/ai', { state: memberScenario() });
-    expect(await screen.findByText('What uses AI in Kept')).toBeInTheDocument();
+    expect(await screen.findByText('What uses AI in SheepKeep')).toBeInTheDocument();
     expect(await screen.findByText(/is paid by/)).toHaveTextContent(
       "AI in Home is paid by Ibrahim's account.",
     );

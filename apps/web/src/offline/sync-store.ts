@@ -29,7 +29,7 @@ export interface SyncStore extends OfflineStore {
   addNotice(notice: Omit<SyncNotice, 'id' | 'at'>): Promise<void>;
   /** The person saw it: the notice goes, and a dropped or reviewed entry leaves the queue. */
   dismissNotice(id: number): Promise<void>;
-  /** A build or server that accepts the queue again: "Update Kept to finish syncing" goes. */
+  /** A build or server that accepts the queue again: "Update SheepKeep to finish syncing" goes. */
   clearOutdated(): Promise<void>;
   /** Applied entries answered before a complete snapshot pass started are in the snapshot now. */
   pruneApplied(passStartedAt: number): Promise<void>;

@@ -73,7 +73,7 @@ export async function samplePlanImage(): Promise<Blob> {
   c.font = '15px Arial, sans-serif';
   c.textAlign = 'end';
   c.fillStyle = '#666666';
-  c.fillText('Invented sample plan for Try Kept. Not a real home.', W - M, H - 24);
+  c.fillText('Invented sample plan for Try SheepKeep. Not a real home.', W - M, H - 24);
   return new Promise((resolve, reject) =>
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('no PNG'))), 'image/png'),
   );

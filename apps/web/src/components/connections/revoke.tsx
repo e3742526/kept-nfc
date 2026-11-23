@@ -36,7 +36,7 @@ export function RevokeButton({
     mutationFn: () => connectionsApi.revokeToken(token.id),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: connectionsKeys.all });
-      toast({ title: t`${name} can't reach your Kept any more`, tone: 'ok' });
+      toast({ title: t`${name} can't reach your SheepKeep any more`, tone: 'ok' });
     },
     onError: (e) => toast({ title: errorText(e), tone: 'danger' }),
   });

@@ -1,6 +1,6 @@
 {
   "appId": "info.keptinventory.nfc",
-  "appName": "Kept NFC",
+  "appName": "SheepKeep",
   "webDir": "../web/dist-ios",
   "ios": {
     "preferredContentMode": "mobile"

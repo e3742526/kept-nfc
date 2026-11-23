@@ -137,7 +137,9 @@ describe('Print inventory', () => {
     const dialog = await openSheet(user);
     await user.click(within(dialog).getByRole('button', { name: 'Make the PDF' }));
     expect(
-      await within(dialog).findByText('Kept makes at most five reports an hour. Try again later.'),
+      await within(dialog).findByText(
+        'SheepKeep makes at most five reports an hour. Try again later.',
+      ),
     ).toBeInTheDocument();
   });
 

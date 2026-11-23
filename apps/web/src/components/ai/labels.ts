@@ -43,7 +43,7 @@ export function useTaskLabel(): (task: LedgerTask) => string {
   };
 }
 
-/** "What uses AI in Kept"'s action names: per action, not per call. */
+/** "What uses AI in SheepKeep"'s action names: per action, not per call. */
 export function useActionLabel(): (task: LedgerTask) => string {
   const { t } = useLingui();
   const task = useTaskLabel();
@@ -114,7 +114,7 @@ export function useFailureReason(): (outcome: LedgerOutcome, code?: string | nul
       case 'quota':
         return t`the provider's quota is used up`;
       case 'http_429':
-        return t`the provider asked Kept to slow down`;
+        return t`the provider asked SheepKeep to slow down`;
       case 'http_5xx':
       case 'error_in_200':
         return t`the provider had an error`;
@@ -130,7 +130,7 @@ export function useFailureReason(): (outcome: LedgerOutcome, code?: string | nul
         return t`the answer was cut off`;
       case 'invalid_json':
       case 'schema':
-        return t`the answer wasn't in the shape Kept asked for`;
+        return t`the answer wasn't in the shape SheepKeep asked for`;
       case 'cap_money':
         return t`the monthly cap was reached`;
       case 'cap_tokens':
@@ -152,7 +152,7 @@ export function useFailureReason(): (outcome: LedgerOutcome, code?: string | nul
       case 'timeout':
         return t`the provider timed out`;
       case 'schema_invalid':
-        return t`the answer wasn't in the shape Kept asked for`;
+        return t`the answer wasn't in the shape SheepKeep asked for`;
       case 'truncated':
         return t`the answer was cut off`;
       default:

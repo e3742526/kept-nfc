@@ -261,7 +261,7 @@ export function LogReadingForm({
     offline?.engine?.kick();
     toast({
       title: t`Saved on this phone`,
-      description: t`Kept checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox.`,
+      description: t`SheepKeep checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox.`,
       tone: 'ok',
     });
     await qc.invalidateQueries({ queryKey: ['reading-pending', meter.id] });
@@ -433,7 +433,7 @@ export function LogReadingForm({
             </legend>
             <p className="m-0 text-small text-ink-2">
               <Trans>
-                A new meter starts again from 0. Kept adds what the old one had reached, so the
+                A new meter starts again from 0. SheepKeep adds what the old one had reached, so the
                 history keeps going up.
               </Trans>
             </p>

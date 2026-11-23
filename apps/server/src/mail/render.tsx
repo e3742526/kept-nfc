@@ -8,43 +8,37 @@ import { CHROME, type Chrome, type MailLocale, type Message } from './messages.j
 // most stylesheets; the one <style> block only repaints the page for dark mode. The plain-text
 // part carries the same words, and the link spelled out.
 //
-// The layout is tables (Outlook ignores max-width on a div), and the brand is drawn, never
-// loaded: an instance is often unreachable from the internet, many clients block or proxy
-// remote images, and an image would be a tracking pixel. Gmail strips SVG, so the mark is a
-// table cell of amber label tape with its punched hole and a mono K, and KEPT beside it in
-// letter-spaced mono, as the web app's lockup (apps/web/src/components/brand.tsx) draws them.
-
+// Mail uses a text wordmark so the header renders without externally loaded images or fonts.
 export type RenderedMail = { subject: string; text: string; html: string };
 
-/** Kept's colours, from the web app's tokens (apps/web/src/styles/tokens.css). The tape and its
+/** SheepKeep's colours, from the web app's tokens (apps/web/src/styles/tokens.css). The tape and its
  * ink keep their colours in both themes; the rest has a dark counterpart. */
 export const BRAND = {
-  amber: '#F0B03A',
+  amber: '#E2B86B',
   amberInk: '#2E2100',
   light: {
-    paper: '#F2F1EC',
-    surface: '#FBFAF7',
+    paper: '#FFF9EB',
+    surface: '#FFFCF3',
     line: '#DEDBD3',
-    ink: '#1C1B19',
+    ink: '#173E37',
     ink2: '#55524C',
     ink3: '#6B675F',
   },
   dark: {
-    paper: '#151412',
-    surface: '#1E1C19',
+    paper: '#173E37',
+    surface: '#214942',
     line: '#34302A',
-    ink: '#F2EFE9',
+    ink: '#FFF9EB',
     ink2: '#BDB7AC',
-    ink3: '#9A948A',
+    ink3: '#B9C9BC',
   },
 } as const;
 
 /** Where the project lives: the one address in a mail that isn't the instance's own. */
-export const PROJECT_SITE = 'https://keptinventory.info/';
+export const PROJECT_SITE = 'https://github.com/e3742526/kept-nfc';
 
 const FONT =
   "-apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Arabic', Arial, sans-serif";
-const MONO = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 const L = BRAND.light;
 const D = BRAND.dark;
@@ -55,7 +49,6 @@ const STYLE =
   ':root{color-scheme:light dark;supported-color-schemes:light dark}' +
   '@media (prefers-color-scheme: dark){' +
   `.k-page{background-color:${D.paper}!important}` +
-  `.k-hole{background-color:${D.paper}!important}` +
   `.k-card{background-color:${D.surface}!important;border-color:${D.line}!important}` +
   `.k-ink{color:${D.ink}!important}` +
   `.k-ink2{color:${D.ink2}!important}` +
@@ -65,84 +58,16 @@ const STYLE =
 /** A presentation table's fixed attributes. */
 const TABLE = { role: 'presentation', cellPadding: 0, cellSpacing: 0, border: 0 } as const;
 
-/** The lockup: the tape (32 px, the hole at its top start, the K on it) and KEPT beside it, at
- * the K's size, as brand.tsx draws them (K cap height about half the tape).
- * Always left to right, as the brand is drawn, in Arabic mail too. */
 function Lockup() {
   return (
-    <table {...TABLE} data-kept-mark="" dir="ltr" aria-label="Kept">
-      <tbody>
-        <tr>
-          <td valign="middle" style={{ padding: 0 }}>
-            <table
-              {...TABLE}
-              data-kept-tile=""
-              aria-hidden="true"
-              bgcolor={BRAND.amber}
-              width={32}
-              style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: BRAND.amber,
-                borderRadius: '5px',
-                borderCollapse: 'separate',
-              }}
-            >
-              <tbody>
-                <tr>
-                  <td valign="top" style={{ height: '32px', padding: 0 }}>
-                    <div
-                      style={{ padding: '3px 0 0 3px', height: '3px', fontSize: 0, lineHeight: 0 }}
-                    >
-                      <span
-                        className="k-hole"
-                        style={{
-                          // A block sits at the left in the mark's own ltr, whatever the
-                          // text alignment it inherits (right in Arabic mail).
-                          display: 'block',
-                          width: '4px',
-                          height: '4px',
-                          borderRadius: '2px',
-                          backgroundColor: L.paper,
-                        }}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: MONO,
-                        padding: '0 0 0 2px',
-                        fontSize: '21px',
-                        lineHeight: '19px',
-                        fontWeight: 600,
-                        color: BRAND.amberInk,
-                        textAlign: 'center',
-                      }}
-                    >
-                      K
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </td>
-          <td
-            valign="middle"
-            className="k-ink"
-            style={{
-              padding: '0 0 0 8px',
-              fontFamily: MONO,
-              fontSize: '21px',
-              lineHeight: '32px',
-              fontWeight: 600,
-              letterSpacing: '0.16em',
-              color: L.ink,
-            }}
-          >
-            KEPT
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <strong
+      className="k-ink"
+      dir="ltr"
+      data-kept-mark=""
+      style={{ color: L.ink, fontSize: '22px' }}
+    >
+      SheepKeep
+    </strong>
   );
 }
 
@@ -178,7 +103,7 @@ function Mail({
   host: string;
 }) {
   const align = chrome.dir === 'rtl' ? 'right' : 'left';
-  const site = new URL(PROJECT_SITE).host;
+  const site = 'github.com/e3742526/kept-nfc';
   const text = { fontFamily: FONT, textAlign: align } as const;
   return (
     <table

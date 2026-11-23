@@ -35,10 +35,14 @@ export const commands = {
     update: ['docker compose pull', 'docker compose up -d'].join('\n'),
   },
   source: {
-    clone: 'git clone https://github.com/keptinventory/kept.git && cd kept',
-    build: 'docker build -t kept:local .',
-    init: ['echo KEPT_IMAGE=kept:local >> .env', 'docker compose run --rm init'].join('\n'),
-    update: ['git pull', 'docker build -t kept:local .', 'docker compose up -d'].join('\n'),
+    clone: 'git clone https://github.com/e3742526/kept-nfc.git sheepkeep && cd sheepkeep',
+    build: 'docker build --build-arg REVISION="$(git rev-parse HEAD)" -t sheepkeep:local .',
+    init: ['echo KEPT_IMAGE=sheepkeep:local >> .env', 'docker compose run --rm init'].join('\n'),
+    update: [
+      'git pull',
+      'docker build --build-arg REVISION="$(git rev-parse HEAD)" -t sheepkeep:local .',
+      'KEPT_IMAGE=sheepkeep:local docker compose up -d',
+    ].join('\n'),
   },
   kubernetes: {
     secrets: [

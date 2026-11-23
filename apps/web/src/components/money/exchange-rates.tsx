@@ -264,9 +264,9 @@ export function ExchangeRatesTab({ scope }: { scope: AccountScope }) {
     <div className="grid gap-4">
       <Notice tone="info">
         <Trans>
-          Kept converts totals only with a rate you entered here, for that pair or its inverse. It
-          never estimates one, and never goes through a third currency: without a rate, totals stay
-          per currency.
+          SheepKeep converts totals only with a rate you entered here, for that pair or its inverse.
+          It never estimates one, and never goes through a third currency: without a rate, totals
+          stay per currency.
         </Trans>
       </Notice>
       {manage ? (

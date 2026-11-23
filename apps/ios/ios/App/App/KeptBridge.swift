@@ -38,15 +38,15 @@ enum KeptNativeError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidServer: return "Enter this Kept server’s HTTPS address."
-        case .missingSession: return "Sign in to this Kept account again."
-        case .invalidRequest: return "The app could not prepare this Kept request."
-        case .signInFailed: return "Kept could not finish connecting this iPhone. Sign in again."
-        case .appleSignInUnsupported: return "Update this Kept server to sign in with Apple."
+        case .invalidServer: return "Enter this SheepKeep server’s HTTPS address."
+        case .missingSession: return "Sign in to this SheepKeep account again."
+        case .invalidRequest: return "The app could not prepare this SheepKeep request."
+        case .signInFailed: return "SheepKeep could not finish connecting this iPhone. Sign in again."
+        case .appleSignInUnsupported: return "Update this SheepKeep server to sign in with Apple."
         case .busy: return "Finish the current sign-in and try again."
         case .keychain: return "The iPhone could not save or read the session in Keychain."
-        case .storage: return "Kept could not save on this iPhone. Check available storage and try again."
-        case .previewUnavailable: return "Kept could not open this preview. Close any open sheet and try again."
+        case .storage: return "SheepKeep could not save on this iPhone. Check available storage and try again."
+        case .previewUnavailable: return "SheepKeep could not open this preview. Close any open sheet and try again."
         }
     }
 }
@@ -166,7 +166,7 @@ enum KeptHTTP {
         request.httpMethod = method
         request.setValue(origin.absoluteString, forHTTPHeaderField: "Origin")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("Kept for iPhone", forHTTPHeaderField: "User-Agent")
+        request.setValue("SheepKeep for iPhone", forHTTPHeaderField: "User-Agent")
         if let connection {
             request.setValue(connection.cookie, forHTTPHeaderField: "Cookie")
             if path != "/api/v1/auth/sign-out" {
@@ -259,13 +259,13 @@ final class NativeSignIn: NSObject, ASWebAuthenticationPresentationContextProvid
     }
 
     private func waitForBrowserPresentation(in anchor: UIWindow) async throws {
-        // The Apple authorization sheet can finish before UIKit reactivates Kept's window.
+        // The Apple authorization sheet can finish before UIKit reactivates SheepKeep's window.
         for _ in 0..<30 {
             guard let scene = anchor.windowScene else { throw KeptNativeError.signInFailed }
             if scene.activationState == .foregroundActive, anchor.isKeyWindow { return }
             try await Task.sleep(nanoseconds: 100_000_000)
         }
-        NativeAuthDiagnostics.log.error("Kept window did not reactivate for browser sign-in")
+        NativeAuthDiagnostics.log.error("SheepKeep window did not reactivate for browser sign-in")
         throw KeptNativeError.signInFailed
     }
 
@@ -882,7 +882,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent("kept-preview-\(UUID())", isDirectory: true)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,
                                                     attributes: [.protectionKey: FileProtectionType.complete])
-            let target = folder.appendingPathComponent(variant == "display" ? "Kept preview.jpg" : "Kept original.\(ext)")
+            let target = folder.appendingPathComponent(variant == "display" ? "SheepKeep preview.jpg" : "SheepKeep original.\(ext)")
             do {
                 try FileManager.default.moveItem(at: downloaded, to: target)
                 try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: target.path)
@@ -935,7 +935,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                     withAttributes: [.font: UIFont.monospacedSystemFont(ofSize: 9, weight: .regular),
                                      .paragraphStyle: paragraph, .foregroundColor: UIColor.black])
             }
-            try self.shareProtectedPDF(data, filename: "Kept-\(code).pdf", from: controller)
+            try self.shareProtectedPDF(data, filename: "SheepKeep-\(code).pdf", from: controller)
             call.resolve()
         }
     }
@@ -1010,7 +1010,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                     }
                 }
             }
-            try self.shareProtectedPDF(data, filename: "Kept-label-sheet.pdf", from: controller)
+            try self.shareProtectedPDF(data, filename: "SheepKeep-label-sheet.pdf", from: controller)
             call.resolve()
         }
     }
@@ -1049,7 +1049,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                 let target = try await self.store.use { outbox in
                     let (sourceURL, original) = try outbox.original(context: connection.id, draft: id, file: file)
                     let ext = Self.mimeExtensions[original.file.mime] ?? "dat"
-                    let target = folder.appendingPathComponent("Kept pending.\(ext)")
+                    let target = folder.appendingPathComponent("SheepKeep pending.\(ext)")
                     try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,
                                                             attributes: [.protectionKey: FileProtectionType.complete])
                     try FileManager.default.copyItem(at: sourceURL, to: target)
@@ -1085,7 +1085,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent("kept-preview-\(UUID())", isDirectory: true)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,
                                                     attributes: [.protectionKey: FileProtectionType.complete])
-            let target = folder.appendingPathComponent("Kept held.\(ext)")
+            let target = folder.appendingPathComponent("SheepKeep held.\(ext)")
             do {
                 try FileManager.default.copyItem(at: sourceURL, to: target)
                 try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: target.path)
@@ -1199,7 +1199,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             catch let error as OutboxError where error == .storageFull {
                 call.reject(error.localizedDescription, "storage_full", error)
             }
-            catch let error as URLError { call.reject("Could not connect to Kept.", "network", error) }
+            catch let error as URLError { call.reject("Could not connect to SheepKeep.", "network", error) }
             catch { call.reject(error.localizedDescription) }
         }
     }

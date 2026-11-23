@@ -1,4 +1,4 @@
-// The assistant's fixed sentences: what the thread says when Kept,
+// The assistant's fixed sentences: what the thread says when SheepKeep,
 // not the model, answers. Stored as the answer's text in the question's interface language,
 // so the thread reads the same on every device. The location's name is the person's own text,
 // isolated with FSI…PDI so it reads correctly inside a right-to-left sentence (lib/bidi.ts's rule

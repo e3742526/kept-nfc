@@ -248,7 +248,7 @@ describe('the confirmation card', () => {
     await within(s).findByText('Confirm 1 change');
     // The open card; the expired and changed-since ones from the same thread come after it.
     const card = within(s)
-      .getAllByRole('group', { name: 'Changes for you to confirm, drawn by Kept' })
+      .getAllByRole('group', { name: 'Changes for you to confirm, drawn by SheepKeep' })
       .find((r) => within(r).queryByText('Confirm 1 change')) as HTMLElement;
     expect(within(card).getByRole('timer')).toBeInTheDocument();
     expect(within(card).getByText('Move')).toBeInTheDocument();
@@ -282,7 +282,7 @@ describe('the confirmation card', () => {
     act(() => showThread(A.thread.list));
     const s = await sheet();
     const card = await within(s).findByRole('group', {
-      name: 'Changes for you to confirm, drawn by Kept',
+      name: 'Changes for you to confirm, drawn by SheepKeep',
     });
     expect(within(card).getAllByRole('checkbox')).toHaveLength(3);
     expect(within(card).getByText('New place')).toBeInTheDocument();
@@ -331,7 +331,7 @@ describe('the confirmation card', () => {
     act(() => showThread(A.thread.list));
     const s = await sheet();
     const card = await within(s).findByRole('group', {
-      name: 'Changes for you to confirm, drawn by Kept',
+      name: 'Changes for you to confirm, drawn by SheepKeep',
     });
     const torch = within(card).getAllByRole('listitem')[1] as HTMLElement;
     expect(within(torch).getByText('Unplaced')).toBeInTheDocument();
@@ -370,7 +370,7 @@ describe('the confirmation card', () => {
     act(() => showThread(A.thread.list));
     const s = await sheet();
     const card = await within(s).findByRole('group', {
-      name: 'Changes for you to confirm, drawn by Kept',
+      name: 'Changes for you to confirm, drawn by SheepKeep',
     });
     const all = within(card).getByRole('combobox', { name: 'Put all in…' });
     // Typed again until the location's places have loaded.

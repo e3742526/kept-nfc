@@ -120,7 +120,7 @@ function WebhookForm({
       // The server's check of the address itself (a name that doesn't resolve, say): said on the
       // field, not as "some of that isn't valid" (UI review steps 6–8, M5).
       else if (isApiError(e) && e.code === 'validation' && e.hint?.startsWith('url:'))
-        setErrors({ url: t`Kept can't reach that address. Check it for typos.` });
+        setErrors({ url: t`SheepKeep can't reach that address. Check it for typos.` });
       else setFailed(errorText(e));
     },
   });
@@ -149,7 +149,7 @@ function WebhookForm({
     <form className="grid gap-4" onSubmit={submit}>
       <TextField
         label={t`Send to`}
-        description={t`Your server's address. Kept sends a signed POST there.`}
+        description={t`Your server's address. SheepKeep sends a signed POST there.`}
         value={url}
         onChange={(v) => {
           setUrl(v);
@@ -258,7 +258,8 @@ function SecretView({
           </Trans>
         ) : (
           <Trans>
-            Kept signs every delivery with this secret, so your server can tell it came from Kept.
+            SheepKeep signs every delivery with this secret, so your server can tell it came from
+            SheepKeep.
           </Trans>
         )}
       </p>

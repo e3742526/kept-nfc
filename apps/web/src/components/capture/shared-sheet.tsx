@@ -40,7 +40,7 @@ export function SharedSheet({
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
-      title={t`Shared into Kept`}
+      title={t`Shared into SheepKeep`}
     >
       <div className="grid gap-4">
         <p className="m-0 text-ink-2">

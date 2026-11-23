@@ -46,7 +46,7 @@ function demoVersion(): string | undefined {
 }
 const KEPT_VERSION = process.env.KEPT_VERSION || demoVersion();
 const TRY_BASE = process.env.KEPT_TRY_BASE || '/try/kept/app/';
-/** What's new in Kept: this version's Highlights from the changelog (whats-new-plugin.ts). */
+/** What's new in SheepKeep: this version's Highlights from the changelog (whats-new-plugin.ts). */
 const CHANGELOG = fileURLToPath(new URL('../../CHANGELOG.md', import.meta.url));
 function tryHtml(): Plugin {
   const swap = (html: string, from: RegExp, to: string) => {
@@ -61,8 +61,8 @@ function tryHtml(): Plugin {
       out = swap(out, /\n\s*<!--\n\s*Every URL below[\s\S]*?-->\n\s*<base href="\/" \/>/, '');
       out = swap(
         out,
-        /<title>Kept<\/title>/,
-        '<title>Try Kept</title>\n    <meta name="robots" content="noindex" />',
+        /<title>SheepKeep<\/title>/,
+        '<title>Try SheepKeep</title>\n    <meta name="robots" content="noindex" />',
       );
       return out;
     },

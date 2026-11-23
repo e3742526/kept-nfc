@@ -107,10 +107,10 @@ export function MappingStep({
           <span className="grid gap-1.5">
             <span>
               <Trans>
-                Kept reads its asset IDs, so old Homebox labels still scan, and its archived and
-                sold items, warranties and insured column. A spreadsheet can't carry photos, files,
-                maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or
-                newer (v0.27.0 recommended) and import its export ZIP.
+                SheepKeep reads its asset IDs, so old Homebox labels still scan, and its archived
+                and sold items, warranties and insured column. A spreadsheet can't carry photos,
+                files, maintenance or items inside items: for those, update a copy of Homebox to
+                v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP.
               </Trans>
             </span>
             <a

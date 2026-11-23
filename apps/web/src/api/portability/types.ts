@@ -57,7 +57,7 @@ export type ArchiveImportRun = {
   /** Null until the target is set (POST …/target); never changes after. */
   locationId: string | null;
   source: ArchiveSource;
-  /** Homebox's version when a connection told it (the ZIP doesn't), or the export's Kept version. */
+  /** Homebox's version when a connection told it (the ZIP doesn't), or the export's SheepKeep version. */
   sourceVersion: string | null;
   status: ImportRunStatus;
   bytes: number;
@@ -153,7 +153,7 @@ export type ImportRepairPlan = {
   sold: { thingId: string; name: string }[];
 };
 
-/** POST /api/v1/imports/:id/repair. Its events come back in X-Kept-Audit-Event: one Undo. */
+/** POST /api/v1/imports/:id/repair. Its events come back in X-SheepKeep-Audit-Event: one Undo. */
 export type ImportRepairBody = {
   zero?: boolean;
   containerTypes?: boolean;

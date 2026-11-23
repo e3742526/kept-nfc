@@ -205,7 +205,7 @@ export const captureApi = {
       p.inbox +
         qs({ ...params, mine: params.mine === undefined ? undefined : params.mine ? 1 : 0 }),
     ),
-  /** Undoable (D150): one bulk event, in X-Kept-Audit-Event and as `undo`. */
+  /** Undoable (D150): one bulk event, in X-SheepKeep-Audit-Event and as `undo`. */
   inboxBulk: (body: InboxBulkBody) => written.post<InboxBulkResult>(p.inboxBulk, body),
   inboxCandidates: (id: string, line?: number) =>
     api.get<InboxCandidates>(p.inboxCandidates(id) + qs({ line })),
@@ -225,7 +225,7 @@ export const captureApi = {
     api.post<InboxRestoreResult>(p.inboxRestore(id), {}, ifMatch(rowVersion)),
   inboxDismiss: (id: string, rowVersion: number) =>
     api.post<InboxActionResult>(p.inboxDismiss(id), {}, ifMatch(rowVersion)),
-  /** Undoable (D150): the draft's trash, in X-Kept-Audit-Event and as `undo`. */
+  /** Undoable (D150): the draft's trash, in X-SheepKeep-Audit-Event and as `undo`. */
   inboxDiscard: (id: string, rowVersion: number) =>
     written.post<InboxActionResult>(p.inboxDiscard(id), {}, ifMatch(rowVersion)),
   // A room capture's card (#194).

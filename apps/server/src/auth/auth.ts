@@ -106,7 +106,7 @@ export type AuthDeps = {
   /** D273: the Home Assistant app (KEPT_HA). Better Auth then also trusts Home Assistant's origin
    * for an ingress request. Absent or false: only KEPT_PUBLIC_URL's. */
   ingress?: boolean;
-  /** Kept as the OAuth server for MCP connectors (oauth/plugin.ts). Absent: on
+  /** SheepKeep as the OAuth server for MCP connectors (oauth/plugin.ts). Absent: on
    * with an https public URL, off otherwise; null: off. Off, `/mcp` takes personal tokens only. */
   oauth?: OAuthServerOptions | null;
 };
@@ -154,8 +154,8 @@ export function signInStatus(publicUrl: string, httpDays: number | undefined) {
 /** How long a magic link works. */
 export const MAGIC_LINK_SECONDS = 15 * 60;
 
-/** Every endpoint of Better Auth's admin plugin. Kept keeps the plugin for its server-side ban
- * and session calls; its instance admin is `instance_admins` with Kept's own routes,
+/** Every endpoint of Better Auth's admin plugin. SheepKeep keeps the plugin for its server-side ban
+ * and session calls; its instance admin is `instance_admins` with SheepKeep's own routes,
  * so none of these is served over HTTP. Impersonation contradicts D164, and the session list
  * would hand out session tokens (security review M6). */
 export const ADMIN_PLUGIN_PATHS = [
@@ -176,7 +176,7 @@ export const ADMIN_PLUGIN_PATHS = [
   '/admin/has-permission',
 ];
 
-/** Better Auth's two-factor, passkey and outside-sign-in management. Kept's own routes take
+/** Better Auth's two-factor, passkey and outside-sign-in management. SheepKeep's own routes take
  * their place (auth/sign-in-security.ts): each confirms it's you first (auth/reauth.ts), and
  * refuses removing the last way in or turning off two-factor that a location asks for. The
  * two-factor ones go through `auth.api`, which `disabledPaths` doesn't reach. Over HTTP all of
@@ -191,31 +191,31 @@ export const SIGN_IN_MANAGEMENT_PATHS = [
   '/passkey/list-user-passkeys',
   '/passkey/update-passkey',
   '/passkey/delete-passkey',
-  // Kept's DELETE /api/v1/me/linked/:id instead: confirm-it's-you, and the last way in counted
+  // SheepKeep's DELETE /api/v1/me/linked/:id instead: confirm-it's-you, and the last way in counted
   // under the account's row lock with passkeys and the providers configured now.
   '/unlink-account',
 ];
 
-/** Better Auth endpoints Kept switches off. See the comment where it is used. */
+/** Better Auth endpoints SheepKeep switches off. See the comment where it is used. */
 export const DISABLED_AUTH_PATHS = [
   ...SIGN_IN_MANAGEMENT_PATHS,
   ...ADMIN_PLUGIN_PATHS,
   ...EMAIL_OTP_PATHS,
-  // The magic link is consumed by Kept's POST /api/v1/auth/magic-link/verify (auth/http.ts), never
+  // The magic link is consumed by SheepKeep's POST /api/v1/auth/magic-link/verify (auth/http.ts), never
   // by this GET, which a mail scanner could follow (D176). The server-side call is unaffected.
   '/magic-link/verify',
-  // Email changes go through Kept's own two-step flow (auth/email-change.ts): Better Auth's
+  // Email changes go through SheepKeep's own two-step flow (auth/email-change.ts): Better Auth's
   // confirms by GET with a replayable token and signs the clicker in.
   '/change-email',
   // Both expose session tokens to the page; the device list is GET /api/v1/me/sessions.
   '/list-sessions',
   '/revoke-session',
-  // Kept's web app doesn't call these, and they'd sign out other devices without ending their
+  // SheepKeep's web app doesn't call these, and they'd sign out other devices without ending their
   // refresh tokens, which everything else that signs out other devices does (endRefreshTokens).
   '/revoke-other-sessions',
   '/revoke-sessions',
   // Public sign-up answers 422 USER_ALREADY_EXISTS for a taken address and writes rows per
-  // request. People sign up through Kept's POST /api/v1/auth/sign-up (accounts/sign-up.ts),
+  // request. People sign up through SheepKeep's POST /api/v1/auth/sign-up (accounts/sign-up.ts),
   // which is closed unless sign-up is open or an invite comes with it, and answers the same for
   // a taken address as for a free one. The server-side call it makes is unaffected.
   '/sign-up/email',
@@ -227,7 +227,7 @@ export const DISABLED_AUTH_PATHS = [
   // Step 6 (security review T25, M1): the OAuth provider's client and consent management, for any
   // signed-in person. It would register a client with any redirect URI and name (DCR by another
   // door; a consent page naming "Claude" for someone else's app, D179). Connectors come in
-  // through CIMD only; a person's grants are Kept's own Connections routes.
+  // through CIMD only; a person's grants are SheepKeep's own Connections routes.
   '/oauth2/create-client',
   '/oauth2/get-client',
   '/oauth2/get-clients',
@@ -241,13 +241,13 @@ export const DISABLED_AUTH_PATHS = [
 ];
 
 /** How recent a sign-in must be for Better Auth's sensitive endpoints (e.g. deleting the user):
- * 10 minutes, as Kept's own re-authentication (auth/email-change.ts). */
+ * 10 minutes, as SheepKeep's own re-authentication (auth/email-change.ts). */
 export const FRESH_SESSION_SECONDS = 600;
 
 /**
  * How verification identifiers are stored (security review M3): SHA-256, base64url, so a read of
  * auth.verification yields no usable reset token. The part up to the first `:` stays readable
- * (`reset-password:<hash>`), so Kept can still find a user's pending resets by kind, e.g. to
+ * (`reset-password:<hash>`), so SheepKeep can still find a user's pending resets by kind, e.g. to
  * retire them when the email changes (M2).
  */
 export async function hashVerificationIdentifier(identifier: string): Promise<string> {
@@ -265,7 +265,7 @@ export function linkUrl(publicUrl: string, page: string, token: string): string 
 
 /**
  * The Better Auth instance. Runs on its own kept_auth login with its tables in
- * schema `auth`, and issues UUIDv7 ids. Kept's own addition is the kept-security plugin: the
+ * schema `auth`, and issues UUIDv7 ids. SheepKeep's own addition is the kept-security plugin: the
  * two-factor gate and the account + IP sign-in delays.
  *
  * `auth.handler` must only ever see requests whose headers came from `authRequestHeaders()`
@@ -350,7 +350,7 @@ export function createAuth(deps: AuthDeps) {
 
   const extraAddresses = env.KEPT_EXTRA_ADDRESSES ?? [];
   const auth = betterAuth({
-    appName: 'Kept',
+    appName: 'SheepKeep',
     baseURL: env.KEPT_PUBLIC_URL,
     basePath: AUTH_BASE_PATH,
     // KEPT_PUBLIC_URL's origin always, and KEPT_EXTRA_ADDRESSES (D275), exact origins that hold no
@@ -385,7 +385,7 @@ export function createAuth(deps: AuthDeps) {
       // D197: a reset on an unverified address claims the account for the mailbox's owner.
       onPasswordReset: async ({ user }) => {
         // Sessions end by revokeSessionsOnPasswordReset; connectors' refresh tokens outlive
-        // them, so they end here (#411). Kept's grant rows stay, the connector signs in again.
+        // them, so they end here (#411). SheepKeep's grant rows stay, the connector signs in again.
         await endRefreshTokens(pool, user.id);
         if (!user.emailVerified && !isUndeliverableEmail(user.email)) {
           await claimUnverifiedAccount(pool, user.id, null, deps.revokeTokensOnClaim);
@@ -454,7 +454,7 @@ export function createAuth(deps: AuthDeps) {
       // Secure cookies (and the __Secure- prefix) exactly when the public URL is https (D181).
       useSecureCookies: https,
       database: { generateId: () => uuidv7() },
-      // One single-value header that Kept's request conversion always sets from the socket
+      // One single-value header that SheepKeep's request conversion always sets from the socket
       // (auth/client-ip.ts). Better Auth's own `trustedProxies` is deliberately not used: it
       // walks X-Forwarded-For without knowing the socket, so a client connecting directly could
       // still pick its address. The proxy walk happens before the header is set.
@@ -472,25 +472,25 @@ export function createAuth(deps: AuthDeps) {
         '/sign-in/*': { window: 60, max: 5 },
       },
     },
-    // Kept's instance admin is its own `instance_admins` table; the admin plugin is here only for
+    // SheepKeep's instance admin is its own `instance_admins` table; the admin plugin is here only for
     // ban and session revocation; none of its endpoints is served (ADMIN_PLUGIN_PATHS).
-    // An emailed OTP is not a second factor in Kept (D176; Phase B review, item 6), so its two
+    // An emailed OTP is not a second factor in SheepKeep (D176; Phase B review, item 6), so its two
     // endpoints are off rather than merely ignored by the gate. The rest: DISABLED_AUTH_PATHS.
     // disabledPaths applies to HTTP requests through `auth.handler` only, not to `auth.api.*`.
     disabledPaths: DISABLED_AUTH_PATHS,
     telemetry: { enabled: false },
     plugins: [
       // Passwordless accounts (passkey, email link, Google) can turn on the authenticator app too.
-      // Better Auth then asks such an account for nothing; Kept's routes ask it to confirm it's
+      // Better Auth then asks such an account for nothing; SheepKeep's routes ask it to confirm it's
       // you first, and Better Auth's own routes for it are off over HTTP
       // (SIGN_IN_MANAGEMENT_PATHS). An account with a password still gives it to Better Auth.
-      twoFactor({ issuer: 'Kept', allowPasswordless: true }),
+      twoFactor({ issuer: 'SheepKeep', allowPasswordless: true }),
       passkey({
-        rpName: 'Kept',
+        rpName: 'SheepKeep',
         rpID: publicUrl.hostname,
         origin: publicUrl.origin,
-        // Kept's passkey sign-in names no account, so the credential must be discoverable; and
-        // every passkey Kept adds verified its user (Face ID, a fingerprint, a PIN), so any of
+        // SheepKeep's passkey sign-in names no account, so the credential must be discoverable; and
+        // every passkey SheepKeep adds verified its user (Face ID, a fingerprint, a PIN), so any of
         // them can stand in for two-factor where a location asks for it.
         authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
         registration: {
@@ -513,7 +513,7 @@ export function createAuth(deps: AuthDeps) {
         },
       }),
       magicLink({
-        // Kept has no open sign-up: magic links sign existing accounts in (D127).
+        // SheepKeep has no open sign-up: magic links sign existing accounts in (D127).
         disableSignUp: true,
         expiresIn: MAGIC_LINK_SECONDS,
         // Only a hash of the token is stored, so a read of auth.verification can't sign in.
@@ -531,7 +531,7 @@ export function createAuth(deps: AuthDeps) {
           // says which addresses have accounts.
           const found = await ctx?.context.internalAdapter.findUserByEmail(email);
           if (!found) return;
-          // Better Auth's own `url` points at its GET verify endpoint; Kept's page POSTs instead.
+          // Better Auth's own `url` points at its GET verify endpoint; SheepKeep's page POSTs instead.
           const url = linkUrl(env.KEPT_PUBLIC_URL, '/auth/confirm', token);
           background('mail', () => mail.sendMagicLink({ email, url, token }));
         },
@@ -562,7 +562,7 @@ export function createAuth(deps: AuthDeps) {
   lookup = async (headers) =>
     (await auth.api.getSession({ headers, query: { disableRefresh: true } })) as SessionLike | null;
 
-  // Kept's own sign-in routes (auth/sign-in-security.ts) tell the owner through the same mail.
+  // SheepKeep's own sign-in routes (auth/sign-in-security.ts) tell the owner through the same mail.
   return Object.assign(auth, {
     securityNotice: (user: { email: string }, event: SecurityEvent) => notify(user, event),
     /** What counts as a way in (auth/sign-in-security.ts). */

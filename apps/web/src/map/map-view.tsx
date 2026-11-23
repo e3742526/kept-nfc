@@ -683,7 +683,7 @@ function MapBody({
     engineRef.current?.select({ type: 'item', id });
   }
 
-  /** #137: Put on…, Take off and Add on it. Map only: Kept's places don't change. */
+  /** #137: Put on…, Take off and Add on it. Map only: SheepKeep's places don't change. */
   function putThingOn(id: string, hostId: string) {
     mutate((p) => {
       const it = p.items.find((i) => i.id === id);
@@ -761,7 +761,7 @@ function MapBody({
       dirty &&
       !(await confirm({
         title: t`Throw away these changes?`,
-        body: t`The map goes back to how it was. Rooms and floors you added stay in Kept.`,
+        body: t`The map goes back to how it was. Rooms and floors you added stay in SheepKeep.`,
         confirmLabel: t`Throw away`,
         destructive: true,
       }))
@@ -1302,7 +1302,7 @@ function MapBody({
               {placedByKept.length > 0 ? (
                 // #194: things Kept put on the floor from room photos, to move where they stand.
                 <div className="kmap-hint">
-                  <Trans>Placed by Kept from room photos: move them where they stand.</Trans>{' '}
+                  <Trans>Placed by SheepKeep from room photos: move them where they stand.</Trans>{' '}
                   {placedByKept.map((i) => (
                     <button
                       key={i.id}

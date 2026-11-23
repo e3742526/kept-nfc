@@ -1,8 +1,8 @@
-/** Try Kept: the flag is off in every other build, and the docs links walk back right. */
+/** Try SheepKeep: the flag is off in every other build, and the docs links walk back right. */
 import { describe, expect, it } from 'vitest';
 import { docsUrl, TRY } from './flag';
 
-describe('Try Kept flag and docs links', () => {
+describe('Try SheepKeep flag and docs links', () => {
   it('is off outside the Try build', () => {
     expect(TRY).toBe(false);
   });

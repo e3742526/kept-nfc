@@ -60,24 +60,24 @@ export function ShareArrival({
 
   if (problem === 'unavailable')
     return (
-      <Notice tone="info" title={<Trans>Open Kept once, then share again</Trans>}>
+      <Notice tone="info" title={<Trans>Open SheepKeep once, then share again</Trans>}>
         <Trans>
-          Kept wasn't ready to receive files on this device yet. It is now: go back to the other app
-          and share again.
+          SheepKeep wasn't ready to receive files on this device yet. It is now: go back to the
+          other app and share again.
         </Trans>
       </Notice>
     );
   if (problem === 'failed' || problem === 'empty')
     return (
       <Notice tone="warn" title={<Trans>Nothing to keep from that share</Trans>}>
-        <Trans>Kept takes photos and PDFs. Share those, or use Gallery.</Trans>
+        <Trans>SheepKeep takes photos and PDFs. Share those, or use Gallery.</Trans>
       </Notice>
     );
   if (!state || state.kind === 'loading') return null;
   if (state.kind === 'gone')
     return (
       <Notice tone="info" title={<Trans>That share has expired</Trans>}>
-        <Trans>Share the files into Kept again.</Trans>
+        <Trans>Share the files into SheepKeep again.</Trans>
       </Notice>
     );
   const { share } = state;

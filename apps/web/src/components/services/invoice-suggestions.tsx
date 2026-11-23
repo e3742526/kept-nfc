@@ -89,7 +89,7 @@ export function InvoiceReadStatus({ read }: { read: InvoiceRead }) {
       {read.state === 'reading' ? (
         <Trans>Reading the invoice…</Trans>
       ) : read.state === 'failed' ? (
-        <Trans>Kept couldn't read the invoice. Type the lines.</Trans>
+        <Trans>SheepKeep couldn't read the invoice. Type the lines.</Trans>
       ) : read.state === 'paused' ? (
         <Trans>
           AI is paused here, so the invoice waits to be read. Type the lines, or come back later.

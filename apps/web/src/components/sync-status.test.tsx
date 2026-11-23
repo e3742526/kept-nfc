@@ -98,7 +98,7 @@ describe('the sync status line', () => {
 
   it('a refused queue asks for an update, and a full phone says so', async () => {
     await show({ ...base, problem: 'client_outdated', counts: { ...base.counts, waiting: 3 } });
-    expect(screen.getByText('Update Kept to finish syncing.')).toBeInTheDocument();
+    expect(screen.getByText('Update SheepKeep to finish syncing.')).toBeInTheDocument();
   });
 
   it('a partial copy and a refused persistence request are explained', async () => {
@@ -108,8 +108,8 @@ describe('the sync status line', () => {
       persisted: false,
       counts: { ...base.counts, waiting: 1 },
     });
-    expect(screen.getByText('Only part of your Kept is on this phone.')).toBeInTheDocument();
-    expect(screen.getByText(/may clear Kept's offline copy/)).toBeInTheDocument();
+    expect(screen.getByText('Only part of your SheepKeep is on this phone.')).toBeInTheDocument();
+    expect(screen.getByText(/may clear SheepKeep's offline copy/)).toBeInTheDocument();
   });
 
   it('spells out a dropped change, with Restore to the inbox and × to dismiss it', async () => {

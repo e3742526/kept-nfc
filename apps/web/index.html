@@ -10,8 +10,8 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <title>Kept</title>
-    <!-- D135: the tape square with its punched hole and a heavy K (scripts/render-icons.mjs draws all of these). -->
+    <title>SheepKeep</title>
+    <!-- SheepKeep Identity v2 assets. -->
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -20,8 +20,8 @@
       both at the stored theme when there is one. Keep the colours in step with tokens.css
       (--paper) and src/lib/prefs.ts (THEME_COLOR). -->
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#F2F1EC" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FFF9EB" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#173E37" media="(prefers-color-scheme: dark)" />
     <!--
       Zod without its JIT, before any module runs. The CSP allows no eval, so the JIT can't run
       here anyway, and without `jitless` zod probes with `new Function('')` when the first object
@@ -84,7 +84,7 @@
         }
         d.setAttribute('data-theme', theme);
         for (const m of document.querySelectorAll('meta[name="theme-color"]')) {
-          m.setAttribute('content', theme === 'dark' ? '#151412' : '#F2F1EC');
+          m.setAttribute('content', theme === 'dark' ? '#173E37' : '#FFF9EB');
         }
         d.setAttribute('data-sidebar', sidebar);
         d.setAttribute('data-width', width === 'full' ? 'full' : 'centered');

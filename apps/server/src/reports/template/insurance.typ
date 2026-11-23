@@ -1,9 +1,9 @@
-// Kept's insurance report (D158, D201), the second template on the D201
+// SheepKeep's insurance report (D158, D201), the second template on the D201
 // engine. A trial run rendered
 // 500 things in Arabic at 138 MB. Everything comes from /data.json (incidents/report.ts builds
 // it): strings, money and dates arrive formatted in the reader's language and digits, so no
 // formatting happens here. Photos are /thumbs/<id>.jpg. Data strings are only ever inserted as
-// text, never evaluated as markup; a link's target is Kept's own URL for the thing.
+// text, never evaluated as markup; a link's target is SheepKeep's own URL for the thing.
 //
 // The rules of report.typ hold: weights by family name ("IBM Plex Sans SmBld"), `dir: rtl` for
 // Arabic with serials left-to-right in Plex Mono, page numbers in the reader's digits, a row is

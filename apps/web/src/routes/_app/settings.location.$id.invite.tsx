@@ -165,7 +165,7 @@ function InviteForm({ location }: { location: LocationDetail }) {
               className="w-full"
               onPress={() =>
                 void navigator
-                  .share({ title: t`Join ${place} on Kept`, url: invite.url ?? '' })
+                  .share({ title: t`Join ${place} on SheepKeep`, url: invite.url ?? '' })
                   .catch(() => {})
               }
             >

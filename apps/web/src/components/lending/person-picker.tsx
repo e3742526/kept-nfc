@@ -51,7 +51,7 @@ export function usePersonOptions(locationId: string, accountId: string): Option[
     out.push({
       id: `p:${p.id}`,
       label: p.displayName,
-      description: p.userId ? t`Uses Kept` : t`Contact`,
+      description: p.userId ? t`Uses SheepKeep` : t`Contact`,
       input: { id: p.id },
     });
   }
@@ -86,8 +86,8 @@ export function PersonPicker({
       label={label}
       description={
         !value.key && typed
-          ? t`A new person: added to your people when you save. Kept never contacts them.`
-          : t`Kept never contacts them.`
+          ? t`A new person: added to your people when you save. SheepKeep never contacts them.`
+          : t`SheepKeep never contacts them.`
       }
       items={items}
       allowsCustomValue

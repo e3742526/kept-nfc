@@ -117,7 +117,7 @@ export const inventoryPaths = {
   readingAccept: (id: string) => `${V1}/readings/${seg(id)}/accept`,
 
   // ----- files and attachments (task 17) -----
-  /** PUT, raw body, `?locationId=&class=`, headers Content-Length and X-Kept-Sha256. */
+  /** PUT, raw body, `?locationId=&class=`, headers Content-Length and X-SheepKeep-Sha256. */
   file: (fileId: string) => `${V1}/files/${seg(fileId)}`,
   fileUrl: (fileId: string) => `${V1}/files/${seg(fileId)}/url`,
   attachments: `${V1}/attachments`,

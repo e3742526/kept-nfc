@@ -103,7 +103,7 @@ function SettingsForm({ locationId, saved }: { locationId: string; saved: OwnCod
       if (reason === 'invalid')
         setProblem({
           field: 'pattern',
-          text: t`Kept can't read this pattern. Check its brackets.`,
+          text: t`SheepKeep can't read this pattern. Check its brackets.`,
         });
       else if (reason === 'slow')
         setProblem({

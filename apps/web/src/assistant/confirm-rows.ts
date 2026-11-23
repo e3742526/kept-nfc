@@ -21,13 +21,13 @@ export type Val =
   | { t: 'money'; amount: string; currency: string }
   | { t: 'yes'; v: boolean }
   | { t: 'list'; v: string[] }
-  /** D236: what a service line takes off a consumable's shelf; no name when Kept can't name it. */
+  /** D236: what a service line takes off a consumable's shelf; no name when SheepKeep can't name it. */
   | { t: 'take'; n: number; name?: string }
-  /** add_thing: the location's Unplaced, in Kept's own words. */
+  /** add_thing: the location's Unplaced, in SheepKeep's own words. */
   | { t: 'unplaced' }
-  /** add_thing: the type Kept matched (its id, the model's words for it). */
+  /** add_thing: the type SheepKeep matched (its id, the model's words for it). */
   | { t: 'type'; id: string; name: string }
-  /** add_thing: no type; `word` is what the model said when Kept knows no such type. */
+  /** add_thing: no type; `word` is what the model said when SheepKeep knows no such type. */
   | { t: 'notSet'; word?: string }
   | { t: 'condition'; v: Condition }
   /** update_place (#313): a place kind's key (a built-in one is named in the reader's words). */

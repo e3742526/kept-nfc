@@ -49,9 +49,10 @@ describe('release pins in the docs', () => {
     expect(stale).toEqual([]);
   });
 
-  it('name the release compose.yaml runs in the README', () => {
-    const { stale, pins } = stalePins([join(root, 'README.md')]);
-    expect(pins).toBeGreaterThan(0);
-    expect(stale).toEqual([]);
+  it('starts SheepKeep from a locally built image in the README', () => {
+    const readme = readFileSync(join(root, 'README.md'), 'utf8');
+    expect(readme).toContain('-t sheepkeep:local');
+    expect(readme).toContain('KEPT_IMAGE=sheepkeep:local docker compose up -d');
+    expect(stalePins([join(root, 'README.md')]).pins).toBe(0);
   });
 });

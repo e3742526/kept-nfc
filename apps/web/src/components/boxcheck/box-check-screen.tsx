@@ -447,7 +447,7 @@ function FoundSomethingElse({
       onAdd({ id: res.target.id, name, shortCode, labelPrinted });
       return;
     }
-    setNote(t`That label isn't on a thing in your Kept.`);
+    setNote(t`That label isn't on a thing in your SheepKeep.`);
   };
 
   return (

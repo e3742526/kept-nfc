@@ -54,7 +54,7 @@ export function SessionCamera({
   onProblem?: (problem: CameraProblem | 'no_scanner') => void;
   camera?: CameraEnv;
   flashes: readonly Flash[];
-  /** Try Kept: the labels its recorded walk reads. */
+  /** Try SheepKeep: the labels its recorded walk reads. */
   demoCodes?: readonly string[];
 }) {
   const { t } = useLingui();
@@ -130,7 +130,7 @@ export function SessionCamera({
           {cam.problem === 'demo'
             ? t`The camera is off in this demo.`
             : cam.problem === 'denied'
-              ? t`Camera access is off for Kept.`
+              ? t`Camera access is off for SheepKeep.`
               : t`Type codes, or use a USB or Bluetooth barcode scanner.`}
         </p>
       </div>
@@ -181,7 +181,7 @@ export function SessionCamera({
   );
 }
 
-/** Try Kept's recorded walk: the sample household's labels, two or three at a time. */
+/** Try SheepKeep's recorded walk: the sample household's labels, two or three at a time. */
 function DemoWalk({
   codes,
   paused,

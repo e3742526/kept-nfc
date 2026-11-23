@@ -28,7 +28,7 @@ export function FileFallback({
         </h2>
         <p className="m-0 text-[#BDB7AC] text-[14px]">
           <Trans>
-            In your own Kept, Capture opens the camera here. Photos you pick stay in this tab.
+            In your own SheepKeep, Capture opens the camera here. Photos you pick stay in this tab.
           </Trans>
         </p>
         <div className="flex flex-wrap gap-2">
@@ -45,18 +45,18 @@ export function FileFallback({
     );
   const reason =
     problem === 'insecure'
-      ? t`The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put Kept on HTTPS.`
+      ? t`The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put SheepKeep on HTTPS.`
       : problem === 'denied'
-        ? t`Camera access is off for Kept.`
+        ? t`Camera access is off for SheepKeep.`
         : problem === 'no_camera'
-          ? t`This device has no camera Kept can use.`
+          ? t`This device has no camera SheepKeep can use.`
           : problem === 'busy'
             ? t`Another app is using the camera. Close it, then come back.`
             : t`This browser can't open the camera here.`;
   return (
     <div className="grid content-center gap-3 p-4 text-[#F2EFE9]">
       <h2 className="m-0 font-semibold text-[18px]">
-        <Trans>Kept can't use the camera</Trans>
+        <Trans>SheepKeep can't use the camera</Trans>
       </h2>
       <p className="m-0 text-[#BDB7AC] text-[14px]">{reason}</p>
       {problem === 'denied' ? (
@@ -66,7 +66,7 @@ export function FileFallback({
           </summary>
           <ul className="m-0 mt-2 grid gap-1.5 ps-5 text-[#BDB7AC]">
             <li>
-              <Trans>iPhone: Settings › Safari › Camera › Allow, then reopen Kept.</Trans>
+              <Trans>iPhone: Settings › Safari › Camera › Allow, then reopen SheepKeep.</Trans>
             </li>
             <li>
               <Trans>

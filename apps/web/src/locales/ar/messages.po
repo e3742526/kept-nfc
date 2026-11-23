@@ -20,20 +20,20 @@ msgstr "، "
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
-msgid "Home Assistant backs up Kept"
-msgstr "يأخذ Home Assistant نسخًا احتياطية من Kept"
+msgid "Home Assistant backs up SheepKeep"
+msgstr "يأخذ Home Assistant نسخًا احتياطية من SheepKeep"
 
 #: src/routes/_app/admin.backups.tsx
-msgid "Home Assistant backs up Kept: the database, photos and files, and Kept's keys. Take or schedule backups in Home Assistant → {place}."
-msgstr "يأخذ Home Assistant نسخًا احتياطية من Kept: قاعدة البيانات والصور والملفات ومفاتيح Kept. أنشئ النسخ الاحتياطية أو جدولها في Home Assistant ← {place}."
+msgid "Home Assistant backs up SheepKeep: the database, photos and files, and SheepKeep's keys. Take or schedule backups in Home Assistant → {place}."
+msgstr "يأخذ Home Assistant نسخًا احتياطية من SheepKeep: قاعدة البيانات والصور والملفات ومفاتيح SheepKeep. أنشئ النسخ الاحتياطية أو جدولها في Home Assistant ← {place}."
 
 #: src/components/ops/home-assistant-backups.tsx
 msgid "Settings → System → Backups"
 msgstr "الإعدادات ← النظام ← النسخ الاحتياطية"
 
 #: src/components/ops/backup-target-form.tsx
-msgid "Home Assistant backs up Kept here: take or schedule backups in Home Assistant."
-msgstr "هنا يأخذ Home Assistant نسخًا احتياطية من Kept: أنشئ النسخ الاحتياطية أو جدولها في Home Assistant."
+msgid "Home Assistant backs up SheepKeep here: take or schedule backups in Home Assistant."
+msgstr "هنا يأخذ Home Assistant نسخًا احتياطية من SheepKeep: أنشئ النسخ الاحتياطية أو جدولها في Home Assistant."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Take or schedule them in Home Assistant → {place}."
@@ -52,8 +52,8 @@ msgid "Renamed to {trimmed}"
 msgstr "تغيّر الاسم إلى {trimmed}"
 
 #: src/components/home/checklist.tsx
-msgid "Set these where Kept's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart Kept:"
-msgstr "اضبط هذين حيث توجد إعدادات Kept الأخرى (ملف ‎.env مع Docker Compose؛ ومع Helm chart: الرابط في السرّ الذي يسمّيه smtp.existingSecret والمُرسِل في smtp.from)، ثم أعد تشغيل Kept:"
+msgid "Set these where SheepKeep's other settings live (the .env file with Docker Compose; with the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in smtp.from), then restart SheepKeep:"
+msgstr "اضبط هذين حيث توجد إعدادات SheepKeep الأخرى (ملف ‎.env مع Docker Compose؛ ومع Helm chart: الرابط في السرّ الذي يسمّيه smtp.existingSecret والمُرسِل في smtp.from)، ثم أعد تشغيل SheepKeep:"
 
 #: src/components/home/checklist.tsx
 msgid "Set up email"
@@ -64,12 +64,12 @@ msgid "the request was more than the plan allows in one minute"
 msgstr "كان الطلب أكبر مما تسمح به الخطة في دقيقة واحدة"
 
 #: src/components/home/checklist.tsx
-msgid "the sender, for example <0>Kept <kept@example.org></0>"
-msgstr "المُرسِل، مثلًا <0>Kept <kept@example.org></0>"
+msgid "the sender, for example <0>SheepKeep <kept@example.org></0>"
+msgstr "المُرسِل، مثلًا <0>SheepKeep <kept@example.org></0>"
 
 #: src/components/home/checklist.tsx
-msgid "Without it, Kept sends no sign-in links, password resets, email invites or reminders."
-msgstr "من دونه لا يرسل Kept روابط تسجيل الدخول ولا إعادة تعيين كلمات المرور ولا الدعوات بالبريد ولا التذكيرات."
+msgid "Without it, SheepKeep sends no sign-in links, password resets, email invites or reminders."
+msgstr "من دونه لا يرسل SheepKeep روابط تسجيل الدخول ولا إعادة تعيين كلمات المرور ولا الدعوات بالبريد ولا التذكيرات."
 
 #: src/components/home/checklist.tsx
 msgid "your mail server, for example <0>smtps://user:password@smtp.example.org:465</0>"
@@ -842,8 +842,8 @@ msgid "A computer: the camera icon in the address bar, then Allow."
 msgstr "الحاسوب: أيقونة الكاميرا في شريط العنوان، ثم «السماح»."
 
 #: src/components/registries/registry-page.tsx
-msgid "A contact, without a Kept account"
-msgstr "جهة اتصال، بلا حساب في Kept"
+msgid "A contact, without a SheepKeep account"
+msgstr "جهة اتصال، بلا حساب في SheepKeep"
 
 #: src/components/things/action-menu.tsx
 msgid "A copy without the serial or purchase."
@@ -866,8 +866,8 @@ msgid "A field group"
 msgstr "مجموعة حقول"
 
 #: src/components/scan/manual-code.tsx
-msgid "A Kept code is 6 letters and digits, like 7KQ‑4MZ."
-msgstr "رمز Kept من 6 حروف وأرقام، مثل 7KQ‑4MZ."
+msgid "A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ."
+msgstr "رمز SheepKeep من 6 حروف وأرقام، مثل 7KQ‑4MZ."
 
 #: src/components/registries/field-sheet.tsx
 msgid "A key is a lower-case word in English letters, digits and _, starting with a letter."
@@ -1278,8 +1278,8 @@ msgid "AI"
 msgstr "الذكاء الاصطناعي"
 
 #: src/routes/setup.tsx
-msgid "AI and barcode lookup can be connected later, from Settings. Kept works without them."
-msgstr "يمكن ربط الذكاء الاصطناعي والبحث بالباركود لاحقًا من الإعدادات. يعمل Kept من دونهما."
+msgid "AI and barcode lookup can be connected later, from Settings. SheepKeep works without them."
+msgstr "يمكن ربط الذكاء الاصطناعي والبحث بالباركود لاحقًا من الإعدادات. يعمل SheepKeep من دونهما."
 
 #: src/lib/labels.ts
 msgid "AI assistant"
@@ -1374,8 +1374,8 @@ msgid "Already claimed"
 msgstr "خُصّص من قبل"
 
 #: src/components/inbox/duplicate-review.tsx
-msgid "Already in Kept"
-msgstr "موجود في Kept"
+msgid "Already in SheepKeep"
+msgstr "موجود في SheepKeep"
 
 #: src/components/history/labels.ts
 #: src/components/things/overview.tsx
@@ -1788,8 +1788,8 @@ msgid "Camera"
 msgstr "الكاميرا"
 
 #: src/components/capture/file-fallback.tsx
-msgid "Camera access is off for Kept."
-msgstr "الوصول إلى الكاميرا متوقف لـ Kept."
+msgid "Camera access is off for SheepKeep."
+msgstr "الوصول إلى الكاميرا متوقف لـ SheepKeep."
 
 #: src/components/capture/capture-screen.tsx
 msgid "Camera view"
@@ -3124,8 +3124,8 @@ msgid "Every addition, move and edit in the locations you belong to shows here, 
 msgstr "تظهر هنا كل إضافة ونقل وتعديل في المواقع التي تنتمي إليها، الأحدث أولًا."
 
 #: src/routes/gallery.tsx
-msgid "Every control Kept's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
-msgstr "كل عنصر تحكم تُبنى منه شاشات Kept، على React Aria. غيّر المظهر واللغة من الأعلى: يجب أن ينعكس كل شيء هنا بشكل سليم."
+msgid "Every control SheepKeep's screens are built from, on React Aria. Switch the theme and the language above: everything here should mirror cleanly."
+msgstr "كل عنصر تحكم تُبنى منه شاشات SheepKeep، على React Aria. غيّر المظهر واللغة من الأعلى: يجب أن ينعكس كل شيء هنا بشكل سليم."
 
 #: src/routes/_app/admin.users.tsx
 msgid "Every device {who} is signed in on is signed out. They get an email about it."
@@ -3582,8 +3582,8 @@ msgid "Go to Home"
 msgstr "اذهب إلى الرئيسية"
 
 #: src/routes/invite.tsx
-msgid "Go to Kept"
-msgstr "اذهب إلى Kept"
+msgid "Go to SheepKeep"
+msgstr "اذهب إلى SheepKeep"
 
 #: src/routes/auth/email-change.tsx
 msgid "Go to Settings"
@@ -3621,8 +3621,8 @@ msgstr "الممر"
 
 #: src/components/registries/registry-list.tsx
 #: src/components/registries/registry-page.tsx
-msgid "Has a Kept account"
-msgstr "لديه حساب في Kept"
+msgid "Has a SheepKeep account"
+msgstr "لديه حساب في SheepKeep"
 
 #: src/components/registries/labels.ts
 msgid "Has a reading that grows, like kilometres or hours."
@@ -3745,8 +3745,8 @@ msgid "How many to take off"
 msgstr "كم قطعة تفصلها"
 
 #: src/routes/setup.tsx
-msgid "How should this Kept work?"
-msgstr "كيف يعمل Kept هذا؟"
+msgid "How should this SheepKeep work?"
+msgstr "كيف يعمل SheepKeep هذا؟"
 
 #: src/components/capture/file-fallback.tsx
 msgid "How to allow it"
@@ -3823,8 +3823,8 @@ msgid "In a sentence: the drill <0/> is on the tool wall."
 msgstr "داخل جملة: المثقاب <0/> على جدار العدة."
 
 #: src/components/home/install-sheet.tsx
-msgid "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install Kept</0>."
-msgstr "في Chrome أو Edge، انقر أيقونة التثبيت في نهاية شريط العنوان، أو افتح القائمة واختر <0>تثبيت Kept</0>."
+msgid "In Chrome or Edge, click the install icon at the end of the address bar, or open the menu and choose <0>Install SheepKeep</0>."
+msgstr "في Chrome أو Edge، انقر أيقونة التثبيت في نهاية شريط العنوان، أو افتح القائمة واختر <0>تثبيت SheepKeep</0>."
 
 #: src/components/home/install-sheet.tsx
 msgid "In Safari on a Mac, choose <0>File › Add to Dock</0>."
@@ -3873,12 +3873,12 @@ msgid "Insights"
 msgstr "الإحصاءات"
 
 #: src/components/home/install-sheet.tsx
-msgid "Install Kept"
-msgstr "ثبّت Kept"
+msgid "Install SheepKeep"
+msgstr "ثبّت SheepKeep"
 
 #: src/components/home/install-sheet.tsx
-msgid "Install Kept on your phone"
-msgstr "ثبّت Kept على هاتفك"
+msgid "Install SheepKeep on your phone"
+msgstr "ثبّت SheepKeep على هاتفك"
 
 #: src/components/home/checklist.tsx
 msgid "Install on your phone"
@@ -3962,8 +3962,8 @@ msgid "iPhone, iPad"
 msgstr "iPhone، iPad"
 
 #: src/components/capture/file-fallback.tsx
-msgid "iPhone: Settings › Safari › Camera › Allow, then reopen Kept."
-msgstr "آيفون: الإعدادات › Safari › الكاميرا › السماح، ثم أعد فتح Kept."
+msgid "iPhone: Settings › Safari › Camera › Allow, then reopen SheepKeep."
+msgstr "آيفون: الإعدادات › Safari › الكاميرا › السماح، ثم أعد فتح SheepKeep."
 
 #: src/components/filters/panel.tsx
 msgid "is any of"
@@ -4131,8 +4131,8 @@ msgid "Join {name}"
 msgstr "انضم إلى «{name}»"
 
 #: src/routes/_app/settings.location.$id.invite.tsx
-msgid "Join {place} on Kept"
-msgstr "انضم إلى «{place}» على Kept"
+msgid "Join {place} on SheepKeep"
+msgstr "انضم إلى «{place}» على SheepKeep"
 
 #: src/routes/_app/admin.users.tsx
 msgid "joined {joined}"
@@ -4143,8 +4143,8 @@ msgid "Joined {joinedName}"
 msgstr "انضممت إلى «{joinedName}»"
 
 #: src/routes/_app/index.tsx
-msgid "Joining someone's Kept?"
-msgstr "تنضم إلى Kept لدى شخص آخر؟"
+msgid "Joining someone's SheepKeep?"
+msgstr "تنضم إلى SheepKeep لدى شخص آخر؟"
 
 #: src/components/search/palette.tsx
 msgid "Jump to"
@@ -4236,16 +4236,16 @@ msgid "Kept both"
 msgstr "أُبقي الاثنان"
 
 #: src/components/scan/scanner-view.tsx
-msgid "Kept can't scan here"
-msgstr "لا يستطيع Kept المسح هنا"
+msgid "SheepKeep can't scan here"
+msgstr "لا يستطيع SheepKeep المسح هنا"
 
 #: src/components/scan/scan-screen.tsx
-msgid "Kept can't tell what this is from here."
-msgstr "لا يستطيع Kept معرفة ما هذا من هنا."
+msgid "SheepKeep can't tell what this is from here."
+msgstr "لا يستطيع SheepKeep معرفة ما هذا من هنا."
 
 #: src/components/capture/file-fallback.tsx
-msgid "Kept can't use the camera"
-msgstr "لا يستطيع Kept استخدام الكاميرا"
+msgid "SheepKeep can't use the camera"
+msgstr "لا يستطيع SheepKeep استخدام الكاميرا"
 
 #: src/routes/_app/settings.two-factor.tsx
 msgid "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Two-factor needs a password, so afterwards set a new one with “Forgot your password?” on the sign-in page, then come back here."
@@ -4256,52 +4256,52 @@ msgid "Kept from an earlier type. They're not lost; re-type back to use them aga
 msgstr "محفوظة من نوع سابق. لم تضِع، أعد النوع السابق لتستخدمها مجددًا."
 
 #: src/components/capture/recognised.tsx
-msgid "Kept label in view"
-msgstr "ملصق Kept في الإطار"
+msgid "SheepKeep label in view"
+msgstr "ملصق SheepKeep في الإطار"
 
 #: src/routes/_app/admin.tsx
-msgid "Kept limits admin actions over HTTP. Put Kept on HTTPS before you rely on them."
-msgstr "يقيّد Kept إجراءات الإدارة عبر HTTP. انقل Kept إلى HTTPS قبل أن تعتمد عليها."
+msgid "SheepKeep limits admin actions over HTTP. Put SheepKeep on HTTPS before you rely on them."
+msgstr "يقيّد SheepKeep إجراءات الإدارة عبر HTTP. انقل SheepKeep إلى HTTPS قبل أن تعتمد عليها."
 
 #: src/components/reports/print-sheet.tsx
-msgid "Kept makes at most five reports an hour. Try again later."
-msgstr "ينشئ Kept خمسة تقارير في الساعة على الأكثر. أعد المحاولة لاحقًا."
+msgid "SheepKeep makes at most five reports an hour. Try again later."
+msgstr "ينشئ SheepKeep خمسة تقارير في الساعة على الأكثر. أعد المحاولة لاحقًا."
 
 #: src/routes/_app/admin.admins.tsx
-msgid "Kept needs at least one instance admin"
-msgstr "يحتاج Kept إلى مشرف خادم واحد على الأقل"
+msgid "SheepKeep needs at least one instance admin"
+msgstr "يحتاج SheepKeep إلى مشرف خادم واحد على الأقل"
 
 #: src/routes/_app/admin.admins.tsx
-msgid "Kept needs at least one instance admin, so the last one can't be removed."
-msgstr "يحتاج Kept إلى مشرف خادم واحد على الأقل، لذا لا يمكن إزالة آخر مشرف."
+msgid "SheepKeep needs at least one instance admin, so the last one can't be removed."
+msgstr "يحتاج SheepKeep إلى مشرف خادم واحد على الأقل، لذا لا يمكن إزالة آخر مشرف."
 
 #: src/components/sync-status.tsx
-msgid "Kept on the server is older than this app; ask your admin."
-msgstr "نسخة Kept على الخادم أقدم من هذا التطبيق؛ اسأل المسؤول."
+msgid "SheepKeep on the server is older than this app; ask your admin."
+msgstr "نسخة SheepKeep على الخادم أقدم من هذا التطبيق؛ اسأل المسؤول."
 
 #: src/routes/_app/help.tsx
-msgid "Kept opens from its own icon, full screen, and works offline."
-msgstr "يفتح Kept من أيقونته بملء الشاشة، ويعمل دون اتصال."
+msgid "SheepKeep opens from its own icon, full screen, and works offline."
+msgstr "يفتح SheepKeep من أيقونته بملء الشاشة، ويعمل دون اتصال."
 
 #: src/routes/_app/admin.alerts.tsx
-msgid "Kept raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
-msgstr "يرفع Kept تنبيهًا هنا، ويراسل مشرفي الخادم مرة واحدة في اليوم على الأكثر، عندما يحتاج شيء على الخادم إلى تدخّل شخص."
+msgid "SheepKeep raises an alert here, and emails the instance admins at most once a day, when something on the server needs a person."
+msgstr "يرفع SheepKeep تنبيهًا هنا، ويراسل مشرفي الخادم مرة واحدة في اليوم على الأكثر، عندما يحتاج شيء على الخادم إلى تدخّل شخص."
 
 #: src/routes/_app/admin.status.tsx
 msgid "Kept safe"
 msgstr "محفوظة"
 
 #: src/routes/_app/admin.status.tsx
-msgid "Kept sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart Kept. Link invites and passwords work without it."
-msgstr "لا يرسل Kept أي بريد: لا روابط دخول ولا إعادة تعيين لكلمات المرور ولا دعوات بالبريد ولا تنبيهات. اضبط <0>KEPT_SMTP_URL</0> وأعد تشغيل Kept. الدعوات بالرابط وكلمات المرور تعمل بدونه."
+msgid "SheepKeep sends no email: no sign-in links, password resets, email invites or alerts. Set <0>KEPT_SMTP_URL</0> and restart SheepKeep. Link invites and passwords work without it."
+msgstr "لا يرسل SheepKeep أي بريد: لا روابط دخول ولا إعادة تعيين لكلمات المرور ولا دعوات بالبريد ولا تنبيهات. اضبط <0>KEPT_SMTP_URL</0> وأعد تشغيل SheepKeep. الدعوات بالرابط وكلمات المرور تعمل بدونه."
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores the barcode with it."
-msgstr "يحفظ Kept الرمز الشريطي معه."
+msgid "SheepKeep stores the barcode with it."
+msgstr "يحفظ SheepKeep الرمز الشريطي معه."
 
 #: src/components/capture/share-arrival.tsx
-msgid "Kept takes photos and PDFs. Share those, or use Gallery."
-msgstr "يقبل Kept الصور وملفات PDF. شاركها، أو استخدم «المعرض»."
+msgid "SheepKeep takes photos and PDFs. Share those, or use Gallery."
+msgstr "يقبل SheepKeep الصور وملفات PDF. شاركها، أو استخدم «المعرض»."
 
 #: src/components/inbox/reading-review.tsx
 #: src/components/things/meters-section.tsx
@@ -4309,8 +4309,8 @@ msgid "Kept the reading"
 msgstr "أُبقيت القراءة"
 
 #: src/components/capture/share-arrival.tsx
-msgid "Kept wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
-msgstr "لم يكن Kept جاهزًا لاستقبال الملفات على هذا الجهاز بعد. أصبح جاهزًا الآن: ارجع إلى التطبيق الآخر وشارك من جديد."
+msgid "SheepKeep wasn't ready to receive files on this device yet. It is now: go back to the other app and share again."
+msgstr "لم يكن SheepKeep جاهزًا لاستقبال الملفات على هذا الجهاز بعد. أصبح جاهزًا الآن: ارجع إلى التطبيق الآخر وشارك من جديد."
 
 #: src/components/registries/field-sheet.tsx
 msgid "Key"
@@ -4678,8 +4678,8 @@ msgid "Location"
 msgstr "الموقع"
 
 #: src/components/capture/place-chip.tsx
-msgid "Location access is off for Kept in this browser's settings."
-msgstr "الوصول إلى الموقع متوقف لـ Kept في إعدادات هذا المتصفح."
+msgid "Location access is off for SheepKeep in this browser's settings."
+msgstr "الوصول إلى الموقع متوقف لـ SheepKeep في إعدادات هذا المتصفح."
 
 #: src/components/history/labels.ts
 msgid "Location created"
@@ -5388,8 +5388,8 @@ msgid "Next photo"
 msgstr "الصورة التالية"
 
 #: src/routes/_app/settings.two-factor.tsx
-msgid "Next time you sign in, Kept asks for a code from your app."
-msgstr "في المرة القادمة التي تسجّل فيها الدخول، سيطلب Kept رمزًا من تطبيقك."
+msgid "Next time you sign in, SheepKeep asks for a code from your app."
+msgstr "في المرة القادمة التي تسجّل فيها الدخول، سيطلب SheepKeep رمزًا من تطبيقك."
 
 #: src/components/history/timeline.tsx
 msgid "no"
@@ -5402,8 +5402,8 @@ msgid "No"
 msgstr "لا"
 
 #: src/routes/signin/index.tsx
-msgid "No account yet? Ask someone who uses this Kept to invite you. The invite link creates your account."
-msgstr "ليس لديك حساب بعد؟ اطلب من أحد مستخدمي Kept هذا أن يدعوك. رابط الدعوة ينشئ حسابك."
+msgid "No account yet? Ask someone who uses this SheepKeep to invite you. The invite link creates your account."
+msgstr "ليس لديك حساب بعد؟ اطلب من أحد مستخدمي SheepKeep هذا أن يدعوك. رابط الدعوة ينشئ حسابك."
 
 #: src/routes/_app/activity.tsx
 msgid "No activity matches"
@@ -5534,8 +5534,8 @@ msgid "Not a duplicate · keep both"
 msgstr "ليس مكررًا · إبقاء الاثنين"
 
 #: src/components/scan/outcome-sheet.tsx
-msgid "Not a Kept label"
-msgstr "ليس ملصق Kept"
+msgid "Not a SheepKeep label"
+msgstr "ليس ملصق SheepKeep"
 
 #: src/routes/_app/admin.status.tsx
 msgid "Not answering"
@@ -5562,8 +5562,8 @@ msgid "Not here"
 msgstr "ليس هنا"
 
 #: src/components/scan/outcome-sheet.tsx
-msgid "Not in your Kept"
-msgstr "ليس في Kept الخاص بك"
+msgid "Not in your SheepKeep"
+msgstr "ليس في SheepKeep الخاص بك"
 
 #: src/components/registries/type-editor.tsx
 msgid "Not inside another type"
@@ -5581,8 +5581,8 @@ msgid "Not on this phone"
 msgstr "ليس على هذا الهاتف"
 
 #: src/components/capture/recognised.tsx
-msgid "Not on this phone. Kept checks it when you open it online."
-msgstr "ليس على هذا الهاتف. يتحقق منه Kept عندما تفتحه وأنت متصل."
+msgid "Not on this phone. SheepKeep checks it when you open it online."
+msgstr "ليس على هذا الهاتف. يتحقق منه SheepKeep عندما تفتحه وأنت متصل."
 
 #: src/components/things/purchase-section.tsx
 msgid "Not recorded"
@@ -5688,8 +5688,8 @@ msgid "Nothing on this phone matches ‘<0>{q}</0>’"
 msgstr "لا شيء على هذا الهاتف يطابق «<0>{q}</0>»"
 
 #: src/components/capture/capture-screen.tsx
-msgid "Nothing on this phone yet. Open Kept once while online to bring your places."
-msgstr "لا شيء على هذا الهاتف بعد. افتح Kept مرة وأنت متصل لجلب أماكنك."
+msgid "Nothing on this phone yet. Open SheepKeep once while online to bring your places."
+msgstr "لا شيء على هذا الهاتف بعد. افتح SheepKeep مرة وأنت متصل لجلب أماكنك."
 
 #: src/components/things/overview.tsx
 msgid "Nothing recorded yet."
@@ -5798,12 +5798,12 @@ msgid "On Home until every step is done."
 msgstr "تظهر في الرئيسية حتى تكتمل كل الخطوات."
 
 #: src/components/capture/summary.tsx
-msgid "On iPhone, Kept uploads only while it's open. Keep it open when you're back in signal."
-msgstr "على آيفون، لا يرفع Kept إلا وهو مفتوح. أبقه مفتوحًا عندما تعود إلى التغطية."
+msgid "On iPhone, SheepKeep uploads only while it's open. Keep it open when you're back in signal."
+msgstr "على آيفون، لا يرفع SheepKeep إلا وهو مفتوح. أبقه مفتوحًا عندما تعود إلى التغطية."
 
 #: src/components/home/install-sheet.tsx
-msgid "On iPhone, notifications only reach Kept once it's on your Home Screen. Until then, reminders can come by email."
-msgstr "على iPhone، لا تصل الإشعارات إلى Kept إلا بعد إضافته إلى الشاشة الرئيسية. وحتى ذلك الحين، يمكن أن تصلك التذكيرات بالبريد الإلكتروني."
+msgid "On iPhone, notifications only reach SheepKeep once it's on your Home Screen. Until then, reminders can come by email."
+msgstr "على iPhone، لا تصل الإشعارات إلى SheepKeep إلا بعد إضافته إلى الشاشة الرئيسية. وحتى ذلك الحين، يمكن أن تصلك التذكيرات بالبريد الإلكتروني."
 
 #: src/components/home/checklist.tsx
 msgid "On iPhone, reminders only reach the installed app."
@@ -5846,8 +5846,8 @@ msgid "On. Signing in asks for a code from your authenticator app."
 msgstr "مفعّل. يطلب تسجيل الدخول رمزًا من تطبيق المصادقة."
 
 #: src/routes/_app/help.tsx
-msgid "Once Kept is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
-msgstr "بعد تثبيت Kept يظهر في قائمة المشاركة. شارك إليه الصور أو ملفات PDF من أي تطبيق، فتُفتح في الالتقاط."
+msgid "Once SheepKeep is installed it's in the Share sheet. Share photos or PDFs to it from any app, and they open in Capture."
+msgstr "بعد تثبيت SheepKeep يظهر في قائمة المشاركة. شارك إليه الصور أو ملفات PDF من أي تطبيق، فتُفتح في الالتقاط."
 
 #: src/routes/_app/p.$id.tsx
 msgid "One at a time with the move picker, or use Select below to move several at once."
@@ -5905,12 +5905,12 @@ msgid "Only me"
 msgstr "أنا فقط"
 
 #: src/components/sync-status.tsx
-msgid "Only part of your Kept is on this phone."
-msgstr "جزء فقط من Kept موجود على هذا الهاتف."
+msgid "Only part of your SheepKeep is on this phone."
+msgstr "جزء فقط من SheepKeep موجود على هذا الهاتف."
 
 #: src/routes/_app/admin.status.tsx
-msgid "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. Kept can't check."
-msgstr "لا تقل نعم إلا بعد حفظ المفتاحين من kept admin recovery-kit بعيدًا عن هذا الخادم. لا يستطيع Kept التحقق من ذلك."
+msgid "Only say yes once the two keys from kept admin recovery-kit are stored away from this server. SheepKeep can't check."
+msgstr "لا تقل نعم إلا بعد حفظ المفتاحين من kept admin recovery-kit بعيدًا عن هذا الخادم. لا يستطيع SheepKeep التحقق من ذلك."
 
 #: src/components/registries/registry-list.tsx
 msgid "Only something nothing uses can be deleted. Otherwise, merge it into another."
@@ -5996,16 +5996,16 @@ msgid "Open it"
 msgstr "افتحه"
 
 #: src/routes/auth/email-change.tsx
-msgid "Open Kept"
-msgstr "افتح Kept"
+msgid "Open SheepKeep"
+msgstr "افتح SheepKeep"
 
 #: src/components/home/install-sheet.tsx
-msgid "Open Kept from its new icon."
-msgstr "افتح Kept من أيقونته الجديدة."
+msgid "Open SheepKeep from its new icon."
+msgstr "افتح SheepKeep من أيقونته الجديدة."
 
 #: src/components/capture/share-arrival.tsx
-msgid "Open Kept once, then share again"
-msgstr "افتح Kept مرة ثم شارك من جديد"
+msgid "Open SheepKeep once, then share again"
+msgstr "افتح SheepKeep مرة ثم شارك من جديد"
 
 #: src/components/scan/claim-sheet.tsx
 msgid "Open that box"
@@ -6052,8 +6052,8 @@ msgid "Opening the camera"
 msgstr "جارٍ فتح الكاميرا"
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Opening this phone's copy of your Kept…"
-msgstr "جارٍ فتح نسخة هذا الهاتف من Kept الخاص بك…"
+msgid "Opening this phone's copy of your SheepKeep…"
+msgstr "جارٍ فتح نسخة هذا الهاتف من SheepKeep الخاص بك…"
 
 #: src/components/scan/barcode-sheet.tsx
 msgid "Optional: without one it waits in the Inbox to be named."
@@ -6064,8 +6064,8 @@ msgid "or"
 msgstr "أو"
 
 #: src/components/home/checklist.tsx
-msgid "Or reach Kept through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
-msgstr "أو اصل إلى Kept عبر Tailscale وفعّل HTTPS لشبكتك، وسينتهي العنوان بـ<0>.ts.net</0>."
+msgid "Or reach SheepKeep through Tailscale and turn on HTTPS for your tailnet; the address ends in <0>.ts.net</0>."
+msgstr "أو اصل إلى SheepKeep عبر Tailscale وفعّل HTTPS لشبكتك، وسينتهي العنوان بـ<0>.ts.net</0>."
 
 #: src/components/boxcheck/box-check-screen.tsx
 msgid "Or search"
@@ -6086,12 +6086,12 @@ msgid "Other"
 msgstr "آخر"
 
 #: src/components/home/checklist.tsx
-msgid "Over plain HTTP, phones block the camera, installing Kept, push notifications and location."
-msgstr "عبر HTTP العادي، تمنع الهواتف الكاميرا وتثبيت Kept والإشعارات الفورية والموقع الجغرافي."
+msgid "Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location."
+msgstr "عبر HTTP العادي، تمنع الهواتف الكاميرا وتثبيت SheepKeep والإشعارات الفورية والموقع الجغرافي."
 
 #: src/components/home/install-sheet.tsx
-msgid "Over plain HTTP, phones won't install Kept. Put Kept on HTTPS first."
-msgstr "عبر HTTP العادي، لا تثبّت الهواتف Kept. انقل Kept إلى HTTPS أولًا."
+msgid "Over plain HTTP, phones won't install SheepKeep. Put SheepKeep on HTTPS first."
+msgstr "عبر HTTP العادي، لا تثبّت الهواتف SheepKeep. انقل SheepKeep إلى HTTPS أولًا."
 
 #: src/lib/labels.ts
 msgid "Owner"
@@ -6325,12 +6325,12 @@ msgid "Places · <0>{placeCount}</0>"
 msgstr "الأماكن · <0>{placeCount}</0>"
 
 #: src/components/hints/hint-copy.ts
-msgid "Point at a Kept label"
-msgstr "وجّه الكاميرا إلى ملصق Kept"
+msgid "Point at a SheepKeep label"
+msgstr "وجّه الكاميرا إلى ملصق SheepKeep"
 
 #: src/components/scan/scan-screen.tsx
-msgid "Point at a Kept label, or a product's barcode."
-msgstr "وجّه الكاميرا إلى ملصق Kept أو إلى الرمز الشريطي لمنتج."
+msgid "Point at a SheepKeep label, or a product's barcode."
+msgstr "وجّه الكاميرا إلى ملصق SheepKeep أو إلى الرمز الشريطي لمنتج."
 
 #: src/components/scan/scan-screen.tsx
 msgid "Point at the label of the place or box they go in."
@@ -6483,8 +6483,8 @@ msgid "Put it inside another place in {locationName}"
 msgstr "ضعه داخل مكان آخر في «{locationName}»"
 
 #: src/components/home/checklist.tsx
-msgid "Put Kept on HTTPS"
-msgstr "انقل Kept إلى HTTPS"
+msgid "Put SheepKeep on HTTPS"
+msgstr "انقل SheepKeep إلى HTTPS"
 
 #: src/components/tray/tray.tsx
 msgid "Put them back"
@@ -7449,8 +7449,8 @@ msgid "Set up"
 msgstr "إعداد"
 
 #: src/routes/setup.tsx
-msgid "Set up this Kept"
-msgstr "إعداد Kept هذا"
+msgid "Set up this SheepKeep"
+msgstr "إعداد SheepKeep هذا"
 
 #: src/routes/auth/reset.tsx
 msgid "Setting it signs you out on every device."
@@ -7478,8 +7478,8 @@ msgid "Share a link or a QR code. Choose what they can do and for how long."
 msgstr "شارك رابطًا أو رمز QR، واختر ما يمكنهم فعله ولأي مدة."
 
 #: src/components/capture/share-arrival.tsx
-msgid "Share the files into Kept again."
-msgstr "شارك الملفات إلى Kept من جديد."
+msgid "Share the files into SheepKeep again."
+msgstr "شارك الملفات إلى SheepKeep من جديد."
 
 #: src/routes/_app/settings.location.$id.invite.tsx
 msgid "Share…"
@@ -7494,8 +7494,8 @@ msgid "Shared files"
 msgstr "الملفات المشتركة"
 
 #: src/components/capture/shared-sheet.tsx
-msgid "Shared into Kept"
-msgstr "تمت المشاركة إلى Kept"
+msgid "Shared into SheepKeep"
+msgstr "تمت المشاركة إلى SheepKeep"
 
 #: src/components/filters/views.tsx
 msgid "Shared with {name}"
@@ -7582,8 +7582,8 @@ msgstr "الدخول بحساب آخر"
 
 #: src/routes/auth/confirm.tsx
 #: src/routes/signin/index.tsx
-msgid "Sign in to Kept"
-msgstr "تسجيل الدخول إلى Kept"
+msgid "Sign in to SheepKeep"
+msgstr "تسجيل الدخول إلى SheepKeep"
 
 #: src/routes/signin/code.tsx
 msgid "Sign in with a one-time code"
@@ -7796,8 +7796,8 @@ msgid "Start"
 msgstr "ابدأ"
 
 #: src/components/home/checklist.tsx
-msgid "Start Kept's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
-msgstr "شغّل ملف Compose الخاص بـKept مع الملف التعريفي <0>https</0>. يضيف وكيلًا عكسيًا يحصل على شهادة لنطاقك."
+msgid "Start SheepKeep's Compose file with the <0>https</0> profile. It adds a reverse proxy that gets a certificate for your domain."
+msgstr "شغّل ملف Compose الخاص بـSheepKeep مع الملف التعريفي <0>https</0>. يضيف وكيلًا عكسيًا يحصل على شهادة لنطاقك."
 
 #: src/components/filters/registry.tsx
 msgid "State"
@@ -7809,8 +7809,8 @@ msgid "Status"
 msgstr "الحالة"
 
 #: src/components/sign-out.tsx
-msgid "Stay signed in and open Kept with a connection to finish syncing first."
-msgstr "ابقَ مسجّل الدخول وافتح Kept مع اتصال بالإنترنت لإكمال المزامنة أولًا."
+msgid "Stay signed in and open SheepKeep with a connection to finish syncing first."
+msgstr "ابقَ مسجّل الدخول وافتح SheepKeep مع اتصال بالإنترنت لإكمال المزامنة أولًا."
 
 #: src/components/auth-frame.tsx
 msgid "Step {step} of {steps}"
@@ -7987,8 +7987,8 @@ msgid "Taken"
 msgstr "وقت الأخذ"
 
 #: src/components/home/install-sheet.tsx
-msgid "Tap <0>Add</0>, then open Kept from its new icon."
-msgstr "اضغط <0>إضافة</0>، ثم افتح Kept من أيقونته الجديدة."
+msgid "Tap <0>Add</0>, then open SheepKeep from its new icon."
+msgstr "اضغط <0>إضافة</0>، ثم افتح SheepKeep من أيقونته الجديدة."
 
 #: src/components/home/install-sheet.tsx
 msgid "Tap <0>Install app</0>, or <1>Add to Home screen</1>."
@@ -8060,8 +8060,8 @@ msgid "That key is already a field of this type, one it inherits from, or one be
 msgstr "هذا المفتاح موجود بالفعل كحقل في هذا النوع، أو في نوع يرث منه، أو في نوع تحته. اختر مفتاحًا آخر."
 
 #: src/components/boxcheck/box-check-screen.tsx
-msgid "That label isn't on a thing in your Kept."
-msgstr "هذا الملصق ليس على شيء في Kept الخاص بك."
+msgid "That label isn't on a thing in your SheepKeep."
+msgstr "هذا الملصق ليس على شيء في SheepKeep الخاص بك."
 
 #: src/components/registries/registry-edit-sheet.tsx
 msgid "That name is already in this list. Merge the two instead."
@@ -8126,8 +8126,8 @@ msgid "The assistant may read it"
 msgstr "يمكن للمساعد قراءته"
 
 #: src/components/capture/file-fallback.tsx
-msgid "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put Kept on HTTPS."
-msgstr "تحتاج الكاميرا إلى عنوان آمن (HTTPS)، وهذه الصفحة ليس لها عنوان كهذا. يستطيع المشرف تشغيل Kept عبر HTTPS."
+msgid "The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put SheepKeep on HTTPS."
+msgstr "تحتاج الكاميرا إلى عنوان آمن (HTTPS)، وهذه الصفحة ليس لها عنوان كهذا. يستطيع المشرف تشغيل SheepKeep عبر HTTPS."
 
 #: src/routes/setup.tsx
 msgid "The code is 6 letters and digits, like K7Q-2M9."
@@ -8195,8 +8195,8 @@ msgstr "آخر قراءة للعدّاد القديم ({unit})"
 
 #. placeholder {0}: th.name
 #: src/components/inbox/duplicate-review.tsx
-msgid "The one already in Kept, <0>{0}</0>"
-msgstr "الموجود في Kept، <0>{0}</0>"
+msgid "The one already in SheepKeep, <0>{0}</0>"
+msgstr "الموجود في SheepKeep، <0>{0}</0>"
 
 #: src/components/things/photos.tsx
 msgid "The original is kept. This format can't be previewed yet."
@@ -8277,8 +8277,8 @@ msgid "Theme"
 msgstr "المظهر"
 
 #: src/components/home/checklist.tsx
-msgid "Then set KEPT_PUBLIC_URL to the https address and restart Kept."
-msgstr "ثم اضبط KEPT_PUBLIC_URL على عنوان https وأعد تشغيل Kept."
+msgid "Then set KEPT_PUBLIC_URL to the https address and restart SheepKeep."
+msgstr "ثم اضبط KEPT_PUBLIC_URL على عنوان https وأعد تشغيل SheepKeep."
 
 #. placeholder {0}: fmt.num(thing.quantity)
 #: src/components/things/split-sheet.tsx
@@ -8384,8 +8384,8 @@ msgid "This account runs the server: users, sign-up and backups. It can't see in
 msgstr "هذا الحساب يدير الخادم: المستخدمين والتسجيل والنسخ الاحتياطي. لا يرى ما في منزل أحد إلا إذا دعاه."
 
 #: src/components/not-found.tsx
-msgid "This address doesn't lead to a page in Kept. The link may be old."
-msgstr "هذا العنوان لا يؤدي إلى صفحة في Kept. ربما الرابط قديم."
+msgid "This address doesn't lead to a page in SheepKeep. The link may be old."
+msgstr "هذا العنوان لا يؤدي إلى صفحة في SheepKeep. ربما الرابط قديم."
 
 #: src/components/capture/summary.tsx
 msgid "This batch"
@@ -8404,24 +8404,24 @@ msgid "The scanner didn't start."
 msgstr "لم يبدأ الماسح."
 
 #: src/components/sync-status.tsx
-msgid "This browser may clear Kept's offline copy after weeks unused. Open Kept to sync soon."
-msgstr "قد يمسح هذا المتصفح نسخة Kept دون اتصال بعد أسابيع من عدم الاستخدام. افتح Kept للمزامنة قريبًا."
+msgid "This browser may clear SheepKeep's offline copy after weeks unused. Open SheepKeep to sync soon."
+msgstr "قد يمسح هذا المتصفح نسخة SheepKeep دون اتصال بعد أسابيع من عدم الاستخدام. افتح SheepKeep للمزامنة قريبًا."
 
 #: src/components/page.tsx
 msgid "This changed since you opened it. Reload and try again."
 msgstr "تغيّر هذا منذ فتحته. أعد التحميل وحاول مجددًا."
 
 #: src/components/scan/outcome-sheet.tsx
-msgid "This code isn't one of Kept's labels. It says:"
-msgstr "هذا الرمز ليس من ملصقات Kept. مكتوب فيه:"
+msgid "This code isn't one of SheepKeep's labels. It says:"
+msgstr "هذا الرمز ليس من ملصقات SheepKeep. مكتوب فيه:"
 
 #: src/routes/_app/settings.index.tsx
 msgid "This device"
 msgstr "هذا الجهاز"
 
 #: src/components/capture/file-fallback.tsx
-msgid "This device has no camera Kept can use."
-msgstr "لا توجد على هذا الجهاز كاميرا يستطيع Kept استخدامها."
+msgid "This device has no camera SheepKeep can use."
+msgstr "لا توجد على هذا الجهاز كاميرا يستطيع SheepKeep استخدامها."
 
 #: src/routes/_app/settings.index.tsx
 msgid "This device stays signed in. The others need your password or passkey again."
@@ -8460,8 +8460,8 @@ msgid "This isn't here any more, or you can't see it."
 msgstr "لم يعد هذا موجودًا، أو لا يمكنك رؤيته."
 
 #: src/routes/setup.tsx
-msgid "This Kept is already set up. Sign in instead."
-msgstr "تم إعداد Kept هذا بالفعل. سجّل الدخول بدلًا من ذلك."
+msgid "This SheepKeep is already set up. Sign in instead."
+msgstr "تم إعداد SheepKeep هذا بالفعل. سجّل الدخول بدلًا من ذلك."
 
 #: src/components/scan/claim-sheet.tsx
 msgid "This label isn't on anything yet. Use it for:"
@@ -8513,8 +8513,8 @@ msgid "This phone format can't be previewed yet. The original is kept."
 msgstr "لا يمكن معاينة صيغة الهاتف هذه بعد. الأصل محفوظ."
 
 #: src/components/sync-status.tsx
-msgid "This phone is out of space for Kept. Free some space to keep capturing offline."
-msgstr "لا توجد مساحة كافية لـ Kept على هذا الهاتف. أفرغ بعض المساحة لمواصلة الالتقاط دون اتصال."
+msgid "This phone is out of space for SheepKeep. Free some space to keep capturing offline."
+msgstr "لا توجد مساحة كافية لـ SheepKeep على هذا الهاتف. أفرغ بعض المساحة لمواصلة الالتقاط دون اتصال."
 
 #: src/components/capture/capture-screen.tsx
 msgid "This phone may be out of space."
@@ -8525,8 +8525,8 @@ msgid "This sign-in timed out. Start again from the sign-in page."
 msgstr "انتهت مهلة هذا الدخول. ابدأ من جديد من صفحة تسجيل الدخول."
 
 #: src/components/home/install-sheet.tsx
-msgid "This step ticks itself the first time you open Kept from its icon."
-msgstr "تكتمل هذه الخطوة تلقائيًا أول مرة تفتح فيها Kept من أيقونته."
+msgid "This step ticks itself the first time you open SheepKeep from its icon."
+msgstr "تكتمل هذه الخطوة تلقائيًا أول مرة تفتح فيها SheepKeep من أيقونته."
 
 #: src/components/things/links.tsx
 msgid "This thing is…"
@@ -8958,8 +8958,8 @@ msgid "Up to {0}"
 msgstr "حتى {0}"
 
 #: src/components/sync-status.tsx
-msgid "Update Kept to finish syncing."
-msgstr "حدّث Kept لإكمال المزامنة."
+msgid "Update SheepKeep to finish syncing."
+msgstr "حدّث SheepKeep لإكمال المزامنة."
 
 #: src/components/pull-to-refresh.tsx
 msgid "Updated"
@@ -9035,8 +9035,8 @@ msgid "Used up by"
 msgstr "يستهلكه"
 
 #: src/components/display-prefs.tsx
-msgid "Used when Kept is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
-msgstr "تُستخدم حين يكون Kept بالعربية، للمبالغ والتواريخ والأعداد. المعرّفات القصيرة والرموز والأرقام التسلسلية تبقى دائمًا 0–9."
+msgid "Used when SheepKeep is in Arabic, for amounts, dates and counts. Short IDs, codes and serials always stay 0–9."
+msgstr "تُستخدم حين يكون SheepKeep بالعربية، للمبالغ والتواريخ والأعداد. المعرّفات القصيرة والرموز والأرقام التسلسلية تبقى دائمًا 0–9."
 
 #: src/routes/_app/settings.location.$id.members.tsx
 #: src/routes/signin/code.tsx
@@ -9293,8 +9293,8 @@ msgid "When AI fills in a thing here, it adds search words in each of these lang
 msgstr "عندما يملأ الذكاء الاصطناعي بيانات شيء هنا، يضيف كلمات بحث بكل لغة من هذه اللغات، ليجده كل شخص بلغته."
 
 #: src/routes/setup.tsx
-msgid "When Kept started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
-msgstr "عندما عمل Kept لأول مرة، طبع رمز إعداد لمرة واحدة في سجلات الخادم. إدخاله يثبت أنك من ثبّت هذا الخادم. يتوقف الرمز عن العمل بعد استخدامه."
+msgid "When SheepKeep started for the first time, it printed a one-time setup code in the server's logs. Entering it shows you're the person who installed this server. The code stops working once it's used."
+msgstr "عندما عمل SheepKeep لأول مرة، طبع رمز إعداد لمرة واحدة في سجلات الخادم. إدخاله يثبت أنك من ثبّت هذا الخادم. يتوقف الرمز عن العمل بعد استخدامه."
 
 #: src/routes/_app/p.$id.tsx
 msgid "When two places are really the same one"
@@ -9745,8 +9745,8 @@ msgid "{0}% used"
 msgstr "استُهلك {0}٪"
 
 #: src/components/ai/usage-totals.tsx
-msgid "{held, plural, one {# held back by Kept} other {# held back by Kept}}"
-msgstr "{held, plural, zero {لم يحجب Kept شيئًا} one {واحد حجبه Kept} two {اثنان حجبهما Kept} few {# حجبها Kept} many {# حجبها Kept} other {# حجبها Kept}}"
+msgid "{held, plural, one {# held back by SheepKeep} other {# held back by SheepKeep}}"
+msgstr "{held, plural, zero {لم يحجب SheepKeep شيئًا} one {واحد حجبه SheepKeep} two {اثنان حجبهما SheepKeep} few {# حجبها SheepKeep} many {# حجبها SheepKeep} other {# حجبها SheepKeep}}"
 
 #. placeholder {0}: fmt.day(`${terms.checked}T12:00:00Z`)
 #: src/components/ai/data-use-note.tsx
@@ -9875,8 +9875,8 @@ msgid "add a price to see cost"
 msgstr "أضف سعرًا لترى التكلفة"
 
 #: src/components/ai/what-uses-ai.tsx
-msgid "Add a price to see cost. Until then Kept counts tokens only."
-msgstr "أضف سعرًا لترى التكلفة. حتى ذلك الحين يعدّ Kept الرموز فقط."
+msgid "Add a price to see cost. Until then SheepKeep counts tokens only."
+msgstr "أضف سعرًا لترى التكلفة. حتى ذلك الحين يعدّ SheepKeep الرموز فقط."
 
 #: src/components/ai/advanced.tsx
 msgid "Admin settings"
@@ -10260,8 +10260,8 @@ msgid "Images"
 msgstr "الصور"
 
 #: src/components/ai/recommended.tsx
-msgid "In Kept's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
-msgstr "في اختبار Kept بتاريخ {date}، قرأ الإيصالات والملصقات ولوحات البيانات بدقة وبأقل تكلفة بين النماذج التي قيست:"
+msgid "In SheepKeep's test on {date}, it read receipts, labels and nameplates correctly for the least money of any model measured:"
+msgstr "في اختبار SheepKeep بتاريخ {date}، قرأ الإيصالات والملصقات ولوحات البيانات بدقة وبأقل تكلفة بين النماذج التي قيست:"
 
 #. placeholder {0}: money(r.inputPerMtok, price.currency)
 #. placeholder {1}: money(r.outputPerMtok, price.currency)
@@ -10291,26 +10291,26 @@ msgstr "أبقِه متوقفًا"
 #: src/components/ai/call-filters.tsx
 #: src/components/ai/call-list.tsx
 #: src/components/ai/usage-charts.tsx
-msgid "Kept (background)"
-msgstr "Kept (في الخلفية)"
+msgid "SheepKeep (background)"
+msgstr "SheepKeep (في الخلفية)"
 
 #: src/components/ai/paste-key.tsx
-msgid "Kept can't tell which provider this key is for. Choose it under Advanced."
-msgstr "لا يستطيع Kept معرفة مزوّد هذا المفتاح. اختره في «متقدم»."
+msgid "SheepKeep can't tell which provider this key is for. Choose it under Advanced."
+msgstr "لا يستطيع SheepKeep معرفة مزوّد هذا المفتاح. اختره في «متقدم»."
 
 #. placeholder {0}: n(call.tokens.estimate)
 #: src/components/ai/call-detail.tsx
-msgid "Kept estimated {0} before sending."
-msgstr "قدّر Kept {0} قبل الإرسال."
+msgid "SheepKeep estimated {0} before sending."
+msgstr "قدّر SheepKeep {0} قبل الإرسال."
 
 #. placeholder {0}: kindName(kind)
 #: src/components/ai/advanced.tsx
-msgid "Kept fills in {0}'s address."
-msgstr "يملأ Kept عنوان {0}."
+msgid "SheepKeep fills in {0}'s address."
+msgstr "يملأ SheepKeep عنوان {0}."
 
 #: src/components/ai/paste-key.tsx
-msgid "Kept reads the provider from the key. It sends the key to the server once and never shows it again."
-msgstr "يعرف Kept المزوّد من المفتاح. يرسل المفتاح إلى الخادم مرة واحدة ولا يعرضه مجددًا."
+msgid "SheepKeep reads the provider from the key. It sends the key to the server once and never shows it again."
+msgstr "يعرف SheepKeep المزوّد من المفتاح. يرسل المفتاح إلى الخادم مرة واحدة ولا يعرضه مجددًا."
 
 #: src/components/ai/paste-key.tsx
 msgid "Key saved"
@@ -10371,8 +10371,8 @@ msgstr "منخفض (الافتراضي)"
 #. placeholder {0}: fmt.day(`${refDate}T12:00:00Z`)
 #. placeholder {1}: REFERENCE_FIGURES.model
 #: src/components/ai/what-uses-ai.tsx
-msgid "Measured by Kept on {0} with Groq · <0>{1}</0>"
-msgstr "قاسه Kept في {0} مع Groq · <0>{1}</0>"
+msgid "Measured by SheepKeep on {0} with Groq · <0>{1}</0>"
+msgstr "قاسه SheepKeep في {0} مع Groq · <0>{1}</0>"
 
 #: src/components/ai/advanced.tsx
 msgid "Medium"
@@ -10488,8 +10488,8 @@ msgid "Not sent"
 msgstr "لم يُرسل"
 
 #: src/components/ai/call-detail.tsx
-msgid "Not sent: Kept held it back, so nothing was used."
-msgstr "لم يُرسل: حجبه Kept، فلم يُستهلك شيء."
+msgid "Not sent: SheepKeep held it back, so nothing was used."
+msgstr "لم يُرسل: حجبه SheepKeep، فلم يُستهلك شيء."
 
 #: src/components/ai/key-scope.tsx
 msgid "Not set: name things by hand"
@@ -10520,8 +10520,8 @@ msgid "Only a copy of the photo with location and camera data removed, never the
 msgstr "نسخة من الصورة فقط بعد إزالة بيانات الموقع والكاميرا، ولا تُرسل الصورة الأصلية أبدًا. والتعليمات الثابتة ولغات موقعك. وللمساعد: سؤالك وما يبحث عنه في مخزونك، ضمن صلاحياتك. ولا تُرسل الحقول السرية أبدًا."
 
 #: src/components/ai/call-detail.tsx
-msgid "Only a copy with the location and camera data removed. Kept never keeps it."
-msgstr "نسخة فقط بعد إزالة بيانات الموقع والكاميرا. لا يحتفظ بها Kept أبدًا."
+msgid "Only a copy with the location and camera data removed. SheepKeep never keeps it."
+msgstr "نسخة فقط بعد إزالة بيانات الموقع والكاميرا. لا يحتفظ بها SheepKeep أبدًا."
 
 #: src/components/ai/prices.tsx
 msgid "Only where the provider bills images apart from tokens."
@@ -10737,8 +10737,8 @@ msgid "Run Test to check photos"
 msgstr "شغّل الاختبار للتحقق من قراءة الصور"
 
 #: src/components/ai/advanced.tsx
-msgid "Save a key first: Kept then loads the provider's models to choose from."
-msgstr "احفظ مفتاحًا أولًا: ثم يحمّل Kept نماذج المزوّد لتختار منها."
+msgid "Save a key first: SheepKeep then loads the provider's models to choose from."
+msgstr "احفظ مفتاحًا أولًا: ثم يحمّل SheepKeep نماذج المزوّد لتختار منها."
 
 #: src/components/ai/paste-key.tsx
 msgid "Save and test"
@@ -10869,8 +10869,8 @@ msgid "That currency isn't turned on. An instance admin can add it."
 msgstr "هذه العملة غير مفعّلة. يمكن لمشرف الخادم إضافتها."
 
 #: src/components/ai/recommended.tsx
-msgid "That was a test with made-up photos; Kept's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
-msgstr "كان ذلك اختبارًا بصور مصطنعة؛ ويعيد تقييم Kept بصور حقيقية التحقق منه. ليس لدى Groq نموذج تضمين، فيحتاج البحث الدلالي إلى مزوّد آخر أو يبقى بالكلمات المفتاحية. على فئة المفتاح التي قاسها Kept، يقرأ Groq من {low} إلى {high} صور في الدقيقة؛ ويضبط Kept وتيرته عليها، فتُسمّى جلسة من {photos} صورة خلال {fromMin} إلى {toMin} دقيقة بينما تواصل عملك."
+msgid "That was a test with made-up photos; SheepKeep's evaluation with real photos checks it again. Groq has no embeddings model, so semantic search needs another provider or stays keyword only. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry on."
+msgstr "كان ذلك اختبارًا بصور مصطنعة؛ ويعيد تقييم SheepKeep بصور حقيقية التحقق منه. ليس لدى Groq نموذج تضمين، فيحتاج البحث الدلالي إلى مزوّد آخر أو يبقى بالكلمات المفتاحية. على فئة المفتاح التي قاسها SheepKeep، يقرأ Groq من {low} إلى {high} صور في الدقيقة؛ ويضبط SheepKeep وتيرته عليها، فتُسمّى جلسة من {photos} صورة خلال {fromMin} إلى {toMin} دقيقة بينما تواصل عملك."
 
 #: src/components/history/undo.ts
 msgid "That was already undone"
@@ -10893,21 +10893,21 @@ msgid "the answer was cut off"
 msgstr "قُطعت الإجابة"
 
 #: src/components/ai/labels.ts
-msgid "the answer wasn't in the shape Kept asked for"
-msgstr "لم تأتِ الإجابة بالشكل الذي طلبه Kept"
+msgid "the answer wasn't in the shape SheepKeep asked for"
+msgstr "لم تأتِ الإجابة بالشكل الذي طلبه SheepKeep"
 
 #. placeholder {0}: RECOMMENDED.model
 #: src/components/ai/recommended.tsx
-msgid "The cheapest reliable result in Kept's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to it."
-msgstr "أرخص نتيجة موثوقة في اختبار Kept: نحو {perReceipt} دولار أمريكي للإيصال، مع <0>{0}</0>. على فئة المفتاح التي قاسها Kept، يقرأ Groq من {low} إلى {high} صور في الدقيقة؛ ويضبط Kept وتيرته عليها."
+msgid "The cheapest reliable result in SheepKeep's test: about USD {perReceipt} a receipt, with <0>{0}</0>. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep paces to it."
+msgstr "أرخص نتيجة موثوقة في اختبار SheepKeep: نحو {perReceipt} دولار أمريكي للإيصال، مع <0>{0}</0>. على فئة المفتاح التي قاسها SheepKeep، يقرأ Groq من {low} إلى {high} صور في الدقيقة؛ ويضبط SheepKeep وتيرته عليها."
 
 #: src/components/ai/paste-key.tsx
-msgid "The first AI key is a secret Kept must be able to recover. Save the recovery kit on the status page, then paste the key again."
-msgstr "أول مفتاح ذكاء اصطناعي سرٌّ يجب أن يستطيع Kept استرداده. احفظ حزمة الاسترداد من صفحة الحالة، ثم الصق المفتاح مجددًا."
+msgid "The first AI key is a secret SheepKeep must be able to recover. Save the recovery kit on the status page, then paste the key again."
+msgstr "أول مفتاح ذكاء اصطناعي سرٌّ يجب أن يستطيع SheepKeep استرداده. احفظ حزمة الاسترداد من صفحة الحالة، ثم الصق المفتاح مجددًا."
 
 #: src/components/ai/prices.tsx
-msgid "The listing has no prices Kept can use."
-msgstr "لا تحتوي القائمة على أسعار يمكن لـKept استخدامها."
+msgid "The listing has no prices SheepKeep can use."
+msgstr "لا تحتوي القائمة على أسعار يمكن لـSheepKeep استخدامها."
 
 #: src/components/ai/labels.ts
 msgid "the monthly cap was reached"
@@ -10922,8 +10922,8 @@ msgid "The person who runs this server needs to save the recovery kit before the
 msgstr "يجب على من يدير هذا الخادم حفظ حزمة الاسترداد قبل أول مفتاح ذكاء اصطناعي. اسأله، ثم الصق المفتاح مجددًا."
 
 #: src/components/ai/labels.ts
-msgid "the provider asked Kept to slow down"
-msgstr "طلب المزوّد من Kept التمهّل"
+msgid "the provider asked SheepKeep to slow down"
+msgstr "طلب المزوّد من SheepKeep التمهّل"
 
 #: src/components/ai/labels.ts
 msgid "the provider couldn't be reached"
@@ -11100,8 +11100,8 @@ msgid "What it belongs to opens, with what's inside. A worn label, or no camera?
 msgstr "يُفتح ما يخصه الملصق مع ما بداخله. ملصق باهت أو لا كاميرا؟ اكتب الرمز بدلًا من ذلك."
 
 #: src/components/ai/what-uses-ai.tsx
-msgid "What uses AI in Kept"
-msgstr "ما يستخدم الذكاء الاصطناعي في Kept"
+msgid "What uses AI in SheepKeep"
+msgstr "ما يستخدم الذكاء الاصطناعي في SheepKeep"
 
 #: src/components/ai/call-detail.tsx
 msgid "Where and who"
@@ -11381,8 +11381,8 @@ msgid "Importing…"
 msgstr "جارٍ الاستيراد…"
 
 #: src/components/import/choices-step.tsx
-msgid "In any of Kept's languages. Off, the type is kept in the notes."
-msgstr "بأي لغة من لغات Kept. عند الإيقاف، يُحفظ النوع في الملاحظات."
+msgid "In any of SheepKeep's languages. Off, the type is kept in the notes."
+msgstr "بأي لغة من لغات SheepKeep. عند الإيقاف، يُحفظ النوع في الملاحظات."
 
 #: src/components/import/progress-step.tsx
 msgid "It hasn't moved for a while. What it already imported stays."
@@ -11461,12 +11461,12 @@ msgid "No type has this name; kept in the notes."
 msgstr "لا نوع بهذا الاسم؛ حُفظ في الملاحظات."
 
 #: src/components/import/labels.ts
-msgid "Not a condition Kept knows; kept in the notes."
-msgstr "ليست حالة يعرفها Kept؛ حُفظت في الملاحظات."
+msgid "Not a condition SheepKeep knows; kept in the notes."
+msgstr "ليست حالة يعرفها SheepKeep؛ حُفظت في الملاحظات."
 
 #: src/components/import/labels.ts
-msgid "Not a currency turned on in Kept; the price is kept in the notes."
-msgstr "ليست عملة مفعّلة في Kept؛ حُفظ السعر في الملاحظات."
+msgid "Not a currency turned on in SheepKeep; the price is kept in the notes."
+msgstr "ليست عملة مفعّلة في SheepKeep؛ حُفظ السعر في الملاحظات."
 
 #: src/components/import/labels.ts
 msgid "Not a date written as {format}; kept in the notes."
@@ -11801,8 +11801,8 @@ msgid "Things already started from it keep their details."
 msgstr "الأشياء التي بدأت منه تحتفظ بتفاصيلها."
 
 #: src/routes/_print/labels.$batchId.tsx
-msgid "Kept labels"
-msgstr "ملصقات Kept"
+msgid "SheepKeep labels"
+msgstr "ملصقات SheepKeep"
 
 #: src/routes/_print/labels.$batchId.tsx
 msgid "Saved the label images"
@@ -11825,8 +11825,8 @@ msgid "Share as images"
 msgstr "شارك كصور"
 
 #: src/routes/_app/help.tsx
-msgid "Share into Kept"
-msgstr "المشاركة إلى Kept"
+msgid "Share into SheepKeep"
+msgstr "المشاركة إلى SheepKeep"
 
 #: src/components/home/checklist.tsx
 #: src/routes/_print/labels.$batchId.tsx
@@ -11977,12 +11977,12 @@ msgid "{count, plural, one {Print # label} other {Print # labels}}"
 msgstr "{count, plural, zero {لا ملصقات للطباعة} one {اطبع ملصقًا واحدًا} two {اطبع ملصقين} few {اطبع # ملصقات} many {اطبع # ملصقًا} other {اطبع # ملصق}}"
 
 #: src/components/labels/batch-builder.tsx
-msgid "Opens the print dialog at {stockTitle}, scale 100%. Afterwards Kept asks \"Printed OK?\" and records the print date."
-msgstr "يفتح نافذة الطباعة على {stockTitle} بمقياس 100%. بعدها يسألك Kept «هل طُبعت جيدًا؟» ويسجّل تاريخ الطباعة."
+msgid "Opens the print dialog at {stockTitle}, scale 100%. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
+msgstr "يفتح نافذة الطباعة على {stockTitle} بمقياس 100%. بعدها يسألك SheepKeep «هل طُبعت جيدًا؟» ويسجّل تاريخ الطباعة."
 
 #: src/components/labels/batch-builder.tsx
-msgid "Opens the print dialog: choose your label printer and this label size. Afterwards Kept asks \"Printed OK?\" and records the print date."
-msgstr "يفتح نافذة الطباعة: اختر طابعة الملصقات ومقاس هذا الملصق. بعدها يسألك Kept «هل طُبعت جيدًا؟» ويسجّل تاريخ الطباعة."
+msgid "Opens the print dialog: choose your label printer and this label size. Afterwards SheepKeep asks \"Printed OK?\" and records the print date."
+msgstr "يفتح نافذة الطباعة: اختر طابعة الملصقات ومقاس هذا الملصق. بعدها يسألك SheepKeep «هل طُبعت جيدًا؟» ويسجّل تاريخ الطباعة."
 
 #: src/components/labels/batch-builder.tsx
 msgid "Label preview"
@@ -12218,24 +12218,24 @@ msgid "Former addresses"
 msgstr "العناوين السابقة"
 
 #: src/routes/_app/admin.settings.tsx
-msgid "Look up products Kept doesn't know by their barcode"
-msgstr "ابحث بالباركود عن المنتجات التي لا يعرفها Kept"
+msgid "Look up products SheepKeep doesn't know by their barcode"
+msgstr "ابحث بالباركود عن المنتجات التي لا يعرفها SheepKeep"
 
 #: src/routes/_app/admin.settings.tsx
-msgid "None. Kept answers only at its own address."
-msgstr "لا شيء. لا يُجيب Kept إلا على عنوانه."
+msgid "None. SheepKeep answers only at its own address."
+msgstr "لا شيء. لا يُجيب SheepKeep إلا على عنوانه."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "Off. A scanned product barcode finds only what Kept already holds."
-msgstr "متوقف. الباركود الممسوح لمنتج لا يجد إلا ما في Kept بالفعل."
+msgid "Off. A scanned product barcode finds only what SheepKeep already holds."
+msgstr "متوقف. الباركود الممسوح لمنتج لا يجد إلا ما في SheepKeep بالفعل."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Old host name"
 msgstr "اسم المضيف القديم"
 
 #: src/routes/_app/admin.settings.tsx
-msgid "On. A scanned product barcode Kept doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
-msgstr "مفعّل. يُبحث عن الباركود الممسوح لمنتج لا يعرفه Kept في Open Food Facts وOpen Products Facts وOpen Beauty Facts. لا يُرسل إلا الباركود."
+msgid "On. A scanned product barcode SheepKeep doesn't know is looked up in Open Food Facts, Open Products Facts and Open Beauty Facts. Only the barcode is sent."
+msgstr "مفعّل. يُبحث عن الباركود الممسوح لمنتج لا يعرفه SheepKeep في Open Food Facts وOpen Products Facts وOpen Beauty Facts. لا يُرسل إلا الباركود."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Only the name, like kept.home.example."
@@ -12258,12 +12258,12 @@ msgid "That name is already listed."
 msgstr "هذا الاسم مُدرج بالفعل."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "The databases ask each app for a contact. Kept sends this email with each lookup, and nothing else about you."
-msgstr "تطلب قواعد البيانات من كل تطبيق جهة اتصال. يرسل Kept هذا البريد مع كل عملية بحث، ولا شيء آخر عنك."
+msgid "The databases ask each app for a contact. SheepKeep sends this email with each lookup, and nothing else about you."
+msgstr "تطلب قواعد البيانات من كل تطبيق جهة اتصال. يرسل SheepKeep هذا البريد مع كل عملية بحث، ولا شيء آخر عنك."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "When Kept moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
-msgstr "عندما ينتقل Kept إلى عنوان جديد، أدرج الأسماء القديمة هنا ووجّهها إلى هذا الخادم. يظل الملصق المطبوع بعنوان قديم يُفتح: يُحوَّل الطلب إلى هذا العنوان."
+msgid "When SheepKeep moves to a new address, list the old names here and point them at this server. A label printed under an old address still opens: the request is sent to this one."
+msgstr "عندما ينتقل SheepKeep إلى عنوان جديد، أدرج الأسماء القديمة هنا ووجّهها إلى هذا الخادم. يظل الملصق المطبوع بعنوان قديم يُفتح: يُحوَّل الطلب إلى هذا العنوان."
 
 #: src/components/places/contents-list.tsx
 msgid "{n, plural, one {Picked up # thing} other {Picked up # things}}"
@@ -12455,8 +12455,8 @@ msgid "In plain words, for whoever types the code."
 msgstr "بكلمات بسيطة، لمن يكتب الرمز."
 
 #: src/components/codes/code-settings.tsx
-msgid "Kept can't read this pattern. Check its brackets."
-msgstr "لا يستطيع Kept قراءة هذا النمط. تحقّق من أقواسه."
+msgid "SheepKeep can't read this pattern. Check its brackets."
+msgstr "لا يستطيع SheepKeep قراءة هذا النمط. تحقّق من أقواسه."
 
 #: src/components/codes/code-settings.tsx
 msgid "Message when a code doesn't match"
@@ -12577,8 +12577,8 @@ msgid "Expiring"
 msgstr "قرب الانتهاء"
 
 #: src/routes/_app/settings.me.notifications.tsx
-msgid "How Kept reaches you"
-msgstr "كيف يصلك Kept"
+msgid "How SheepKeep reaches you"
+msgstr "كيف يصلك SheepKeep"
 
 #: src/routes/_app/incidents.$id.tsx
 msgid "Incident"
@@ -12638,16 +12638,16 @@ msgid "Share it to save it to Files or send it on."
 msgstr "شاركه لتحفظه في «الملفات» أو لترسله."
 
 #: src/components/ai/call-list.tsx
-msgid "This browser can't save files here. Open Kept in Safari to export it."
-msgstr "لا يستطيع هذا المتصفح حفظ الملفات هنا. افتح Kept في Safari لتصدّره."
+msgid "This browser can't save files here. Open SheepKeep in Safari to export it."
+msgstr "لا يستطيع هذا المتصفح حفظ الملفات هنا. افتح SheepKeep في Safari لتصدّره."
 
 #: src/components/things/original-file.ts
 msgid "This file can't be shared from the installed app"
 msgstr "لا يمكن مشاركة هذا الملف من التطبيق المثبّت"
 
 #: src/components/things/original-file.ts
-msgid "Open Kept in Safari to download it."
-msgstr "افتح Kept في Safari لتنزّله."
+msgid "Open SheepKeep in Safari to download it."
+msgstr "افتح SheepKeep في Safari لتنزّله."
 
 #: src/components/things/original-file.ts
 msgid "Couldn't get the file ready. Try again."
@@ -12662,8 +12662,8 @@ msgid "Couldn't share the file. Try again."
 msgstr "تعذّرت مشاركة الملف. أعد المحاولة."
 
 #: src/components/page.tsx
-msgid "Kept can't reach its database right now. Try again in a minute."
-msgstr "لا يستطيع Kept الوصول إلى قاعدة بياناته الآن. أعد المحاولة بعد دقيقة."
+msgid "SheepKeep can't reach its database right now. Try again in a minute."
+msgstr "لا يستطيع SheepKeep الوصول إلى قاعدة بياناته الآن. أعد المحاولة بعد دقيقة."
 
 #. placeholder {0}: -n
 #: src/components/schedules/labels.tsx
@@ -12749,8 +12749,8 @@ msgid "Add a line"
 msgstr "أضف بندًا"
 
 #: src/routes/_app/schedules.tsx
-msgid "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and Kept reminds you before it's due."
-msgstr "أضف صيانة أو فحصًا يتكرر، كالسخّان كل سنة أو السيارة كل ١٠٬٠٠٠ كم، وسيذكّرك Kept قبل موعده."
+msgid "Add a service or a check that comes round, like the boiler every year or the car every 10,000 km, and SheepKeep reminds you before it's due."
+msgstr "أضف صيانة أو فحصًا يتكرر، كالسخّان كل سنة أو السيارة كل ١٠٬٠٠٠ كم، وسيذكّرك SheepKeep قبل موعده."
 
 #: src/components/schedules/complete-sheet.tsx
 msgid "Add line items or an invoice"
@@ -13186,8 +13186,8 @@ msgid "Search schedules"
 msgstr "ابحث في المواعيد"
 
 #: src/components/lending/loan-row.tsx
-msgid "Send it however you like. Kept never sends it."
-msgstr "أرسله بالطريقة التي تفضّلها. Kept لا يرسله أبدًا."
+msgid "Send it however you like. SheepKeep never sends it."
+msgstr "أرسله بالطريقة التي تفضّلها. SheepKeep لا يرسله أبدًا."
 
 #: src/components/services/log-service-sheet.tsx
 msgid "Service logged"
@@ -13671,16 +13671,16 @@ msgid "A claim needs the day it was opened."
 msgstr "تحتاج المطالبة إلى يوم فتحها."
 
 #: src/components/lending/person-picker.tsx
-msgid "A new person: added to your people when you save. Kept never contacts them."
-msgstr "شخص جديد: يُضاف إلى أشخاصك عند الحفظ. لا يتواصل Kept معه أبدًا."
+msgid "A new person: added to your people when you save. SheepKeep never contacts them."
+msgstr "شخص جديد: يُضاف إلى أشخاصك عند الحفظ. لا يتواصل SheepKeep معه أبدًا."
 
 #: src/components/warranties/warranty-sheet.tsx
 msgid "A phone number, an email or a web page."
 msgstr "رقم هاتف أو بريد إلكتروني أو صفحة ويب."
 
 #: src/components/things/schedules-section.tsx
-msgid "A service or a check that comes round: Kept reminds you before it's due."
-msgstr "صيانة أو فحص يتكرر: يذكّرك Kept قبل موعده."
+msgid "A service or a check that comes round: SheepKeep reminds you before it's due."
+msgstr "صيانة أو فحص يتكرر: يذكّرك SheepKeep قبل موعده."
 
 #: src/components/warranties/warranty-sheet.tsx
 msgid "A term"
@@ -13993,19 +13993,19 @@ msgid "It's in repair: lend it once it's back."
 msgstr "إنه قيد الإصلاح: أعِره بعد عودته."
 
 #: src/components/lending/person-picker.tsx
-msgid "Kept never contacts them."
-msgstr "لا يتواصل Kept معهم أبدًا."
+msgid "SheepKeep never contacts them."
+msgstr "لا يتواصل SheepKeep معهم أبدًا."
 
 #. placeholder {0}: loan.person.name
 #: src/components/lending/thing-loans.tsx
-msgid "Kept never messages {0}; the reminder text is yours to send."
-msgstr "لا يراسل Kept {0} أبدًا؛ نص التذكير لك ترسله بنفسك."
+msgid "SheepKeep never messages {0}; the reminder text is yours to send."
+msgstr "لا يراسل SheepKeep {0} أبدًا؛ نص التذكير لك ترسله بنفسك."
 
 #. placeholder {0}: fmt.day(loan.dueOn)
 #. placeholder {1}: loan.person.name
 #: src/components/lending/thing-loans.tsx
-msgid "Kept reminds you on {0}. It never messages {1}; the reminder text is yours to send."
-msgstr "يذكّرك Kept في {0}. ولا يراسل {1} أبدًا؛ نص التذكير لك ترسله بنفسك."
+msgid "SheepKeep reminds you on {0}. It never messages {1}; the reminder text is yours to send."
+msgstr "يذكّرك SheepKeep في {0}. ولا يراسل {1} أبدًا؛ نص التذكير لك ترسله بنفسك."
 
 #: src/components/lending/lend-sheet.tsx
 #: src/components/lending/thing-loans.tsx
@@ -14163,12 +14163,12 @@ msgid "Opened {0}"
 msgstr "فُتحت {0}"
 
 #: src/components/warranties/warranty-sheet.tsx
-msgid "Optional. Kept reminds you before this day."
-msgstr "اختياري. يذكّرك Kept قبل هذا اليوم."
+msgid "Optional. SheepKeep reminds you before this day."
+msgstr "اختياري. يذكّرك SheepKeep قبل هذا اليوم."
 
 #: src/components/lending/borrow-sheet.tsx
-msgid "Optional. Kept reminds you when it's due back."
-msgstr "اختياري. يذكّرك Kept عند موعد إرجاعه."
+msgid "Optional. SheepKeep reminds you when it's due back."
+msgstr "اختياري. يذكّرك SheepKeep عند موعد إرجاعه."
 
 #: src/components/lending/lend-sheet.tsx
 msgid "Optional. Kept reminds you, never them, when it's overdue."
@@ -14306,12 +14306,12 @@ msgid "Update the claim"
 msgstr "حدّث المطالبة"
 
 #: src/components/lending/thing-loans.tsx
-msgid "uses Kept"
-msgstr "يستخدم Kept"
+msgid "uses SheepKeep"
+msgstr "يستخدم SheepKeep"
 
 #: src/components/lending/person-picker.tsx
-msgid "Uses Kept"
-msgstr "يستخدم Kept"
+msgid "Uses SheepKeep"
+msgstr "يستخدم SheepKeep"
 
 #: src/components/things/header.tsx
 msgid "Usually in"
@@ -14384,8 +14384,8 @@ msgid "What's wrong"
 msgstr "ما العطل"
 
 #: src/components/claims/claims-section.tsx
-msgid "When it breaks, open a claim: Kept fills in the warranty that covers longest and remembers where it went for repair."
-msgstr "عندما يتعطل، افتح مطالبة: يملأ Kept الضمان الذي يغطي أطول مدة ويتذكّر أين ذهب للإصلاح."
+msgid "When it breaks, open a claim: SheepKeep fills in the warranty that covers longest and remembers where it went for repair."
+msgstr "عندما يتعطل، افتح مطالبة: يملأ SheepKeep الضمان الذي يغطي أطول مدة ويتذكّر أين ذهب للإصلاح."
 
 #: src/components/lending/return-sheet.tsx
 msgid "Where it goes"
@@ -14478,8 +14478,8 @@ msgid "{MAX_CALENDAR_FEEDS, plural, one {# link is the most. Revoke one to make 
 msgstr "{MAX_CALENDAR_FEEDS, plural, zero {لا روابط متاحة. ألغِ رابطًا لإنشاء آخر.} one {رابط واحد هو الحد الأقصى. ألغِه لإنشاء آخر.} two {رابطان هما الحد الأقصى. ألغِ أحدهما لإنشاء آخر.} few {# روابط هي الحد الأقصى. ألغِ واحدًا لإنشاء آخر.} many {# رابطًا هي الحد الأقصى. ألغِ واحدًا لإنشاء آخر.} other {# رابط هي الحد الأقصى. ألغِ واحدًا لإنشاء آخر.}}"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most Kept allows.} other {You have # webhooks, the most Kept allows.}}"
-msgstr "{MAX_WEBHOOK_CHANNELS, plural, zero {ليس لديك خطافات ويب.} one {لديك خطاف ويب واحد، وهو أقصى ما يسمح به Kept.} two {لديك خطافا ويب، وهو أقصى ما يسمح به Kept.} few {لديك # خطافات ويب، وهو أقصى ما يسمح به Kept.} many {لديك # خطافًا للويب، وهو أقصى ما يسمح به Kept.} other {لديك # خطاف ويب، وهو أقصى ما يسمح به Kept.}}"
+msgid "{MAX_WEBHOOK_CHANNELS, plural, one {You have # webhook, the most SheepKeep allows.} other {You have # webhooks, the most SheepKeep allows.}}"
+msgstr "{MAX_WEBHOOK_CHANNELS, plural, zero {ليس لديك خطافات ويب.} one {لديك خطاف ويب واحد، وهو أقصى ما يسمح به SheepKeep.} two {لديك خطافا ويب، وهو أقصى ما يسمح به SheepKeep.} few {لديك # خطافات ويب، وهو أقصى ما يسمح به SheepKeep.} many {لديك # خطافًا للويب، وهو أقصى ما يسمح به SheepKeep.} other {لديك # خطاف ويب، وهو أقصى ما يسمح به SheepKeep.}}"
 
 #: src/components/notifications/centre.tsx
 msgid "{unreadText} unread"
@@ -14522,8 +14522,8 @@ msgid "AI used 80% of this month's cap"
 msgstr "استهلك الذكاء الاصطناعي ٨٠٪ من حد هذا الشهر"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Allow notifications for Kept in this browser's settings, then try again."
-msgstr "اسمح بإشعارات Kept في إعدادات هذا المتصفح، ثم حاول مرة أخرى."
+msgid "Allow notifications for SheepKeep in this browser's settings, then try again."
+msgstr "اسمح بإشعارات SheepKeep في إعدادات هذا المتصفح، ثم حاول مرة أخرى."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Browser"
@@ -14646,8 +14646,8 @@ msgid "Enter the full address, starting with https://"
 msgstr "أدخل العنوان كاملًا، بدءًا بـ https://"
 
 #: src/components/notifications/settings/notification-settings.tsx
-msgid "Everything lands in the notification centre. These reach you outside Kept as well."
-msgstr "كل شيء يصل إلى مركز الإشعارات. وهذه تصلك خارج Kept أيضًا."
+msgid "Everything lands in the notification centre. These reach you outside SheepKeep as well."
+msgstr "كل شيء يصل إلى مركز الإشعارات. وهذه تصلك خارج SheepKeep أيضًا."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
@@ -14659,16 +14659,16 @@ msgid "Failing since {since}"
 msgstr "يفشل منذ {since}"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "For your own automations: Kept posts a signed message when something is due, with ids and dates only, never names."
-msgstr "لأتمتتك الخاصة: يرسل Kept رسالة موقّعة حين يستحق شيء ما، بالمعرّفات والتواريخ فقط، ولا أسماء أبدًا."
+msgid "For your own automations: SheepKeep posts a signed message when something is due, with ids and dates only, never names."
+msgstr "لأتمتتك الخاصة: يرسل SheepKeep رسالة موقّعة حين يستحق شيء ما، بالمعرّفات والتواريخ فقط، ولا أسماء أبدًا."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "How to install"
 msgstr "طريقة التثبيت"
 
 #: src/components/notifications/settings/kinds.tsx
-msgid "In Kept"
-msgstr "في Kept"
+msgid "In SheepKeep"
+msgstr "في SheepKeep"
 
 #: src/components/notifications/settings/channels.tsx
 msgid "It answered {code}."
@@ -14685,24 +14685,24 @@ msgstr "لم يعد موجودًا."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
-msgid "Kept last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
-msgstr "آخر فحص أجراه Kept للتذكيرات المستحقة كان {lastOk}. وحتى يفحص مجددًا، لن يتلقى أحد تذكيرات جديدة."
+msgid "SheepKeep last checked for due reminders {lastOk}. Until it checks again, nobody gets new reminders."
+msgstr "آخر فحص أجراه SheepKeep للتذكيرات المستحقة كان {lastOk}. وحتى يفحص مجددًا، لن يتلقى أحد تذكيرات جديدة."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept sends at most 5 tests an hour, across all your channels and devices. Try again later."
-msgstr "يرسل Kept ٥ اختبارات في الساعة على الأكثر، لكل قنواتك وأجهزتك معًا. حاول لاحقًا."
+msgid "SheepKeep sends at most 5 tests an hour, across all your channels and devices. Try again later."
+msgstr "يرسل SheepKeep ٥ اختبارات في الساعة على الأكثر، لكل قنواتك وأجهزتك معًا. حاول لاحقًا."
 
 #: src/components/notifications/settings/calendar.tsx
-msgid "Kept shows it only this once. Anyone with it can read the titles and dates."
-msgstr "يعرضه Kept هذه المرة فقط. ويستطيع كل من يملكه قراءة العناوين والتواريخ."
+msgid "SheepKeep shows it only this once. Anyone with it can read the titles and dates."
+msgstr "يعرضه SheepKeep هذه المرة فقط. ويستطيع كل من يملكه قراءة العناوين والتواريخ."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept shows it only this once. Your receiver checks each message's Kept-Signature header with it."
-msgstr "يعرضه Kept هذه المرة فقط. يتحقق به مستقبِلك من ترويسة Kept-Signature في كل رسالة."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
+msgstr "يعرضه SheepKeep هذه المرة فقط. يتحقق به مستقبِلك من ترويسة SheepKeep-Signature في كل رسالة."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept stops posting to it. Its secret can't be used again."
-msgstr "يتوقف Kept عن الإرسال إليه، ولا يمكن استخدام سره مجددًا."
+msgid "SheepKeep stops posting to it. Its secret can't be used again."
+msgstr "يتوقف SheepKeep عن الإرسال إليه، ولا يمكن استخدام سره مجددًا."
 
 #: src/components/notifications/settings/calendar.tsx
 msgid "Last fetched {fetched}"
@@ -14717,8 +14717,8 @@ msgid "Link made {made}"
 msgstr "رابط أُنشئ {made}"
 
 #: src/components/notifications/settings/calendar.tsx
-msgid "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when Kept can be reached from the internet."
-msgstr "تُستثنى من الموجز المواقع التي تتطلب التحقق بخطوتين. يجلب تقويم Google الرابط من خوادم Google، لذا لا يعمل هناك إلا إذا أمكن الوصول إلى Kept من الإنترنت."
+msgid "Locations that require two-factor are left out of the feed. Google Calendar fetches the link from Google's servers, so it works there only when SheepKeep can be reached from the internet."
+msgstr "تُستثنى من الموجز المواقع التي تتطلب التحقق بخطوتين. يجلب تقويم Google الرابط من خوادم Google، لذا لا يعمل هناك إلا إذا أمكن الوصول إلى SheepKeep من الإنترنت."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Mail isn't configured on this server, so no email goes out yet."
@@ -14774,16 +14774,16 @@ msgid "Notifications are blocked"
 msgstr "الإشعارات محظورة"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Notifications are blocked for Kept in this browser's settings. Allow them there, then come back."
-msgstr "إشعارات Kept محظورة في إعدادات هذا المتصفح. اسمح بها هناك، ثم عُد."
+msgid "Notifications are blocked for SheepKeep in this browser's settings. Allow them there, then come back."
+msgstr "إشعارات SheepKeep محظورة في إعدادات هذا المتصفح. اسمح بها هناك، ثم عُد."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Notifications are on for this device"
 msgstr "الإشعارات مفعّلة على هذا الجهاز"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "On iPhone and iPad, notifications work only from the installed app. Add Kept to your Home Screen, open it from there and turn them on. Until then, email reaches you."
-msgstr "على iPhone وiPad، لا تعمل الإشعارات إلا من التطبيق المثبّت. أضف Kept إلى الشاشة الرئيسية، وافتحه من هناك وفعّلها. وحتى ذلك الحين، يصلك البريد."
+msgid "On iPhone and iPad, notifications work only from the installed app. Add SheepKeep to your Home Screen, open it from there and turn them on. Until then, email reaches you."
+msgstr "على iPhone وiPad، لا تعمل الإشعارات إلا من التطبيق المثبّت. أضف SheepKeep إلى الشاشة الرئيسية، وافتحه من هناك وفعّلها. وحتى ذلك الحين، يصلك البريد."
 
 #: src/components/notifications/settings/notification-settings.tsx
 msgid "Once a month: what AI did for you and what it used."
@@ -14839,8 +14839,8 @@ msgid "Reminders have stopped going out"
 msgstr "توقف إرسال التذكيرات"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Reminders pop up here even when Kept is closed. Your browser asks first."
-msgstr "تظهر التذكيرات هنا حتى حين يكون Kept مغلقًا. يسألك متصفحك أولًا."
+msgid "Reminders pop up here even when SheepKeep is closed. Your browser asks first."
+msgstr "تظهر التذكيرات هنا حتى حين يكون SheepKeep مغلقًا. يسألك متصفحك أولًا."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Remove {name}"
@@ -14903,8 +14903,8 @@ msgid "Test sent"
 msgstr "أُرسل الاختبار"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "That device stops receiving push from Kept. Turn it on again from the device itself."
-msgstr "يتوقف ذلك الجهاز عن تلقي الإشعارات الفورية من Kept. فعّلها مجددًا من الجهاز نفسه."
+msgid "That device stops receiving push from SheepKeep. Turn it on again from the device itself."
+msgstr "يتوقف ذلك الجهاز عن تلقي الإشعارات الفورية من SheepKeep. فعّلها مجددًا من الجهاز نفسه."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "The mail server didn't take it. Try again later."
@@ -14915,8 +14915,8 @@ msgid "The test didn't arrive"
 msgstr "لم يصل الاختبار"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "This browser can't receive notifications from Kept. Email still reaches you."
-msgstr "لا يستطيع هذا المتصفح تلقي إشعارات Kept. ما زال البريد يصلك."
+msgid "This browser can't receive notifications from SheepKeep. Email still reaches you."
+msgstr "لا يستطيع هذا المتصفح تلقي إشعارات SheepKeep. ما زال البريد يصلك."
 
 #: src/components/notifications/settings/notification-settings.tsx
 msgid "Times are in <0>{zone}</0>, your time zone."
@@ -14980,12 +14980,12 @@ msgid "What's coming up arrives together, once a day."
 msgstr "ما هو قادم يصلك مجتمعًا، مرة في اليوم."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Where Kept posts. Only its host is shown after this."
-msgstr "حيث يرسل Kept. لا يُعرض بعد ذلك إلا اسم المضيف."
+msgid "Where SheepKeep posts. Only its host is shown after this."
+msgstr "حيث يرسل SheepKeep. لا يُعرض بعد ذلك إلا اسم المضيف."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Your account has no email address, so Kept tells you here, in the app."
-msgstr "ليس لحسابك عنوان بريد، لذا يخبرك Kept هنا، في التطبيق."
+msgid "Your account has no email address, so SheepKeep tells you here, in the app."
+msgstr "ليس لحسابك عنوان بريد، لذا يخبرك SheepKeep هنا، في التطبيق."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Your account has no email address."
@@ -15179,8 +15179,8 @@ msgid "Claims under {name}"
 msgstr "المطالبات ضمن {name}"
 
 #: src/components/reports/claim-pack.tsx
-msgid "Copy it now: Kept shows it only this once."
-msgstr "انسخه الآن: لا يعرضه Kept إلا هذه المرة."
+msgid "Copy it now: SheepKeep shows it only this once."
+msgstr "انسخه الآن: لا يعرضه SheepKeep إلا هذه المرة."
 
 #: src/components/reports/claim-pack.tsx
 msgid "Couldn't check on the claim pack"
@@ -15299,12 +15299,12 @@ msgid "Keep the notes under {NOTES_MAX} characters."
 msgstr "اجعل الملاحظات أقل من {NOTES_MAX} حرف."
 
 #: src/components/reports/insurance-report.tsx
-msgid "Kept converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
-msgstr "لا يحوّل Kept إلا بسعر أدخلته أنت، لا بتقدير أبدًا. أضف سعرًا مؤرخًا في يوم التقرير أو قبله، أو أنشئ التقرير دون مجموع محوَّل."
+msgid "SheepKeep converts only with a rate you entered, never an estimate. Add one dated on or before the report's day, or make the report without a converted total."
+msgstr "لا يحوّل SheepKeep إلا بسعر أدخلته أنت، لا بتقدير أبدًا. أضف سعرًا مؤرخًا في يوم التقرير أو قبله، أو أنشئ التقرير دون مجموع محوَّل."
 
 #: src/components/money/exchange-rates.tsx
-msgid "Kept converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
-msgstr "لا يحوّل Kept المجاميع إلا بسعر أدخلته هنا، لهذا الزوج أو عكسه. لا يقدّر سعرًا أبدًا، ولا يمرّ بعملة ثالثة: دون سعر، تبقى المجاميع لكل عملة."
+msgid "SheepKeep converts totals only with a rate you entered here, for that pair or its inverse. It never estimates one, and never goes through a third currency: without a rate, totals stay per currency."
+msgstr "لا يحوّل SheepKeep المجاميع إلا بسعر أدخلته هنا، لهذا الزوج أو عكسه. لا يقدّر سعرًا أبدًا، ولا يمرّ بعملة ثالثة: دون سعر، تبقى المجاميع لكل عملة."
 
 #: src/components/reports/claim-pack.tsx
 msgid "Kept until {keptUntil}."
@@ -15504,8 +15504,8 @@ msgid "The things stay as they are; only the incident and its references go. You
 msgstr "تبقى الأشياء كما هي؛ تذهب الحادثة ومراجعها فقط. يمكنك التراجع خلال ٧ أيام من السجل."
 
 #: src/components/reports/claim-pack.tsx
-msgid "This browser can't save files here. Open Kept in Safari to download it."
-msgstr "لا يستطيع هذا المتصفح حفظ الملفات هنا. افتح Kept في Safari لتنزيله."
+msgid "This browser can't save files here. Open SheepKeep in Safari to download it."
+msgstr "لا يستطيع هذا المتصفح حفظ الملفات هنا. افتح SheepKeep في Safari لتنزيله."
 
 #: src/components/reports/claim-pack.tsx
 msgid "This claim pack has expired"
@@ -16326,8 +16326,8 @@ msgid "{typed} {unit} is lower than {before} {unit} on {on}. Readings can't go d
 msgstr "{typed} {unit} أقل من {before} {unit} في {on}. القراءات لا تنخفض: راجع الأرقام، أو سجّل أن العدّاد استُبدل."
 
 #: src/components/readings/log-reading-sheet.tsx
-msgid "A new meter starts again from 0. Kept adds what the old one had reached, so the history keeps going up."
-msgstr "العدّاد الجديد يبدأ من ٠. يضيف Kept ما وصل إليه القديم، فيستمر السجل في الارتفاع."
+msgid "A new meter starts again from 0. SheepKeep adds what the old one had reached, so the history keeps going up."
+msgstr "العدّاد الجديد يبدأ من ٠. يضيف SheepKeep ما وصل إليه القديم، فيستمر السجل في الارتفاع."
 
 #: src/components/things/create-sheet.tsx
 msgid "Add the first reading"
@@ -16430,16 +16430,16 @@ msgid "Kept as proof"
 msgstr "محفوظة كإثبات"
 
 #: src/components/readings/log-reading-sheet.tsx
-msgid "Kept checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
-msgstr "يطابقها Kept مع قراءاتك الأخرى عند المزامنة؛ وإن لم تتسق، تنتظرك في الوارد."
+msgid "SheepKeep checks it against your other readings when it syncs; if it doesn't fit, it waits in your Inbox."
+msgstr "يطابقها SheepKeep مع قراءاتك الأخرى عند المزامنة؛ وإن لم تتسق، تنتظرك في الوارد."
 
 #: src/components/services/invoice-suggestions.tsx
-msgid "Kept couldn't read the invoice. Type the lines."
-msgstr "تعذّر على Kept قراءة الفاتورة. اكتب البنود."
+msgid "SheepKeep couldn't read the invoice. Type the lines."
+msgstr "تعذّر على SheepKeep قراءة الفاتورة. اكتب البنود."
 
 #: src/components/things/create-sheet.tsx
-msgid "Kept tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
-msgstr "يتابع Kept <0>{0}</0> بدءًا من هذه القراءة: تبدأ منها تقديراته والصيانات المستحقة بالمسافة. يمكنك إضافتها لاحقًا من صفحته."
+msgid "SheepKeep tracks <0>{0}</0> from this reading on: its estimates and the services due by distance start here. You can add it later from its page."
+msgstr "يتابع SheepKeep <0>{0}</0> بدءًا من هذه القراءة: تبدأ منها تقديراته والصيانات المستحقة بالمسافة. يمكنك إضافتها لاحقًا من صفحته."
 
 #: src/components/capture/capture-screen.tsx
 msgid "Label photos go on <0>{0}</0>"
@@ -16486,8 +16486,8 @@ msgid "Nothing on this phone has a meter yet"
 msgstr "لا شيء على هذا الهاتف له عدّاد بعد"
 
 #: src/components/home/quick-log.tsx
-msgid "Open Kept once while online, so this phone has your things and their meters."
-msgstr "افتح Kept مرة وأنت متصل، ليحمل هذا الهاتف أشياءك وعدّاداتها."
+msgid "Open SheepKeep once while online, so this phone has your things and their meters."
+msgstr "افتح SheepKeep مرة وأنت متصل، ليحمل هذا الهاتف أشياءك وعدّاداتها."
 
 #: src/components/readings/log-reading-sheet.tsx
 msgid "Optional. It joins the meter's proof photos."
@@ -16677,8 +16677,8 @@ msgid "Its values show to everyone who can see the thing, and history keeps them
 msgstr "تظهر قيمه لكل من يرى الشيء، ويحتفظ بها السجل من الآن فصاعدًا."
 
 #: src/components/registries/convert-field-sheet.household.tsx
-msgid "Secrets are values Kept must be able to recover. Save the recovery kit on the status page, then make the field secret again."
-msgstr "الأسرار قيم يجب أن يتمكن Kept من استعادتها. احفظ حزمة الاسترداد في صفحة الحالة، ثم اجعل الحقل سريًا مرة أخرى."
+msgid "Secrets are values SheepKeep must be able to recover. Save the recovery kit on the status page, then make the field secret again."
+msgstr "الأسرار قيم يجب أن يتمكن SheepKeep من استعادتها. احفظ حزمة الاسترداد في صفحة الحالة، ثم اجعل الحقل سريًا مرة أخرى."
 
 #: src/components/registries/convert-field-sheet.household.tsx
 msgid "The person who runs this server needs to save the recovery kit before secrets can be kept. Ask them, then make the field secret again."
@@ -16842,12 +16842,12 @@ msgid "Set a minimum"
 msgstr "ضبط حد أدنى"
 
 #: src/components/consumables/stock.household.tsx
-msgid "No minimum. Set one and Kept lists it as low when fewer are left."
-msgstr "لا حد أدنى. اضبط واحدًا وسيُدرجه Kept كمنخفض عندما يتبقّى أقل منه."
+msgid "No minimum. Set one and SheepKeep lists it as low when fewer are left."
+msgstr "لا حد أدنى. اضبط واحدًا وسيُدرجه SheepKeep كمنخفض عندما يتبقّى أقل منه."
 
 #: src/routes/_app/settings.export.tsx
-msgid "One file per location: everything in it, the original photos and documents, and a copy you can read without Kept. Import it into this Kept or another one."
-msgstr "ملف واحد لكل موقع: كل ما فيه، والصور والمستندات الأصلية، ونسخة تُقرأ دون Kept. استورده في Kept هذا أو في غيره."
+msgid "One file per location: everything in it, the original photos and documents, and a copy you can read without SheepKeep. Import it into this SheepKeep or another one."
+msgstr "ملف واحد لكل موقع: كل ما فيه، والصور والمستندات الأصلية، ونسخة تُقرأ دون SheepKeep. استورده في SheepKeep هذا أو في غيره."
 
 #: src/components/export/export-sheet.tsx
 #: src/routes/_app/settings.export.tsx
@@ -16861,8 +16861,8 @@ msgid "Export my data"
 msgstr "تصدير بياناتي"
 
 #: src/routes/_app/settings.export.tsx
-msgid "Each download link is made when you click Download and lasts 5 minutes; Kept checks you're still an owner or admin every time. Exports are kept 7 days."
-msgstr "يُنشأ كل رابط تنزيل عند النقر على «تنزيل» ويبقى ٥ دقائق؛ ويتحقق Kept في كل مرة من أنك ما زلت مالكًا أو مديرًا. تُحفظ عمليات التصدير ٧ أيام."
+msgid "Each download link is made when you click Download and lasts 5 minutes; SheepKeep checks you're still an owner or admin every time. Exports are kept 7 days."
+msgstr "يُنشأ كل رابط تنزيل عند النقر على «تنزيل» ويبقى ٥ دقائق؛ ويتحقق SheepKeep في كل مرة من أنك ما زلت مالكًا أو مديرًا. تُحفظ عمليات التصدير ٧ أيام."
 
 #: src/routes/_app/settings.index.tsx
 msgid "Your data"
@@ -16877,16 +16877,16 @@ msgid "Someone changed this import in the meantime. It has been reloaded; check 
 msgstr "غيّر أحدهم هذا الاستيراد في هذه الأثناء. أُعيد تحميله؛ راجعه وحاول مرة أخرى."
 
 #: src/components/import/archive-run.tsx
-msgid "Kept can't read this archive"
-msgstr "لا يستطيع Kept قراءة هذا الأرشيف"
+msgid "SheepKeep can't read this archive"
+msgstr "لا يستطيع SheepKeep قراءة هذا الأرشيف"
 
 #: src/components/import/archive-run.tsx
 msgid "Nothing was imported"
 msgstr "لم يُستورد شيء"
 
 #: src/components/import/archive-run.tsx
-msgid "It isn't an export Kept can read. Export it again and try once more."
-msgstr "ليس تصديرًا يستطيع Kept قراءته. صدّره من جديد وحاول مرة أخرى."
+msgid "It isn't an export SheepKeep can read. Export it again and try once more."
+msgstr "ليس تصديرًا يستطيع SheepKeep قراءته. صدّره من جديد وحاول مرة أخرى."
 
 #: src/components/import/archive-run.tsx
 #: src/components/import/archive-step.tsx
@@ -17155,8 +17155,8 @@ msgid "Homebox's export has no currency. Choosing one relabels the amounts; it d
 msgstr "لا يحمل تصدير Homebox عملة. اختيار عملة يسمّي المبالغ ولا يحوّلها."
 
 #: src/components/import/homebox-choices.tsx
-msgid "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in Kept. An instance admin can turn it on in Admin → Currencies."
-msgstr "عملة Homebox، <0>{fromConnection}</0>، غير مفعّلة في Kept. يستطيع مدير الخادم تفعيلها من الإدارة ← العملات."
+msgid "Homebox's currency, <0>{fromConnection}</0>, isn't turned on in SheepKeep. An instance admin can turn it on in Admin → Currencies."
+msgstr "عملة Homebox، <0>{fromConnection}</0>، غير مفعّلة في SheepKeep. يستطيع مدير الخادم تفعيلها من الإدارة ← العملات."
 
 #: src/components/import/homebox-choices.tsx
 msgid "This location counts in <0>{locationCurrency}</0>; prices in another currency are kept as they are."
@@ -17211,8 +17211,8 @@ msgid "Keep in notes"
 msgstr "احفظه في الملاحظات"
 
 #: src/components/import/homebox-choices.tsx
-msgid "Homebox's types are matched to Kept's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
-msgstr "تُطابَق أنواع Homebox مع أنواع Kept بالاسم، وتُضاف حقوله المخصصة إلى أنواعها. يبيّن الفحص النتيجة قبل استيراد أي شيء."
+msgid "Homebox's types are matched to SheepKeep's by name, and its custom fields are added to their types. The check shows what that does before anything is imported."
+msgstr "تُطابَق أنواع Homebox مع أنواع SheepKeep بالاسم، وتُضاف حقوله المخصصة إلى أنواعها. يبيّن الفحص النتيجة قبل استيراد أي شيء."
 
 #: src/components/import/homebox-choices.tsx
 msgid "number"
@@ -17231,8 +17231,8 @@ msgid "text"
 msgstr "نص"
 
 #: src/components/import/homebox-choices.tsx
-msgid "A Kept type"
-msgstr "نوع من Kept"
+msgid "A SheepKeep type"
+msgstr "نوع من SheepKeep"
 
 #: src/components/import/homebox-choices.tsx
 msgid "Created"
@@ -17251,8 +17251,8 @@ msgid "{0, plural, one {# item} other {# items}}"
 msgstr "{0, plural, zero {لا عناصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}"
 
 #: src/components/import/homebox-choices.tsx
-msgid "Kept type for {name}"
-msgstr "نوع Kept لـ {name}"
+msgid "SheepKeep type for {name}"
+msgstr "نوع SheepKeep لـ {name}"
 
 #: src/components/import/homebox-choices.tsx
 msgid "Create \"{name}\""
@@ -17347,8 +17347,8 @@ msgid "Couldn't connect"
 msgstr "تعذّر الاتصال"
 
 #: src/components/import/kept-choices.tsx
-msgid "A Kept <0>{0}</0> export{1}{2}"
-msgstr "تصدير من Kept <0>{0}</0>{1}{2}"
+msgid "A SheepKeep <0>{0}</0> export{1}{2}"
+msgstr "تصدير من SheepKeep <0>{0}</0>{1}{2}"
 
 #: src/components/import/kept-choices.tsx
 msgid "{0, plural, one {event in the history} other {events in the history}}"
@@ -17396,28 +17396,28 @@ msgid "Nobody is invited by the import: invite each person yourself, with their 
 msgstr "لا يدعو الاستيراد أحدًا: ادعُ كل شخص بنفسك ببريده الإلكتروني."
 
 #: src/components/import/labels.ts
-msgid "Not imported: a file type Kept doesn't keep."
-msgstr "لم يُستورد: نوع ملف لا يحفظه Kept."
+msgid "Not imported: a file type SheepKeep doesn't keep."
+msgstr "لم يُستورد: نوع ملف لا يحفظه SheepKeep."
 
 #: src/components/import/labels.ts
 msgid "The file isn't in the archive, so it's left out."
 msgstr "الملف ليس في الأرشيف، فيُستبعد."
 
 #: src/components/import/labels.ts
-msgid "The file is larger than Kept takes, so it's left out."
-msgstr "الملف أكبر مما يقبله Kept، فيُستبعد."
+msgid "The file is larger than SheepKeep takes, so it's left out."
+msgstr "الملف أكبر مما يقبله SheepKeep، فيُستبعد."
 
 #: src/components/import/labels.ts
-msgid "Not something Kept reads from an export; ignored."
-msgstr "ليس مما يقرؤه Kept من التصدير؛ تجاهله."
+msgid "Not something SheepKeep reads from an export; ignored."
+msgstr "ليس مما يقرؤه SheepKeep من التصدير؛ تجاهله."
 
 #: src/components/import/labels.ts
 msgid "Archived in Homebox, left out."
 msgstr "مؤرشف في Homebox، فاستُبعد."
 
 #: src/components/import/labels.ts
-msgid "Counted one by one in Kept; Homebox's quantity is kept in the notes."
-msgstr "يُعدّ واحدًا واحدًا في Kept؛ وتُحفظ كمية Homebox في الملاحظات."
+msgid "Counted one by one in SheepKeep; Homebox's quantity is kept in the notes."
+msgstr "يُعدّ واحدًا واحدًا في SheepKeep؛ وتُحفظ كمية Homebox في الملاحظات."
 
 #: src/components/import/labels.ts
 msgid "Quantity 0 became 1: Homebox gives 0 when none was set."
@@ -17428,20 +17428,20 @@ msgid "Homebox keeps numbers whole, so any decimals were already lost there."
 msgstr "يحفظ Homebox الأرقام صحيحة، فالكسور ضاعت هناك أصلًا."
 
 #: src/components/import/labels.ts
-msgid "Kept has no icon like Homebox's; the type's own icon is used."
-msgstr "ليس في Kept رمز مثل رمز Homebox؛ يُستخدم رمز النوع نفسه."
+msgid "SheepKeep has no icon like Homebox's; the type's own icon is used."
+msgstr "ليس في SheepKeep رمز مثل رمز Homebox؛ يُستخدم رمز النوع نفسه."
 
 #: src/components/import/labels.ts
-msgid "A Kept template can't hold money or secrets; the rest of the template is imported."
-msgstr "لا يحمل قالب Kept مالًا ولا أسرارًا؛ ويُستورد باقي القالب."
+msgid "A SheepKeep template can't hold money or secrets; the rest of the template is imported."
+msgstr "لا يحمل قالب SheepKeep مالًا ولا أسرارًا؛ ويُستورد باقي القالب."
 
 #: src/components/import/labels.ts
-msgid "This currency isn't turned on in Kept; the prices are kept in the notes."
-msgstr "هذه العملة غير مفعّلة في Kept؛ تُحفظ الأسعار في الملاحظات."
+msgid "This currency isn't turned on in SheepKeep; the prices are kept in the notes."
+msgstr "هذه العملة غير مفعّلة في SheepKeep؛ تُحفظ الأسعار في الملاحظات."
 
 #: src/components/import/labels.ts
-msgid "Kept can't hold this record yet; its text is kept in the thing's notes."
-msgstr "لا يستطيع Kept حفظ هذا السجل بعد؛ يُحفظ نصه في ملاحظات الشيء."
+msgid "SheepKeep can't hold this record yet; its text is kept in the thing's notes."
+msgstr "لا يستطيع SheepKeep حفظ هذا السجل بعد؛ يُحفظ نصه في ملاحظات الشيء."
 
 #: src/components/import/labels.ts
 msgid "A location inside an item became a container."
@@ -17488,12 +17488,12 @@ msgid "It's incomplete: the download or the copy stopped before the end."
 msgstr "هو ناقص: توقف التنزيل أو النسخ قبل النهاية."
 
 #: src/components/import/labels.ts
-msgid "It's from a newer version than this Kept reads. Update Kept, then import it."
-msgstr "هو من إصدار أحدث مما يقرؤه Kept هذا. حدّث Kept ثم استورده."
+msgid "It's from a newer version than this SheepKeep reads. Update SheepKeep, then import it."
+msgstr "هو من إصدار أحدث مما يقرؤه SheepKeep هذا. حدّث SheepKeep ثم استورده."
 
 #: src/components/import/labels.ts
-msgid "It's protected with a ZIP password, which Kept can't open. Export it again without one."
-msgstr "محمي بكلمة مرور ZIP لا يستطيع Kept فتحها. صدّره من جديد دونها."
+msgid "It's protected with a ZIP password, which SheepKeep can't open. Export it again without one."
+msgstr "محمي بكلمة مرور ZIP لا يستطيع SheepKeep فتحها. صدّره من جديد دونها."
 
 #: src/components/import/labels.ts
 msgid "One of its data files is too large to read."
@@ -17516,8 +17516,8 @@ msgid "A Kept export"
 msgstr "تصدير من Kept"
 
 #: src/components/import/source-step.tsx
-msgid "A location exported from this Kept or another one. It comes in as a new location."
-msgstr "موقع صُدّر من Kept هذا أو من غيره. يدخل موقعًا جديدًا."
+msgid "A location exported from this SheepKeep or another one. It comes in as a new location."
+msgstr "موقع صُدّر من SheepKeep هذا أو من غيره. يدخل موقعًا جديدًا."
 
 #: src/components/import/target-step.tsx
 msgid "Give the new location a name."
@@ -17677,8 +17677,8 @@ msgid "Things in the Trash"
 msgstr "الأشياء في المهملات"
 
 #: src/components/export/export-sheet.tsx
-msgid "A copy you can read without Kept"
-msgstr "نسخة تُقرأ دون Kept"
+msgid "A copy you can read without SheepKeep"
+msgstr "نسخة تُقرأ دون SheepKeep"
 
 #: src/components/export/export-sheet.tsx
 msgid "with the inventory PDF"
@@ -17701,8 +17701,8 @@ msgid "Encrypted with a passphrase you choose. The readable copy never holds the
 msgstr "مشفّرة بعبارة مرور تختارها. لا تحملها النسخة المقروءة أبدًا."
 
 #: src/components/export/export-sheet.tsx
-msgid "Anyone with this file and the passphrase can read every secret in it. Kept can't recover a forgotten passphrase."
-msgstr "من يملك هذا الملف وعبارة المرور يقرأ كل سر فيه. لا يستطيع Kept استعادة عبارة مرور منسية."
+msgid "Anyone with this file and the passphrase can read every secret in it. SheepKeep can't recover a forgotten passphrase."
+msgstr "من يملك هذا الملف وعبارة المرور يقرأ كل سر فيه. لا يستطيع SheepKeep استعادة عبارة مرور منسية."
 
 #: src/components/export/export-sheet.tsx
 msgid "Export <0>{name}</0>"
@@ -17749,8 +17749,8 @@ msgid "Five exports an hour at most. Try again a little later."
 msgstr "خمس عمليات تصدير في الساعة على الأكثر. حاول بعد قليل."
 
 #: src/components/export/labels.ts
-msgid "Secrets leave Kept only once the recovery kit is saved. An instance admin saves it from the status page."
-msgstr "لا تخرج الأسرار من Kept إلا بعد حفظ حزمة الاسترداد. يحفظها مدير الخادم من صفحة الحالة."
+msgid "Secrets leave SheepKeep only once the recovery kit is saved. An instance admin saves it from the status page."
+msgstr "لا تخرج الأسرار من SheepKeep إلا بعد حفظ حزمة الاسترداد. يحفظها مدير الخادم من صفحة الحالة."
 
 #: src/components/export/labels.ts
 msgid "Use a passphrase of at least 12 characters, the same both times."
@@ -17889,8 +17889,8 @@ msgid "{name}, {unit}"
 msgstr "{name}، {unit}"
 
 #: src/components/vehicles/list.tsx
-msgid "A car, a motorbike or a generator: Kept keeps its odometer, what's due, fuel and running costs."
-msgstr "سيارة أو دراجة نارية أو مولّد: يحفظ Kept عدّاده وما يحين موعده والوقود وتكاليف التشغيل."
+msgid "A car, a motorbike or a generator: SheepKeep keeps its odometer, what's due, fuel and running costs."
+msgstr "سيارة أو دراجة نارية أو مولّد: يحفظ SheepKeep عدّاده وما يحين موعده والوقود وتكاليف التشغيل."
 
 #: src/components/vehicles/readings-tab.tsx
 msgid "Accepted"
@@ -18247,8 +18247,8 @@ msgid "{label}: {plain}"
 msgstr "{label}: {plain}"
 
 #: src/components/connections/revoke.tsx
-msgid "{name} can't reach your Kept any more"
-msgstr "لم يعد {name} يصل إلى Kept الخاص بك"
+msgid "{name} can't reach your SheepKeep any more"
+msgstr "لم يعد {name} يصل إلى SheepKeep الخاص بك"
 
 #: src/components/connections/oauth-apps.tsx
 msgid "{scope} · <0>{where}</0> · allowed {granted} · not used yet"
@@ -18275,12 +18275,12 @@ msgid "{scope} · <0>{where}</0> · used {used}"
 msgstr "{scope} · <0>{where}</0> · استُخدم {used}"
 
 #: src/routes/oauth/consent.tsx
-msgid "<0>{name}</0> wants to use your Kept"
-msgstr "يريد <0>{name}</0> استخدام Kept الخاص بك"
+msgid "<0>{name}</0> wants to use your SheepKeep"
+msgstr "يريد <0>{name}</0> استخدام SheepKeep الخاص بك"
 
 #: src/components/oidc-sign-in.tsx
-msgid "<0>{who}</0> hasn't confirmed your email address, so Kept can't use it. Confirm it there, then try again."
-msgstr "لم يؤكد <0>{who}</0> عنوان بريدك، لذا لا يستطيع Kept استخدامه. أكّده هناك، ثم حاول مجددًا."
+msgid "<0>{who}</0> hasn't confirmed your email address, so SheepKeep can't use it. Confirm it there, then try again."
+msgstr "لم يؤكد <0>{who}</0> عنوان بريدك، لذا لا يستطيع SheepKeep استخدامه. أكّده هناك، ثم حاول مجددًا."
 
 #: src/components/ai/what-uses-ai.tsx
 msgid "~{0} tokens"
@@ -18299,8 +18299,8 @@ msgid "A reminder is due"
 msgstr "حلول موعد تذكير"
 
 #: src/routes/_app/help.tsx
-msgid "A Shortcut that asks for the reading and sends it to Kept with a token."
-msgstr "اختصار يطلب القراءة ويرسلها إلى Kept برمز."
+msgid "A Shortcut that asks for the reading and sends it to SheepKeep with a token."
+msgstr "اختصار يطلب القراءة ويرسلها إلى SheepKeep برمز."
 
 #: src/components/webhooks/list.tsx
 msgid "A signed message to your own server when things change here. It carries ids and the names of changed fields, never names, places or values."
@@ -18356,8 +18356,8 @@ msgid "Add webhook"
 msgstr "إضافة خطاف ويب"
 
 #: src/components/connections/shortcut-recipe.tsx
-msgid "Add your car to Kept with an odometer reading first; its address appears here then."
-msgstr "أضف سيارتك إلى Kept مع قراءة عدّاد المسافة أولًا؛ يظهر عنوانها هنا بعدها."
+msgid "Add your car to SheepKeep with an odometer reading first; its address appears here then."
+msgstr "أضف سيارتك إلى SheepKeep مع قراءة عدّاد المسافة أولًا؛ يظهر عنوانها هنا بعدها."
 
 #: src/components/webhooks/list.tsx
 msgid "Added by <0>{0}</0>"
@@ -18437,8 +18437,8 @@ msgid "Copy it now. You won't see it again; rotate it if it's lost."
 msgstr "انسخه الآن. لن تراه مجددًا؛ أنشئ سرًا جديدًا إن ضاع."
 
 #: src/components/connections/token-create.tsx
-msgid "Copy it now. You won't see this again: Kept keeps only a fingerprint of it."
-msgstr "انسخه الآن. لن تراه مجددًا: يحتفظ Kept ببصمة له فقط."
+msgid "Copy it now. You won't see this again: SheepKeep keeps only a fingerprint of it."
+msgstr "انسخه الآن. لن تراه مجددًا: يحتفظ SheepKeep ببصمة له فقط."
 
 #: src/components/webhooks/edit.tsx
 msgid "Copy secret"
@@ -18534,8 +18534,8 @@ msgid "Find things and read what's recorded. No changes, no secret fields."
 msgstr "يجد الأشياء ويقرأ ما سُجّل. بلا تغييرات، وبلا حقول سرية."
 
 #: src/components/admin/oidc-status.tsx
-msgid "Fix it, then restart Kept. Everything else works meanwhile."
-msgstr "أصلحه، ثم أعد تشغيل Kept. يعمل كل شيء آخر في الأثناء."
+msgid "Fix it, then restart SheepKeep. Everything else works meanwhile."
+msgstr "أصلحه، ثم أعد تشغيل SheepKeep. يعمل كل شيء آخر في الأثناء."
 
 #: src/components/webhooks/words.tsx
 msgid "Gave up"
@@ -18562,36 +18562,36 @@ msgid "Issuer"
 msgstr "المُصدِر"
 
 #: src/components/connections/oauth-apps.tsx
-msgid "It stops reaching your Kept at once. To use it again, connect it again from the app."
-msgstr "يتوقف عن الوصول إلى Kept الخاص بك فورًا. لاستخدامه مجددًا، اربطه مجددًا من التطبيق."
+msgid "It stops reaching your SheepKeep at once. To use it again, connect it again from the app."
+msgstr "يتوقف عن الوصول إلى SheepKeep الخاص بك فورًا. لاستخدامه مجددًا، اربطه مجددًا من التطبيق."
 
 #: src/routes/invite.tsx
 msgid "Join with <0>{oidcName}</0>"
 msgstr "انضم عبر <0>{oidcName}</0>"
 
 #: src/components/admin/embeddings-source.tsx
-msgid "Kept downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
-msgstr "يُنزّل Kept النموذج مرة واحدة ({size}) ويشغّله على هذا الخادم: بلا مفتاح، وبلا تكلفة لكل طلب. تُفهرس كل الأشياء من جديد به."
+msgid "SheepKeep downloads the model once ({size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it."
+msgstr "يُنزّل SheepKeep النموذج مرة واحدة ({size}) ويشغّله على هذا الخادم: بلا مفتاح، وبلا تكلفة لكل طلب. تُفهرس كل الأشياء من جديد به."
 
 #: src/components/oidc-sign-in.tsx
-msgid "Kept needs an address that can receive mail for an account."
-msgstr "يحتاج Kept عنوانًا يستطيع تلقي البريد لإنشاء حساب."
+msgid "SheepKeep needs an address that can receive mail for an account."
+msgstr "يحتاج SheepKeep عنوانًا يستطيع تلقي البريد لإنشاء حساب."
 
 #: src/components/oidc-sign-in.tsx
-msgid "Kept never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
-msgstr "لا يطابق Kept الحسابات ببريدها أبدًا. إن كنت جديدًا هنا، افتح الدعوة التي أرسلها لك أحدهم وانضم عبر <0>{who}</0> من هناك. وإن كان لديك حساب، فسجّل الدخول بطريقة أخرى."
+msgid "SheepKeep never matches accounts by their email. If you're new here, open the invite someone sent you and join with <0>{who}</0> from there. If you already have an account, sign in another way."
+msgstr "لا يطابق SheepKeep الحسابات ببريدها أبدًا. إن كنت جديدًا هنا، افتح الدعوة التي أرسلها لك أحدهم وانضم عبر <0>{who}</0> من هناك. وإن كان لديك حساب، فسجّل الدخول بطريقة أخرى."
 
 #: src/components/admin/embeddings-source.tsx
-msgid "Kept runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
-msgstr "يشغّل Kept النموذج على هذا الخادم: بلا مفتاح، وبلا تكلفة لكل طلب. تُفهرس كل الأشياء من جديد به."
+msgid "SheepKeep runs the model on this server: no key, no per-call cost. Everything is indexed again with it."
+msgstr "يشغّل SheepKeep النموذج على هذا الخادم: بلا مفتاح، وبلا تكلفة لكل طلب. تُفهرس كل الأشياء من جديد به."
 
 #: src/components/webhooks/edit.tsx
-msgid "Kept signs every delivery with this secret, so your server can tell it came from Kept."
-msgstr "يوقّع Kept كل إرسالية بهذا السر، ليتأكد خادمك أنها من Kept."
+msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
+msgstr "يوقّع SheepKeep كل إرسالية بهذا السر، ليتأكد خادمك أنها من SheepKeep."
 
 #: src/components/webhooks/list.tsx
-msgid "Kept stops sending to it, and its deliveries are forgotten."
-msgstr "يتوقف Kept عن الإرسال إليه، وتُنسى إرسالياته."
+msgid "SheepKeep stops sending to it, and its deliveries are forgotten."
+msgstr "يتوقف SheepKeep عن الإرسال إليه، وتُنسى إرسالياته."
 
 #: src/components/ai/key-scope.tsx
 msgid "Keyword only (semantic search is off on this server)"
@@ -18676,8 +18676,8 @@ msgid "No changes by connections"
 msgstr "لا تغييرات من الاتصالات"
 
 #: src/components/oidc-sign-in.tsx
-msgid "No Kept account uses that sign-in yet"
-msgstr "لا يستخدم أي حساب في Kept تسجيل الدخول هذا بعد"
+msgid "No SheepKeep account uses that sign-in yet"
+msgstr "لا يستخدم أي حساب في SheepKeep تسجيل الدخول هذا بعد"
 
 #: src/components/connections/tokens.tsx
 msgid "No tokens yet"
@@ -18841,8 +18841,8 @@ msgid "Server address"
 msgstr "عنوان الخادم"
 
 #: src/components/admin/oidc-status.tsx
-msgid "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart Kept."
-msgstr "اضبط <0>KEPT_OIDC_ISSUER</0> و<1>KEPT_OIDC_CLIENT_ID</1> و<2>KEPT_OIDC_CLIENT_SECRET</2>، ثم أعد تشغيل Kept."
+msgid "Set <0>KEPT_OIDC_ISSUER</0>, <1>KEPT_OIDC_CLIENT_ID</1> and <2>KEPT_OIDC_CLIENT_SECRET</2>, then restart SheepKeep."
+msgstr "اضبط <0>KEPT_OIDC_ISSUER</0> و<1>KEPT_OIDC_CLIENT_ID</1> و<2>KEPT_OIDC_CLIENT_SECRET</2>، ثم أعد تشغيل SheepKeep."
 
 #: src/components/connections/shortcut-recipe.tsx
 msgid "Set Request Body to JSON with two text fields: <0>value</0>, the number you typed, and <1>takenAt</1>, the Current Date formatted as ISO 8601 with the time."
@@ -18861,8 +18861,8 @@ msgid "Sign-in with OIDC"
 msgstr "تسجيل الدخول عبر OIDC"
 
 #: src/components/admin/oidc-status.tsx
-msgid "Signing in this way reaches only an account already linked to it, or someone invited here. Kept never joins accounts because their emails match."
-msgstr "تسجيل الدخول بهذه الطريقة يصل فقط إلى حساب مرتبط به مسبقًا، أو إلى شخص مدعو هنا. لا يربط Kept الحسابات أبدًا لأن بريدها متطابق."
+msgid "Signing in this way reaches only an account already linked to it, or someone invited here. SheepKeep never joins accounts because their emails match."
+msgstr "تسجيل الدخول بهذه الطريقة يصل فقط إلى حساب مرتبط به مسبقًا، أو إلى شخص مدعو هنا. لا يربط SheepKeep الحسابات أبدًا لأن بريدها متطابق."
 
 #: src/components/oidc-sign-in.tsx
 msgid "Signing in with <0>{who}</0> didn't work"
@@ -18877,8 +18877,8 @@ msgid "Start connecting again from the app."
 msgstr "ابدأ الربط من جديد من التطبيق."
 
 #: src/components/connections/shortcut-recipe.tsx
-msgid "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in Kept, with undo, as if you'd logged it here."
-msgstr "المس الاختصار عند المضخة أو في الموقف، واكتب قراءة العدّاد، فتصبح القراءة في Kept، مع إمكانية التراجع، كأنك سجّلتها هنا."
+msgid "Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in SheepKeep, with undo, as if you'd logged it here."
+msgstr "المس الاختصار عند المضخة أو في الموقف، واكتب قراءة العدّاد، فتصبح القراءة في SheepKeep، مع إمكانية التراجع، كأنك سجّلتها هنا."
 
 #: src/routes/_app/settings.connections.tsx
 msgid "Tell your own server when things change here."
@@ -18897,8 +18897,8 @@ msgid "That email address can't be used"
 msgstr "لا يمكن استخدام عنوان البريد هذا"
 
 #: src/routes/oauth/consent.tsx
-msgid "That's the name the app gives itself. Kept can't confirm who made it."
-msgstr "هذا هو الاسم الذي يطلقه التطبيق على نفسه. لا يستطيع Kept التأكد ممن صنعه."
+msgid "That's the name the app gives itself. SheepKeep can't confirm who made it."
+msgstr "هذا هو الاسم الذي يطلقه التطبيق على نفسه. لا يستطيع SheepKeep التأكد ممن صنعه."
 
 #: src/routes/oauth/consent.tsx
 msgid "The app could move what it finds in one into another, so people in one could see what came from the other. Connect it to one location unless you mean that."
@@ -18929,8 +18929,8 @@ msgid "The old secret stopped working. Put this one on your server; every delive
 msgstr "توقف السر القديم عن العمل. ضع هذا على خادمك؛ تُوقّع به كل إرسالية من الآن."
 
 #: src/components/admin/oidc-status.tsx
-msgid "The provider couldn't be reached when Kept started."
-msgstr "تعذّر الوصول إلى المزوّد عند بدء Kept."
+msgid "The provider couldn't be reached when SheepKeep started."
+msgstr "تعذّر الوصول إلى المزوّد عند بدء SheepKeep."
 
 #: src/components/admin/oidc-status.tsx
 msgid "The provider says it's a different issuer from KEPT_OIDC_ISSUER."
@@ -18957,8 +18957,8 @@ msgid "Things indexed for search"
 msgstr "الأشياء المفهرسة للبحث"
 
 #: src/components/oidc-sign-in.tsx
-msgid "This Kept lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
-msgstr "يُدخل Kept هذا الناس بالدعوة. اطلب من أحد مستخدميه دعوتك، ثم انضم من رابط الدعوة."
+msgid "This SheepKeep lets people in by invite. Ask someone who uses it to invite you, then join from the invite link."
+msgstr "يُدخل SheepKeep هذا الناس بالدعوة. اطلب من أحد مستخدميه دعوتك، ثم انضم من رابط الدعوة."
 
 #: src/routes/oauth/consent.tsx
 msgid "This request isn't valid any more"
@@ -19068,8 +19068,8 @@ msgid "Your server didn't answer"
 msgstr "لم يُجب خادمك"
 
 #: src/components/webhooks/edit.tsx
-msgid "Your server's address. Kept sends a signed POST there."
-msgstr "عنوان خادمك. يرسل Kept إليه طلب POST موقّعًا."
+msgid "Your server's address. SheepKeep sends a signed POST there."
+msgstr "عنوان خادمك. يرسل SheepKeep إليه طلب POST موقّعًا."
 
 #: src/routes/_app/assistant.$threadId.tsx
 msgid "Delete this thread"
@@ -19124,8 +19124,8 @@ msgstr "اسأل المساعد عن «{0}»"
 
 #: src/assistant/composer.tsx
 #: src/components/capture/name-field.tsx
-msgid "Kept can't use the microphone"
-msgstr "لا يستطيع Kept استخدام الميكروفون"
+msgid "SheepKeep can't use the microphone"
+msgstr "لا يستطيع SheepKeep استخدام الميكروفون"
 
 #: src/assistant/composer.tsx
 #: src/components/capture/name-field.tsx
@@ -19293,8 +19293,8 @@ msgid "{count} of {total} ×"
 msgstr "{count} من {total} ×"
 
 #: src/assistant/confirm-card.tsx
-msgid "Something Kept can't name"
-msgstr "شيء لا يستطيع Kept تسميته"
+msgid "Something SheepKeep can't name"
+msgstr "شيء لا يستطيع SheepKeep تسميته"
 
 #. placeholder {0}: verbs[row.verb]
 #. placeholder {1}: isolate(row.target?.name ?? '')
@@ -19362,8 +19362,8 @@ msgid "Only ticked rows are saved"
 msgstr "تُحفظ الصفوف المحددة فقط"
 
 #: src/assistant/confirm-card.tsx
-msgid "Changes for you to confirm, drawn by Kept"
-msgstr "تغييرات بانتظار تأكيدك، يعرضها Kept"
+msgid "Changes for you to confirm, drawn by SheepKeep"
+msgstr "تغييرات بانتظار تأكيدك، يعرضها SheepKeep"
 
 #: src/assistant/confirm-card.tsx
 msgid "Time left to confirm"
@@ -19429,8 +19429,8 @@ msgid "Viewers can ask; changes need an admin"
 msgstr "يمكن للمشاهدين السؤال؛ التغييرات تحتاج إلى مسؤول"
 
 #: src/assistant/conversation.tsx
-msgid "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card Kept shows you."
-msgstr "اسأل أين شيء ما أو ما المستحق، أو اطلب تغييرًا. لا يتغيّر شيء حتى تؤكد البطاقة التي يعرضها Kept."
+msgid "Ask where something is or what's due, or ask for a change. Nothing changes until you confirm the card SheepKeep shows you."
+msgstr "اسأل أين شيء ما أو ما المستحق، أو اطلب تغييرًا. لا يتغيّر شيء حتى تؤكد البطاقة التي يعرضها SheepKeep."
 
 #: src/assistant/conversation.tsx
 msgid "Say or type a list, like “in the garage I have a drill, a ladder and two paint cans”, and add them all with one Confirm."
@@ -19528,8 +19528,8 @@ msgid "Backups"
 msgstr "النسخ الاحتياطي"
 
 #: src/routes/_app/settings.device.tsx
-msgid "Lock Kept on this device"
-msgstr "اقفل Kept على هذا الجهاز"
+msgid "Lock SheepKeep on this device"
+msgstr "اقفل SheepKeep على هذا الجهاز"
 
 #: src/components/history/labels.ts
 msgid "Issued on"
@@ -19552,12 +19552,12 @@ msgid "Starter schedules added"
 msgstr "أُضيفت المواعيد الأساسية"
 
 #: src/components/vehicles/overview.tsx
-msgid "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; Kept nudges you at # day.} other {A fresh one keeps ~{next} honest; Kept nudges you at # days.}}"
-msgstr "{nudgeDays, plural, zero {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك Kept بعد # يوم.} one {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك Kept بعد يوم واحد.} two {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك Kept بعد يومين.} few {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك Kept بعد # أيام.} many {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك Kept بعد # يومًا.} other {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك Kept بعد # يوم.}}"
+msgid "{nudgeDays, plural, one {A fresh one keeps ~{next} honest; SheepKeep nudges you at # day.} other {A fresh one keeps ~{next} honest; SheepKeep nudges you at # days.}}"
+msgstr "{nudgeDays, plural, zero {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك SheepKeep بعد # يوم.} one {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك SheepKeep بعد يوم واحد.} two {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك SheepKeep بعد يومين.} few {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك SheepKeep بعد # أيام.} many {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك SheepKeep بعد # يومًا.} other {قراءة جديدة تُبقي ~{next} دقيقًا؛ يذكّرك SheepKeep بعد # يوم.}}"
 
 #: src/components/vehicles/overview.tsx
-msgid "{nudgeDays, plural, one {Kept nudges you at # day.} other {Kept nudges you at # days.}}"
-msgstr "{nudgeDays, plural, zero {يذكّرك Kept بعد # يوم.} one {يذكّرك Kept بعد يوم واحد.} two {يذكّرك Kept بعد يومين.} few {يذكّرك Kept بعد # أيام.} many {يذكّرك Kept بعد # يومًا.} other {يذكّرك Kept بعد # يوم.}}"
+msgid "{nudgeDays, plural, one {SheepKeep nudges you at # day.} other {SheepKeep nudges you at # days.}}"
+msgstr "{nudgeDays, plural, zero {يذكّرك SheepKeep بعد # يوم.} one {يذكّرك SheepKeep بعد يوم واحد.} two {يذكّرك SheepKeep بعد يومين.} few {يذكّرك SheepKeep بعد # أيام.} many {يذكّرك SheepKeep بعد # يومًا.} other {يذكّرك SheepKeep بعد # يوم.}}"
 
 #: src/routes/_app/admin.alerts.tsx
 msgid "A location's webhook keeps failing"
@@ -19613,8 +19613,8 @@ msgid "Download the recovery kit"
 msgstr "تنزيل حقيبة الاسترداد"
 
 #: src/components/ops/kit-download.tsx
-msgid "Everything needed to bring Kept back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
-msgstr "كل ما يلزم لإعادة Kept على خادم جديد: المفاتيح السرية، ومكان النسخة الاحتياطية، وكلمة مرورها ومفاتيح التخزين، وخطوات الاستعادة."
+msgid "Everything needed to bring SheepKeep back on a new server: the secret keys, the backup's location, its password and storage keys, and the restore steps."
+msgstr "كل ما يلزم لإعادة SheepKeep على خادم جديد: المفاتيح السرية، ومكان النسخة الاحتياطية، وكلمة مرورها ومفاتيح التخزين، وخطوات الاستعادة."
 
 #: src/components/ops/kit-download.tsx
 msgid "Keep it off this server"
@@ -19665,8 +19665,8 @@ msgid "Keep the recovery kit somewhere else"
 msgstr "احفظ حقيبة الاسترداد في مكان آخر"
 
 #: src/routes/_app/admin.status.tsx
-msgid "Kept encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. Kept asks for this before the first secret, AI key or backup."
-msgstr "يشفّر Kept الحقول السرية ومفاتيح الذكاء الاصطناعي وكلمة مرور النسخ الاحتياطي بالمفتاح KEPT_SECRET_KEY. إن ضاع هذا الخادم ومفتاحه معًا، تستعيد النسخة الاحتياطية أغراضك، لكن ليس هذه. نزّل حقيبة الاسترداد (أو اطبعها بالأمر <0>kept admin recovery-kit</0>) واحفظها بعيدًا عن هذا الخادم. يطلب Kept ذلك قبل أول سرّ أو مفتاح ذكاء اصطناعي أو نسخة احتياطية."
+msgid "SheepKeep encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this server and its key are lost together, a backup still restores your things, but not those. Download the recovery kit (or print it with <0>kept admin recovery-kit</0>) and keep it away from this server. SheepKeep asks for this before the first secret, AI key or backup."
+msgstr "يشفّر SheepKeep الحقول السرية ومفاتيح الذكاء الاصطناعي وكلمة مرور النسخ الاحتياطي بالمفتاح KEPT_SECRET_KEY. إن ضاع هذا الخادم ومفتاحه معًا، تستعيد النسخة الاحتياطية أغراضك، لكن ليس هذه. نزّل حقيبة الاسترداد (أو اطبعها بالأمر <0>kept admin recovery-kit</0>) واحفظها بعيدًا عن هذا الخادم. يطلب SheepKeep ذلك قبل أول سرّ أو مفتاح ذكاء اصطناعي أو نسخة احتياطية."
 
 #: src/routes/_app/admin.status.tsx
 msgid "Changed since you downloaded it"
@@ -19721,8 +19721,8 @@ msgid "App lock"
 msgstr "قفل التطبيق"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Ask for a PIN when Kept opens and after five minutes away. Keeping a location offline needs it."
-msgstr "اطلب رمز PIN عند فتح Kept وبعد خمس دقائق من الابتعاد. حفظ موقع دون اتصال يحتاج إليه."
+msgid "Ask for a PIN when SheepKeep opens and after five minutes away. Keeping a location offline needs it."
+msgstr "اطلب رمز PIN عند فتح SheepKeep وبعد خمس دقائق من الابتعاد. حفظ موقع دون اتصال يحتاج إليه."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "Change PIN"
@@ -19765,8 +19765,8 @@ msgid "Face ID"
 msgstr "Face ID"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Face ID or fingerprint can unlock Kept now"
-msgstr "يمكن الآن فتح Kept بـ Face ID أو البصمة"
+msgid "Face ID or fingerprint can unlock SheepKeep now"
+msgstr "يمكن الآن فتح SheepKeep بـ Face ID أو البصمة"
 
 #: src/components/device/lock-screen.tsx
 msgid "Face ID or fingerprint didn’t work. Enter your PIN."
@@ -19805,24 +19805,24 @@ msgid "Keeping {0} offline didn’t finish"
 msgstr "لم يكتمل حفظ {0} دون اتصال"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Kept app lock"
-msgstr "قفل تطبيق Kept"
+msgid "SheepKeep app lock"
+msgstr "قفل تطبيق SheepKeep"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Kept locks on this device now"
-msgstr "أصبح Kept يُقفل على هذا الجهاز"
+msgid "SheepKeep locks on this device now"
+msgstr "أصبح SheepKeep يُقفل على هذا الجهاز"
 
 #: src/components/device/kept-extras.tsx
 msgid "Kept offline is locked behind your PIN."
 msgstr "المحفوظ دون اتصال مقفل خلف رمز PIN."
 
 #: src/components/device/kept-extras.tsx
-msgid "Kept on this device"
+msgid "SheepKeep on this device"
 msgstr "محفوظ على هذا الجهاز"
 
 #: src/routes/_app/settings.index.tsx
-msgid "Lock Kept with a PIN, and keep a location available offline."
-msgstr "اقفل Kept برمز PIN، واحفظ موقعًا للاستخدام دون اتصال."
+msgid "Lock SheepKeep with a PIN, and keep a location available offline."
+msgstr "اقفل SheepKeep برمز PIN، واحفظ موقعًا للاستخدام دون اتصال."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "Not available in this browser"
@@ -19833,8 +19833,8 @@ msgid "Now turn on Face ID or fingerprint again"
 msgstr "شغّل الآن Face ID أو البصمة مرة أخرى"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "On this phone Face ID or fingerprint opens Kept, but prices and documents kept offline still ask for the PIN."
-msgstr "على هذا الهاتف يفتح Face ID أو البصمة تطبيق Kept، لكن الأسعار والمستندات المحفوظة دون اتصال ما زالت تطلب رمز PIN."
+msgid "On this phone Face ID or fingerprint opens SheepKeep, but prices and documents kept offline still ask for the PIN."
+msgstr "على هذا الهاتف يفتح Face ID أو البصمة تطبيق SheepKeep، لكن الأسعار والمستندات المحفوظة دون اتصال ما زالت تطلب رمز PIN."
 
 #: src/components/device/lock-screen.tsx
 msgid "PIN"
@@ -19861,8 +19861,8 @@ msgid "That is more than this device can keep offline."
 msgstr "هذا أكثر مما يستطيع هذا الجهاز حفظه دون اتصال."
 
 #: src/components/device/app-lock-settings.tsx
-msgid "The app lock needs storage this browser doesn’t give Kept."
-msgstr "يحتاج قفل التطبيق إلى تخزين لا يمنحه هذا المتصفح لـ Kept."
+msgid "The app lock needs storage this browser doesn’t give SheepKeep."
+msgstr "يحتاج قفل التطبيق إلى تخزين لا يمنحه هذا المتصفح لـ SheepKeep."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "The PIN keeps out someone holding this phone. Forgot it? Sign out and sign in again."
@@ -19909,16 +19909,16 @@ msgid "Use Face ID or fingerprint"
 msgstr "استخدم Face ID أو البصمة"
 
 #: src/components/device/keep-offline.tsx
-msgid "Whoever unlocks Kept on this phone sees prices and documents for this location."
-msgstr "من يفتح Kept على هذا الهاتف يرى أسعار هذا الموقع ومستنداته."
+msgid "Whoever unlocks SheepKeep on this phone sees prices and documents for this location."
+msgstr "من يفتح SheepKeep على هذا الهاتف يرى أسعار هذا الموقع ومستنداته."
 
 #: src/components/device/keep-offline.tsx
-msgid "Whoever unlocks Kept on this phone sees prices and documents for this location. About {0} to download."
-msgstr "من يفتح Kept على هذا الهاتف يرى أسعار هذا الموقع ومستنداته. نحو {0} للتنزيل."
+msgid "Whoever unlocks SheepKeep on this phone sees prices and documents for this location. About {0} to download."
+msgstr "من يفتح SheepKeep على هذا الهاتف يرى أسعار هذا الموقع ومستنداته. نحو {0} للتنزيل."
 
 #: src/components/device/keep-offline.tsx
-msgid "Whoever unlocks Kept sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
-msgstr "من يفتح Kept يرى أسعار هذه المواقع ومستنداتها. يمنع رمز PIN من يمسك الهاتف، لا من نسخ تخزين المتصفح."
+msgid "Whoever unlocks SheepKeep sees prices and documents for these locations. The PIN keeps out someone holding the phone, not someone who has copied the browser’s storage."
+msgstr "من يفتح SheepKeep يرى أسعار هذه المواقع ومستنداتها. يمنع رمز PIN من يمسك الهاتف، لا من نسخ تخزين المتصفح."
 
 #: src/components/device/keep-offline.tsx
 msgid "Wrong PIN."
@@ -19970,8 +19970,8 @@ msgid "Access key ID"
 msgstr "معرّف مفتاح الوصول"
 
 #: src/components/ops/backup-target-form.tsx
-msgid "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk Kept's data is on."
-msgstr "مسار مطلق كما يراه الخادم: قرص آخر أو مجلد NAS مركّب. لا القرص الذي عليه بيانات Kept."
+msgid "An absolute path as the server sees it: another disk, or a NAS mount. Not the disk SheepKeep's data is on."
+msgstr "مسار مطلق كما يراه الخادم: قرص آخر أو مجلد NAS مركّب. لا القرص الذي عليه بيانات SheepKeep."
 
 #: src/components/ops/backup-target-form.tsx
 msgid "An OpenSSH private key. It replaces the saved key when you save."
@@ -19982,8 +19982,8 @@ msgid "Another run holds the repository. Try again when it finishes."
 msgstr "تشغيل آخر يحجز المستودع. حاول مجددًا عندما ينتهي."
 
 #: src/components/ops/backup-target-form.tsx
-msgid "At least 12 characters. Without it nobody can read the backups, Kept included."
-msgstr "١٢ حرفًا على الأقل. من دونها لا يستطيع أحد قراءة النسخ الاحتياطية، ولا Kept نفسه."
+msgid "At least 12 characters. Without it nobody can read the backups, SheepKeep included."
+msgstr "١٢ حرفًا على الأقل. من دونها لا يستطيع أحد قراءة النسخ الاحتياطية، ولا SheepKeep نفسه."
 
 #: src/components/ops/backup-target-form.tsx
 msgid "Backup password"
@@ -20020,8 +20020,8 @@ msgid "Backups need a password: no password, no backup."
 msgstr "النسخ الاحتياطي يحتاج إلى كلمة مرور: لا كلمة مرور، لا نسخ احتياطي."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Backups should run every night. Check the runs in Backups, and that Kept's worker is running."
-msgstr "يُفترض أن يجري النسخ الاحتياطي كل ليلة. راجع العمليات في النسخ الاحتياطي، وتأكد أن عامل Kept يعمل."
+msgid "Backups should run every night. Check the runs in Backups, and that SheepKeep's worker is running."
+msgstr "يُفترض أن يجري النسخ الاحتياطي كل ليلة. راجع العمليات في النسخ الاحتياطي، وتأكد أن عامل SheepKeep يعمل."
 
 #: src/components/ops/ops-words.ts
 msgid "Before upgrade"
@@ -20036,8 +20036,8 @@ msgid "Can't check this build"
 msgstr "لا يمكن التحقق لهذا الإصدار"
 
 #: src/components/ops/backup-target-form.tsx
-msgid "Change the locked settings in the server's configuration (<0>{0}</0>) and restart Kept."
-msgstr "غيّر الإعدادات المقفلة في تهيئة الخادم (<0>{0}</0>) ثم أعد تشغيل Kept."
+msgid "Change the locked settings in the server's configuration (<0>{0}</0>) and restart SheepKeep."
+msgstr "غيّر الإعدادات المقفلة في تهيئة الخادم (<0>{0}</0>) ثم أعد تشغيل SheepKeep."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Check for new versions"
@@ -20136,8 +20136,8 @@ msgid "Every night at <0>{time}</0> UTC, keeping {daily} daily, {weekly} weekly 
 msgstr "كل ليلة عند <0>{time}</0> UTC، مع الاحتفاظ بلقطات يومية: {daily}، وأسبوعية: {weekly}، وشهرية: {monthly}."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Every week, Kept checks that every snapshot can be read."
-msgstr "كل أسبوع يتحقق Kept من إمكانية قراءة كل لقطة."
+msgid "Every week, SheepKeep checks that every snapshot can be read."
+msgstr "كل أسبوع يتحقق SheepKeep من إمكانية قراءة كل لقطة."
 
 #: src/components/ops/status-tiles.tsx
 msgid "File bucket versioning"
@@ -20160,8 +20160,8 @@ msgid "GitHub shows no published release for this server's source repository. It
 msgstr "لا يعرض GitHub أي إصدار منشور لمستودع الشيفرة المصدرية لهذا الخادم. ربما يكون خاصًا، أو بلا إصدارات بعد."
 
 #: src/components/ops/status-tiles.tsx
-msgid "GitHub's answer wasn't what Kept expected. Kept asks again tomorrow."
-msgstr "لم يكن رد GitHub كما توقّع Kept. سيسأل Kept مجددًا غدًا."
+msgid "GitHub's answer wasn't what SheepKeep expected. SheepKeep asks again tomorrow."
+msgstr "لم يكن رد GitHub كما توقّع SheepKeep. سيسأل SheepKeep مجددًا غدًا."
 
 #: src/components/ops/status-tiles.tsx
 msgid "GitHub's limit reached"
@@ -20176,32 +20176,32 @@ msgid "Keep the saved one"
 msgstr "الإبقاء على المحفوظ"
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept {v} is available"
-msgstr "Kept {v} متاح"
+msgid "SheepKeep {v} is available"
+msgstr "SheepKeep {v} متاح"
 
 #: src/components/ops/update-line.tsx
-msgid "Kept <0>{version}</0> is available"
-msgstr "Kept <0>{version}</0> متاح"
+msgid "SheepKeep <0>{version}</0> is available"
+msgstr "SheepKeep <0>{version}</0> متاح"
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept allows one release back. Upgrade again when the problem that made you roll back is fixed."
-msgstr "يسمح Kept بالرجوع إصدارًا واحدًا. رقِّ مجددًا حين تُحل المشكلة التي جعلتك ترجع."
+msgid "SheepKeep allows one release back. Upgrade again when the problem that made you roll back is fixed."
+msgstr "يسمح SheepKeep بالرجوع إصدارًا واحدًا. رقِّ مجددًا حين تُحل المشكلة التي جعلتك ترجع."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept checks it with each backup."
-msgstr "يتحقق Kept منه مع كل نسخ احتياطي."
+msgid "SheepKeep checks it with each backup."
+msgstr "يتحقق SheepKeep منه مع كل نسخ احتياطي."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept doesn't ask for new versions. Turn it on in Admin → Sign-up."
-msgstr "لا يسأل Kept عن الإصدارات الجديدة. فعّل ذلك من الإدارة ← التسجيل."
+msgid "SheepKeep doesn't ask for new versions. Turn it on in Admin → Sign-up."
+msgstr "لا يسأل SheepKeep عن الإصدارات الجديدة. فعّل ذلك من الإدارة ← التسجيل."
 
 #: src/components/ops/ops-words.ts
-msgid "Kept got no answer from the backup storage. Check the address, the credentials and the network."
-msgstr "لم يتلقَّ Kept ردًا من مخزن النسخ الاحتياطي. تحقّق من العنوان وبيانات الاعتماد والشبكة."
+msgid "SheepKeep got no answer from the backup storage. Check the address, the credentials and the network."
+msgstr "لم يتلقَّ SheepKeep ردًا من مخزن النسخ الاحتياطي. تحقّق من العنوان وبيانات الاعتماد والشبكة."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Kept warns at {warnAt}%."
-msgstr "ينبّه Kept عند {warnAt}٪."
+msgid "SheepKeep warns at {warnAt}%."
+msgstr "ينبّه SheepKeep عند {warnAt}٪."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Last checked {checked}"
@@ -20282,8 +20282,8 @@ msgid "Not known yet"
 msgstr "غير معروف بعد"
 
 #: src/components/ops/snapshots-list.tsx
-msgid "Not made by Kept"
-msgstr "ليست من Kept"
+msgid "Not made by SheepKeep"
+msgstr "ليست من SheepKeep"
 
 #: src/components/ops/status-tiles.tsx
 msgid "Not measured yet"
@@ -20294,12 +20294,12 @@ msgid "Nothing on this server is backed up. Choose where backups go (another dis
 msgstr "لا شيء على هذا الخادم منسوخ احتياطيًا. اختر وجهة النسخ (قرص آخر أو حاوية S3 أو خادم SFTP) وكلمة مرور في النسخ الاحتياطي."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "Off. Kept never asks; check the releases page yourself."
-msgstr "متوقف. لا يسأل Kept أبدًا؛ راجع صفحة الإصدارات بنفسك."
+msgid "Off. SheepKeep never asks; check the releases page yourself."
+msgstr "متوقف. لا يسأل SheepKeep أبدًا؛ راجع صفحة الإصدارات بنفسك."
 
 #: src/routes/_app/admin.settings.tsx
-msgid "On. Once a day the server asks GitHub for Kept's newest release, sending nothing but the request. Admin → Status says when one is out."
-msgstr "مفعّل. مرة يوميًا يسأل الخادم GitHub عن أحدث إصدار من Kept، ولا يرسل سوى الطلب. تخبرك الإدارة ← الحالة حين يصدر واحد."
+msgid "On. Once a day the server asks GitHub for SheepKeep's newest release, sending nothing but the request. Admin → Status says when one is out."
+msgstr "مفعّل. مرة يوميًا يسأل الخادم GitHub عن أحدث إصدار من SheepKeep، ولا يرسل سوى الطلب. تخبرك الإدارة ← الحالة حين يصدر واحد."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Once a month, restore into a scratch database and compare: <0>{command}</0>"
@@ -20474,16 +20474,16 @@ msgid "The backup stopped before it finished: the server restarted or ran out of
 msgstr "توقّفت النسخة الاحتياطية قبل أن تكتمل: أُعيد تشغيل الخادم أو نفدت ذاكرته. تجري النسخة الاحتياطية التالية كالمعتاد."
 
 #: src/components/ops/ops-words.ts
-msgid "The database dump tool doesn't match the database's version. Use Kept's own image."
-msgstr "أداة تفريغ قاعدة البيانات لا تطابق إصدار قاعدة البيانات. استخدم صورة Kept نفسها."
+msgid "The database dump tool doesn't match the database's version. Use SheepKeep's own image."
+msgstr "أداة تفريغ قاعدة البيانات لا تطابق إصدار قاعدة البيانات. استخدم صورة SheepKeep نفسها."
 
 #: src/components/ops/ops-words.ts
 msgid "The dump was much smaller than the last good one. Older snapshots were kept."
 msgstr "كان التفريغ أصغر بكثير من آخر تفريغ سليم. احتُفظ باللقطات الأقدم."
 
 #: src/components/ops/status-tiles.tsx
-msgid "The last check got no answer. Kept asks again tomorrow."
-msgstr "لم يتلقَّ التحقق الأخير ردًا. سيسأل Kept مجددًا غدًا."
+msgid "The last check got no answer. SheepKeep asks again tomorrow."
+msgstr "لم يتلقَّ التحقق الأخير ردًا. سيسأل SheepKeep مجددًا غدًا."
 
 #: src/components/ops/ops-words.ts
 msgid "The repository is locked by another run. If none is running, {unlock} removes the lock."
@@ -20502,8 +20502,8 @@ msgid "The server's environment sets that, so it can't be changed here."
 msgstr "تعيّن بيئة الخادم ذلك، فلا يمكن تغييره هنا."
 
 #: src/components/ops/backup-target-form.tsx
-msgid "The server's own key, as ssh-keyscan prints it without the host name. Kept connects to no other."
-msgstr "مفتاح الخادم نفسه، كما يطبعه ssh-keyscan دون اسم المضيف. لا يتصل Kept بغيره."
+msgid "The server's own key, as ssh-keyscan prints it without the host name. SheepKeep connects to no other."
+msgstr "مفتاح الخادم نفسه، كما يطبعه ssh-keyscan دون اسم المضيف. لا يتصل SheepKeep بغيره."
 
 #: src/components/ops/ops-words.ts
 msgid "The snapshot was taken, but something needs a look. The server's log has the details."
@@ -20522,20 +20522,20 @@ msgid "They need a decision: retry or discard."
 msgstr "تحتاج إلى قرار: إعادة المحاولة أو التجاهل."
 
 #: src/components/ops/backup-target-form.tsx
-msgid "This needs a secure (HTTPS) connection to Kept."
-msgstr "يتطلب هذا اتصالًا آمنًا (HTTPS) بـ Kept."
+msgid "This needs a secure (HTTPS) connection to SheepKeep."
+msgstr "يتطلب هذا اتصالًا آمنًا (HTTPS) بـ SheepKeep."
 
 #: src/components/ops/update-line.tsx
-msgid "This server runs <0>{current}</0>. Upgrading is the release notes' steps; Kept never updates itself."
-msgstr "يعمل هذا الخادم بالإصدار <0>{current}</0>. الترقية هي خطوات ملاحظات الإصدار؛ لا يحدّث Kept نفسه أبدًا."
+msgid "This server runs <0>{current}</0>. Upgrading is the release notes' steps; SheepKeep never updates itself."
+msgstr "يعمل هذا الخادم بالإصدار <0>{current}</0>. الترقية هي خطوات ملاحظات الإصدار؛ لا يحدّث SheepKeep نفسه أبدًا."
 
 #: src/components/ops/status-tiles.tsx
-msgid "This server's source code address isn't a GitHub repository, so Kept doesn't ask."
-msgstr "عنوان الشيفرة المصدرية لهذا الخادم ليس مستودعًا على GitHub، لذا لا يسأل Kept."
+msgid "This server's source code address isn't a GitHub repository, so SheepKeep doesn't ask."
+msgstr "عنوان الشيفرة المصدرية لهذا الخادم ليس مستودعًا على GitHub، لذا لا يسأل SheepKeep."
 
 #: src/components/ops/status-tiles.tsx
-msgid "Too many requests came from this server's address. Kept asks again tomorrow."
-msgstr "وصلت طلبات كثيرة جدًا من عنوان هذا الخادم. سيسأل Kept مجددًا غدًا."
+msgid "Too many requests came from this server's address. SheepKeep asks again tomorrow."
+msgstr "وصلت طلبات كثيرة جدًا من عنوان هذا الخادم. سيسأل SheepKeep مجددًا غدًا."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Up to date"
@@ -20595,8 +20595,8 @@ msgid "Low since {day}"
 msgstr "منخفض منذ {day}"
 
 #: src/components/webhooks/edit.tsx
-msgid "Kept can't reach that address. Check it for typos."
-msgstr "لا يستطيع Kept الوصول إلى هذا العنوان. تحقّق من كتابته."
+msgid "SheepKeep can't reach that address. Check it for typos."
+msgstr "لا يستطيع SheepKeep الوصول إلى هذا العنوان. تحقّق من كتابته."
 
 #: src/assistant/conversation.tsx
 msgid "You have no AI of your own to answer here. Ask from a location's page, where its AI answers."
@@ -20631,8 +20631,8 @@ msgid "Other names requested for an import"
 msgstr "طُلبت أسماء أخرى لعملية استيراد"
 
 #: src/components/history/labels.ts
-msgid "Kept set up"
-msgstr "أُعدّ Kept"
+msgid "SheepKeep set up"
+msgstr "أُعدّ SheepKeep"
 
 #: src/components/history/labels.ts
 msgid "Instance settings changed"
@@ -20846,8 +20846,8 @@ msgid "This account was made for you by someone who runs a location. Ask them to
 msgstr "أنشأ هذا الحساب لك شخصٌ يدير موقعًا. اطلب منه إزالته."
 
 #: src/components/delete-account.tsx
-msgid "You're the only person who runs this Kept. Make someone else an instance admin first."
-msgstr "أنت الوحيد الذي يدير Kept هذا. امنح شخصًا آخر إدارة الخادم أولًا."
+msgid "You're the only person who runs this SheepKeep. Make someone else an instance admin first."
+msgstr "أنت الوحيد الذي يدير SheepKeep هذا. امنح شخصًا آخر إدارة الخادم أولًا."
 
 #: src/components/delete-account.tsx
 msgid "You own these locations. Hand each one to someone else, or delete it, first."
@@ -20874,8 +20874,8 @@ msgid "Keep my account"
 msgstr "الإبقاء على حسابي"
 
 #: src/components/page.tsx
-msgid "Your account is going to be deleted. Keep it to use Kept again."
-msgstr "سيُحذف حسابك. أبقِ عليه لتستخدم Kept مجددًا."
+msgid "Your account is going to be deleted. Keep it to use SheepKeep again."
+msgstr "سيُحذف حسابك. أبقِ عليه لتستخدم SheepKeep مجددًا."
 
 #: src/components/page.tsx
 msgid "Your account can't be deleted yet."
@@ -20934,16 +20934,16 @@ msgid "Unlink"
 msgstr "إلغاء الربط"
 
 #: src/components/sign-in-methods.tsx
-msgid "Once linked, that account signs you in here. Kept never links one because the email matches."
-msgstr "بعد الربط، يُدخلك ذلك الحساب هنا. لا يربط Kept أي حساب لمجرد تطابق البريد الإلكتروني."
+msgid "Once linked, that account signs you in here. SheepKeep never links one because the email matches."
+msgstr "بعد الربط، يُدخلك ذلك الحساب هنا. لا يربط SheepKeep أي حساب لمجرد تطابق البريد الإلكتروني."
 
 #: src/components/admin/oidc-status.tsx
 msgid "Sign-in with Google"
 msgstr "تسجيل الدخول عبر Google"
 
 #: src/components/admin/oidc-status.tsx
-msgid "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart Kept."
-msgstr "أنشئ عميل OAuth في Google Cloud، واضبط <0>KEPT_GOOGLE_CLIENT_ID</0> و<1>KEPT_GOOGLE_CLIENT_SECRET</1>، ثم أعد تشغيل Kept."
+msgid "Make an OAuth client in Google Cloud, set <0>KEPT_GOOGLE_CLIENT_ID</0> and <1>KEPT_GOOGLE_CLIENT_SECRET</1>, then restart SheepKeep."
+msgstr "أنشئ عميل OAuth في Google Cloud، واضبط <0>KEPT_GOOGLE_CLIENT_ID</0> و<1>KEPT_GOOGLE_CLIENT_SECRET</1>، ثم أعد تشغيل SheepKeep."
 
 #: src/components/admin/oidc-status.tsx
 msgid "Redirect URI to register with Google"
@@ -20954,12 +20954,12 @@ msgid "Google sign-in reaches only an account already linked to it, or someone i
 msgstr "لا يصل تسجيل الدخول عبر Google إلا إلى حساب مرتبط به مسبقًا، أو إلى شخص مدعو هنا. لا يدخل أحد من تلقاء نفسه."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "That server is on a private network, which this Kept doesn't allow. An instance admin can allow it."
-msgstr "هذا الخادم على شبكة خاصة، ولا يسمح Kept هذا بذلك. يمكن لمسؤول الخادم السماح به."
+msgid "That server is on a private network, which this SheepKeep doesn't allow. An instance admin can allow it."
+msgstr "هذا الخادم على شبكة خاصة، ولا يسمح SheepKeep هذا بذلك. يمكن لمسؤول الخادم السماح به."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept stops sending to it, and forgets its settings."
-msgstr "يتوقف Kept عن الإرسال إليه وينسى إعداداته."
+msgid "SheepKeep stops sending to it, and forgets its settings."
+msgstr "يتوقف SheepKeep عن الإرسال إليه وينسى إعداداته."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Add ntfy"
@@ -20970,8 +20970,8 @@ msgid "Add Telegram"
 msgstr "إضافة Telegram"
 
 #: src/components/notifications/settings/channels.tsx
-msgid "You have {MAX_RELAY_CHANNELS}, the most Kept allows."
-msgstr "لديك {MAX_RELAY_CHANNELS}، وهو الحد الأقصى في Kept."
+msgid "You have {MAX_RELAY_CHANNELS}, the most SheepKeep allows."
+msgstr "لديك {MAX_RELAY_CHANNELS}، وهو الحد الأقصى في SheepKeep."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Reminders on your phone through ntfy.sh or your own ntfy server."
@@ -21022,20 +21022,20 @@ msgid "Optional, to tell them apart."
 msgstr "اختياري، للتمييز بينها."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "Kept keeps these settings encrypted and never shows them again."
-msgstr "يحفظ Kept هذه الإعدادات مشفّرة ولا يعرضها مرة أخرى."
+msgid "SheepKeep keeps these settings encrypted and never shows them again."
+msgstr "يحفظ SheepKeep هذه الإعدادات مشفّرة ولا يعرضها مرة أخرى."
 
 #: src/components/reports/print-sheet.tsx
 msgid "It's also on its way to your email."
 msgstr "وهو في طريقه إلى بريدك الإلكتروني أيضًا."
 
 #: src/components/reports/print-sheet.tsx
-msgid "Kept emails this location's inventory every Monday morning."
-msgstr "يرسل Kept جرد هذا الموقع بالبريد كل صباح اثنين."
+msgid "SheepKeep emails this location's inventory every Monday morning."
+msgstr "يرسل SheepKeep جرد هذا الموقع بالبريد كل صباح اثنين."
 
 #: src/components/reports/print-sheet.tsx
-msgid "Kept emails this location's inventory on the 1st of every month."
-msgstr "يرسل Kept جرد هذا الموقع بالبريد في اليوم الأول من كل شهر."
+msgid "SheepKeep emails this location's inventory on the 1st of every month."
+msgstr "يرسل SheepKeep جرد هذا الموقع بالبريد في اليوم الأول من كل شهر."
 
 #: src/components/reports/print-sheet.tsx
 msgid "Email it to me"
@@ -21066,8 +21066,8 @@ msgid "Skipped: you'd made five reports that hour."
 msgstr "تخطّاه: كنت قد أعددت خمسة تقارير في تلك الساعة."
 
 #: src/components/notifications/settings/scheduled-reports.tsx
-msgid "Skipped: that part of Kept is off in this location."
-msgstr "تخطّاه: هذا الجزء من Kept متوقف في هذا الموقع."
+msgid "Skipped: that part of SheepKeep is off in this location."
+msgstr "تخطّاه: هذا الجزء من SheepKeep متوقف في هذا الموقع."
 
 #: src/components/notifications/settings/scheduled-reports.tsx
 msgid "Skipped: you can't make this report there any more."
@@ -21078,8 +21078,8 @@ msgid "Stop this report?"
 msgstr "إيقاف هذا التقرير؟"
 
 #: src/components/notifications/settings/scheduled-reports.tsx
-msgid "Kept stops emailing it. You can print it any time."
-msgstr "يتوقف Kept عن إرساله بالبريد. يمكنك طباعته في أي وقت."
+msgid "SheepKeep stops emailing it. You can print it any time."
+msgstr "يتوقف SheepKeep عن إرساله بالبريد. يمكنك طباعته في أي وقت."
 
 #: src/components/notifications/settings/scheduled-reports.tsx
 msgid "Stop"
@@ -21122,12 +21122,12 @@ msgid "This isn't a LubeLogger export of fuel, services or odometer."
 msgstr "هذا ليس تصديرًا من LubeLogger للوقود أو الصيانة أو عدّاد المسافة."
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "Kept can't read this file. Export it from LubeLogger again as CSV."
-msgstr "لا يستطيع Kept قراءة هذا الملف. صدّره من LubeLogger مجددًا بصيغة CSV."
+msgid "SheepKeep can't read this file. Export it from LubeLogger again as CSV."
+msgstr "لا يستطيع SheepKeep قراءة هذا الملف. صدّره من LubeLogger مجددًا بصيغة CSV."
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "Kept can't read this file."
-msgstr "لا يستطيع Kept قراءة هذا الملف."
+msgid "SheepKeep can't read this file."
+msgstr "لا يستطيع SheepKeep قراءة هذا الملف."
 
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "Imported {0} records"
@@ -21174,8 +21174,8 @@ msgid "Check"
 msgstr "تحقّق"
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "no date Kept can read"
-msgstr "لا تاريخ يستطيع Kept قراءته"
+msgid "no date SheepKeep can read"
+msgstr "لا تاريخ يستطيع SheepKeep قراءته"
 
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
@@ -21202,8 +21202,8 @@ msgid "a cost below zero"
 msgstr "تكلفة أقل من الصفر"
 
 #: src/components/vehicles/lubelogger-import.tsx
-msgid "Kept refused it"
-msgstr "رفضه Kept"
+msgid "SheepKeep refused it"
+msgstr "رفضه SheepKeep"
 
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "What it will do"
@@ -21246,8 +21246,8 @@ msgid "That address is on a private network. An instance admin can allow it in A
 msgstr "هذا العنوان على شبكة خاصة. يمكن لمسؤول الخادم السماح به من الإدارة ← الإعدادات."
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept couldn't reach that server. Check the host and port."
-msgstr "تعذّر على Kept الوصول إلى هذا الخادم. تحقق من الخادم والمنفذ."
+msgid "SheepKeep couldn't reach that server. Check the host and port."
+msgstr "تعذّر على SheepKeep الوصول إلى هذا الخادم. تحقق من الخادم والمنفذ."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "The server's encryption didn't check out. Check the host and the security."
@@ -21266,8 +21266,8 @@ msgid "The server took too long to answer."
 msgstr "استغرق الخادم وقتًا طويلًا للرد."
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept couldn't sign in to the mailbox."
-msgstr "تعذّر على Kept تسجيل الدخول إلى صندوق البريد."
+msgid "SheepKeep couldn't sign in to the mailbox."
+msgstr "تعذّر على SheepKeep تسجيل الدخول إلى صندوق البريد."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "The person who connected it no longer administers this location."
@@ -21306,16 +21306,16 @@ msgid "Remove this mailbox?"
 msgstr "إزالة صندوق البريد هذا؟"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept stops checking it. The receipts it already made stay."
-msgstr "يتوقف Kept عن فحصه. تبقى الإيصالات التي أنشأها."
+msgid "SheepKeep stops checking it. The receipts it already made stay."
+msgstr "يتوقف SheepKeep عن فحصه. تبقى الإيصالات التي أنشأها."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Mailbox"
 msgstr "صندوق البريد"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept stopped checking this mailbox"
-msgstr "توقف Kept عن فحص صندوق البريد هذا"
+msgid "SheepKeep stopped checking this mailbox"
+msgstr "توقف SheepKeep عن فحص صندوق البريد هذا"
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Save it again to turn it back on."
@@ -21334,8 +21334,8 @@ msgid "Checked {0}"
 msgstr "فُحص {0}"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Not checked yet. Kept checks every 10 minutes."
-msgstr "لم يُفحص بعد. يفحص Kept كل 10 دقائق."
+msgid "Not checked yet. SheepKeep checks every 10 minutes."
+msgstr "لم يُفحص بعد. يفحص SheepKeep كل 10 دقائق."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Connected by {0}"
@@ -21358,8 +21358,8 @@ msgid "Connect a mailbox"
 msgstr "ربط صندوق بريد"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
-msgstr "يفحص Kept مجلدًا في صندوق بريد لديك كل 10 دقائق. تصبح صور كل رسالة وملفات PDF فيها، أو نصّها إن لم يكن فيها شيء منها، إيصالًا مسودة في الوارد. لا يُقرأ إلا البريد الذي يصل بعد الربط، ولا يتغير شيء في صندوق البريد."
+msgid "SheepKeep checks a folder in a mailbox you already have, every 10 minutes. Each message's photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is changed."
+msgstr "يفحص SheepKeep مجلدًا في صندوق بريد لديك كل 10 دقائق. تصبح صور كل رسالة وملفات PDF فيها، أو نصّها إن لم يكن فيها شيء منها، إيصالًا مسودة في الوارد. لا يُقرأ إلا البريد الذي يصل بعد الربط، ولا يتغير شيء في صندوق البريد."
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "IMAP server"
@@ -21402,8 +21402,8 @@ msgid "Optional, comma-separated. A filter against noise, not a security check: 
 msgstr "اختياري، مفصول بفواصل. فلتر ضد الإزعاج وليس فحصًا أمنيًا: يمكن تزوير عنوان المرسل."
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Kept couldn't connect"
-msgstr "تعذّر على Kept الاتصال"
+msgid "SheepKeep couldn't connect"
+msgstr "تعذّر على SheepKeep الاتصال"
 
 #: src/components/mailin/mailbox-settings.tsx
 msgid "Recent mail"
@@ -21418,8 +21418,8 @@ msgid "No mail read yet"
 msgstr "لم يُقرأ أي بريد بعد"
 
 #: src/components/mailin/mailbox-settings.tsx
-msgid "Messages that arrive in the folder show here once Kept has read them."
-msgstr "تظهر هنا الرسائل التي تصل إلى المجلد بعد أن يقرأها Kept."
+msgid "Messages that arrive in the folder show here once SheepKeep has read them."
+msgstr "تظهر هنا الرسائل التي تصل إلى المجلد بعد أن يقرأها SheepKeep."
 
 #: src/components/notifications/settings/channels.tsx
 msgid "Add Apprise"
@@ -21458,12 +21458,12 @@ msgid "Condition report PDF"
 msgstr "ملف PDF لتقرير الحالة"
 
 #: src/components/condition/pdf-sheet.tsx
-msgid "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time Kept received each photo."
-msgstr "الجولتان غرفةً غرفة، الأقدم أولًا: حالة كل غرفة وملاحظتها وصورها، مع وقت استلام Kept لكل صورة."
+msgid "Both walk-throughs room by room, the earlier one first: each room's condition, note and photos, with the time SheepKeep received each photo."
+msgstr "الجولتان غرفةً غرفة، الأقدم أولًا: حالة كل غرفة وملاحظتها وصورها، مع وقت استلام SheepKeep لكل صورة."
 
 #: src/components/condition/pdf-sheet.tsx
-msgid "Each room's condition, note and photos, with the time Kept received each photo."
-msgstr "حالة كل غرفة وملاحظتها وصورها، مع وقت استلام Kept لكل صورة."
+msgid "Each room's condition, note and photos, with the time SheepKeep received each photo."
+msgstr "حالة كل غرفة وملاحظتها وصورها، مع وقت استلام SheepKeep لكل صورة."
 
 #: src/components/condition/pdf-sheet.tsx
 msgid "This report isn't finished, and the PDF says so."
@@ -21622,8 +21622,8 @@ msgid "Day of the walk-through"
 msgstr "يوم الجولة"
 
 #: src/routes/s.$token.tsx
-msgid "Shared from Kept · read-only"
-msgstr "مشاركة من Kept · للقراءة فقط"
+msgid "Shared from SheepKeep · read-only"
+msgstr "مشاركة من SheepKeep · للقراءة فقط"
 
 #: src/routes/s.$token.tsx
 msgid "Shared with you"
@@ -21750,8 +21750,8 @@ msgid "Anyone with this link can open it until {until}."
 msgstr "يمكن لأي شخص لديه هذا الرابط فتحه حتى {until}."
 
 #: src/components/sharelinks/share-sheet.tsx
-msgid "Copy it now. Kept shows this link once; make a new one if it's lost."
-msgstr "انسخه الآن. يعرض Kept هذا الرابط مرة واحدة؛ أنشئ رابطًا جديدًا إن فُقد."
+msgid "Copy it now. SheepKeep shows this link once; make a new one if it's lost."
+msgstr "انسخه الآن. يعرض SheepKeep هذا الرابط مرة واحدة؛ أنشئ رابطًا جديدًا إن فُقد."
 
 #: src/components/sharelinks/share-sheet.tsx
 msgid "See this location's share links"
@@ -22443,8 +22443,8 @@ msgid "Throw away these changes?"
 msgstr "التخلّي عن هذه التغييرات؟"
 
 #: src/map/map-view.tsx
-msgid "The map goes back to how it was. Rooms and floors you added stay in Kept."
-msgstr "تعود الخريطة كما كانت. الغرف والطوابق التي أضفتها تبقى في Kept."
+msgid "The map goes back to how it was. Rooms and floors you added stay in SheepKeep."
+msgstr "تعود الخريطة كما كانت. الغرف والطوابق التي أضفتها تبقى في SheepKeep."
 
 #: src/map/map-view.tsx
 msgid "Throw away"
@@ -22655,8 +22655,8 @@ msgid "{what} by {how} in {where}"
 msgstr "{what} عبر {how} في {where}"
 
 #: src/components/notifications/settings/kinds.tsx
-msgid "In Kept is off, so nothing is sent."
-msgstr "«في Kept» مُطفأ، فلا يُرسل شيء."
+msgid "In SheepKeep is off, so nothing is sent."
+msgstr "«في SheepKeep» مُطفأ، فلا يُرسل شيء."
 
 #: src/components/notifications/settings/kinds.tsx
 msgid "Due dates"
@@ -22687,8 +22687,8 @@ msgid "Applies to every location, ones you add later too. Pick a location to cha
 msgstr "ينطبق على كل موقع، وعلى ما تضيفه لاحقًا. اختر موقعًا لتغييره هناك فقط."
 
 #: src/components/notifications/settings/kinds.tsx
-msgid "You're a member here: Kept starts with only the loans you record."
-msgstr "أنت عضو هنا: يبدأ Kept بالإعارات التي تسجّلها فقط."
+msgid "You're a member here: SheepKeep starts with only the loans you record."
+msgstr "أنت عضو هنا: يبدأ SheepKeep بالإعارات التي تسجّلها فقط."
 
 #: src/components/notifications/settings/kinds.tsx
 msgid "You're a viewer here: only members joining and leaving."
@@ -22894,8 +22894,8 @@ msgid "The camera is off in this demo"
 msgstr "الكاميرا متوقفة في هذا العرض التجريبي"
 
 #: src/components/capture/file-fallback.tsx
-msgid "In your own Kept, Capture opens the camera here. Photos you pick stay in this tab."
-msgstr "في Kept الخاص بك، يفتح «التقاط» الكاميرا هنا. الصور التي تختارها تبقى في هذا التبويب."
+msgid "In your own SheepKeep, Capture opens the camera here. Photos you pick stay in this tab."
+msgstr "في SheepKeep الخاص بك، يفتح «التقاط» الكاميرا هنا. الصور التي تختارها تبقى في هذا التبويب."
 
 #: src/components/device/app-lock-settings.tsx
 msgid "The app lock is off in this demo."
@@ -22906,8 +22906,8 @@ msgid "Downloads are off in this demo."
 msgstr "التنزيلات متوقفة في هذا العرض التجريبي."
 
 #: src/components/reports/progress.tsx
-msgid "Your own Kept makes the PDF here. This demo has no files."
-msgstr "‏Kept الخاص بك يصنع ملف PDF هنا. لا ملفات في هذا العرض التجريبي."
+msgid "Your own SheepKeep makes the PDF here. This demo has no files."
+msgstr "‏SheepKeep الخاص بك يصنع ملف PDF هنا. لا ملفات في هذا العرض التجريبي."
 
 #: src/assistant/conversation.tsx
 msgid "Sample answers in this demo: no AI is asked."
@@ -22938,8 +22938,8 @@ msgid "Disconnect Paperless?"
 msgstr "فصل Paperless؟"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "The {links} links to its documents go too. Documents copied into Kept stay."
-msgstr "ستُحذف أيضًا الروابط إلى مستنداته ({links}). تبقى المستندات المنسوخة إلى Kept."
+msgid "The {links} links to its documents go too. Documents copied into SheepKeep stay."
+msgstr "ستُحذف أيضًا الروابط إلى مستنداته ({links}). تبقى المستندات المنسوخة إلى SheepKeep."
 
 #: src/components/paperless/connection-settings.tsx
 msgid "Members can no longer link its documents."
@@ -22986,8 +22986,8 @@ msgid "Connect Paperless-ngx"
 msgstr "صِل Paperless-ngx"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. Kept stores the document's number and title, not the file, unless someone copies it into Kept."
-msgstr "يمكن للأعضاء عندها ربط شيء أو مكان بإيصالاته وأدلته وبطاقات ضمانه في Paperless، دون رفعها مرتين. يحفظ Kept رقم المستند وعنوانه، لا الملف، إلا إذا نسخه أحدهم إلى Kept."
+msgid "Members can then link a thing or a place to its receipts, manuals and warranty cards in Paperless, without uploading them twice. SheepKeep stores the document's number and title, not the file, unless someone copies it into SheepKeep."
+msgstr "يمكن للأعضاء عندها ربط شيء أو مكان بإيصالاته وأدلته وبطاقات ضمانه في Paperless، دون رفعها مرتين. يحفظ SheepKeep رقم المستند وعنوانه، لا الملف، إلا إذا نسخه أحدهم إلى SheepKeep."
 
 #: src/components/paperless/connection-settings.tsx
 msgid "Paperless address"
@@ -23002,16 +23002,16 @@ msgid "Plain http"
 msgstr "http عادي"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "Kept accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
-msgstr "يقبل Kept عنوان http فقط إن كان على شبكتك، وفقط حين يسمح مسؤول الخادم بالعناوين الخاصة. يمر الرمز هناك غير مشفّر."
+msgid "SheepKeep accepts http only for an address on your own network, and only when an instance admin allows private addresses. The token travels unencrypted there."
+msgstr "يقبل SheepKeep عنوان http فقط إن كان على شبكتك، وفقط حين يسمح مسؤول الخادم بالعناوين الخاصة. يمر الرمز هناك غير مشفّر."
 
 #: src/components/paperless/connection-settings.tsx
 msgid "API token"
 msgstr "رمز API"
 
 #: src/components/paperless/connection-settings.tsx
-msgid "In Paperless, open My Profile and press the circular arrow by the API token. Kept sees what that user sees."
-msgstr "في Paperless، افتح ملفي الشخصي واضغط السهم الدائري بجانب رمز API. يرى Kept ما يراه ذلك المستخدم."
+msgid "In Paperless, open My Profile and press the circular arrow by the API token. SheepKeep sees what that user sees."
+msgstr "في Paperless، افتح ملفي الشخصي واضغط السهم الدائري بجانب رمز API. يرى SheepKeep ما يراه ذلك المستخدم."
 
 #: src/components/paperless/documents.tsx
 msgid "From Paperless-ngx"
@@ -23026,8 +23026,8 @@ msgid "Paperless can't be reached"
 msgstr "تعذّر الوصول إلى Paperless"
 
 #: src/components/paperless/documents.tsx
-msgid "The titles below are as Kept last saw them."
-msgstr "العناوين أدناه كما رآها Kept آخر مرة."
+msgid "The titles below are as SheepKeep last saw them."
+msgstr "العناوين أدناه كما رآها SheepKeep آخر مرة."
 
 #: src/components/paperless/documents.tsx
 msgid "No Paperless documents of this kind."
@@ -23042,8 +23042,8 @@ msgid "Paperless documents"
 msgstr "مستندات Paperless"
 
 #: src/components/paperless/documents.tsx
-msgid "Copied into Kept"
-msgstr "نُسخ إلى Kept"
+msgid "Copied into SheepKeep"
+msgstr "نُسخ إلى SheepKeep"
 
 #: src/components/paperless/documents.tsx
 msgid "Couldn't copy it"
@@ -23054,8 +23054,8 @@ msgid "Unlink this document?"
 msgstr "إلغاء ربط هذا المستند؟"
 
 #: src/components/paperless/documents.tsx
-msgid "It comes off {name}. Paperless keeps it, and the copy in Kept stays."
-msgstr "سيُزال من {name}. يحتفظ به Paperless، وتبقى النسخة في Kept."
+msgid "It comes off {name}. Paperless keeps it, and the copy in SheepKeep stays."
+msgstr "سيُزال من {name}. يحتفظ به Paperless، وتبقى النسخة في SheepKeep."
 
 #: src/components/paperless/documents.tsx
 msgid "It comes off {name}. Paperless keeps it."
@@ -23070,8 +23070,8 @@ msgid "Open in Paperless"
 msgstr "افتح في Paperless"
 
 #: src/components/paperless/documents.tsx
-msgid "Copy into Kept"
-msgstr "انسخ إلى Kept"
+msgid "Copy into SheepKeep"
+msgstr "انسخ إلى SheepKeep"
 
 #: src/components/paperless/documents.tsx
 msgid "Unlink {0}"
@@ -23122,8 +23122,8 @@ msgid "Use https:// for a Paperless outside your network. Over http the token wo
 msgstr "استخدم https:// لـ Paperless خارج شبكتك. عبر http سيمر الرمز غير مشفّر."
 
 #: src/components/paperless/words.ts
-msgid "Kept couldn't reach Paperless at that address."
-msgstr "تعذّر على Kept الوصول إلى Paperless على ذلك العنوان."
+msgid "SheepKeep couldn't reach Paperless at that address."
+msgstr "تعذّر على SheepKeep الوصول إلى Paperless على ذلك العنوان."
 
 #: src/components/paperless/words.ts
 msgid "Paperless didn't answer within 10 seconds."
@@ -23142,16 +23142,16 @@ msgid "That address doesn't answer like Paperless-ngx."
 msgstr "ذلك العنوان لا يردّ كما يردّ Paperless-ngx."
 
 #: src/components/paperless/words.ts
-msgid "Kept needs Paperless-ngx 2.16 or later."
-msgstr "يحتاج Kept إلى Paperless-ngx 2.16 أو أحدث."
+msgid "SheepKeep needs Paperless-ngx 2.16 or later."
+msgstr "يحتاج SheepKeep إلى Paperless-ngx 2.16 أو أحدث."
 
 #: src/components/paperless/words.ts
 msgid "Paperless no longer has this document, or the token's user can't see it."
 msgstr "لم يعد هذا المستند في Paperless، أو لا يستطيع مستخدم الرمز رؤيته."
 
 #: src/components/paperless/words.ts
-msgid "That document is larger than Kept takes."
-msgstr "هذا المستند أكبر مما يقبله Kept."
+msgid "That document is larger than SheepKeep takes."
+msgstr "هذا المستند أكبر مما يقبله SheepKeep."
 
 #: src/components/history/labels.ts
 msgid "Paperless connected"
@@ -23170,8 +23170,8 @@ msgid "Paperless document unlinked"
 msgstr "أُلغي ربط مستند من Paperless"
 
 #: src/components/history/labels.ts
-msgid "Paperless document copied into Kept"
-msgstr "نُسخ مستند من Paperless إلى Kept"
+msgid "Paperless document copied into SheepKeep"
+msgstr "نُسخ مستند من Paperless إلى SheepKeep"
 
 #: src/map/labels.ts
 msgid "Small device"
@@ -23766,8 +23766,8 @@ msgid "Add the box"
 msgstr "أضف الصندوق"
 
 #: src/components/moving/sheets.tsx
-msgid "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in Kept."
-msgstr "صفحة لكل صندوق: رقمه والغرفة التي يذهب إليها وما بداخله ورمزه. ألصقها على الصندوق؛ مسح الرمز يفتح الصندوق في Kept."
+msgid "A page per box: its number, the room it goes to, what's inside and its code. Tape it to the box; scanning the code opens the box in SheepKeep."
+msgstr "صفحة لكل صندوق: رقمه والغرفة التي يذهب إليها وما بداخله ورمزه. ألصقها على الصندوق؛ مسح الرمز يفتح الصندوق في SheepKeep."
 
 #: src/components/moving/sheets.tsx
 msgid "Add a box first."
@@ -24709,16 +24709,16 @@ msgid "Capture & Inbox"
 msgstr "الالتقاط والوارد"
 
 #: src/components/hints/hint-copy.ts
-msgid "Check what Kept read, fix anything wrong, then tap Accept."
-msgstr "راجع ما قرأه Kept، وصحّح أي خطأ، ثم اضغط قبول."
+msgid "Check what SheepKeep read, fix anything wrong, then tap Accept."
+msgstr "راجع ما قرأه SheepKeep، وصحّح أي خطأ، ثم اضغط قبول."
 
 #: src/components/hints/hint-copy.ts
-msgid "Choose how reminders reach you: in Kept, by email, push or a channel."
-msgstr "اختر كيف تصلك التذكيرات: في Kept أو بالبريد الإلكتروني أو بالإشعارات أو عبر قناة."
+msgid "Choose how reminders reach you: in SheepKeep, by email, push or a channel."
+msgstr "اختر كيف تصلك التذكيرات: في SheepKeep أو بالبريد الإلكتروني أو بالإشعارات أو عبر قناة."
 
 #: src/components/hints/hint-copy.ts
-msgid "Choose what reaches you, and how: in Kept, by email, push or a channel."
-msgstr "اختر ما يصلك وكيف: في Kept أو بالبريد الإلكتروني أو بالإشعارات أو عبر قناة."
+msgid "Choose what reaches you, and how: in SheepKeep, by email, push or a channel."
+msgstr "اختر ما يصلك وكيف: في SheepKeep أو بالبريد الإلكتروني أو بالإشعارات أو عبر قناة."
 
 #: src/components/sheet/sheet-view.tsx
 msgid "Discard my change"
@@ -24833,8 +24833,8 @@ msgid "Pick what it is, then add the file to the thing it belongs to."
 msgstr "اختر نوعه، ثم أضف الملف إلى الشيء الذي يخصه."
 
 #: src/components/hints/hint-copy.ts
-msgid "Pick where it comes from: a spreadsheet, Homebox or another Kept."
-msgstr "اختر مصدره: جدول بيانات أو Homebox أو Kept آخر."
+msgid "Pick where it comes from: a spreadsheet, Homebox or another SheepKeep."
+msgstr "اختر مصدره: جدول بيانات أو Homebox أو SheepKeep آخر."
 
 #: src/components/hints/hint-copy.ts
 msgid "Receipts, manuals and warranty cards from every thing and room."
@@ -24901,8 +24901,8 @@ msgid "Tap Mark returned when it comes back."
 msgstr "اضغط سجّل الإعادة عندما يعود."
 
 #: src/components/hints/hint-copy.ts
-msgid "Tap Scan and point the camera at a Kept label. What it's on opens."
-msgstr "اضغط مسح ووجّه الكاميرا إلى ملصق Kept. يُفتح ما الملصق عليه."
+msgid "Tap Scan and point the camera at a SheepKeep label. What it's on opens."
+msgstr "اضغط مسح ووجّه الكاميرا إلى ملصق SheepKeep. يُفتح ما الملصق عليه."
 
 #: src/components/hints/hint-copy.ts
 msgid "The file"
@@ -24993,16 +24993,16 @@ msgid "Keep room photos after review"
 msgstr "الاحتفاظ بصور الغرف بعد المراجعة"
 
 #: src/routes/_app/settings.location.$id.general.tsx
-msgid "When you photograph a room, Kept cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
-msgstr "حين تصوّر غرفة، يقتطع Kept صورة لكل شيء يجده. وبعد أن تُغلق الغرفة في صندوق الوارد تُحذف الصور الكاملة، إلا إذا كان هذا مفعّلًا: فتبقى عندها في صفحة الغرفة."
+msgid "When you photograph a room, SheepKeep cuts a picture for each thing it finds. Once you close the room in the inbox, the full photos are deleted, unless this is on: then they stay on the room's page."
+msgstr "حين تصوّر غرفة، يقتطع SheepKeep صورة لكل شيء يجده. وبعد أن تُغلق الغرفة في صندوق الوارد تُحذف الصور الكاملة، إلا إذا كان هذا مفعّلًا: فتبقى عندها في صفحة الغرفة."
 
 #: src/map/card.tsx
 msgid "Photograph this room"
 msgstr "صوّر هذه الغرفة"
 
 #: src/map/map-view.tsx
-msgid "Placed by Kept from room photos: move them where they stand."
-msgstr "وضعها Kept من صور الغرف: انقلها إلى حيث هي فعلًا."
+msgid "Placed by SheepKeep from room photos: move them where they stand."
+msgstr "وضعها SheepKeep من صور الغرف: انقلها إلى حيث هي فعلًا."
 
 #: src/components/inbox/inbox-list.tsx
 #: src/components/inbox/room-review.tsx
@@ -25078,8 +25078,8 @@ msgid "Reading photo {0} of {1}…"
 msgstr "تُقرأ الصورة {0} من {1}…"
 
 #: src/components/inbox/room-review.tsx
-msgid "Kept couldn't read these photos. Retry, or take them again."
-msgstr "تعذّر على Kept قراءة هذه الصور. أعد المحاولة، أو التقطها من جديد."
+msgid "SheepKeep couldn't read these photos. Retry, or take them again."
+msgstr "تعذّر على SheepKeep قراءة هذه الصور. أعد المحاولة، أو التقطها من جديد."
 
 #: src/components/inbox/room-review.tsx
 msgid "AI capture is off here, so nothing was listed. The photos wait on <0>{name}</0>."
@@ -25150,16 +25150,16 @@ msgid "{0, plural, one {# new thing to review below} other {# new things to revi
 msgstr "{0, plural, zero {لا أشياء جديدة لمراجعتها} one {شيء جديد واحد لمراجعته أدناه} two {شيئان جديدان لمراجعتهما أدناه} few {# أشياء جديدة لمراجعتها أدناه} many {# شيئًا جديدًا لمراجعته أدناه} other {# شيء جديد لمراجعته أدناه}}"
 
 #: src/components/inbox/room-review.tsx
-msgid "{0, plural, one {# already in Kept} other {# already in Kept}}"
-msgstr "{0, plural, zero {لا شيء موجود في Kept} one {شيء واحد موجود في Kept} two {شيئان موجودان في Kept} few {# أشياء موجودة في Kept} many {# شيئًا موجودًا في Kept} other {# شيء موجود في Kept}}"
+msgid "{0, plural, one {# already in SheepKeep} other {# already in SheepKeep}}"
+msgstr "{0, plural, zero {لا شيء موجود في SheepKeep} one {شيء واحد موجود في SheepKeep} two {شيئان موجودان في SheepKeep} few {# أشياء موجودة في SheepKeep} many {# شيئًا موجودًا في SheepKeep} other {# شيء موجود في SheepKeep}}"
 
 #: src/components/inbox/room-review.tsx
 msgid "{0, plural, one {# piece of furniture to add as a place} other {# pieces of furniture to add as places}}"
 msgstr "{0, plural, zero {لا أثاث لإضافته} one {قطعة أثاث واحدة لإضافتها مكانًا} two {قطعتا أثاث لإضافتهما مكانين} few {# قطع أثاث لإضافتها أماكن} many {# قطعة أثاث لإضافتها أماكن} other {# قطعة أثاث لإضافتها أماكن}}"
 
 #: src/components/history/labels.ts
-msgid "Photographed {name} for Kept to list what is in it"
-msgstr "صُوّرت «{name}» ليُحصي Kept ما فيها"
+msgid "Photographed {name} for SheepKeep to list what is in it"
+msgstr "صُوّرت «{name}» ليُحصي SheepKeep ما فيها"
 
 #: src/components/hints/hint-copy.ts
 msgid "Thing, receipt, label, reading or room. Pick one before the photo."
@@ -25170,8 +25170,8 @@ msgid "A whole room"
 msgstr "غرفة كاملة"
 
 #: src/components/hints/hint-copy.ts
-msgid "Up to five photos of a room. AI lists what's in them as drafts, skipping what Kept already has."
-msgstr "حتى خمس صور لغرفة. يُحصي الذكاء الاصطناعي ما فيها مسوداتٍ، متجاوزًا ما في Kept أصلًا."
+msgid "Up to five photos of a room. AI lists what's in them as drafts, skipping what SheepKeep already has."
+msgstr "حتى خمس صور لغرفة. يُحصي الذكاء الاصطناعي ما فيها مسوداتٍ، متجاوزًا ما في SheepKeep أصلًا."
 
 #: src/components/capture/capture-screen.tsx
 msgid "Five photos at most. Send these, then take the next wall."
@@ -25182,8 +25182,8 @@ msgid "Room sent"
 msgstr "أُرسلت الغرفة"
 
 #: src/components/capture/capture-screen.tsx
-msgid "Kept lists what is in it in your Inbox."
-msgstr "يُحصي Kept ما فيها في صندوق الوارد."
+msgid "SheepKeep lists what is in it in your Inbox."
+msgstr "يُحصي SheepKeep ما فيها في صندوق الوارد."
 
 #: src/components/capture/room-tray.tsx
 msgid "{n, plural, one {About # photo} other {About # photos}}"
@@ -25226,8 +25226,8 @@ msgid "Remove photo {0}"
 msgstr "أزل الصورة {0}"
 
 #: src/components/capture/room-tray.tsx
-msgid "In Try Kept no AI runs: every room photo gives the same sample results."
-msgstr "لا يعمل الذكاء الاصطناعي في «جرّب Kept»: كل صورة غرفة تعطي النتائج النموذجية نفسها."
+msgid "In Try SheepKeep no AI runs: every room photo gives the same sample results."
+msgstr "لا يعمل الذكاء الاصطناعي في «جرّب SheepKeep»: كل صورة غرفة تعطي النتائج النموذجية نفسها."
 
 #: src/components/capture/room-tray.tsx
 msgid "Use a sample room photo"
@@ -25594,8 +25594,8 @@ msgid "Blank labels can be claimed from Scan, one at a time."
 msgstr "يمكن ربط الملصقات الفارغة من المسح، واحدًا تلو الآخر."
 
 #: src/components/scan/session/summary.tsx
-msgid "Not in your Kept ({0})"
-msgstr "ليس في Kept الخاص بك ({0})"
+msgid "Not in your SheepKeep ({0})"
+msgstr "ليس في SheepKeep الخاص بك ({0})"
 
 #: src/components/scan/session/summary.tsx
 msgid "Check later ({0})"
@@ -25803,8 +25803,8 @@ msgid "Import it as a spreadsheet"
 msgstr "استورده كجدول بيانات"
 
 #: src/components/import/mapping-step.tsx
-msgid "Kept reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
-msgstr "يقرأ Kept أرقام الأصول فيه، فتبقى ملصقات Homebox القديمة قابلة للمسح، ويقرأ أيضًا العناصر المؤرشفة والمَبيعة والضمانات وعمود التأمين. لا يحمل جدول البيانات الصور ولا الملفات ولا الصيانة ولا العناصر داخل العناصر: لنقلها، حدّث نسخة من Homebox إلى v0.26.1 أو أحدث (يُنصح بـ v0.27.0) واستورد ملف ZIP للتصدير."
+msgid "SheepKeep reads its asset IDs, so old Homebox labels still scan, and its archived and sold items, warranties and insured column. A spreadsheet can't carry photos, files, maintenance or items inside items: for those, update a copy of Homebox to v0.26.1 or newer (v0.27.0 recommended) and import its export ZIP."
+msgstr "يقرأ SheepKeep أرقام الأصول فيه، فتبقى ملصقات Homebox القديمة قابلة للمسح، ويقرأ أيضًا العناصر المؤرشفة والمَبيعة والضمانات وعمود التأمين. لا يحمل جدول البيانات الصور ولا الملفات ولا الصيانة ولا العناصر داخل العناصر: لنقلها، حدّث نسخة من Homebox إلى v0.26.1 أو أحدث (يُنصح بـ v0.27.0) واستورد ملف ZIP للتصدير."
 
 #: src/components/import/choices-step.tsx
 msgid "One with a sale still ends sold."
@@ -26039,8 +26039,8 @@ msgid "Open the previous count ({0})"
 msgstr "افتح العدّ السابق ({0})"
 
 #: src/components/counts/count-page.tsx
-msgid "Counts saved before Kept 1.14 didn't record what was missing or elsewhere."
-msgstr "عمليات العدّ المحفوظة قبل Kept ١٫١٤ لم تسجّل ما كان مفقودًا أو في مكان آخر."
+msgid "Counts saved before SheepKeep 1.14 didn't record what was missing or elsewhere."
+msgstr "عمليات العدّ المحفوظة قبل SheepKeep ١٫١٤ لم تسجّل ما كان مفقودًا أو في مكان آخر."
 
 #: src/components/counts/count-page.tsx
 msgid "now in <0>{now}</0>"
@@ -26207,8 +26207,8 @@ msgid "Stayed here: {0}"
 msgstr "بقي هنا: {0}"
 
 #: src/components/lending/lend-sheet.tsx
-msgid "Optional. Kept reminds you, never them, two days before and when it's overdue."
-msgstr "اختياري. يذكّرك Kept، وليس هم، قبل الموعد بيومين وعند التأخر."
+msgid "Optional. SheepKeep reminds you, never them, two days before and when it's overdue."
+msgstr "اختياري. يذكّرك SheepKeep، وليس هم، قبل الموعد بيومين وعند التأخر."
 
 #: src/components/lending/lend-sheet.tsx
 msgid "What goes with it"
@@ -26510,8 +26510,8 @@ msgid "Indigo"
 msgstr "نيلي"
 
 #: src/components/import/labels.ts
-msgid "Its tags aren't kept: in Kept only things have tags."
-msgstr "لا تُحفظ وسومه: في Kept للأشياء وحدها وسوم."
+msgid "Its tags aren't kept: in SheepKeep only things have tags."
+msgstr "لا تُحفظ وسومه: في SheepKeep للأشياء وحدها وسوم."
 
 #: src/components/tags/colour-choice.tsx
 msgid "No colour"
@@ -26597,16 +26597,16 @@ msgid "Keep the code as"
 msgstr "احفظ الرمز على أنه"
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores it as the serial number."
-msgstr "يحفظه Kept على أنه الرقم التسلسلي."
+msgid "SheepKeep stores it as the serial number."
+msgstr "يحفظه SheepKeep على أنه الرقم التسلسلي."
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores it as the serial number or the barcode: you pick."
-msgstr "يحفظه Kept على أنه الرقم التسلسلي أو الرمز الشريطي، والاختيار لك."
+msgid "SheepKeep stores it as the serial number or the barcode: you pick."
+msgstr "يحفظه SheepKeep على أنه الرقم التسلسلي أو الرمز الشريطي، والاختيار لك."
 
 #: src/components/scan/barcode-sheet.tsx
-msgid "Kept stores the barcode and serial number with it."
-msgstr "يحفظ Kept الرمز الشريطي والرقم التسلسلي معه."
+msgid "SheepKeep stores the barcode and serial number with it."
+msgstr "يحفظ SheepKeep الرمز الشريطي والرقم التسلسلي معه."
 
 #: src/routes/invite.tsx
 msgid "Add one in Sign-in and security"
@@ -26621,8 +26621,8 @@ msgid "They add one in Sign-in and security"
 msgstr "يضيفونه من «تسجيل الدخول والأمان»"
 
 #: src/routes/_app/settings.two-factor.tsx
-msgid "Kept emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
-msgstr "يرسل لك Kept رابط دخول بالبريد، وفتحه يؤكد العنوان. ويزيل فتحه أيضًا كلمة مرور هذا الحساب ومفاتيح المرور والجلسات الأخرى، فلا يبقى لمن أعدّها قبلك طريق للدخول. ثم عد إلى هنا خلال عشر دقائق."
+msgid "SheepKeep emails you a sign-in link; opening it confirms the address. Opening it also removes this account's password, passkeys and other sessions, so nobody who set them up before you keeps a way in. Then come back here within ten minutes."
+msgstr "يرسل لك SheepKeep رابط دخول بالبريد، وفتحه يؤكد العنوان. ويزيل فتحه أيضًا كلمة مرور هذا الحساب ومفاتيح المرور والجلسات الأخرى، فلا يبقى لمن أعدّها قبلك طريق للدخول. ثم عد إلى هنا خلال عشر دقائق."
 
 #: src/routes/_app/settings.two-factor.tsx
 msgid "After this, signing in with a sign-in link or Google also asks for a 6-digit code from an authenticator app (1Password, Google Authenticator, Aegis…)."
@@ -26678,8 +26678,8 @@ msgid "Use {NAME_MAX} characters or fewer."
 msgstr "استخدم {NAME_MAX} حرفًا أو أقل."
 
 #: src/components/sign-in-security.household.tsx
-msgid "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; Kept never sees it."
-msgstr "يطلب متصفحك بصمة الوجه أو بصمة الإصبع أو قفل الشاشة. يحفظ هذا الجهاز أو مدير كلمات المرور مفتاحَ المرور، ولا يراه Kept أبدًا."
+msgid "Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept by this device or your password manager; SheepKeep never sees it."
+msgstr "يطلب متصفحك بصمة الوجه أو بصمة الإصبع أو قفل الشاشة. يحفظ هذا الجهاز أو مدير كلمات المرور مفتاحَ المرور، ولا يراه SheepKeep أبدًا."
 
 #: src/components/sign-in-security.household.tsx
 msgid "So you can tell your passkeys apart."
@@ -26814,8 +26814,8 @@ msgid "Unlock with Face ID or fingerprint"
 msgstr "افتح القفل ببصمة الوجه أو الإصبع"
 
 #: src/components/device/app-lock-settings.tsx
-msgid "Unlocks Kept on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
-msgstr "يفتح قفل Kept على هذا الجهاز فقط. لتسجيل الدخول بمفتاح مرور، أضِف واحدًا من <0>تسجيل الدخول والأمان</0>."
+msgid "Unlocks SheepKeep on this device only. To sign in with a passkey, add one in <0>Sign-in and security</0>."
+msgstr "يفتح قفل SheepKeep على هذا الجهاز فقط. لتسجيل الدخول بمفتاح مرور، أضِف واحدًا من <0>تسجيل الدخول والأمان</0>."
 
 #: src/components/history/labels.ts
 msgid "Added a passkey"
@@ -26894,8 +26894,8 @@ msgid "Not confirmed as printed"
 msgstr "لم يُؤكَّد الطبع"
 
 #: src/components/labels/printed-ok.tsx
-msgid "Once these labels have printed, confirm it here, so Kept stops counting them as unprinted."
-msgstr "بعد طباعة هذه الملصقات، أكّد ذلك هنا كي يتوقف Kept عن عدّها غير مطبوعة."
+msgid "Once these labels have printed, confirm it here, so SheepKeep stops counting them as unprinted."
+msgstr "بعد طباعة هذه الملصقات، أكّد ذلك هنا كي يتوقف SheepKeep عن عدّها غير مطبوعة."
 
 #: src/components/labels/start-cell.tsx
 msgid "Each label: QR code and short ID. The codes are made when you print."
@@ -27134,8 +27134,8 @@ msgid "A location that came in as a box, as chosen."
 msgstr "موقع استُورد كصندوق، كما اخترت."
 
 #: src/components/import/labels.ts
-msgid "Its description isn't kept: places in Kept have no notes."
-msgstr "لم يُحتفظ بوصفه: الأماكن في Kept بلا ملاحظات."
+msgid "Its description isn't kept: places in SheepKeep have no notes."
+msgstr "لم يُحتفظ بوصفه: الأماكن في SheepKeep بلا ملاحظات."
 
 #: src/components/import/repair.tsx
 msgid "{joined}, and {more} more"
@@ -27150,8 +27150,8 @@ msgid "Repair this import"
 msgstr "أصلح هذا الاستيراد"
 
 #: src/components/import/repair.tsx
-msgid "It was imported before Kept read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
-msgstr "استُورد قبل أن يقرأ Kept ملفات Homebox كما يقرؤها الآن. اختر ما تريد إصلاحه؛ وتراجع واحد يُعيد كل شيء."
+msgid "It was imported before SheepKeep read Homebox the way it does now. Choose what to put right; one Undo takes it all back."
+msgstr "استُورد قبل أن يقرأ SheepKeep ملفات Homebox كما يقرؤها الآن. اختر ما تريد إصلاحه؛ وتراجع واحد يُعيد كل شيء."
 
 #: src/components/import/repair.tsx
 msgid "{0, plural, one {Archive the # thing that had quantity 0 in Homebox} other {Archive the # things that had quantity 0 in Homebox}}"
@@ -27225,16 +27225,16 @@ msgid "Open {expected}"
 msgstr "افتح {expected}"
 
 #: src/components/origin-mismatch.tsx
-msgid "This Kept is set up for <0>{expected}</0>. Open it there."
-msgstr "Kept هذا مُعدّ للعنوان <0>{expected}</0>. افتحه هناك."
+msgid "This SheepKeep is set up for <0>{expected}</0>. Open it there."
+msgstr "SheepKeep هذا مُعدّ للعنوان <0>{expected}</0>. افتحه هناك."
 
 #: src/components/page.tsx
-msgid "This Kept is set up for a different address. Open it at the address you were given."
-msgstr "Kept هذا مُعدّ لعنوان آخر. افتحه من العنوان الذي أُعطي لك."
+msgid "This SheepKeep is set up for a different address. Open it at the address you were given."
+msgstr "SheepKeep هذا مُعدّ لعنوان آخر. افتحه من العنوان الذي أُعطي لك."
 
 #: src/components/page.tsx
-msgid "This Kept is set up for {address}. Open it there."
-msgstr "Kept هذا مُعدّ للعنوان {address}. افتحه هناك."
+msgid "This SheepKeep is set up for {address}. Open it there."
+msgstr "SheepKeep هذا مُعدّ للعنوان {address}. افتحه هناك."
 
 #: src/components/import/archive-step.tsx
 msgid "In Homebox, open Collection → Tools → Backup & Restore and choose Create Backup. When the backup is listed, Download it: that .zip is the file."
@@ -27245,8 +27245,8 @@ msgid "Homebox v0.26.1 or newer (v0.27.0 recommended): Collection → Tools → 
 msgstr "Homebox v0.26.1 أو أحدث (يُنصح بـ v0.27.0): المجموعة ← الأدوات ← النسخ الاحتياطي والاستعادة ← إنشاء نسخة احتياطية ← تنزيل. أقدم من v0.26: استورد تصدير جدول البيانات، أو حدّث نسخة من Homebox أولًا."
 
 #: src/components/connections/token-create.tsx
-msgid "On a home network without HTTPS, the person who runs this Kept can make one on the server: kept admin token create."
-msgstr "على شبكة منزلية دون HTTPS، يستطيع من يدير Kept هذا إنشاء رمز من الخادم: kept admin token create."
+msgid "On a home network without HTTPS, the person who runs this SheepKeep can make one on the server: kept admin token create."
+msgstr "على شبكة منزلية دون HTTPS، يستطيع من يدير SheepKeep هذا إنشاء رمز من الخادم: kept admin token create."
 
 #: src/components/import/archive-run.tsx
 msgid "Open the map"
@@ -27265,8 +27265,8 @@ msgid "Allow private addresses in Admin → Settings"
 msgstr "السماح بالعناوين الخاصة من الإدارة ← الإعدادات"
 
 #: src/components/sign-in-security.household.tsx
-msgid "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put Kept on HTTPS to add one."
-msgstr "مفاتيح المرور تحتاج إلى HTTPS. على عنوان HTTP عادي لا تعرضها المتصفحات؛ انقل Kept إلى HTTPS لإضافة مفتاح."
+msgid "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put SheepKeep on HTTPS to add one."
+msgstr "مفاتيح المرور تحتاج إلى HTTPS. على عنوان HTTP عادي لا تعرضها المتصفحات؛ انقل SheepKeep إلى HTTPS لإضافة مفتاح."
 
 #: src/components/import/entity-report.tsx
 msgid "{0, plural, one {secret value left out of the export} other {secret values left out of the export}}"
@@ -27281,8 +27281,8 @@ msgid "Over plain HTTP, secret values stay out of the export. Each one is marked
 msgstr "عبر HTTP العادي تبقى القيم السرية خارج التصدير. يُعلَّم كل منها بأنه لم يُضمَّن، ويُستورد الباقي كالمعتاد."
 
 #: src/components/import/kept-choices.tsx
-msgid "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at Kept’s HTTPS address."
-msgstr "فتحها يحتاج إلى HTTPS. عبر HTTP العادي يُستورد كل شيء آخر بدونها؛ ولنقلها أيضًا، استورد هذا الملف من عنوان HTTPS الخاص بـ Kept."
+msgid "Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to bring them over too, import this file at SheepKeep’s HTTPS address."
+msgstr "فتحها يحتاج إلى HTTPS. عبر HTTP العادي يُستورد كل شيء آخر بدونها؛ ولنقلها أيضًا، استورد هذا الملف من عنوان HTTPS الخاص بـ SheepKeep."
 
 #: src/components/places/sub-places.tsx
 msgid "{0} moved to {1} of {2}"
@@ -27509,8 +27509,8 @@ msgid "Show the whole house"
 msgstr "اعرض البيت كاملًا"
 
 #: src/graph/graph-view.tsx
-msgid "The graph is drawn from Kept’s server. The list has everything offline."
-msgstr "يُرسم الرسم البياني من خادم Kept. والقائمة فيها كل شيء دون اتصال."
+msgid "The graph is drawn from SheepKeep’s server. The list has everything offline."
+msgstr "يُرسم الرسم البياني من خادم SheepKeep. والقائمة فيها كل شيء دون اتصال."
 
 #: src/graph/graph-view.tsx
 msgid "Where you are in the graph"
@@ -27733,8 +27733,8 @@ msgid "Slide {n} of {total}"
 msgstr "الشريحة {n} من {total}"
 
 #: src/components/whats-new.tsx
-msgid "What's new in Kept"
-msgstr "ما الجديد في Kept"
+msgid "What's new in SheepKeep"
+msgstr "ما الجديد في SheepKeep"
 
 #: src/components/whats-new.tsx
 msgid "Version <0>{version}</0>"
@@ -28137,8 +28137,8 @@ msgid "Set a room’s size"
 msgstr "حدّد مقاس غرفة"
 
 #: src/map/floor-plan/panel.tsx
-msgid "Kept read the first 60 rooms. Add the rest by drawing."
-msgstr "قرأ Kept أول ٦٠ غرفة. أضف الباقي بالرسم."
+msgid "SheepKeep read the first 60 rooms. Add the rest by drawing."
+msgstr "قرأ SheepKeep أول ٦٠ غرفة. أضف الباقي بالرسم."
 
 #: src/map/floor-plan/panel.tsx
 msgid "Keep the plan with <0>{location}</0>"
@@ -28181,8 +28181,8 @@ msgid "Add {room}"
 msgstr "أضف {room}"
 
 #: src/map/floor-plan/start-sheet.tsx
-msgid "A photo, a screenshot or a PDF of a plan. Kept reads the rooms and their sizes; you check them before anything is added."
-msgstr "صورة أو لقطة شاشة أو ملف PDF لمخطط. يقرأ Kept الغرف ومقاساتها، وتراجعها أنت قبل أن يُضاف أي شيء."
+msgid "A photo, a screenshot or a PDF of a plan. SheepKeep reads the rooms and their sizes; you check them before anything is added."
+msgstr "صورة أو لقطة شاشة أو ملف PDF لمخطط. يقرأ SheepKeep الغرف ومقاساتها، وتراجعها أنت قبل أن يُضاف أي شيء."
 
 #: src/map/floor-plan/start-sheet.tsx
 msgid "Use a sample floor plan"
@@ -28209,8 +28209,8 @@ msgid "Up to ~{tokens} tokens"
 msgstr "حتى ~{tokens} رمز"
 
 #: src/map/floor-plan/start-sheet.tsx
-msgid "Kept sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
-msgstr "يرسل Kept المخطط، دون بيانات موقعه، إلى <0>{name}</0>. ويُحذف حين تنتهي، إلا إن احتفظت به."
+msgid "SheepKeep sends the plan, without its location data, to <0>{name}</0>. It is deleted when you finish, unless you keep it."
+msgstr "يرسل SheepKeep المخطط، دون بيانات موقعه، إلى <0>{name}</0>. ويُحذف حين تنتهي، إلا إن احتفظت به."
 
 #: src/map/floor-plan/start-sheet.tsx
 msgid "Read the plan"
@@ -28252,8 +28252,8 @@ msgstr "اختر نوعًا"
 msgid "Couldn't save the label image. Try again."
 msgstr "تعذّر حفظ صورة الملصق. أعد المحاولة."
 
-msgid "Kept label"
-msgstr "ملصق Kept"
+msgid "SheepKeep label"
+msgstr "ملصق SheepKeep"
 
 msgid "Loading the label"
 msgstr "جارٍ تحميل الملصق"
@@ -28279,12 +28279,12 @@ msgid "What the file can hold"
 msgstr "ما يمكن أن يحويه الملف"
 
 #: src/components/import/csv-help.tsx
-msgid "The first row names the columns, in any of Kept's languages. Kept matches the names it knows, and you choose the rest in the next step. Only a name is needed."
-msgstr "الصف الأول يسمّي الأعمدة، بأي لغة من لغات Kept. يطابق Kept الأسماء التي يعرفها، وتختار أنت الباقي في الخطوة التالية. لا يلزم سوى الاسم."
+msgid "The first row names the columns, in any of SheepKeep's languages. SheepKeep matches the names it knows, and you choose the rest in the next step. Only a name is needed."
+msgstr "الصف الأول يسمّي الأعمدة، بأي لغة من لغات SheepKeep. يطابق SheepKeep الأسماء التي يعرفها، وتختار أنت الباقي في الخطوة التالية. لا يلزم سوى الاسم."
 
 #: src/components/import/csv-help.tsx
-msgid "The columns Kept reads"
-msgstr "الأعمدة التي يقرؤها Kept"
+msgid "The columns SheepKeep reads"
+msgstr "الأعمدة التي يقرؤها SheepKeep"
 
 #: src/components/import/csv-help.tsx
 msgid "A field of your own types, such as Wattage"
@@ -28371,8 +28371,8 @@ msgid "Used for <0>{personal}</0>, your private threads, and questions that span
 msgstr "يُستخدم لموقع <0>{personal}</0>، ومحادثاتك الخاصة، والأسئلة التي تشمل أكثر من مالك."
 
 #: src/components/delete-account.tsx
-msgid "You asked for it, with your own location and everything in it. Until then nothing else in Kept opens. Keep the account to go back to it as it was."
-msgstr "طلبتَ ذلك، ومعه موقعك الخاص وكل ما فيه. وحتى ذلك الحين لا يُفتح شيء آخر في Kept. أبقِ على الحساب لتعود إليه كما كان."
+msgid "You asked for it, with your own location and everything in it. Until then nothing else in SheepKeep opens. Keep the account to go back to it as it was."
+msgstr "طلبتَ ذلك، ومعه موقعك الخاص وكل ما فيه. وحتى ذلك الحين لا يُفتح شيء آخر في SheepKeep. أبقِ على الحساب لتعود إليه كما كان."
 
 #: src/components/delete-account.tsx
 msgid "Your account, your own location <0>{personal}</0> and everything in it are deleted 30 days from now. Until then you can sign in and keep the account; nothing else opens."
@@ -28825,8 +28825,8 @@ msgid "Resize places"
 msgstr "تغيير عرض الأماكن"
 
 #: src/components/import/labels.ts
-msgid "{count, plural, one {# link keeps its Homebox title: Kept couldn't get one from Paperless.} other {# links keep their Homebox titles: Kept couldn't get them from Paperless.}}"
-msgstr "{count, plural, zero {لا روابط تحتفظ بعناوينها من Homebox.} one {رابط واحد يحتفظ بعنوانه من Homebox: تعذّر على Kept الحصول عليه من Paperless.} two {رابطان يحتفظان بعنوانيهما من Homebox: تعذّر على Kept الحصول عليهما من Paperless.} few {# روابط تحتفظ بعناوينها من Homebox: تعذّر على Kept الحصول عليها من Paperless.} many {# رابطًا يحتفظ بعناوينه من Homebox: تعذّر على Kept الحصول عليها من Paperless.} other {# رابط يحتفظ بعناوينه من Homebox: تعذّر على Kept الحصول عليها من Paperless.}}"
+msgid "{count, plural, one {# link keeps its Homebox title: SheepKeep couldn't get one from Paperless.} other {# links keep their Homebox titles: SheepKeep couldn't get them from Paperless.}}"
+msgstr "{count, plural, zero {لا روابط تحتفظ بعناوينها من Homebox.} one {رابط واحد يحتفظ بعنوانه من Homebox: تعذّر على SheepKeep الحصول عليه من Paperless.} two {رابطان يحتفظان بعنوانيهما من Homebox: تعذّر على SheepKeep الحصول عليهما من Paperless.} few {# روابط تحتفظ بعناوينها من Homebox: تعذّر على SheepKeep الحصول عليها من Paperless.} many {# رابطًا يحتفظ بعناوينه من Homebox: تعذّر على SheepKeep الحصول عليها من Paperless.} other {# رابط يحتفظ بعناوينه من Homebox: تعذّر على SheepKeep الحصول عليها من Paperless.}}"
 
 #: src/routes/signin/index.tsx
 msgid "Passkeys work only at <0/>, because browsers tie a passkey to one address. Here, use your password or an email link."
@@ -29056,8 +29056,8 @@ msgid "Connect Home Assistant"
 msgstr "ربط Home Assistant"
 
 #: src/components/connections/token-create.tsx
-msgid "Home Assistant reads Kept as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
-msgstr "يقرأ Home Assistant بيانات Kept باسمك، في المواقع التي تختارها، ويحصل على رمزه بنفسه: لا شيء لتنسخه. ألغِه من هنا متى شئت."
+msgid "Home Assistant reads SheepKeep as you, in the locations you pick, and gets its token by itself: there is nothing to copy. Revoke it here any time."
+msgstr "يقرأ Home Assistant بيانات SheepKeep باسمك، في المواقع التي تختارها، ويحصل على رمزه بنفسه: لا شيء لتنسخه. ألغِه من هنا متى شئت."
 
 #: src/components/connections/token-create.tsx
 msgid "Home Assistant is connected"
@@ -29338,8 +29338,8 @@ msgid "An attached file exceeds the server upload limit."
 msgstr "يتجاوز أحد الملفات المرفقة حدّ الرفع على الخادم."
 
 #: src/native/main.tsx
-msgid "An attached file format is not supported by Kept."
-msgstr "صيغة أحد الملفات المرفقة غير مدعومة في Kept."
+msgid "An attached file format is not supported by SheepKeep."
+msgstr "صيغة أحد الملفات المرفقة غير مدعومة في SheepKeep."
 
 #: src/native/main.tsx
 msgid "An uploaded file did not match its saved checksum. Retry or review the capture."
@@ -29379,16 +29379,16 @@ msgid "Close camera"
 msgstr "إغلاق الكاميرا"
 
 #: src/native/main.tsx
-msgid "Connect to Kept to review recent batches."
-msgstr "اتصل بخادم Kept لمراجعة الدفعات الأخيرة."
+msgid "Connect to SheepKeep to review recent batches."
+msgstr "اتصل بخادم SheepKeep لمراجعة الدفعات الأخيرة."
 
 #: src/native/main.tsx
 msgid "Connect to your inventory"
 msgstr "الاتصال بمخزونك"
 
 #: src/native/label-panel.tsx
-msgid "Connect to your Kept server over HTTPS to enroll NFC tags."
-msgstr "اتصل بخادم Kept عبر HTTPS لربط بطاقات NFC."
+msgid "Connect to your SheepKeep server over HTTPS to enroll NFC tags."
+msgstr "اتصل بخادم SheepKeep عبر HTTPS لربط بطاقات NFC."
 
 #: src/native/main.tsx
 msgid "Continue finding"
@@ -29399,8 +29399,8 @@ msgid "Continue scanning"
 msgstr "متابعة المسح"
 
 #: src/native/main.tsx
-msgid "Could not connect to Kept. Check the server address and try again."
-msgstr "تعذّر الاتصال بخادم Kept. تحقّق من عنوان الخادم وأعد المحاولة."
+msgid "Could not connect to SheepKeep. Check the server address and try again."
+msgstr "تعذّر الاتصال بخادم SheepKeep. تحقّق من عنوان الخادم وأعد المحاولة."
 
 #: src/native/main.tsx
 msgid "Sign-in cancelled."
@@ -29411,8 +29411,8 @@ msgid "Could not create the box. Check your connection and selected location."
 msgstr "تعذّر إنشاء الصندوق. تحقّق من اتصالك والموقع المحدّد."
 
 #: src/native/main.tsx
-msgid "Could not search Kept. Try again."
-msgstr "تعذّر البحث في Kept. أعد المحاولة."
+msgid "Could not search SheepKeep. Try again."
+msgstr "تعذّر البحث في SheepKeep. أعد المحاولة."
 
 #: src/native/main.tsx
 msgid "Could not sign out."
@@ -29519,24 +29519,24 @@ msgid "Keep my description"
 msgstr "الاحتفاظ بوصفي"
 
 #: src/native/main.tsx
-msgid "Kept could not read the saved session."
-msgstr "تعذّر على Kept قراءة الجلسة المحفوظة."
+msgid "SheepKeep could not read the saved session."
+msgstr "تعذّر على SheepKeep قراءة الجلسة المحفوظة."
 
 #: src/native/capture-form.tsx
-msgid "Kept could not save on this iPhone. Check available storage and try again."
+msgid "SheepKeep could not save on this iPhone. Check available storage and try again."
 msgstr "تعذّر الحفظ على هذا الآيفون. تحقّق من المساحة المتاحة وأعد المحاولة."
 
 #: src/native/label-panel.tsx
-msgid "Kept QR label"
-msgstr "ملصق QR الخاص بـ Kept"
+msgid "SheepKeep QR label"
+msgstr "ملصق QR الخاص بـ SheepKeep"
 
 #: src/native/main.tsx
-msgid "Kept server address"
-msgstr "عنوان خادم Kept"
+msgid "SheepKeep server address"
+msgstr "عنوان خادم SheepKeep"
 
 #: src/native/label-panel.tsx
-msgid "Kept tag verified."
-msgstr "تم التحقق من بطاقة Kept."
+msgid "SheepKeep tag verified."
+msgstr "تم التحقق من بطاقة SheepKeep."
 
 #: src/native/label-panel.tsx
 #: src/native/record.tsx
@@ -29580,15 +29580,15 @@ msgid "No matching inventory."
 msgstr "لا توجد نتائج مطابقة في المخزون."
 
 #: src/native/label-panel.tsx
-msgid "Not a Kept label."
-msgstr "هذا ليس ملصق Kept."
+msgid "Not a SheepKeep label."
+msgstr "هذا ليس ملصق SheepKeep."
 
 #: src/native/main.tsx
 msgid "Nothing in this batch needs review."
 msgstr "لا يوجد في هذه الدفعة ما يحتاج إلى مراجعة."
 
 #: src/native/main.tsx
-msgid "Offline. Changes stay on this iPhone until Kept is reachable."
+msgid "Offline. Changes stay on this iPhone until SheepKeep is reachable."
 msgstr "غير متصل. تبقى التغييرات محفوظة على هذا الآيفون حتى يتصل بالخادم."
 
 #: src/native/main.tsx
@@ -29731,8 +29731,8 @@ msgid "Sign out with unsynced captures?"
 msgstr "هل تريد تسجيل الخروج مع وجود التقاطات غير متزامنة؟"
 
 #: src/native/main.tsx
-msgid "Signed out on this iPhone. Kept could not revoke the server session while offline."
-msgstr "تم تسجيل الخروج من هذا الآيفون، ولم يتمكن Kept من إنهاء جلسة الخادم أثناء عدم الاتصال."
+msgid "Signed out on this iPhone. SheepKeep could not revoke the server session while offline."
+msgstr "تم تسجيل الخروج من هذا الآيفون، ولم يتمكن SheepKeep من إنهاء جلسة الخادم أثناء عدم الاتصال."
 
 #: src/native/main.tsx
 msgid "Stay signed in"
@@ -29814,8 +29814,8 @@ msgid "This is a different label. Scan another tag."
 msgstr "هذا ملصق آخر. امسح بطاقة أخرى."
 
 #: src/native/main.tsx
-msgid "This Kept was restored or replaced. Pending captures from the previous server state are held for review."
-msgstr "تمت استعادة خادم Kept هذا أو استبداله. تم إيقاف الالتقاطات المعلّقة من الحالة السابقة مؤقتاً للمراجعة."
+msgid "This SheepKeep was restored or replaced. Pending captures from the previous server state are held for review."
+msgstr "تمت استعادة خادم SheepKeep هذا أو استبداله. تم إيقاف الالتقاطات المعلّقة من الحالة السابقة مؤقتاً للمراجعة."
 
 #: src/native/label-panel.tsx
 msgid "This label could not be checked offline, so it is not confirmed as a different box."
@@ -29831,8 +29831,8 @@ msgstr "لم يُربط هذا الملصق بعد."
 
 #: src/native/label-panel.tsx
 #: src/native/main.tsx
-msgid "This label is unavailable in your Kept."
-msgstr "هذا الملصق غير متاح في حسابك على Kept."
+msgid "This label is unavailable in your SheepKeep."
+msgstr "هذا الملصق غير متاح في حسابك على SheepKeep."
 
 #: src/native/label-panel.tsx
 msgid "This NFC tag is blank."
@@ -29847,8 +29847,8 @@ msgid "This NFC tag is too small for the label URL."
 msgstr "سعة بطاقة NFC هذه صغيرة جداً على رابط الملصق."
 
 #: src/native/label-panel.tsx
-msgid "This tag already contains the verified Kept label."
-msgstr "تحمل هذه البطاقة بالفعل ملصق Kept المُتحقَّق منه."
+msgid "This tag already contains the verified SheepKeep label."
+msgstr "تحمل هذه البطاقة بالفعل ملصق SheepKeep المُتحقَّق منه."
 
 #: src/native/label-panel.tsx
 msgid "This tag already holds information. Writing will replace its contents."
@@ -29856,12 +29856,12 @@ msgstr "تحتوي هذه البطاقة على بيانات بالفعل. ست�
 
 #: src/native/label-panel.tsx
 #: src/native/main.tsx
-msgid "This tag belongs to a different Kept server."
-msgstr "تنتمي هذه البطاقة إلى خادم Kept مختلف."
+msgid "This tag belongs to a different SheepKeep server."
+msgstr "تنتمي هذه البطاقة إلى خادم SheepKeep مختلف."
 
 #: src/native/label-panel.tsx
-msgid "This tag does not contain a Kept label URL."
-msgstr "لا تحتوي هذه البطاقة على رابط ملصق Kept."
+msgid "This tag does not contain a SheepKeep label URL."
+msgstr "لا تحتوي هذه البطاقة على رابط ملصق SheepKeep."
 
 #: src/native/label-panel.tsx
 msgid "This tag does not support NDEF."
@@ -29920,8 +29920,8 @@ msgstr "مساحة تخزين الآيفون ممتلئة. وفّر مساحة �
 msgid "Your session ended. Sign in again to see your pending captures."
 msgstr "انتهت جلستك. سجّل الدخول مجدداً لعرض التقاطاتك المعلّقة."
 
-msgid "Connected Kept for iPhone"
-msgstr "رُبط تطبيق Kept لأجهزة iPhone"
+msgid "Connected SheepKeep for iPhone"
+msgstr "رُبط تطبيق SheepKeep لأجهزة iPhone"
 
 msgid "Entries saved in this batch: {saved}"
 msgstr "عدد الإدخالات المحفوظة في هذه الدفعة: {saved}"
@@ -29934,12 +29934,12 @@ msgid "Discarded: {batchDiscardedCount}"
 msgstr "تم تجاهلها: {batchDiscardedCount}"
 
 #: src/native/label-panel.tsx
-msgid "That code matches more than one item, so Kept cannot confirm whether it is this box. Scan another tag."
-msgstr "يطابق هذا الرمز أكثر من عنصر واحد، لذا لا يمكن لـ Kept تأكيد ما إذا كان هذا هو هذا الصندوق. امسح علامة أخرى."
+msgid "That code matches more than one item, so SheepKeep cannot confirm whether it is this box. Scan another tag."
+msgstr "يطابق هذا الرمز أكثر من عنصر واحد، لذا لا يمكن لـ SheepKeep تأكيد ما إذا كان هذا هو هذا الصندوق. امسح علامة أخرى."
 
 #: src/native/main.tsx
-msgid "This Kept server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade Kept, then retry. Nothing was changed or removed."
-msgstr "خادم Kept هذا أقدم ولا يمكنه قبول هذا الالتقاط بعد. تبقى إدخالك والأصول على هذا iPhone — قم بترقية Kept ثم أعد المحاولة. لم يتم تغيير أو إزالة أي شيء."
+msgid "This SheepKeep server is older and cannot accept this capture yet. Your entry and originals stay on this iPhone — upgrade SheepKeep, then retry. Nothing was changed or removed."
+msgstr "خادم SheepKeep هذا أقدم ولا يمكنه قبول هذا الالتقاط بعد. تبقى إدخالك والأصول على هذا iPhone — قم بترقية SheepKeep ثم أعد المحاولة. لم يتم تغيير أو إزالة أي شيء."
 
 #: src/native/main.tsx
 msgid "Discard held {0}?"
@@ -29958,8 +29958,8 @@ msgid "Held captures: {0}"
 msgstr "الالتقاطات المحتجَزة: {0}"
 
 #: src/native/main.tsx
-msgid "These captures were saved before this Kept server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
-msgstr "تم حفظ هذه الالتقاطات قبل استعادة خادم Kept هذا، لذا تم إيقاف إعادة التشغيل التلقائي مؤقتًا لتجنب إنشاء نسخ مكررة. تبقى على هذا iPhone حتى تقوم بتصديرها أو تجاهلها. الحفظ على الجهاز لا يعني النسخ الاحتياطي."
+msgid "These captures were saved before this SheepKeep server was restored, so automatic replay is paused to avoid creating duplicates. They stay on this iPhone until you export or discard them. Saved on device does not mean backed up."
+msgstr "تم حفظ هذه الالتقاطات قبل استعادة خادم SheepKeep هذا، لذا تم إيقاف إعادة التشغيل التلقائي مؤقتًا لتجنب إنشاء نسخ مكررة. تبقى على هذا iPhone حتى تقوم بتصديرها أو تجاهلها. الحفظ على الجهاز لا يعني النسخ الاحتياطي."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -30055,8 +30055,8 @@ msgid "Sign in with Apple for iPhone"
 msgstr "تسجيل الدخول باستخدام Apple لـ iPhone"
 
 #: src/native/main.tsx
-msgid "Update this Kept server to sign in with Apple."
-msgstr "حدّث خادم Kept هذا لتسجيل الدخول باستخدام Apple."
+msgid "Update this SheepKeep server to sign in with Apple."
+msgstr "حدّث خادم SheepKeep هذا لتسجيل الدخول باستخدام Apple."
 
 #: src/native/record.tsx
 msgid "Add to this room"
@@ -30319,8 +30319,8 @@ msgid "This record will be available in Unplaced."
 msgstr "سيظهر هذا السجل ضمن العناصر بلا مكان محدد."
 
 #: src/native/edit-record.tsx
-msgid "Update this Kept server to use this action."
-msgstr "حدّث خادم Kept لاستخدام هذا الإجراء."
+msgid "Update this SheepKeep server to use this action."
+msgstr "حدّث خادم SheepKeep لاستخدام هذا الإجراء."
 
 #: src/native/record.tsx
 msgid "Use as cover"
@@ -30346,3 +30346,9 @@ msgstr "اطلب من مشغّل الخادم إعداد وجهة للنسخ ا�
 #: src/components/ops/status-tiles.tsx
 msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
 msgstr "اطلب من مشغّل الخادم إعداد وجهة، ثم عيّن كلمة مرور في صفحة النسخ الاحتياطية."
+
+
+#: src/components/history/labels.ts
+#: src/components/history/timeline.tsx
+msgid "SheepKeep"
+msgstr "SheepKeep"

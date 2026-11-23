@@ -50,7 +50,7 @@ describe('Share a box', () => {
       expiresInDays: 7,
     });
     const url = await sheet.findByText(/^http:\/\/kept\.test\/s\//);
-    expect(sheet.getByText(/Kept shows this link once/)).toBeInTheDocument();
+    expect(sheet.getByText(/SheepKeep shows this link once/)).toBeInTheDocument();
     expect(sheet.getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
     await user.click(sheet.getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(screen.queryByText(url.textContent ?? '')).toBeNull());
@@ -120,7 +120,7 @@ describe('The public page', () => {
     await findHeading('Box 3');
     expect(await screen.findByText('Winter scarves')).toBeInTheDocument();
     expect(screen.getByText('Christmas lights')).toBeInTheDocument();
-    expect(screen.getByText(/Shared from Kept/)).toBeInTheDocument();
+    expect(screen.getByText(/Shared from SheepKeep/)).toBeInTheDocument();
     expect(screen.getByText(/This link works until/)).toBeInTheDocument();
     // Never who a thing belongs to, and no sign-in wall.
     expect(screen.queryByText('Peter')).toBeNull();

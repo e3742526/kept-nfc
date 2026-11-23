@@ -43,7 +43,7 @@ export function AppLockSettings({ keptCount }: { keptCount: number }) {
   if (!lock?.supported) {
     return (
       <Notice tone="info" title={<Trans>Not available in this browser</Trans>}>
-        <Trans>The app lock needs storage this browser doesn’t give Kept.</Trans>
+        <Trans>The app lock needs storage this browser doesn’t give SheepKeep.</Trans>
       </Notice>
     );
   }
@@ -70,8 +70,8 @@ export function AppLockSettings({ keptCount }: { keptCount: number }) {
 
   const enrol = async () => {
     try {
-      await lock.enrolPasskey(t`Kept app lock`);
-      toast({ title: t`Face ID or fingerprint can unlock Kept now`, tone: 'ok' });
+      await lock.enrolPasskey(t`SheepKeep app lock`);
+      toast({ title: t`Face ID or fingerprint can unlock SheepKeep now`, tone: 'ok' });
     } catch {
       toast({ title: t`Face ID or fingerprint wasn’t set up`, tone: 'danger' });
     }
@@ -80,7 +80,7 @@ export function AppLockSettings({ keptCount }: { keptCount: number }) {
   return (
     <div className="grid gap-2 rounded-[10px] border border-line bg-surface p-3.5">
       <Switch isSelected={on} onChange={(v) => setSheet(v ? 'enable' : 'disable')}>
-        <Trans>Lock Kept on this device</Trans>
+        <Trans>Lock SheepKeep on this device</Trans>
       </Switch>
       {on && canPasskey ? (
         <div className="grid gap-1">
@@ -96,7 +96,7 @@ export function AppLockSettings({ keptCount }: { keptCount: number }) {
           </Switch>
           <p className="m-0 text-small text-ink-2">
             <Trans>
-              Unlocks Kept on this device only. To sign in with a passkey, add one in{' '}
+              Unlocks SheepKeep on this device only. To sign in with a passkey, add one in{' '}
               <Link
                 to="/settings"
                 hash={SIGN_IN_SECURITY_ANCHOR}
@@ -126,23 +126,23 @@ export function AppLockSettings({ keptCount }: { keptCount: number }) {
       ) : (
         <p className="m-0 text-small text-ink-2">
           <Trans>
-            Ask for a PIN when Kept opens and after five minutes away. Keeping a location offline
-            needs it.
+            Ask for a PIN when SheepKeep opens and after five minutes away. Keeping a location
+            offline needs it.
           </Trans>
         </p>
       )}
       {record?.passkey && !record.passkey.wrapped ? (
         <p className="m-0 text-small text-ink-2">
           <Trans>
-            On this phone Face ID or fingerprint opens Kept, but prices and documents kept offline
-            still ask for the PIN.
+            On this phone Face ID or fingerprint opens SheepKeep, but prices and documents kept
+            offline still ask for the PIN.
           </Trans>
         </p>
       ) : null}
 
       {sheet === 'enable' ? (
         <PinSheet
-          title={<Trans>Lock Kept on this device</Trans>}
+          title={<Trans>Lock SheepKeep on this device</Trans>}
           steps={fresh}
           note={
             <Trans>
@@ -153,7 +153,7 @@ export function AppLockSettings({ keptCount }: { keptCount: number }) {
           onDone={async ([pin]) => {
             await lock.enable(pin as string);
             setSheet(null);
-            toast({ title: t`Kept locks on this device now`, tone: 'ok' });
+            toast({ title: t`SheepKeep locks on this device now`, tone: 'ok' });
             return null;
           }}
         />

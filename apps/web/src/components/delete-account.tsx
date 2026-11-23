@@ -76,8 +76,8 @@ function DeleteAccountSheet({ onClose }: { onClose: () => void }) {
             {blockers.lastInstanceAdmin ? (
               <p>
                 <Trans>
-                  You're the only person who runs this Kept. Make someone else an instance admin
-                  first.
+                  You're the only person who runs this SheepKeep. Make someone else an instance
+                  admin first.
                 </Trans>
               </p>
             ) : null}
@@ -195,7 +195,7 @@ export function AccountDeletionPending({ purgeAfter }: { purgeAfter: string }) {
         <p className="text-ink-2">
           <Trans>
             You asked for it, with your own location and everything in it. Until then nothing else
-            in Kept opens. Keep the account to go back to it as it was.
+            in SheepKeep opens. Keep the account to go back to it as it was.
           </Trans>
         </p>
         <div className="grid gap-2">

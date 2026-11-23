@@ -180,7 +180,7 @@ function CountView({ r }: { r: CountResult }) {
         {!s.recorded ? (
           <Notice>
             <Trans>
-              Counts saved before Kept 1.14 didn't record what was missing or elsewhere.
+              Counts saved before SheepKeep 1.14 didn't record what was missing or elsewhere.
             </Trans>
           </Notice>
         ) : null}

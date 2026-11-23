@@ -179,7 +179,7 @@ export function ChoicesStep({
               <Trans>Match the type column to your types by name</Trans>
             </span>
             <span className="text-small text-ink-2">
-              <Trans>In any of Kept's languages. Off, the type is kept in the notes.</Trans>
+              <Trans>In any of SheepKeep's languages. Off, the type is kept in the notes.</Trans>
             </span>
           </span>
         </Switch>

@@ -221,7 +221,7 @@ export function resolveSubject(
   return ref ? { ref, locationId: input.locationId } : null;
 }
 
-/** A registry person as a `PersonRef`: a name and whether they use Kept, nothing else (D57). */
+/** A registry person as a `PersonRef`: a name and whether they use SheepKeep, nothing else (D57). */
 export function personRef(state: MockState, personId: string): PersonRef {
   const p = state.inventory.people.find((x) => x.id === personId);
   return { id: personId, name: p?.displayName ?? '', isMember: !!p?.userId };

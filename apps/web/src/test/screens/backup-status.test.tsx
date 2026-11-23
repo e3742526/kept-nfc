@@ -79,9 +79,9 @@ describe('Admin → Status: backups and operations', () => {
       document.head.querySelector('meta[name="kept-ingress"]')?.remove();
     });
 
-    it('says Home Assistant backs up Kept, and warns of no missing backup', async () => {
+    it('says Home Assistant backs up SheepKeep, and warns of no missing backup', async () => {
       await renderApp('/admin/status', { state: appState() });
-      expect(await screen.findByText('Home Assistant backs up Kept')).toBeInTheDocument();
+      expect(await screen.findByText('Home Assistant backs up SheepKeep')).toBeInTheDocument();
       expect(screen.queryByText('No backup configured')).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Set up backups' })).not.toBeInTheDocument();
       expect(screen.queryByText(/without a backup/)).not.toBeInTheDocument();
@@ -95,14 +95,14 @@ describe('Admin → Status: backups and operations', () => {
       expect(screen.queryByRole('link', { name: 'Settings → System → Backups' })).toBeNull();
     });
 
-    it('says nothing of stale backups or the same disk, which are Kept’s own', async () => {
+    it('says nothing of stale backups or the same disk, which are SheepKeep’s own', async () => {
       const state = ownerScenario();
       setOpsScenario(state, 'dir_same_disk');
       state.admin.status.homeAssistant = true;
       ops(state).status.backup.stale = true;
       ops(state).status.backup.sameVolume = true;
       await renderApp('/admin/status', { state });
-      expect(await screen.findByText('Home Assistant backs up Kept')).toBeInTheDocument();
+      expect(await screen.findByText('Home Assistant backs up SheepKeep')).toBeInTheDocument();
       expect(screen.queryByText('Backups are on the same disk as your data')).toBeNull();
       expect(screen.queryByText(/Backups should run every night/)).toBeNull();
     });
@@ -177,7 +177,7 @@ describe('Admin → Status: backups and operations', () => {
     const state = ownerScenario();
     ops(state).updates = { ...ops(state).updates, enabled: false, latest: null };
     await renderApp('/admin/status', { state });
-    expect(await screen.findByText(/Kept doesn't ask for new versions/)).toBeInTheDocument();
+    expect(await screen.findByText(/SheepKeep doesn't ask for new versions/)).toBeInTheDocument();
     expect(
       screen
         .getAllByRole('link', { name: 'Settings' })

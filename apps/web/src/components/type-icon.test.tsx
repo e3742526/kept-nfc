@@ -18,7 +18,7 @@ describe('TypeIcon', () => {
     expect(svgOf(container)).toHaveClass('tabler-icon-hanger');
   });
 
-  it("resolves Kept's own safe", () => {
+  it("resolves SheepKeep's own safe", () => {
     const { container } = render(<TypeIcon icon="kept:safe" className="size-8" />);
     expect(svgOf(container)).toHaveAttribute('data-icon', 'kept:safe');
     expect(svgOf(container)).toHaveClass('size-8');

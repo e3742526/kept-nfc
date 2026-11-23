@@ -1022,7 +1022,7 @@ test('email and push: Louis turns on warranties by email, the digest reaches Mai
   await expect(page.getByRole('heading', { name: 'Notifications', level: 1 })).toBeVisible();
   await axe(page, 'Notifications settings (Louis)');
   await chooseWhere(page, 'Home');
-  for (const how of ['In Kept', 'Email']) {
+  for (const how of ['In SheepKeep', 'Email']) {
     await setSwitch(
       page.getByRole('switch', { name: new RegExp(`^Warranties running out by ${how} in Home`) }),
       true,
@@ -1084,7 +1084,7 @@ test('email and push: Louis turns on warranties by email, the digest reaches Mai
     await expect.poll(async () => (await mailTo(LOUIS, startedAt)).length).toBe(1);
     const [mail] = await mailTo(LOUIS, startedAt);
     if (!mail) throw new Error('no digest for Louis');
-    expect(mail.Subject).toMatch(/^Kept: /);
+    expect(mail.Subject).toMatch(/^SheepKeep: /);
     const text = await mailText(mail.ID);
     const longDay = new Intl.DateTimeFormat('en', { dateStyle: 'long', timeZone: 'UTC' }).format(
       new Date(`${ends}T00:00:00Z`),

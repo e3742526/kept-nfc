@@ -90,7 +90,7 @@ export function EditRecord({
           t`This record changed while you were editing. Close and reopen it to see the latest version.`,
         );
       } else if (error instanceof ReplayError && error.reason === 'compatibility_hold') {
-        setStatus(t`Update this Kept server to use this action.`);
+        setStatus(t`Update this SheepKeep server to use this action.`);
       } else setStatus(errorText(error));
     } finally {
       setBusy(false);

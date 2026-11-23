@@ -157,7 +157,7 @@ function WhatsNewCard({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
       onOpenChange={(o) => {
         if (!o) onClose();
       }}
-      title={t`What's new in Kept`}
+      title={t`What's new in SheepKeep`}
       wide
     >
       {/* Mounted while open only: each opening starts at the first slide, and no media is

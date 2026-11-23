@@ -135,7 +135,7 @@ function AcknowledgeKit() {
       onPress={async () => {
         const ok = await confirm({
           title: t`Have you kept the recovery kit?`,
-          body: t`Only say yes once the two keys from kept admin recovery-kit are stored away from this server. Kept can't check.`,
+          body: t`Only say yes once the two keys from kept admin recovery-kit are stored away from this server. SheepKeep can't check.`,
           confirmLabel: t`I've kept it`,
         });
         if (ok) ack.mutate();
@@ -181,11 +181,11 @@ function RecoveryKitNotice({ acknowledged }: { acknowledged: boolean }) {
       }
     >
       <Trans>
-        Kept encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If this
-        server and its key are lost together, a backup still restores your things, but not those.
-        Download the recovery kit (or print it with{' '}
+        SheepKeep encrypts secret fields, AI keys and the backup password with KEPT_SECRET_KEY. If
+        this server and its key are lost together, a backup still restores your things, but not
+        those. Download the recovery kit (or print it with{' '}
         <code className="ltr whitespace-nowrap">kept admin recovery-kit</code>) and keep it away
-        from this server. Kept asks for this before the first secret, AI key or backup.
+        from this server. SheepKeep asks for this before the first secret, AI key or backup.
       </Trans>
     </Notice>
   );
@@ -235,7 +235,7 @@ function RemindersNotice({ reminders }: { reminders: Reminders | null }) {
     <Notice tone="warn" title={<Trans>Reminders have stopped going out</Trans>}>
       {lastOk ? (
         <Trans>
-          Kept last checked for due reminders {lastOk}. Until it checks again, nobody gets new
+          SheepKeep last checked for due reminders {lastOk}. Until it checks again, nobody gets new
           reminders.
         </Trans>
       ) : (
@@ -279,9 +279,9 @@ function StatusPage() {
       {s.mail.configured ? null : (
         <Notice tone="warn" title={<Trans>Mail isn't configured</Trans>}>
           <Trans>
-            Kept sends no email: no sign-in links, password resets, email invites or alerts. Set{' '}
-            <code className="ltr whitespace-nowrap">KEPT_SMTP_URL</code> and restart Kept. Link
-            invites and passwords work without it.
+            SheepKeep sends no email: no sign-in links, password resets, email invites or alerts.
+            Set <code className="ltr whitespace-nowrap">KEPT_SMTP_URL</code> and restart SheepKeep.
+            Link invites and passwords work without it.
           </Trans>
         </Notice>
       )}

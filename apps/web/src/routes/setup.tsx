@@ -63,13 +63,17 @@ function SetupPage() {
 
   if (status.isPending)
     return (
-      <AuthFrame title={t`Set up this Kept`} steps={steps} railTitle={t`Set up this Kept`}>
+      <AuthFrame
+        title={t`Set up this SheepKeep`}
+        steps={steps}
+        railTitle={t`Set up this SheepKeep`}
+      >
         <LoadingRows rows={2} />
       </AuthFrame>
     );
   if (status.error)
     return (
-      <AuthFrame title={t`Set up this Kept`}>
+      <AuthFrame title={t`Set up this SheepKeep`}>
         <ErrorState error={status.error} onRetry={() => void status.refetch()} />
       </AuthFrame>
     );
@@ -133,12 +137,12 @@ function CodeStep({
       title={t`Enter the setup code`}
       eyebrow={eyebrow}
       steps={steps}
-      railTitle={t`Set up this Kept`}
+      railTitle={t`Set up this SheepKeep`}
       intro={
         <Trans>
-          When Kept started for the first time, it printed a one-time setup code in the server's
-          logs. Entering it shows you're the person who installed this server. The code stops
-          working once it's used.
+          When SheepKeep started for the first time, it printed a one-time setup code in the
+          server's logs. Entering it shows you're the person who installed this server. The code
+          stops working once it's used.
         </Trans>
       }
     >
@@ -254,7 +258,7 @@ function AccountStep({
     onError: (e) => {
       if (isApiError(e) && e.code === 'setup_code_invalid') return onBadCode();
       if (isApiError(e) && e.code === 'conflict')
-        return setFormError(t`This Kept is already set up. Sign in instead.`);
+        return setFormError(t`This SheepKeep is already set up. Sign in instead.`);
       setFormError(errorText(e));
     },
   });
@@ -264,7 +268,7 @@ function AccountStep({
       title={t`Create the first account`}
       eyebrow={eyebrow}
       steps={steps}
-      railTitle={t`Set up this Kept`}
+      railTitle={t`Set up this SheepKeep`}
       intro={
         <Trans>
           This account runs the server: users, sign-up and backups. It can't see inside anyone's
@@ -340,10 +344,10 @@ function OptionsStep({ steps, eyebrow }: StepProps) {
   });
   return (
     <AuthFrame
-      title={t`How should this Kept work?`}
+      title={t`How should this SheepKeep work?`}
       eyebrow={eyebrow}
       steps={steps}
-      railTitle={t`Set up this Kept`}
+      railTitle={t`Set up this SheepKeep`}
       intro={<Trans>You can change these any time in Settings → Admin.</Trans>}
     >
       <div className="grid gap-3">
@@ -367,7 +371,8 @@ function OptionsStep({ steps, eyebrow }: StepProps) {
         </div>
         <Notice tone="info">
           <Trans>
-            AI and barcode lookup can be connected later, from Settings. Kept works without them.
+            AI and barcode lookup can be connected later, from Settings. SheepKeep works without
+            them.
           </Trans>
         </Notice>
         {error ? <Notice tone="danger">{error}</Notice> : null}

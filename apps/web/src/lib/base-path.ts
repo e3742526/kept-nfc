@@ -79,7 +79,7 @@ export function withBaseDeep<T>(body: T): T {
 const MAIN_ADDRESS_KEY = 'kept.main-address';
 let mainAddress: string | null | undefined;
 
-/** `GET /setup`'s `mainAddress` (D275): set only when the server has KEPT_EXTRA_ADDRESSES. Kept on
+/** `GET /setup`'s `mainAddress` (D275): set only when the server has KEPT_EXTRA_ADDRESSES. SheepKeep on
  * this device too, for a cold start offline, where the frame draws without asking (D210). */
 export function noteMainAddress(value: unknown): void {
   let origin: string | null = null;

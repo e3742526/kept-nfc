@@ -197,11 +197,11 @@ describe('Admin → Backups', () => {
       document.head.querySelector('meta[name="kept-ingress"]')?.remove();
     });
 
-    it('says Home Assistant backs Kept up, with no target, Test, Run now or runs', async () => {
+    it('says Home Assistant backs SheepKeep up, with no target, Test, Run now or runs', async () => {
       await renderApp('/admin/backups', { state: appState() });
-      expect(await screen.findByText('Home Assistant backs up Kept')).toBeInTheDocument();
+      expect(await screen.findByText('Home Assistant backs up SheepKeep')).toBeInTheDocument();
       expect(
-        screen.getByText(/the database, photos and files, and Kept's keys/),
+        screen.getByText(/the database, photos and files, and SheepKeep's keys/),
       ).toBeInTheDocument();
       for (const name of ['Edit', 'Test', 'Run now', 'Save']) {
         expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
@@ -222,7 +222,7 @@ describe('Admin → Backups', () => {
       const { result } = renderHook(() => useBackupErrorText(), { wrapper });
       const refusal = new ApiError(409, 'home_assistant_backups', 'x');
       expect(result.current(refusal)).toBe(
-        'Home Assistant backs up Kept here: take or schedule backups in Home Assistant.',
+        'Home Assistant backs up SheepKeep here: take or schedule backups in Home Assistant.',
       );
     });
 

@@ -124,7 +124,7 @@ export function useIssueText(when: 'before' | 'after' = 'after') {
       case 'vendor_too_long':
         return t`Longer than a shop name can be (${max} characters); kept in the notes.`;
       case 'not_condition':
-        return t`Not a condition Kept knows; kept in the notes.`;
+        return t`Not a condition SheepKeep knows; kept in the notes.`;
       case 'not_link':
         return t`Not a web link (http or https); kept in the notes.`;
       case 'tag_not_added':
@@ -146,7 +146,7 @@ export function useIssueText(when: 'before' | 'after' = 'after') {
       case 'purchase_incomplete':
         return t`The purchase is incomplete; kept in the notes.`;
       case 'not_currency':
-        return t`Not a currency turned on in Kept; the price is kept in the notes.`;
+        return t`Not a currency turned on in SheepKeep; the price is kept in the notes.`;
       case 'not_type_field':
         return t`Not a field of this row's type; kept in the notes.`;
       case 'no_type':
@@ -169,18 +169,18 @@ export function useIssueText(when: 'before' | 'after' = 'after') {
         return t`The notes are cut to ${max} characters.`;
       // an archive's files
       case 'file_type_refused':
-        return t`Not imported: a file type Kept doesn't keep.`;
+        return t`Not imported: a file type SheepKeep doesn't keep.`;
       case 'file_missing':
         return t`The file isn't in the archive, so it's left out.`;
       case 'file_too_large':
-        return t`The file is larger than Kept takes, so it's left out.`;
+        return t`The file is larger than SheepKeep takes, so it's left out.`;
       case 'entry_ignored':
-        return t`Not something Kept reads from an export; ignored.`;
+        return t`Not something SheepKeep reads from an export; ignored.`;
       // Homebox (D146)
       case 'hb_archived_skipped':
         return t`Archived in Homebox, left out.`;
       case 'hb_quantity_rounded':
-        return t`Counted one by one in Kept; Homebox's quantity is kept in the notes.`;
+        return t`Counted one by one in SheepKeep; Homebox's quantity is kept in the notes.`;
       case 'hb_quantity_zero':
         return before
           ? t`Quantity 0 in Homebox; it comes in as 1.`
@@ -204,30 +204,30 @@ export function useIssueText(when: 'before' | 'after' = 'after') {
       case 'hb_paperless_titles_kept': {
         const count = issue.params?.count ?? 0;
         return plural(count, {
-          one: "# link keeps its Homebox title: Kept couldn't get one from Paperless.",
-          other: "# links keep their Homebox titles: Kept couldn't get them from Paperless.",
+          one: "# link keeps its Homebox title: SheepKeep couldn't get one from Paperless.",
+          other: "# links keep their Homebox titles: SheepKeep couldn't get them from Paperless.",
         });
       }
       case 'hb_sold_date_only':
         return t`A sold date with no buyer or price isn't a sale: it stays in use, with the date in its notes.`;
       case 'hb_place_notes_dropped':
-        return t`Its description isn't kept: places in Kept have no notes.`;
+        return t`Its description isn't kept: places in SheepKeep have no notes.`;
       case 'hb_number_integer':
         return t`Homebox keeps numbers whole, so any decimals were already lost there.`;
       case 'hb_icon_dropped':
-        return t`Kept has no icon like Homebox's; the type's own icon is used.`;
+        return t`SheepKeep has no icon like Homebox's; the type's own icon is used.`;
       case 'hb_template_partial':
-        return t`A Kept template can't hold money or secrets; the rest of the template is imported.`;
+        return t`A SheepKeep template can't hold money or secrets; the rest of the template is imported.`;
       case 'hb_currency_unsupported':
-        return t`This currency isn't turned on in Kept; the prices are kept in the notes.`;
+        return t`This currency isn't turned on in SheepKeep; the prices are kept in the notes.`;
       case 'hb_needs_module':
-        return t`Kept can't hold this record yet; its text is kept in the thing's notes.`;
+        return t`SheepKeep can't hold this record yet; its text is kept in the thing's notes.`;
       case 'hb_location_in_item':
         return before
           ? t`A location inside an item becomes a box.`
           : t`A location inside an item became a box.`;
       case 'hb_place_tags_dropped':
-        return t`Its tags aren't kept: in Kept only things have tags.`;
+        return t`Its tags aren't kept: in SheepKeep only things have tags.`;
       case 'hb_notifier_skipped':
         return t`Notifiers are never imported: their addresses can hold passwords.`;
       case 'hb_seeded_skipped':
@@ -277,7 +277,7 @@ export function useParseProblemText() {
   };
 }
 
-/** Why Kept refused an archive (ARCHIVE_REFUSALS, beside 400 `archive_invalid` or 413
+/** Why SheepKeep refused an archive (ARCHIVE_REFUSALS, beside 400 `archive_invalid` or 413
  * `archive_too_large`); `undefined` for a refusal this build doesn't know. */
 export function useRefusalText() {
   const { t } = useLingui();
@@ -303,9 +303,9 @@ export function useRefusalText() {
       case 'truncated':
         return t`It's incomplete: the download or the copy stopped before the end.`;
       case 'unsupported_version':
-        return t`It's from a newer version than this Kept reads. Update Kept, then import it.`;
+        return t`It's from a newer version than this SheepKeep reads. Update SheepKeep, then import it.`;
       case 'encrypted':
-        return t`It's protected with a ZIP password, which Kept can't open. Export it again without one.`;
+        return t`It's protected with a ZIP password, which SheepKeep can't open. Export it again without one.`;
       case 'entry_too_large':
         return t`One of its data files is too large to read.`;
       case 'no_manifest':

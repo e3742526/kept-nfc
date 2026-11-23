@@ -73,7 +73,7 @@ function AcceptInvitePage() {
         }
         footer={
           <LinkButton to="/" variant="secondary">
-            <Trans>Go to Kept</Trans>
+            <Trans>Go to SheepKeep</Trans>
           </LinkButton>
         }
       >

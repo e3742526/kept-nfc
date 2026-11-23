@@ -203,7 +203,7 @@ function CreateForm({
           ? ended
           : isApiError(e) && e.code === 'https_required'
             ? // Over plain HTTP the app makes no token; the server's command line can.
-              `${errorText(e)} ${t`On a home network without HTTPS, the person who runs this Kept can make one on the server: kept admin token create.`}`
+              `${errorText(e)} ${t`On a home network without HTTPS, the person who runs this SheepKeep can make one on the server: kept admin token create.`}`
             : errorText(e),
       ),
   });
@@ -257,7 +257,7 @@ function CreateForm({
       {link ? (
         <p className="m-0 text-ink-2">
           <Trans>
-            Home Assistant reads Kept as you, in the locations you pick, and gets its token by
+            Home Assistant reads SheepKeep as you, in the locations you pick, and gets its token by
             itself: there is nothing to copy. Revoke it here any time.
           </Trans>
         </p>
@@ -415,7 +415,9 @@ function CreatedView({ created, onDone }: { created: CreatedToken; onDone: () =>
           ) : null}
         </div>
         <p className="m-0 font-semibold text-[14px] text-ink">
-          <Trans>Copy it now. You won't see this again: Kept keeps only a fingerprint of it.</Trans>
+          <Trans>
+            Copy it now. You won't see this again: SheepKeep keeps only a fingerprint of it.
+          </Trans>
         </p>
         <p className="m-0 text-small text-ink-2">
           {expires ? (

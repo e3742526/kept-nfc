@@ -146,10 +146,10 @@ describe('the commands', () => {
   });
 
   it('build from source as the guides say', () => {
-    expect(repo('CONTRIBUTING.md')).toContain(commands.source.clone);
+    expect(repo('README.md')).toContain(commands.source.clone.split(' && ')[0]);
     const guide = docs('install/compose.md');
-    expect(guide).toContain(commands.source.build);
-    expect(guide).toContain('KEPT_IMAGE=kept:local');
+    expect(repo('README.md')).toContain(commands.source.build);
+    expect(repo('README.md')).toContain('KEPT_IMAGE=sheepkeep:local');
     expect(guide).toContain('>> .env');
   });
 

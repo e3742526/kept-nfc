@@ -279,10 +279,10 @@ describe('the upload sheet', () => {
     expect(read.hasAttribute('disabled') || read.getAttribute('data-disabled') !== null).toBe(true);
     expect(screen.getByText(/Up to ~11,000 tokens|Up to ~10,996 tokens/)).toBeTruthy();
     const privacy = screen.getByText(
-      (_, el) => el?.tagName === 'P' && /^Kept sends the plan/.test(el.textContent ?? ''),
+      (_, el) => el?.tagName === 'P' && /^SheepKeep sends the plan/.test(el.textContent ?? ''),
     );
     expect(privacy.textContent).toBe(
-      'Kept sends the plan, without its location data, to Groq. It is deleted when you finish, unless you keep it.',
+      'SheepKeep sends the plan, without its location data, to Groq. It is deleted when you finish, unless you keep it.',
     );
     const pdf = new File(['%PDF-1.4'], 'plan.pdf', { type: 'application/pdf' });
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;

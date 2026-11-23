@@ -358,7 +358,7 @@ function ValueView({ v }: { v: Val }) {
           {v.name ? (
             <bdi>{v.name}</bdi>
           ) : (
-            <span className="text-ink-2">{t`Something Kept can't name`}</span>
+            <span className="text-ink-2">{t`Something SheepKeep can't name`}</span>
           )}
         </span>
       );
@@ -392,7 +392,7 @@ function Count({ n, of }: { n: number; of?: number | undefined }) {
 function TargetView({ row, onNavigate }: { row: CardRow; onNavigate?: () => void }) {
   const { t } = useLingui();
   const target = row.target;
-  if (!target) return <span className="text-ink-2">{t`Something Kept can't name`}</span>;
+  if (!target) return <span className="text-ink-2">{t`Something SheepKeep can't name`}</span>;
   if (target.kind === 'new') return <bdi>{target.name}</bdi>;
   const cls =
     'text-ink underline decoration-ink-3 decoration-1 underline-offset-[3px] outline-none focus-visible:outline-2 focus-visible:outline-info';
@@ -948,7 +948,7 @@ export function ConfirmCard({
     // would fall below 4.5:1 (UI review steps 6–8, M1–M2); its header says it's settled.
     <fieldset
       data-confirm-card=""
-      aria-label={t`Changes for you to confirm, drawn by Kept`}
+      aria-label={t`Changes for you to confirm, drawn by SheepKeep`}
       className={cn(
         'grid overflow-hidden rounded-xl border-[1.5px] bg-surface text-ink',
         head.tone,

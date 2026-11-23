@@ -55,7 +55,7 @@ function CallRow({ call, onOpen }: { call: AiCall; onOpen: () => void }) {
   const total = (call.tokens.input ?? 0) + (call.tokens.output ?? 0);
   const who =
     call.person === 'background' ? (
-      <Trans>Kept (background)</Trans>
+      <Trans>SheepKeep (background)</Trans>
     ) : call.person ? (
       <bdi>{call.person.name}</bdi>
     ) : (
@@ -185,7 +185,9 @@ export function CallList({ scope, locationId }: { scope: AiScope; locationId?: s
           {canShareFiles([ready]) ? (
             <Trans>Share it to save it to Files or send it on.</Trans>
           ) : (
-            <Trans>This browser can't save files here. Open Kept in Safari to export it.</Trans>
+            <Trans>
+              This browser can't save files here. Open SheepKeep in Safari to export it.
+            </Trans>
           )}
         </Notice>
       ) : null}

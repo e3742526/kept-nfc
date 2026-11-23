@@ -1,4 +1,4 @@
-/** Better Auth calls (sign-in, second factor, passkeys), and Kept's Sign-in and security
+/** Better Auth calls (sign-in, second factor, passkeys), and SheepKeep's Sign-in and security
  * routes. Paths in ./paths.ts. */
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { assistantStore } from '@/assistant/store';
@@ -177,7 +177,7 @@ export async function signInWithPasskey(): Promise<unknown> {
   return api.post<unknown>(paths.auth.passkeyVerifyAuthentication, { response: body });
 }
 
-/** The browser already holds a passkey of this account for Kept. */
+/** The browser already holds a passkey of this account for SheepKeep. */
 export class PasskeyExists extends Error {
   constructor() {
     super('This device already has a passkey for this account');

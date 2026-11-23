@@ -285,9 +285,9 @@ export function CreateThingSheet({
         <div className="grid gap-3.5">
           <p className="m-0 text-small text-ink-2">
             <Trans>
-              Kept tracks <bdi className="font-medium text-ink">{first.name}</bdi> from this reading
-              on: its estimates and the services due by distance start here. You can add it later
-              from its page.
+              SheepKeep tracks <bdi className="font-medium text-ink">{first.name}</bdi> from this
+              reading on: its estimates and the services due by distance start here. You can add it
+              later from its page.
             </Trans>
           </p>
           <LogReadingForm

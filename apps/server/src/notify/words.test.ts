@@ -113,7 +113,7 @@ describe('reminder wording', () => {
       expect(w.where(f), locale).toBe(`${n.path}${comma}${n.location}`);
       expect(shortTitle(w, f), locale).toBe(`${w.label(f)}${comma}${n.thing}`);
       const push = digestPush(locale, [f, f], '2026-10-17');
-      expect(push.title, locale).toBe(`Kept${comma}${REMINDER_COUNT[locale](2)}`);
+      expect(push.title, locale).toBe(`SheepKeep${comma}${REMINDER_COUNT[locale](2)}`);
       for (const text of [w.where(f), shortTitle(w, f), push.title, push.body])
         expect(text, locale).not.toContain('\u00b7');
     }

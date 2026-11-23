@@ -76,7 +76,7 @@ export function useExportErrorText() {
       if (e.code === 'export_running') return t`An export of this location is already running.`;
       if (e.status === 429) return t`Five exports an hour at most. Try again a little later.`;
       if (e.code === 'recovery_kit_required')
-        return t`Secrets leave Kept only once the recovery kit is saved. An instance admin saves it from the status page.`;
+        return t`Secrets leave SheepKeep only once the recovery kit is saved. An instance admin saves it from the status page.`;
       if (e.code === 'passphrase_weak')
         return t`Use a passphrase of at least 12 characters, the same both times.`;
       // D181: an export is refused over plain HTTP (the shared wording says so).

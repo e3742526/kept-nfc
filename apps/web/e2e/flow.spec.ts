@@ -47,7 +47,7 @@ test('setup → create a home → invite by link → the invitee joins as a view
   await page.getByLabel('Password', { exact: true }).fill(OWNER.password);
   await page.getByRole('button', { name: 'Create account' }).click();
 
-  await expect(heading(page, 'How should this Kept work?')).toBeVisible();
+  await expect(heading(page, 'How should this SheepKeep work?')).toBeVisible();
   await page.getByRole('button', { name: 'Finish setup' }).click();
   await expect(heading(page, `Welcome, ${OWNER.name}`)).toBeVisible();
   // The Personal location exists from the start.

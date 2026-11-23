@@ -191,9 +191,9 @@ export function GetStarted({
     steps.push({
       key: 'https',
       done: homeNetwork.chosen,
-      title: t`Put Kept on HTTPS`,
+      title: t`Put SheepKeep on HTTPS`,
       doneLabel: t`Staying on my home network`,
-      body: t`Over plain HTTP, phones block the camera, installing Kept, push notifications and location.`,
+      body: t`Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location.`,
       action: (
         <span className="flex flex-wrap gap-2">
           <HttpsHowButton />
@@ -210,7 +210,7 @@ export function GetStarted({
       done: false,
       title: t`Set up email`,
       doneLabel: '',
-      body: t`Without it, Kept sends no sign-in links, password resets, email invites or reminders.`,
+      body: t`Without it, SheepKeep sends no sign-in links, password resets, email invites or reminders.`,
       action: <MailHowButton />,
     });
   }
@@ -446,7 +446,7 @@ export function HttpsNotice() {
   return (
     <Notice
       tone="warn"
-      title={<Trans>Put Kept on HTTPS</Trans>}
+      title={<Trans>Put SheepKeep on HTTPS</Trans>}
       action={
         <span className="flex flex-wrap gap-2">
           <HttpsHowButton />
@@ -457,13 +457,14 @@ export function HttpsNotice() {
       }
     >
       <Trans>
-        Over plain HTTP, phones block the camera, installing Kept, push notifications and location.
+        Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and
+        location.
       </Trans>
     </Notice>
   );
 }
 
-/** How to turn mail on: two settings and a restart, wherever Kept's other settings live. */
+/** How to turn mail on: two settings and a restart, wherever SheepKeep's other settings live. */
 export function MailHowButton() {
   const [open, setOpen] = useState(false);
   const { t } = useLingui();
@@ -477,9 +478,9 @@ export function MailHowButton() {
           <div className="grid gap-3 text-ink-2">
             <p className="m-0">
               <Trans>
-                Set these where Kept's other settings live (the .env file with Docker Compose; with
-                the Helm chart, the URL in the secret named by smtp.existingSecret and the sender in
-                smtp.from), then restart Kept:
+                Set these where SheepKeep's other settings live (the .env file with Docker Compose;
+                with the Helm chart, the URL in the secret named by smtp.existingSecret and the
+                sender in smtp.from), then restart SheepKeep:
               </Trans>
             </p>
             <ul className="m-0 grid gap-2 ps-5">
@@ -494,7 +495,7 @@ export function MailHowButton() {
                 <code className="ltr whitespace-nowrap">KEPT_SMTP_FROM</code>{' '}
                 <Trans>
                   the sender, for example{' '}
-                  <code className="ltr break-all">Kept &lt;kept@example.org&gt;</code>
+                  <code className="ltr break-all">SheepKeep &lt;kept@example.org&gt;</code>
                 </Trans>
               </li>
             </ul>
@@ -520,7 +521,7 @@ export function HttpsHowButton() {
         <Trans>How</Trans>
       </Button>
       <Modal isOpen={open} onOpenChange={setOpen}>
-        <Dialog title={t`Put Kept on HTTPS`}>
+        <Dialog title={t`Put SheepKeep on HTTPS`}>
           <div className="grid gap-3 text-ink-2">
             <p className="m-0">
               <Trans>
@@ -531,20 +532,20 @@ export function HttpsHowButton() {
             <ol className="m-0 grid gap-2 ps-5">
               <li>
                 <Trans>
-                  Start Kept's Compose file with the{' '}
+                  Start SheepKeep's Compose file with the{' '}
                   <code className="ltr whitespace-nowrap">https</code> profile. It adds a reverse
                   proxy that gets a certificate for your domain.
                 </Trans>
               </li>
               <li>
                 <Trans>
-                  Or reach Kept through Tailscale and turn on HTTPS for your tailnet; the address
-                  ends in <code className="ltr whitespace-nowrap">.ts.net</code>.
+                  Or reach SheepKeep through Tailscale and turn on HTTPS for your tailnet; the
+                  address ends in <code className="ltr whitespace-nowrap">.ts.net</code>.
                 </Trans>
               </li>
             </ol>
             <p className="m-0">
-              <Trans>Then set KEPT_PUBLIC_URL to the https address and restart Kept.</Trans>
+              <Trans>Then set KEPT_PUBLIC_URL to the https address and restart SheepKeep.</Trans>
             </p>
           </div>
         </Dialog>

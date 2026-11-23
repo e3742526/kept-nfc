@@ -462,7 +462,7 @@ describe('an uploaded original (a receipt, a manual, a place attachment)', () =>
     expect(
       await screen.findByText("This file can't be shared from the installed app"),
     ).toBeInTheDocument();
-    expect(screen.getByText('Open Kept in Safari to download it.')).toBeInTheDocument();
+    expect(screen.getByText('Open SheepKeep in Safari to download it.')).toBeInTheDocument();
     expect(fetched).toEqual([]);
     expect(opened).not.toHaveBeenCalled();
   });

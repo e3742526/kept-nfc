@@ -30,7 +30,7 @@ describe('Location settings → Email-in', () => {
       host: 'fail.example',
       port: 993,
       security: 'tls',
-      folder: 'Kept',
+      folder: 'SheepKeep',
       password: 'secret-pass',
       allowedSenders: [],
     });
@@ -49,7 +49,9 @@ describe('Location settings → Email-in', () => {
     // The saved password is never shown: the field is empty, and says so.
     expect(screen.getByLabelText(/^Password/)).toHaveValue('');
     expect(screen.getByText('Saved. Leave it empty to keep it.')).toBeInTheDocument();
-    expect(screen.getByText('Not checked yet. Kept checks every 10 minutes.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Not checked yet. SheepKeep checks every 10 minutes.'),
+    ).toBeInTheDocument();
     expectLogicalOnly();
   });
 
@@ -63,7 +65,7 @@ describe('Location settings → Email-in', () => {
         port: 993,
         security: 'tls',
         username: 'receipts@home.example',
-        folder: 'Kept',
+        folder: 'SheepKeep',
         allowedSenders: [],
         active: false,
         disabledReason: 'auth_failed',
@@ -94,7 +96,7 @@ describe('Location settings → Email-in', () => {
     });
     const { user, mock } = await renderApp(PATH, { state });
     await findHeading('Email-in');
-    expect(await screen.findByText('Kept stopped checking this mailbox')).toBeInTheDocument();
+    expect(await screen.findByText('SheepKeep stopped checking this mailbox')).toBeInTheDocument();
     expect(screen.getByText(/refused the user name or password/)).toBeInTheDocument();
     const recent = screen
       .getByRole('heading', { name: 'Recent mail' })

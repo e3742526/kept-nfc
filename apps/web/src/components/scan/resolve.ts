@@ -60,7 +60,7 @@ export type Resolution =
   | {
       outcome: 'open';
       target: ScanTarget;
-      /** The Kept code read, when it was one. */
+      /** The SheepKeep code read, when it was one. */
       code: string | null;
       /** An old label (Homebox, or an own code later), shown as it reads: "Asset 000-014". */
       legacy: string | null;
@@ -109,7 +109,7 @@ export type LocalResolver = (
   text: string,
 ) => Promise<Resolution | null>;
 
-/** A Kept short ID: a thing, a place, or a blank label in the snapshot's codes (D120). */
+/** A SheepKeep short ID: a thing, a place, or a blank label in the snapshot's codes (D120). */
 export const keptCodeResolver: LocalResolver = async (scan, store) => {
   if (scan.kind !== 'kept') return null;
   const hit = await store.byCode(scan.code);

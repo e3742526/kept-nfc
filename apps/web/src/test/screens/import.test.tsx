@@ -107,8 +107,8 @@ describe('CSV import', () => {
   it('lists the columns it reads, links the docs, and offers a sample that maps by itself', async () => {
     const app = await renderApp(`/settings/import?location=${IDS.home}`);
     await findHeading('Choose the file');
-    await app.user.click(screen.getByRole('button', { name: 'The columns Kept reads' }));
-    const columns = screen.getByRole('list', { name: 'The columns Kept reads' });
+    await app.user.click(screen.getByRole('button', { name: 'The columns SheepKeep reads' }));
+    const columns = screen.getByRole('list', { name: 'The columns SheepKeep reads' });
     for (const label of ['Name', 'Quantity', 'Place (a path like Garage > Shelf A)', 'Tags']) {
       expect(within(columns).getByText(label)).toBeInTheDocument();
     }

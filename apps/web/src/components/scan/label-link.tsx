@@ -29,7 +29,7 @@ export function LabelLink({
   text = code,
   title,
 }: {
-  /** The Kept code on the label; null for an old label read from its whole URL. */
+  /** The SheepKeep code on the label; null for an old label read from its whole URL. */
   code: string | null;
   /** What is resolved: the code, or an old label's URL (`https://…/a/000-001`). */
   text?: string | null;

@@ -114,7 +114,7 @@ describe('/auth/email-change', () => {
     await user.click(screen.getByRole('button', { name: 'Confirm' }));
     expect(await findHeading('Your email address changed')).toBeInTheDocument();
     expect(mock.state.me.user.email).toBe('ibrahim@new.example');
-    expect(screen.getByRole('link', { name: 'Open Kept' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Open SheepKeep' })).toHaveAttribute('href', '/');
   });
 
   it('a used or expired link says so', async () => {
@@ -262,7 +262,9 @@ describe('Instance admin → Admins', () => {
     expect(within(list).queryByText('Bruce')).not.toBeInTheDocument();
     expect(within(list).getByRole('button', { name: 'Remove Ibrahim as admin' })).toBeDisabled();
     expect(
-      screen.getByText("Kept needs at least one instance admin, so the last one can't be removed."),
+      screen.getByText(
+        "SheepKeep needs at least one instance admin, so the last one can't be removed.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -321,7 +323,7 @@ describe('Instance admin → Admins', () => {
           paths.admin.instanceAdmin(':userId'),
           () =>
             new MockReply(409, {
-              error: 'Kept needs at least one instance admin.',
+              error: 'SheepKeep needs at least one instance admin.',
               code: 'conflict',
             }),
         ),
@@ -330,7 +332,9 @@ describe('Instance admin → Admins', () => {
     await user.click(
       within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Remove as admin' }),
     );
-    expect(await screen.findByText('Kept needs at least one instance admin')).toBeInTheDocument();
+    expect(
+      await screen.findByText('SheepKeep needs at least one instance admin'),
+    ).toBeInTheDocument();
   });
 
   it('renders in Arabic', async () => {

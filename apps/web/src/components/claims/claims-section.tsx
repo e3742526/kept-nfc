@@ -54,7 +54,7 @@ export function ClaimsSection() {
       ) : q.data.items.length === 0 ? (
         <EmptyState icon={<WrenchIcon />} title={<Trans>No claims</Trans>}>
           <Trans>
-            When it breaks, open a claim: Kept fills in the warranty that covers longest and
+            When it breaks, open a claim: SheepKeep fills in the warranty that covers longest and
             remembers where it went for repair.
           </Trans>
         </EmptyState>

@@ -96,7 +96,7 @@ describe('folding the sidebar', () => {
     // The rail swaps the lockup for the square mark.
     expect(
       within(document.getElementById('kept-sidebar') as HTMLElement).getByRole('img', {
-        name: 'Kept',
+        name: 'SheepKeep',
       }),
     ).toBeInTheDocument();
 

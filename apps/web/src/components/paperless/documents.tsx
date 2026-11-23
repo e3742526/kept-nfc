@@ -41,7 +41,7 @@ import { useOnline } from '@/lib/online';
 import { PaperlessPicker } from './picker';
 import { usePaperlessErrorWords } from './words';
 
-/** A Paperless thumbnail through Kept's server, or the document icon when it can't load. */
+/** A Paperless thumbnail through SheepKeep's server, or the document icon when it can't load. */
 export function PaperlessThumb({ src }: { src: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
@@ -121,12 +121,12 @@ export function LinkFromPaperless({
   );
 }
 
-/** Paperless can't be reached: the linked documents below show as Kept last saw them. */
+/** Paperless can't be reached: the linked documents below show as SheepKeep last saw them. */
 export function PaperlessDownNotice({ error }: { error: string | null | undefined }) {
   const words = usePaperlessErrorWords();
   return (
     <Notice tone="warn" title={<Trans>Paperless can't be reached</Trans>}>
-      {words(error)} <Trans>The titles below are as Kept last saw them.</Trans>
+      {words(error)} <Trans>The titles below are as SheepKeep last saw them.</Trans>
     </Notice>
   );
 }
@@ -173,7 +173,7 @@ export function PaperlessLinkRow({
       await paperlessApi.copy(l.id);
       await refresh();
       onCopied?.();
-      toast({ title: t`Copied into Kept`, tone: 'ok' });
+      toast({ title: t`Copied into SheepKeep`, tone: 'ok' });
     } catch (e) {
       toast({ title: t`Couldn't copy it`, description: failure(e), tone: 'danger' });
     } finally {
@@ -197,7 +197,7 @@ export function PaperlessLinkRow({
     const yes = await confirm({
       title: t`Unlink this document?`,
       body: l.copiedAttachmentId
-        ? t`It comes off ${name}. Paperless keeps it, and the copy in Kept stays.`
+        ? t`It comes off ${name}. Paperless keeps it, and the copy in SheepKeep stays.`
         : t`It comes off ${name}. Paperless keeps it.`,
       confirmLabel: t`Unlink`,
       destructive: true,
@@ -275,7 +275,7 @@ export function PaperlessLinkRow({
         ) : null}
         {l.copiedAttachmentId ? (
           <Pill tone="ok">
-            <Trans>Copied into Kept</Trans>
+            <Trans>Copied into SheepKeep</Trans>
           </Pill>
         ) : writer ? (
           <Button
@@ -285,7 +285,7 @@ export function PaperlessLinkRow({
             isPending={busy === 'copy'}
             onPress={() => void copy()}
           >
-            <Trans>Copy into Kept</Trans>
+            <Trans>Copy into SheepKeep</Trans>
           </Button>
         ) : null}
         {mayChange ? (

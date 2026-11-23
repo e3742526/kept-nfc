@@ -64,8 +64,8 @@ describe('the share sheet', () => {
     const file = new File(['x'], 'a.pdf', { type: 'application/pdf' });
     const share = vi.fn(async (_d: ShareData) => {});
     define('share', share);
-    expect(await shareFiles([file], 'Kept')).toBe('shared');
-    expect(share).toHaveBeenCalledWith({ files: [file], title: 'Kept' });
+    expect(await shareFiles([file], 'SheepKeep')).toBe('shared');
+    expect(share).toHaveBeenCalledWith({ files: [file], title: 'SheepKeep' });
     share.mockRejectedValueOnce(new DOMException('closed', 'AbortError'));
     expect(await shareFiles([file])).toBe('cancelled');
     share.mockRejectedValueOnce(new DOMException('no gesture', 'NotAllowedError'));

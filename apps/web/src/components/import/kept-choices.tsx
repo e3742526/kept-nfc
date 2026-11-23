@@ -35,7 +35,7 @@ export function KeptInspectSummary({ kept }: { kept: KeptInspect }) {
         </bdi>
         <span className="text-small text-ink-2">
           <Trans>
-            A Kept <bdi dir="ltr">{kept.keptVersion}</bdi> export{f.sep}
+            A SheepKeep <bdi dir="ltr">{kept.keptVersion}</bdi> export{f.sep}
             {f.day(kept.exportedAt)}
           </Trans>
         </span>
@@ -110,7 +110,7 @@ export function KeptSecrets({
       <Notice tone="info" title={<Trans>It holds encrypted secrets</Trans>}>
         <Trans>
           Opening them needs HTTPS. Over plain HTTP everything else is imported without them; to
-          bring them over too, import this file at Kept’s HTTPS address.
+          bring them over too, import this file at SheepKeep’s HTTPS address.
         </Trans>
       </Notice>
     );

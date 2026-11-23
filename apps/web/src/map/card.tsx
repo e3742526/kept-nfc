@@ -203,7 +203,7 @@ function StatusRows({ rows }: { rows: MapAttention[] }) {
   );
 }
 
-/** The label: Kept's own QR (the address a printed label carries, D120) and the short ID. */
+/** The label: SheepKeep's own QR (the address a printed label carries, D120) and the short ID. */
 function IdBlock({ code, place }: { code: string | null; place: boolean }) {
   const { t } = useLingui();
   if (!code) return null;
@@ -250,7 +250,7 @@ function Head({
   );
 }
 
-/** A thing's facts, read from Kept when its card's details open. */
+/** A thing's facts, read from SheepKeep when its card's details open. */
 function ThingFacts({ id }: { id: string }) {
   const thing = useThing(id);
   const words = useValueWords();

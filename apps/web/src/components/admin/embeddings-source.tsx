@@ -61,8 +61,8 @@ export function EmbeddingsSourceSection({ embeddings: e }: { embeddings: Embeddi
       const ok = await confirm({
         title: t`Use a local model for search?`,
         body: size
-          ? t`Kept downloads the model once (${size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it.`
-          : t`Kept runs the model on this server: no key, no per-call cost. Everything is indexed again with it.`,
+          ? t`SheepKeep downloads the model once (${size}) and runs it on this server: no key, no per-call cost. Everything is indexed again with it.`
+          : t`SheepKeep runs the model on this server: no key, no per-call cost. Everything is indexed again with it.`,
         confirmLabel: t`Use the local model`,
       });
       if (!ok) return;

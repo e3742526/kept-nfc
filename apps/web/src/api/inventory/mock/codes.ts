@@ -302,7 +302,7 @@ export function codesRoutes(state: MockState): MockRoute[] {
             400,
             'validation',
             'Invalid.',
-            "The pattern isn't a regular expression Kept can read.",
+            "The pattern isn't a regular expression SheepKeep can read.",
             {
               reason: 'invalid',
             },

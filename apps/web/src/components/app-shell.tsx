@@ -85,7 +85,7 @@ export const Logo = BrandLockup;
 const footerLink =
   'underline-offset-2 outline-none hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-info';
 
-/** The version, "v0.1.0", as the link to the source code (D147: Kept is AGPL, so it offers its
+/** The version, "v0.1.0", as the link to the source code (D147: SheepKeep is AGPL, so it offers its
  * source to everyone using it). Only the version shows; "Source code" is the link's accessible
  * name and tooltip. Shown in the sidebar, on More, and on the sign-in pages. The image's
  * third-party notices (D151) stay in the image and at /notices.txt, not in the footer. */
@@ -593,7 +593,7 @@ function Sidebar({ locations, counts }: { locations: LocationSummary[]; counts: 
             rail ? 'grid h-9 w-11 place-items-center rounded-lg' : 'px-1.5',
           )}
         >
-          {rail ? <AppMark size={32} label="Kept" /> : <BrandLockup />}
+          {rail ? <AppMark size={32} label="SheepKeep" /> : <BrandLockup />}
         </Link>
         {/* The guided tour's "everything else" stop on a desktop (components/hints/tour.ts). */}
         <nav aria-label={t`Main`} className="grid gap-0.5" data-tour="nav-entries">

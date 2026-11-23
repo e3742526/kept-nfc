@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { useOnline } from '@/lib/online';
 
-/** The words for a request that ended (expired, decided, or Kept restarted). */
+/** The words for a request that ended (expired, decided, or SheepKeep restarted). */
 export function useLinkEndedText() {
   const { t } = useLingui();
   return t`This request has ended. Start again from Home Assistant.`;

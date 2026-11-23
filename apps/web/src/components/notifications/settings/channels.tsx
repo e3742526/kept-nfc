@@ -96,7 +96,7 @@ function useTest() {
       case 'mail_failed':
         return t`The mail server didn't take it. Try again later.`;
       case 'private_address':
-        return t`That server is on a private network, which this Kept doesn't allow. An instance admin can allow it.`;
+        return t`That server is on a private network, which this SheepKeep doesn't allow. An instance admin can allow it.`;
       case undefined:
         return code ? t`It answered ${code}.` : '';
       default:
@@ -114,7 +114,7 @@ function useTest() {
       toast({
         title: t`Couldn't send a test`,
         description: limited
-          ? t`Kept sends at most 5 tests an hour, across all your channels and devices. Try again later.`
+          ? t`SheepKeep sends at most 5 tests an hour, across all your channels and devices. Try again later.`
           : errorText(e),
         tone: 'danger',
       });
@@ -149,7 +149,7 @@ function EmailChannel({ settings }: { settings: NotificationSettings }) {
     return (
       <Item icon={<MailIcon />} title={<Trans>Email</Trans>}>
         <span>
-          <Trans>Your account has no email address, so Kept tells you here, in the app.</Trans>
+          <Trans>Your account has no email address, so SheepKeep tells you here, in the app.</Trans>
         </span>
       </Item>
     );
@@ -215,7 +215,7 @@ function ThisDevice({ settings }: { settings: NotificationSettings }) {
         e instanceof PushDenied
           ? {
               title: t`Notifications are blocked`,
-              description: t`Allow notifications for Kept in this browser's settings, then try again.`,
+              description: t`Allow notifications for SheepKeep in this browser's settings, then try again.`,
               tone: 'danger',
             }
           : { title: t`Couldn't turn notifications on`, description: errorText(e), tone: 'danger' },
@@ -292,8 +292,8 @@ function ThisDevice({ settings }: { settings: NotificationSettings }) {
       >
         <span data-push-blocker={blocker}>
           <Trans>
-            On iPhone and iPad, notifications work only from the installed app. Add Kept to your
-            Home Screen, open it from there and turn them on. Until then, email reaches you.
+            On iPhone and iPad, notifications work only from the installed app. Add SheepKeep to
+            your Home Screen, open it from there and turn them on. Until then, email reaches you.
           </Trans>
         </span>
         <InstallSheet isOpen={installing} onClose={() => setInstalling(false)} />
@@ -308,13 +308,15 @@ function ThisDevice({ settings }: { settings: NotificationSettings }) {
     ) : blocker === 'server' ? (
       <Trans>Push isn't set up on this server. Email and the notification centre still work.</Trans>
     ) : blocker === 'unsupported' ? (
-      <Trans>This browser can't receive notifications from Kept. Email still reaches you.</Trans>
+      <Trans>
+        This browser can't receive notifications from SheepKeep. Email still reaches you.
+      </Trans>
     ) : blocker === 'demo' ? (
       <Trans>Push is off in this demo.</Trans>
     ) : blocker === 'denied' ? (
       <Trans>
-        Notifications are blocked for Kept in this browser's settings. Allow them there, then come
-        back.
+        Notifications are blocked for SheepKeep in this browser's settings. Allow them there, then
+        come back.
       </Trans>
     ) : null;
 
@@ -340,7 +342,9 @@ function ThisDevice({ settings }: { settings: NotificationSettings }) {
         <span data-push-blocker={blocker}>{why}</span>
       ) : (
         <span>
-          <Trans>Reminders pop up here even when Kept is closed. Your browser asks first.</Trans>
+          <Trans>
+            Reminders pop up here even when SheepKeep is closed. Your browser asks first.
+          </Trans>
         </span>
       )}
     </Item>
@@ -364,7 +368,7 @@ function OtherDevices({ settings }: { settings: NotificationSettings }) {
   const remove = async (id: string, name: string) => {
     const ok = await confirm({
       title: t`Stop notifications on ${name}?`,
-      body: t`That device stops receiving push from Kept. Turn it on again from the device itself.`,
+      body: t`That device stops receiving push from SheepKeep. Turn it on again from the device itself.`,
       confirmLabel: t`Remove`,
       destructive: true,
     });
@@ -442,7 +446,7 @@ function Webhooks({ settings }: { settings: NotificationSettings }) {
   const remove = async (c: Channel, name: string) => {
     const ok = await confirm({
       title: t`Remove the webhook ${name}?`,
-      body: t`Kept stops posting to it. Its secret can't be used again.`,
+      body: t`SheepKeep stops posting to it. Its secret can't be used again.`,
       confirmLabel: t`Remove`,
       destructive: true,
     });
@@ -519,13 +523,13 @@ function Webhooks({ settings }: { settings: NotificationSettings }) {
           {full ? (
             <Plural
               value={MAX_WEBHOOK_CHANNELS}
-              one="You have # webhook, the most Kept allows."
-              other="You have # webhooks, the most Kept allows."
+              one="You have # webhook, the most SheepKeep allows."
+              other="You have # webhooks, the most SheepKeep allows."
             />
           ) : (
             <Trans>
-              For your own automations: Kept posts a signed message when something is due, with ids
-              and dates only, never names.
+              For your own automations: SheepKeep posts a signed message when something is due, with
+              ids and dates only, never names.
             </Trans>
           )}
         </span>
@@ -591,8 +595,8 @@ function AddWebhookForm({ onDone }: { onDone: () => void }) {
       <div className="grid gap-4">
         <Notice tone="warn" title={<Trans>Copy the signing secret now</Trans>}>
           <Trans>
-            Kept shows it only this once. Your receiver checks each message's Kept-Signature header
-            with it.
+            SheepKeep shows it only this once. Your receiver checks each message's
+            SheepKeep-Signature header with it.
           </Trans>
         </Notice>
         <code className="ltr block rounded-lg border border-line bg-sunken p-3 text-start font-mono text-small break-all">
@@ -623,7 +627,7 @@ function AddWebhookForm({ onDone }: { onDone: () => void }) {
         inputProps={{ inputMode: 'url', dir: 'ltr' }}
         isInvalid={!!error}
         {...(error ? { errorMessage: error } : {})}
-        description={t`Where Kept posts. Only its host is shown after this.`}
+        description={t`Where SheepKeep posts. Only its host is shown after this.`}
       />
       <TextField
         label={t`Label`}
@@ -670,7 +674,7 @@ function RelayChannels({
   const remove = async (c: Channel, name: string) => {
     const ok = await confirm({
       title: t`Remove ${name}?`,
-      body: t`Kept stops sending to it, and forgets its settings.`,
+      body: t`SheepKeep stops sending to it, and forgets its settings.`,
       confirmLabel: t`Remove`,
       destructive: true,
     });
@@ -749,7 +753,7 @@ function RelayChannels({
       >
         <span>
           {full ? (
-            <Trans>You have {MAX_RELAY_CHANNELS}, the most Kept allows.</Trans>
+            <Trans>You have {MAX_RELAY_CHANNELS}, the most SheepKeep allows.</Trans>
           ) : kind === 'ntfy' ? (
             <Trans>Reminders on your phone through ntfy.sh or your own ntfy server.</Trans>
           ) : kind === 'telegram' ? (
@@ -891,7 +895,7 @@ function AddRelayForm({ kind, onDone }: { kind: RelayChannelKind; onDone: () => 
       />
       {error ? <Notice tone="danger">{error}</Notice> : null}
       <p className="m-0 text-small text-ink-3">
-        <Trans>Kept keeps these settings encrypted and never shows them again.</Trans>
+        <Trans>SheepKeep keeps these settings encrypted and never shows them again.</Trans>
       </p>
       <DialogFooter>
         <Button variant="secondary" onPress={onDone}>

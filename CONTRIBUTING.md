@@ -1,29 +1,9 @@
-# Contributing to Kept
+# Contributing to SheepKeep
 
-Thank you for wanting to help. Kept is a self-hosted inventory that households trust with their
-records for years, so most of the rules below are about not losing or leaking anyone's data.
-
-The project is maintainer-led. For anything larger than a fix, open a discussion or an issue first,
-so the work fits Kept's design before you write it. To talk it through first, there's #contributing
-on [Discord](https://discord.gg/g4WCXPfuNv). The docs site's
-Developers section goes deeper than this page; this page is what you need to send a pull request.
-
-On the docs site:
-
-- **Getting going:** [local setup](https://keptinventory.info/developers/local-setup/),
-  [the architecture](https://keptinventory.info/developers/architecture/),
-  [the monorepo](https://keptinventory.info/developers/monorepo/),
-  [testing](https://keptinventory.info/developers/testing/) and
-  [a feature end to end](https://keptinventory.info/developers/feature-walkthrough/).
-- **The parts with rules:**
-  [languages and right-to-left](https://keptinventory.info/developers/i18n-rtl/),
-  [the UI kit](https://keptinventory.info/developers/ui-kit/),
-  [row-level security](https://keptinventory.info/developers/rls/),
-  [migrations](https://keptinventory.info/developers/migrations/),
-  [API conventions](https://keptinventory.info/developers/api/) and
-  [the MCP server](https://keptinventory.info/developers/mcp/).
-- **Maintainers:** [the CLA](https://keptinventory.info/maintainers/cla/) and
-  [releasing](https://keptinventory.info/maintainers/releasing/).
+SheepKeep is an independent fork of Kept. See [upstream credits and licensing](UPSTREAM.md).
+The [inherited Kept developer documentation](apps/docs/src/content/docs/developers/) covers the
+architecture, API conventions, migrations and testing. For a vulnerability in the fork, use
+[private reporting](SECURITY.md).
 
 ## Prerequisites
 
@@ -37,7 +17,7 @@ On the docs site:
 ## Set up
 
 ```sh
-git clone https://github.com/keptinventory/kept.git && cd kept
+git clone https://github.com/e3742526/kept-nfc.git sheepkeep && cd sheepkeep
 pnpm install --frozen-lockfile
 git config core.hooksPath .githooks                # the commit-msg hook (no AI attribution)
 docker compose -f compose.dev.yaml up -d --wait    # Postgres on 5452, Mailpit on 8025 (UI) and 1025 (SMTP)
@@ -238,12 +218,10 @@ runs the generic rules only.
   crediting them in the history is not.
 - One logical change per commit, with a message that says why.
 
-## Sign the CLA once
+## Upstream contribution terms
 
-Sign the [Contributor License Agreement](CLA.md) once, on your first pull request: a bot asks you
-to reply with a comment, and that covers every later contribution. Kept is AGPL; the CLA also lets
-the maintainer offer Kept under other terms, such as a hosted version. You keep the copyright in
-your work. Self-hosting stays free and open source.
+[CLA.md](CLA.md) records Kept's original contributor agreement for contributions to upstream.
+See [UPSTREAM.md](UPSTREAM.md) for SheepKeep's distribution license and retained notices.
 
 ## Branches and pull requests
 

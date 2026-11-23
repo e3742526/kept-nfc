@@ -210,7 +210,7 @@ test.describe('an address not on the list', () => {
       const answered = await signIn(page);
       expect(answered.status()).toBe(403);
       await expect(
-        page.getByText(`This Kept is set up for ${MAIN}. Open it there.`).first(),
+        page.getByText(`This SheepKeep is set up for ${MAIN}. Open it there.`).first(),
       ).toBeVisible();
       await expect(page.getByRole('link', { name: `Open ${MAIN}` })).toBeVisible();
       expect(await answered.text()).not.toContain('kept-ts');
@@ -229,7 +229,7 @@ test.describe('passkeys: the main address only', () => {
     await go(page, '/signin');
     expect(await page.evaluate(() => window.isSecureContext)).toBe(true);
     expect(await page.evaluate(() => typeof window.PublicKeyCredential)).toBe('function');
-    await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Sign in with a passkey' })).toHaveCount(0);
     await expect(
       page.getByText(
@@ -254,7 +254,7 @@ test.describe('passkeys: the main address only', () => {
   test('the main address says nothing of it', async ({ browser }) => {
     const { context, page } = await open(browser, MAIN);
     await go(page, '/signin');
-    await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
     await expect(page.getByText(/Passkeys work only at/)).toHaveCount(0);
     await context.close();
   });

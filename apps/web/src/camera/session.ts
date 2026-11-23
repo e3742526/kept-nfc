@@ -26,7 +26,7 @@ export type CameraProblem =
   /** Another app holds the camera. */
   | 'busy'
   | 'failed'
-  /** Try Kept on the docs site (D246): no camera is asked for. */
+  /** Try SheepKeep on the docs site (D246): no camera is asked for. */
   | 'demo';
 
 export type MediaAccess = Pick<MediaDevices, 'getUserMedia'>;

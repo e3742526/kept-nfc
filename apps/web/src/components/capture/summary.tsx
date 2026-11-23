@@ -85,7 +85,7 @@ export function CaptureSummary({
                 })}
               </b>{' '}
               <Trans>
-                On iPhone, Kept uploads only while it's open. Keep it open when you're back in
+                On iPhone, SheepKeep uploads only while it's open. Keep it open when you're back in
                 signal.
               </Trans>
             </span>

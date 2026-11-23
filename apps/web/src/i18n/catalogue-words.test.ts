@@ -44,7 +44,7 @@ describe('the catalogues', () => {
     expect(entries('es').get('Secret access key')).toBe('Clave de acceso secreta');
   });
 
-  it('call Kept and its sections by name in Spanish', () => {
+  it('call SheepKeep and its sections by name in Spanish', () => {
     const es = entries('es');
     expect(es.get('Settings')).toBe('Configuración');
     expect(es.get('Allow private addresses in Admin → Settings')).toContain(
@@ -54,6 +54,8 @@ describe('the catalogues', () => {
     expect(es.get('{cell} roll')).toBe('Rollo {cell}');
     expect(es.get('Graph')).toBe('Grafo');
     expect(es.get('Borrowed in')).not.toBe('Prestado en');
-    expect(es.get('{0, plural, one {Kept # file} other {Kept # files}}')).not.toContain('Kept');
+    expect(es.get('{0, plural, one {Kept # file} other {Kept # files}}')).not.toContain(
+      'SheepKeep',
+    );
   });
 });

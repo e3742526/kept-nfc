@@ -74,7 +74,7 @@ function ConfirmPage() {
     (failed.status === 400 || failed.status === 401 || failed.status === 404);
   return (
     <AuthFrame
-      title={t`Sign in to Kept`}
+      title={t`Sign in to SheepKeep`}
       intro={<Trans>You opened a sign-in link. Continue to sign in on this device.</Trans>}
     >
       {failed ? (

@@ -113,7 +113,7 @@ export type AppOptions = {
   auth?: Auth | null;
   /** Substitute the Apple JWKS in integration fixtures. */
   nativeAppleKeys?: JWTVerifyGetKey;
-  /** Outgoing mail for Kept's own flows (email change). Defaults to logging that it is due. */
+  /** Outgoing mail for SheepKeep's own flows (email change). Defaults to logging that it is due. */
   mailer?: Mailer;
   /** Called for every request that got a scope: ensureAccount's cached check. */
   onScope?: SessionHookOptions['onScope'];
@@ -151,9 +151,9 @@ export type AppOptions = {
   /** Web push's setup (notify/vapid.ts createPushSource), and in tests how a push
    * or a webhook leaves the process. Omitted: push reports unavailable. */
   notify?: Pick<NotifyDeps, 'push' | 'transport' | 'appriseUrl'> | null;
-  /** https served by Kept itself (KEPT_TLS_CERT_FILE, KEPT_TLS_KEY_FILE): the PEM contents. */
+  /** https served by SheepKeep itself (KEPT_TLS_CERT_FILE, KEPT_TLS_KEY_FILE): the PEM contents. */
   tls?: { cert: Buffer; key: Buffer } | null;
-  /** #376: the open requests to link the Kept integration, from the app's link secret
+  /** #376: the open requests to link the SheepKeep integration, from the app's link secret
    * (KEPT_HA_LINK_SECRET_FILE). Used in app mode (KEPT_HA) only; otherwise its routes are 404. */
   homeAssistantLinks?: HomeAssistantLinks | null;
 };
@@ -204,7 +204,7 @@ export async function buildApp(opts: AppOptions): Promise<KeptApp> {
     genReqId: () => newId(),
     // Proxies are resolved per use from KEPT_TRUSTED_PROXIES (auth/client-ip.ts), not here.
     trustProxy: false,
-    // Kept's own https (the Home Assistant app's `ssl` option); the KeptApp type stays the
+    // SheepKeep's own https (the Home Assistant app's `ssl` option); the KeptApp type stays the
     // http one: the routes see the same request and reply either way.
     ...(opts.tls ? { https: { cert: opts.tls.cert, key: opts.tls.key } } : {}),
   }).withTypeProvider<ZodTypeProvider>() as unknown as KeptApp;
@@ -243,7 +243,7 @@ export async function buildApp(opts: AppOptions): Promise<KeptApp> {
   // Home Assistant ingress (D273): decided once, from the socket and the Supervisor's headers,
   // before anything reads the request. Outside app mode (KEPT_HA) it is null for every request.
   app.addHook('onRequest', ingressHook(opts.env.KEPT_HA === true));
-  // Kept on https behind a plain-http Home Assistant: its cookies went out without the __Secure-
+  // SheepKeep on https behind a plain-http Home Assistant: its cookies went out without the __Secure-
   // prefix (http/ingress.ts scopeCookieToIngress); Better Auth reads them under their own names.
   if (opts.env.KEPT_HA === true && https) {
     app.addHook('onRequest', async (req) => {
@@ -311,13 +311,13 @@ export async function buildApp(opts: AppOptions): Promise<KeptApp> {
       ? { maxAge: opts.env.KEPT_HSTS === 'off' ? 0 : 31_536_000, includeSubDomains: false }
       : false,
   });
-  // Under ingress only, Home Assistant's own page frames Kept (same origin, D273).
+  // Under ingress only, Home Assistant's own page frames SheepKeep (same origin, D273).
   app.addHook('onSend', ingressFraming);
 
   await app.register(swagger, {
     openapi: {
       openapi: '3.1.0',
-      info: { title: 'Kept API', version: build.version },
+      info: { title: 'SheepKeep API', version: build.version },
       // Step 6 (D60, D63): a personal token is an HTTP bearer; each route open to tokens says so
       // in its `security` (tokens/access.ts).
       components: { securitySchemes: TOKEN_SECURITY_SCHEMES },
@@ -388,7 +388,7 @@ export async function buildApp(opts: AppOptions): Promise<KeptApp> {
       ...(opts.notify?.transport ? { transport: opts.notify.transport } : {}),
     },
   });
-  // #376: linking the Kept integration from the Home Assistant app (homeassistant/routes.ts).
+  // #376: linking the SheepKeep integration from the Home Assistant app (homeassistant/routes.ts).
   await homeAssistantLinkRoutes(app, {
     pools: opts.pools,
     links: opts.env.KEPT_HA === true ? (opts.homeAssistantLinks ?? null) : null,

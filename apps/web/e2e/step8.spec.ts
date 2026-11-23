@@ -106,8 +106,8 @@ test('the app lock: a PIN, Face ID through a stubbed WebAuthn, the lock screen a
   await expect(page.getByRole('heading', { name: 'This device', level: 1 })).toBeVisible();
   await axe(page, 'This device');
 
-  await page.getByRole('switch', { name: 'Lock Kept on this device' }).click({ force: true });
-  const sheet = page.getByRole('dialog', { name: 'Lock Kept on this device' });
+  await page.getByRole('switch', { name: 'Lock SheepKeep on this device' }).click({ force: true });
+  const sheet = page.getByRole('dialog', { name: 'Lock SheepKeep on this device' });
   await expect(sheet).toContainText('Choose a PIN of 6 to 12 digits.');
   await axe(page, 'the PIN sheet');
   await page.keyboard.type(PIN);
@@ -116,7 +116,7 @@ test('the app lock: a PIN, Face ID through a stubbed WebAuthn, the lock screen a
   await page.keyboard.type(PIN);
   await sheet.getByRole('button', { name: 'Continue', exact: true }).click();
   const toasts = page.getByRole('region', { name: 'Notifications' });
-  await expect(toasts).toContainText('Kept locks on this device now', { timeout: 60_000 });
+  await expect(toasts).toContainText('SheepKeep locks on this device now', { timeout: 60_000 });
 
   // Keep available offline: each location's download size once the server has measured it, and
   // never a size of zero ("Nothing to download" or "No documents to download" instead).
@@ -135,7 +135,7 @@ test('the app lock: a PIN, Face ID through a stubbed WebAuthn, the lock screen a
   }
 
   // It unlocks this device; signing in with a passkey is Settings → Sign-in and security's.
-  await expect(page.getByText(/Unlocks Kept on this device only\./)).toBeVisible();
+  await expect(page.getByText(/Unlocks SheepKeep on this device only\./)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Sign-in and security' })).toHaveAttribute(
     'href',
     '/settings#sign-in-security',
@@ -143,7 +143,7 @@ test('the app lock: a PIN, Face ID through a stubbed WebAuthn, the lock screen a
   await page
     .getByRole('switch', { name: 'Unlock with Face ID or fingerprint' })
     .click({ force: true });
-  await expect(toasts).toContainText('Face ID or fingerprint can unlock Kept now');
+  await expect(toasts).toContainText('Face ID or fingerprint can unlock SheepKeep now');
 
   // A cold start asks for the PIN: a wrong one is refused, the right one opens Kept.
   await page.reload();

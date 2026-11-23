@@ -78,7 +78,7 @@ describe('Connections', () => {
     const { user } = await renderApp('/settings/connections', {
       setup: (m) =>
         m.on('POST', connectionsPaths.tokens, () =>
-          err(403, 'https_required', 'This needs a secure (https) connection to Kept.'),
+          err(403, 'https_required', 'This needs a secure (https) connection to SheepKeep.'),
         ),
     });
     await user.click(await screen.findByRole('button', { name: 'New token' }));
@@ -221,7 +221,7 @@ describe('Connections', () => {
     expect(within(changes).getAllByRole('article')).toHaveLength(3);
     // Who made each change: the token's name, never "Kept" (UI review steps 6–8, M4).
     expect(within(changes).getAllByText('Claude Desktop', { selector: 'bdi' })).toHaveLength(3);
-    expect(within(changes).queryByText('Kept', { selector: 'bdi' })).toBeNull();
+    expect(within(changes).queryByText('SheepKeep', { selector: 'bdi' })).toBeNull();
     const undos = within(changes).getAllByRole('button', { name: 'Undo' });
     expect(undos).toHaveLength(2);
     await user.click(undos[0] as HTMLElement);

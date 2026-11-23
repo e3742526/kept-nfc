@@ -41,8 +41,8 @@ describe('manifest.webmanifest', () => {
 
   it('installs standalone at the root, in the paper colour', () => {
     expect(manifest).toMatchObject({
-      name: 'Kept',
-      short_name: 'Kept',
+      name: 'SheepKeep',
+      short_name: 'SheepKeep',
       start_url: '/',
       scope: '/',
       display: 'standalone',
@@ -167,7 +167,7 @@ describe('the update prompt', () => {
   });
 });
 
-describe('share into Kept', () => {
+describe('share into SheepKeep', () => {
   const pdf = new File(['%PDF-1.7'], 'receipt.pdf', { type: 'application/pdf' });
   const jpg = new File(['jpeg'], 'drill.jpg', { type: 'image/jpeg' });
 
@@ -197,7 +197,7 @@ describe('share into Kept', () => {
     expect(await claimShare('gone', store, ask)).toBeUndefined();
   });
 
-  it('opens "Shared into Kept" with RECEIPT chosen; Discard drops the files', async () => {
+  it('opens "Shared into SheepKeep" with RECEIPT chosen; Discard drops the files', async () => {
     const store = new MemoryStore();
     const share: SharedInto = {
       id: 's2',
@@ -226,7 +226,7 @@ describe('share into Kept', () => {
 
   it('explains a share the server answered because the worker was not running', async () => {
     await renderUI(<ShareArrival problem="unavailable" onDone={() => undefined} />);
-    expect(screen.getByText('Open Kept once, then share again')).toBeInTheDocument();
+    expect(screen.getByText('Open SheepKeep once, then share again')).toBeInTheDocument();
   });
 });
 
@@ -366,12 +366,12 @@ describe('diagnostics', () => {
   it('writes the report as plain lines with ✓ and ✗', () => {
     expect(
       reportText(
-        ['Kept diagnostics'],
+        ['SheepKeep diagnostics'],
         [
           { label: 'Camera', result: { key: 'camera', status: 'ok', facts: ['best=1920x1080'] } },
           { label: 'HEIC', result: { key: 'heic', status: 'fail', facts: [] } },
         ],
       ),
-    ).toBe('Kept diagnostics\n\n✓ Camera: best=1920x1080\n✗ HEIC');
+    ).toBe('SheepKeep diagnostics\n\n✓ Camera: best=1920x1080\n✗ HEIC');
   });
 });

@@ -140,18 +140,18 @@ export function ScannerView({
         : p === 'demo'
           ? t`The camera is off in this demo.`
           : p === 'insecure'
-            ? t`The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put Kept on HTTPS.`
+            ? t`The camera needs a secure (HTTPS) address, and this page doesn't have one. Your admin can put SheepKeep on HTTPS.`
             : p === 'denied'
-              ? t`Camera access is off for Kept.`
+              ? t`Camera access is off for SheepKeep.`
               : p === 'no_camera'
-                ? t`This device has no camera Kept can use.`
+                ? t`This device has no camera SheepKeep can use.`
                 : p === 'busy'
                   ? t`Another app is using the camera. Close it, then come back.`
                   : t`This browser can't open the camera here.`;
     return (
       <div className="grid h-full content-center gap-2 p-4 text-[#F2EFE9]" role="status">
         <p className="m-0 font-semibold text-[17px]">
-          <Trans>Kept can't scan here</Trans>
+          <Trans>SheepKeep can't scan here</Trans>
         </p>
         <p className="m-0 text-[#BDB7AC] text-[14px]">{reason}</p>
         {RETRYABLE.has(p) ? (

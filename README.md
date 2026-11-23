@@ -1,250 +1,54 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/kept-lockup-dark.svg">
-    <img src="docs/assets/kept-lockup-light.svg" alt="Kept" width="240">
-  </picture>
-</p>
+# SheepKeep
 
-<p align="center">
-  A self-hosted, open-source inventory of everything you own and where it is.
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/sheepkeep-lockup-dark.svg">
+  <img src="docs/assets/sheepkeep-lockup-light.svg" alt="SheepKeep" width="300">
+</picture>
 
-<!--
-  One style for every badge: flat-square, the kit's ink-2 (#55524C) label and amber (#F0B03A)
-  value (apps/web/src/styles/tokens.css); a badge for another product takes that product's colour
-  and logo (Docker's blue, Discord's, Home Assistant's #18BCF2). Release and CI are live (shields.io reads GitHub): CI
-  turns red when the ci workflow fails on main. Both read public data, so they render once the
-  repository is public. Discord counts the members of the invite's server, live.
--->
-<p align="center">
-  <a href="https://github.com/keptinventory/kept/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/keptinventory/kept?sort=semver&display_name=tag&style=flat-square&label=release&labelColor=55524C&color=F0B03A"></a>
-  <a href="https://github.com/keptinventory/kept/actions/workflows/ci.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/keptinventory/kept/ci.yml?branch=main&style=flat-square&label=ci&labelColor=55524C"></a>
-  <a href="LICENSE"><img alt="Licence: AGPL-3.0" src="https://img.shields.io/badge/licence-AGPL--3.0-F0B03A?style=flat-square&labelColor=55524C"></a>
-  <a href="https://keptinventory.info/"><img alt="Documentation" src="https://img.shields.io/badge/docs-keptinventory.info-F0B03A?style=flat-square&labelColor=55524C&label=docs"></a>
-  <a href="https://github.com/orgs/keptinventory/packages/container/package/kept"><img alt="Container image: ghcr.io/keptinventory/kept" src="https://img.shields.io/badge/image-ghcr.io%2Fkeptinventory%2Fkept-F0B03A?style=flat-square&labelColor=55524C"></a>
-  <a href="https://hub.docker.com/r/keptinventory/kept"><img alt="Docker Hub: keptinventory/kept" src="https://img.shields.io/badge/docker%20hub-keptinventory%2Fkept-2496ED?style=flat-square&labelColor=55524C&logo=docker&logoColor=white"></a>
-  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fkeptinventory%2Fkept"><img alt="Add Kept to Home Assistant" src="https://img.shields.io/badge/home%20assistant-add%20Kept-18BCF2?style=flat-square&labelColor=55524C&logo=homeassistant&logoColor=white"></a>
-  <a href="https://discord.gg/g4WCXPfuNv"><img alt="Discord members" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Fv10%2Finvites%2Fg4WCXPfuNv%3Fwith_counts%3Dtrue&query=%24.approximate_member_count&label=discord&suffix=%20members&style=flat-square&logo=discord&logoColor=white&color=5865F2&labelColor=55524C"></a>
-  <a href="CONTRIBUTING.md#sign-the-cla-once"><img alt="CLA: sign once" src="https://img.shields.io/badge/CLA-sign%20once-F0B03A?style=flat-square&labelColor=55524C"></a>
-</p>
+**Your things, remembered.** SheepKeep is a self-hosted home inventory with an iPhone companion
+for documenting rooms, boxes and the things in them.
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/kept-hero-dark.webp">
-    <img src="docs/assets/kept-hero-light.webp" alt="Kept's home screen on a desktop, with the same screen on a phone in front: the get-started checklist, what needs you, the locations and the shortcuts">
-  </picture>
-</p>
+SheepKeep is an independent, modified fork of [Kept](https://github.com/keptinventory/kept),
+created by [Ibrahim Roshdy](https://github.com/ibrahimroshdy) and developed with its contributors.
+The fork was previously called **Kept NFC**. It is maintained separately from Kept.
+See [upstream credits, source and compatibility](UPSTREAM.md) and [citation metadata](CITATION.cff).
 
-Homes, garages and storage units; the rooms, shelves and boxes inside them; the things inside
-those, with receipts, manuals, warranties and history. Self-hosted, on your own server or homelab.
-Nothing leaves it unless you turn it on: no telemetry, the update check off by default, the AI
-provider yours to choose.
+## What SheepKeep adds
 
-## Try it
+- An iPhone app for rooms, boxes and inventory editing. Scan existing QR or NFC labels, print QR
+  label sheets, and record additions, removals, moves and photographs in the history.
+- Offline captures with original photographs and documents, plus review for work held after a
+  server restore.
+- Text and photo queries against an opt-in local visual index. See the
+  [verification status](docs/mvp1/status.md) for the current retrieval and device evidence.
 
-Nothing to install, nothing saved.
+## Build and run from source
 
-- **[Try Kept](https://keptinventory.info/try/kept/):** the whole app, with a sample household.
-- **[Try the map](https://keptinventory.info/try/map/):** the 3D map, with a sample home.
-- **[Host it](#quick-start-host-it):** Docker Compose or Kubernetes.
-
-## A look around
-
-<p align="center">
-  <img src="docs/assets/kept-tour.webp" alt="A tour of Kept on a desktop: Home; Home's things as a list, each with its type, boxes with their counts and the label tape on printed labels; the 3D map with the kitchen's card; the graph in 2D, going into the office and back; the graph in 3D, turning, with the kitchen picked; AA batteries' card and page; a search for cable that opens the HDMI cable" width="720">
-</p>
-
-- **List:** names first, each with its type; a box says how much is inside; the amber tape only
-  on things with a printed label.
-- **Map:** each location in 3D: floors, rooms, shelves and boxes, what's inside one tap away.
-  Arranged by you, or laid out by Kept. Plan view, balconies and terraces
-  ([the map](https://keptinventory.info/users/location-map/)).
-- **Graph:** a location's places, boxes and things, in 2D or 3D.
-
-### On a phone
-
-Installs as an app. Capture, scan and search, offline too.
-
-<p align="center">
-  <img src="docs/assets/kept-demo-phone.webp" alt="Kept on a phone, in a short loop: Home, a location's list, the map with a room and a box's card, a search for cable, and the capture screen" width="240">
-  <img src="docs/assets/kept-map-phone-light.webp" alt="The location map on a phone, with a thing's card at the bottom" width="240">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="apps/docs/src/assets/screens/list-phone-dark.webp">
-    <img src="apps/docs/src/assets/screens/list-phone-light.webp" alt="Home's things on a phone: each name with its type underneath, boxes with their counts, the label tape on printed labels" width="240">
-  </picture>
-</p>
-
-### Labels
-
-A short ID and a QR code for every box. Label-printer rolls or office-printer sheets; scan one to
-open the box.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="apps/docs/src/assets/screens/labels-dark.webp">
-    <img src="apps/docs/src/assets/screens/labels-light.webp" alt="Printing labels: the six things in Home with no printed label, on an A4 sheet of 24, each label a QR code with its name, place and short ID" width="720">
-  </picture>
-</p>
-
-## What it does
-
-Every feature, with its page: [all features](https://keptinventory.info/users/features/).
-
-- **Inventory.** Locations, places, boxes and things, with photos, documents, purchases, tags,
-  custom fields, quantities, saved views, search, an archive for what you no longer use and a trash
-  you can restore from. Furniture with compartments you can turn, merge and split;
-  [server racks](https://keptinventory.info/users/locations/#racks) in rack units. A place tree
-  you can widen or collapse. Hide your Personal location if you don't use it.
-- **3D map and graph.** Each location in 3D, rooms at their real size, started from a floor plan
-  if you have one; its places and things as a graph
-  ([the map](https://keptinventory.info/users/location-map/)).
-- **Labels and scanning.** Print label sheets with a short ID and a QR code; scan one to open the
-  box it is on. Scan sessions count a shelf, pack a box or move a pile in one go; counts can be
-  turned off where nobody counts. If the scanner doesn't start, Try again starts it afresh; on a
-  phone, sheets stay above the keyboard.
-- **Lending and borrowing.** Who has what and when it's due back; borrowers need no account.
-  Reminders before and after the due date, one list of everything out, and each thing's trail of
-  who had it and how it came back ([lending](https://keptinventory.info/users/lending/)).
-- **Kits and hand-overs.** Lend a box with everything in it; each thing comes back on its own
-  record ([kits](https://keptinventory.info/users/kits/)).
-- **Moving house.** Numbered boxes, a label and a contents sheet for each, tracked in the van,
-  unpacked by scanning ([moving](https://keptinventory.info/users/moving/)).
-- **Reminders.** Warranties, services, documents, loans and low stock: in the app, by mail, push,
-  ntfy, Telegram and a calendar feed.
-- **Vehicles and machines.** Readings, services, fuel and running costs,
-  [metric or imperial](https://keptinventory.info/users/vehicles/#units).
-- **The household.** Shared locations with roles and end dates, share links, stocktakes,
-  condition reports, an insurance report and insights.
-  [PDFs](https://keptinventory.info/users/reports/) in the reader's language.
-- **Capture.** Photograph a thing, a receipt, a label or a whole room, online or offline; your AI
-  provider (OpenAI, Anthropic, Google, OpenRouter, Groq, or an OpenAI-compatible server such as
-  Ollama) suggests the details and you confirm them. Without one, you type them. Give a location
-  [its position](https://keptinventory.info/users/locations/#its-position) and Capture suggests it
-  when you are there.
-- **AI assistant and MCP server.** Ask in plain words; changes wait for your OK. Claude and other
-  AI agents connect at `/mcp` and stay connected ([how](https://keptinventory.info/users/mcp-clients/)).
-- **Home Assistant.** Install Kept as a Home Assistant app; an integration brings what's due into
-  dashboards and automations, and the app offers to set it up: no token to copy
-  ([Home Assistant](https://keptinventory.info/users/home-assistant/)).
-- **Paperless-ngx.** Link documents instead of copying them; the start of a word finds one, and a
-  Homebox import takes its links' titles from Paperless
-  ([Paperless](https://keptinventory.info/users/paperless/)).
-- **Install.** Pick how you run Kept (Docker Compose, Kubernetes, from source or Home Assistant)
-  and follow its steps on one page ([install](https://keptinventory.info/install/)).
-- **Backups you can read.** Nightly restic backups to a directory, S3 or SFTP, each with a copy
-  that opens in a browser without Kept; imports from Homebox (a past import can be repaired) and
-  CSV, full exports.
-- **Your own network or HTTPS.** Works over plain http at home, with sign-ins as long as you set
-  and more than one address; an export with secret values needs HTTPS.
-- **Languages:** Arabic (right to left), English, French, German, Italian, Spanish, Ukrainian and
-  Vietnamese; type to find yours, and amounts are read as your language writes them. The user,
-  admin and install docs are in every language too.
-
-<p align="center">
-  <img src="docs/assets/claude-mcp.webp" alt="Claude Code connected to Kept over MCP: asked to add a TV with its serial number, it puts it in Home › Living room" width="720">
-</p>
-
-## Quick start: host it
-
-Docker with Compose v2. Tested on 1 GB of RAM and one CPU core, a backup during photo uploads
-included; Kept and its database use about 200–400 MB
-([what was tested](https://keptinventory.info/install/hardware/)).
+Use Docker with Compose v2. Build the image from this checkout and select it explicitly.
 
 ```sh
-mkdir kept && cd kept
-curl -fsSLO https://raw.githubusercontent.com/keptinventory/kept/v1.14.7/compose.yaml
-docker compose run --rm init
-docker compose up -d
+git clone https://github.com/e3742526/kept-nfc.git sheepkeep
+cd sheepkeep
+docker build --build-arg REVISION="$(git rev-parse HEAD)" -t sheepkeep:local .
+test -f .env || printf 'KEPT_IMAGE=sheepkeep:local\n' > .env
+KEPT_IMAGE=sheepkeep:local docker compose run --rm init
+KEPT_IMAGE=sheepkeep:local docker compose up -d
 ```
 
-1. **`compose.yaml`:** Kept and its database in one file; no clone, no passwords to make.
-2. **`init`:** asks the address you'll open Kept at (a name such as `http://kept.home.arpa:8080`
-   beats an IP address: printed labels carry it), writes `.env` and shows the setup code.
-3. **Start:** the database, a one-shot bootstrap that makes the database logins and their
-   passwords, the one-shot `migrate`, then Kept on port 8080 (`KEPT_HTTP_PORT` changes it).
-4. **First run:** open the address, enter the setup code, create the first account. It becomes
-   the instance admin. Then keep the keys off this server:
-   `docker compose exec kept kept admin recovery-kit` prints them.
+Follow the setup address and code printed by `init`. Set `KEPT_IMAGE=sheepkeep:local` in the
+instance's `.env` to select the build on later starts. For an existing installation, use its
+current Compose project name, volumes and public URL so the database and printed labels stay
+connected to the same instance.
 
-The camera, installing the app, push and location need HTTPS. Caddy, with a certificate for
-`KEPT_DOMAIN`, and Ollama for local AI come with `compose.full.yaml`: the same file plus those
-([Caddy and Ollama](https://keptinventory.info/install/compose/#caddy-and-ollama),
-[HTTPS](https://keptinventory.info/install/https/)). Every step in full:
-[the install guide](https://keptinventory.info/install/compose/).
+Use HTTPS for the iPhone app and browser camera features. The [iPhone setup guide](apps/ios/README.md)
+covers local builds. See [CONTRIBUTING.md](CONTRIBUTING.md) for development and focused checks.
+[Kept's upstream documentation](https://keptinventory.info/) is a reference for inherited features
+and upstream distribution channels. [SheepKeep security reporting](SECURITY.md) covers this fork.
 
-- **Home Assistant:** on Home Assistant OS, Kept installs as an app with its own database, backed
-  up with Home Assistant's backups ([install as a Home Assistant app](https://keptinventory.info/install/home-assistant/)):
+## License and source
 
-  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fkeptinventory%2Fkept"><img alt="Add Kept to Home Assistant" src="https://img.shields.io/badge/add%20Kept%20to-Home%20Assistant-18BCF2?style=for-the-badge&labelColor=55524C&logo=homeassistant&logoColor=white"></a>
-
-  Sensors and the calendar come from the separate integration ([Works with](#works-with)).
-- **Kubernetes:** the Helm chart, `oci://ghcr.io/keptinventory/charts/kept`, signed and published
-  with each release ([install on Kubernetes](https://keptinventory.info/install/kubernetes/)).
-- **Verify the image:** `cosign verify --key cosign.pub <image>:<version>`, with `cosign.pub` from
-  this repository ([verifying a release](https://keptinventory.info/admin/verify-release/)).
-- **Backups:** nightly, encrypted, to a directory, S3 or SFTP
-  ([backups](https://keptinventory.info/admin/backups/)).
-
-## Works with
-
-<p align="center">
-  <a href="https://keptinventory.info/integrations/"><img src="apps/docs/src/assets/landing/kept-integrations.webp" alt="Kept works with what you already run: Home Assistant and Paperless-ngx both ways; imports from Homebox, LubeLogger and spreadsheets; notifications to ntfy, Telegram, Slack, Discord, Matrix, Signal, email and webhooks; the MCP server for Claude and ChatGPT; AI models from OpenAI, Anthropic, Gemini, Groq, OpenRouter and Ollama" width="800"></a>
-</p>
-
-- **Home Assistant:** the [kept-homeassistant](https://github.com/keptinventory/kept-homeassistant)
-  integration, a HACS custom repository ([setup](https://keptinventory.info/users/home-assistant/)).
-  The app runs Kept; the integration brings it into Home Assistant. With the app, Home Assistant
-  finds Kept and you allow it in Kept: no token, no https ([set up from the app](https://keptinventory.info/users/home-assistant/#set-up-from-the-app)).
-
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="apps/docs/src/assets/diagrams/home-assistant-dark.svg">
-    <img src="apps/docs/src/assets/diagrams/home-assistant-light.svg" alt="Kept, on your server or as the Home Assistant app, and the Kept integration inside Home Assistant: it reads Kept every 5 minutes, sends readings back, and feeds dashboards, automations and the calendar" width="720">
-  </picture>
-- **Paperless-ngx:** receipts, manuals and warranty cards linked to things
-  ([setup](https://keptinventory.info/users/paperless/)).
-- **The rest:** [integrations](https://keptinventory.info/integrations/).
-
-## What's next
-
-- **Next:** [compartments on the 3D map](https://github.com/keptinventory/kept/issues/238)
-- **Later:** [mobile and desktop apps](https://github.com/keptinventory/kept/issues/169),
-  [scan a room into the 3D map](https://github.com/keptinventory/kept/issues/197),
-  [storage furniture templates](https://github.com/keptinventory/kept/issues/238)
-
-[Full roadmap →](https://github.com/orgs/keptinventory/projects/1): 👍 the themes you want most.
-
-## Links
-
-| | |
-|---|---|
-| Documentation | [keptinventory.info](https://keptinventory.info/) |
-| Install | [Start here](https://keptinventory.info/install/): pick how you run Kept; [Docker Compose](https://keptinventory.info/install/compose/), [HTTPS](https://keptinventory.info/install/https/), [Kubernetes](https://keptinventory.info/install/kubernetes/) (Helm chart in [`charts/kept`](charts/kept/)), [configuration](https://keptinventory.info/reference/configuration/) |
-| API | [HTTP API reference](https://keptinventory.info/api/), generated from the OpenAPI document |
-| MCP | [Connect an AI client](https://keptinventory.info/users/mcp-clients/) |
-| Roadmap | [Now, next and later](https://github.com/orgs/keptinventory/projects/1) |
-| Questions and ideas | [Discussions](https://github.com/keptinventory/kept/discussions) |
-| Chat | [Discord](https://discord.gg/g4WCXPfuNv) |
-| Contributing | [CONTRIBUTING.md](CONTRIBUTING.md): a discussion or an issue first for anything larger than a fix; [sign the CLA once](CONTRIBUTING.md#sign-the-cla-once) |
-| Security | [SECURITY.md](SECURITY.md): report privately, never in a public issue |
-| Changelog | [CHANGELOG.md](CHANGELOG.md) |
-
-## Licence
-
-Kept is free software under the GNU Affero General Public License, version 3
-([`LICENSE`](LICENSE)), and every feature ships in it: nothing is held back. If you run a modified
-Kept for other people, you must offer them its source. The image carries the third-party notices
-of everything inside it, served at `/notices.txt`.
-
-## Star history
-
-<p align="center">
-  <a href="https://www.star-history.com/?repos=keptinventory%2Fkept&type=date&logscale=&releases=&legend=bottom-right">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=keptinventory/kept&type=date&theme=dark&legend=bottom-right">
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=keptinventory/kept&type=date&legend=bottom-right">
-      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=keptinventory/kept&type=date&legend=bottom-right" width="600">
-    </picture>
-  </a>
-</p>
-
-Created by [Ibrahim Roshdy](https://github.com/ibrahimroshdy), AGPL-3.0
+SheepKeep is distributed under the [GNU Affero General Public License, version 3](LICENSE).
+See the [modification and attribution notice](UPSTREAM.md) for the upstream revision, dates and
+third-party credits. Deployments should make the corresponding source of the running revision
+available through the app's **Source code** link. The image also serves its third-party notices
+at `/notices.txt`.

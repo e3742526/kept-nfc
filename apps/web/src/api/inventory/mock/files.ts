@@ -40,7 +40,7 @@ export function filesRoutes(state: MockState): MockRoute[] {
       if (!access().canWrite(locationId)) return forbidden();
       const sha256 = headers['x-kept-sha256'] ?? '';
       if (!/^[0-9a-f]{64}$/.test(sha256))
-        return err(400, 'validation', 'X-Kept-Sha256 is required.');
+        return err(400, 'validation', 'X-SheepKeep-Sha256 is required.');
       // Task 26: a duplicate only within the same location (D177), and a replay of the same id.
       const replay = inv().files[params.id ?? ''];
       if (replay)

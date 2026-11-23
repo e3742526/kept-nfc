@@ -42,7 +42,7 @@ export function nativeDetect(): Detect | null {
   }
 }
 
-/** The Kept code in what the scanner read, if any (any host's `/l/<code>`, or the bare code). */
+/** The SheepKeep code in what the scanner read, if any (any host's `/l/<code>`, or the bare code). */
 export function keptCodeIn(found: readonly Detected[]): string | null {
   for (const d of found) {
     const r = parseScan(d.rawValue, d.format);

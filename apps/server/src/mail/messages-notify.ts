@@ -8,7 +8,7 @@ import {
 } from './message-kit.js';
 import type { MailLocale } from './messages.js';
 
-// Step 4's mail (D29, D30, D46, D122, D204), in every language Kept mails in:
+// Step 4's mail (D29, D30, D46, D122, D204), in every language SheepKeep mails in:
 // a reminder sent at once, the day's digest, a membership that ended, a channel's test and a
 // webhook that stopped answering. The reminder wording itself is notify/words.ts, which the push
 // payload and the calendar feed share. Every reminder names the thing, its path, the location
@@ -43,9 +43,9 @@ type Words = {
 const WORDS: Record<MailLocale, Words> = {
   ar: {
     where: 'المكان',
-    open: 'فتح في Kept',
-    openKept: 'فتح Kept',
-    digestSubject: (count, day) => `Kept: ${count} ليوم ${day}`,
+    open: 'فتح في SheepKeep',
+    openKept: 'فتح SheepKeep',
+    digestSubject: (count, day) => `SheepKeep: ${count} ليوم ${day}`,
     digestIntro: (day) => `ما يستحق وما تقترب نهايته، حتى ${day}:`,
     reminderFootnote: (url) =>
       `يصلك هذا لأن هذا النوع من التذكيرات مفعّل لديك. يمكنك تغيير ما يصلك من الإعدادات ← أنا ← الإشعارات: ${url}`,
@@ -59,14 +59,14 @@ const WORDS: Record<MailLocale, Words> = {
       footnote: 'يصلك هذا بصفتك المالك. لمنحه الوصول مجددًا، ادعُه من إعدادات المكان.',
     },
     test: {
-      subject: 'Kept: إشعار تجريبي',
+      subject: 'SheepKeep: إشعار تجريبي',
       body: 'هذا هو الإشعار التجريبي الذي أرسلته من الإعدادات ← أنا ← الإشعارات. ستصل إلى هذا العنوان التذكيرات التي تختار تلقّيها بالبريد الإلكتروني.',
       footnote: 'لم يتغيّر شيء آخر.',
     },
     failing: {
-      subject: 'Kept: لا يستجيب الـwebhook الخاص بك',
+      subject: 'SheepKeep: لا يستجيب الـwebhook الخاص بك',
       body: (name) =>
-        `حاول Kept طوال يوم تقريبًا إيصال تذكير إلى الـwebhook ‏${name}، ولم يصله أي رد، لذا لا تصل إليه التذكيرات.`,
+        `حاول SheepKeep طوال يوم تقريبًا إيصال تذكير إلى الـwebhook ‏${name}، ولم يصله أي رد، لذا لا تصل إليه التذكيرات.`,
       next: 'تأكّد من صحة العنوان ومن أن المستقبِل يعمل، ثم أرسل إشعارًا تجريبيًا من الإعدادات ← أنا ← الإشعارات.',
       action: 'فتح إعدادات الإشعارات',
       footnote: 'قنواتك الأخرى لم تتأثر.',
@@ -74,9 +74,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   de: {
     where: 'Wo',
-    open: 'In Kept öffnen',
-    openKept: 'Kept öffnen',
-    digestSubject: (count, day) => `Kept: ${count} für den ${day}`,
+    open: 'In SheepKeep öffnen',
+    openKept: 'SheepKeep öffnen',
+    digestSubject: (count, day) => `SheepKeep: ${count} für den ${day}`,
     digestIntro: (day) => `Was fällig ist oder abläuft, Stand ${day}:`,
     reminderFootnote: (url) =>
       `Du erhältst das, weil diese Art Erinnerung für dich eingeschaltet ist. Ändere, was du erhältst, unter Einstellungen → Profil → Benachrichtigungen: ${url}`,
@@ -91,14 +91,14 @@ const WORDS: Record<MailLocale, Words> = {
         'Du erhältst das als Eigentümer. Um wieder Zugriff zu geben, lade die Person in den Einstellungen des Standorts ein.',
     },
     test: {
-      subject: 'Kept: eine Testbenachrichtigung',
+      subject: 'SheepKeep: eine Testbenachrichtigung',
       body: 'Das ist der Test, den du unter Einstellungen → Profil → Benachrichtigungen gesendet hast. Erinnerungen, die du per E-Mail erhalten willst, kommen an diese Adresse.',
       footnote: 'Sonst hat sich nichts geändert.',
     },
     failing: {
-      subject: 'Kept: dein Webhook antwortet nicht',
+      subject: 'SheepKeep: dein Webhook antwortet nicht',
       body: (name) =>
-        `Kept hat etwa einen Tag lang versucht, eine Erinnerung an deinen Webhook ${name} zu senden, aber nie eine Antwort bekommen. Erinnerungen kommen dort also nicht an.`,
+        `SheepKeep hat etwa einen Tag lang versucht, eine Erinnerung an deinen Webhook ${name} zu senden, aber nie eine Antwort bekommen. Erinnerungen kommen dort also nicht an.`,
       next: 'Prüfe die Adresse und ob der Empfänger läuft, und sende dann einen Test unter Einstellungen → Profil → Benachrichtigungen.',
       action: 'Benachrichtigungseinstellungen öffnen',
       footnote: 'Deine anderen Kanäle sind nicht betroffen.',
@@ -106,9 +106,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   en: {
     where: 'Where',
-    open: 'Open in Kept',
-    openKept: 'Open Kept',
-    digestSubject: (count, day) => `Kept: ${count} for ${day}`,
+    open: 'Open in SheepKeep',
+    openKept: 'Open SheepKeep',
+    digestSubject: (count, day) => `SheepKeep: ${count} for ${day}`,
     digestIntro: (day) => `What’s due and expiring, as of ${day}:`,
     reminderFootnote: (url) =>
       `You get this because this kind of reminder is on for you. Change what you receive in Settings → Me → Notifications: ${url}`,
@@ -123,14 +123,14 @@ const WORDS: Record<MailLocale, Words> = {
         'You get this as the owner. To give them access again, invite them from the location’s settings.',
     },
     test: {
-      subject: 'Kept: a test notification',
+      subject: 'SheepKeep: a test notification',
       body: 'This is the test you sent from Settings → Me → Notifications. Reminders you choose to get by email arrive at this address.',
       footnote: 'Nothing else changed.',
     },
     failing: {
-      subject: 'Kept: your webhook isn’t answering',
+      subject: 'SheepKeep: your webhook isn’t answering',
       body: (name) =>
-        `Kept tried for about a day to deliver a reminder to your webhook ${name}, and it never answered, so reminders aren’t reaching it.`,
+        `SheepKeep tried for about a day to deliver a reminder to your webhook ${name}, and it never answered, so reminders aren’t reaching it.`,
       next: 'Check that the address is right and the receiver is running, then send a test from Settings → Me → Notifications.',
       action: 'Open notification settings',
       footnote: 'Your other channels are unaffected.',
@@ -138,9 +138,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   es: {
     where: 'Dónde',
-    open: 'Abrir en Kept',
-    openKept: 'Abrir Kept',
-    digestSubject: (count, day) => `Kept: ${count} para el ${day}`,
+    open: 'Abrir en SheepKeep',
+    openKept: 'Abrir SheepKeep',
+    digestSubject: (count, day) => `SheepKeep: ${count} para el ${day}`,
     digestIntro: (day) => `Lo que vence y expira, al ${day}:`,
     reminderFootnote: (url) =>
       `Recibes esto porque este tipo de recordatorio está activado para ti. Cambia lo que recibes en Configuración → Yo → Notificaciones: ${url}`,
@@ -155,14 +155,14 @@ const WORDS: Record<MailLocale, Words> = {
         'Recibes esto como propietario. Para darles acceso de nuevo, invítalos desde la configuración de la ubicación.',
     },
     test: {
-      subject: 'Kept: una notificación de prueba',
+      subject: 'SheepKeep: una notificación de prueba',
       body: 'Esta es la prueba que enviaste desde Configuración → Yo → Notificaciones. Los recordatorios que elijas recibir por correo llegan a esta dirección.',
       footnote: 'Nada más cambió.',
     },
     failing: {
-      subject: 'Kept: tu webhook no responde',
+      subject: 'SheepKeep: tu webhook no responde',
       body: (name) =>
-        `Kept intentó durante aproximadamente un día entregar un recordatorio a tu webhook ${name} y nunca respondió, así que los recordatorios no llegan.`,
+        `SheepKeep intentó durante aproximadamente un día entregar un recordatorio a tu webhook ${name} y nunca respondió, así que los recordatorios no llegan.`,
       next: 'Verifica que la dirección sea correcta y que el receptor esté funcionando, luego envía una prueba desde Configuración → Yo → Notificaciones.',
       action: 'Abrir configuración de notificaciones',
       footnote: 'Tus otros canales no se ven afectados.',
@@ -170,9 +170,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   fr: {
     where: 'Où',
-    open: 'Ouvrir dans Kept',
-    openKept: 'Ouvrir Kept',
-    digestSubject: (count, day) => `Kept : ${count} pour le ${day}`,
+    open: 'Ouvrir dans SheepKeep',
+    openKept: 'Ouvrir SheepKeep',
+    digestSubject: (count, day) => `SheepKeep : ${count} pour le ${day}`,
     digestIntro: (day) => `Ce qui arrive à échéance ou expire, au ${day} :`,
     reminderFootnote: (url) =>
       `Vous recevez ceci parce que ce type de rappel est activé pour vous. Modifiez ce que vous recevez dans Paramètres → Moi → Notifications : ${url}`,
@@ -187,14 +187,14 @@ const WORDS: Record<MailLocale, Words> = {
         'Vous recevez ceci en tant que propriétaire. Pour lui redonner accès, invitez-le depuis les réglages du lieu.',
     },
     test: {
-      subject: 'Kept : une notification de test',
+      subject: 'SheepKeep : une notification de test',
       body: 'Voici le test envoyé depuis Paramètres → Moi → Notifications. Les rappels que vous choisissez de recevoir par e-mail arriveront à cette adresse.',
       footnote: 'Rien d’autre n’a changé.',
     },
     failing: {
-      subject: 'Kept : votre webhook ne répond pas',
+      subject: 'SheepKeep : votre webhook ne répond pas',
       body: (name) =>
-        `Kept a essayé pendant environ une journée d’envoyer un rappel à votre webhook ${name}, sans jamais obtenir de réponse : les rappels ne lui parviennent pas.`,
+        `SheepKeep a essayé pendant environ une journée d’envoyer un rappel à votre webhook ${name}, sans jamais obtenir de réponse : les rappels ne lui parviennent pas.`,
       next: 'Vérifiez l’adresse et que le récepteur fonctionne, puis envoyez un test depuis Paramètres → Moi → Notifications.',
       action: 'Ouvrir les réglages des notifications',
       footnote: 'Vos autres canaux ne sont pas concernés.',
@@ -202,9 +202,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   it: {
     where: 'Dove',
-    open: 'Apri in Kept',
-    openKept: 'Apri Kept',
-    digestSubject: (count, day) => `Kept: ${count} per il ${day}`,
+    open: 'Apri in SheepKeep',
+    openKept: 'Apri SheepKeep',
+    digestSubject: (count, day) => `SheepKeep: ${count} per il ${day}`,
     digestIntro: (day) => `Cosa è in scadenza o scade, al ${day}:`,
     reminderFootnote: (url) =>
       `Ricevi questo messaggio perché questo tipo di promemoria è attivo per te. Cambia cosa ricevi in Impostazioni → Profilo → Notifiche: ${url}`,
@@ -219,14 +219,14 @@ const WORDS: Record<MailLocale, Words> = {
         'Ricevi questo messaggio in quanto proprietario. Per ridare accesso, invita la persona dalle impostazioni del luogo.',
     },
     test: {
-      subject: 'Kept: una notifica di prova',
+      subject: 'SheepKeep: una notifica di prova',
       body: 'Questa è la prova inviata da Impostazioni → Profilo → Notifiche. I promemoria che scegli di ricevere via email arriveranno a questo indirizzo.',
       footnote: 'Non è cambiato nient’altro.',
     },
     failing: {
-      subject: 'Kept: il tuo webhook non risponde',
+      subject: 'SheepKeep: il tuo webhook non risponde',
       body: (name) =>
-        `Kept ha provato per circa un giorno a inviare un promemoria al tuo webhook ${name}, senza mai ricevere risposta: i promemoria non gli arrivano.`,
+        `SheepKeep ha provato per circa un giorno a inviare un promemoria al tuo webhook ${name}, senza mai ricevere risposta: i promemoria non gli arrivano.`,
       next: 'Controlla che l’indirizzo sia giusto e che il ricevitore sia attivo, poi invia una prova da Impostazioni → Profilo → Notifiche.',
       action: 'Apri le impostazioni delle notifiche',
       footnote: 'Gli altri canali non sono interessati.',
@@ -234,9 +234,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   uk: {
     where: 'Де',
-    open: 'Відкрити в Kept',
-    openKept: 'Відкрити Kept',
-    digestSubject: (count, day) => `Kept: ${count} на ${day}`,
+    open: 'Відкрити в SheepKeep',
+    openKept: 'Відкрити SheepKeep',
+    digestSubject: (count, day) => `SheepKeep: ${count} на ${day}`,
     digestIntro: (day) => `Що настає і що закінчується, станом на ${day}:`,
     reminderFootnote: (url) =>
       `Ви отримуєте це, бо цей вид нагадувань увімкнено для вас. Змінити, що ви отримуєте, можна у розділі «Налаштування → Я → Сповіщення»: ${url}`,
@@ -251,14 +251,14 @@ const WORDS: Record<MailLocale, Words> = {
         'Ви отримуєте це як власник. Щоб знову надати доступ, запросіть цю людину з налаштувань локації.',
     },
     test: {
-      subject: 'Kept: тестове сповіщення',
+      subject: 'SheepKeep: тестове сповіщення',
       body: 'Це тест, який ви надіслали з розділу «Налаштування → Я → Сповіщення». Нагадування, які ви вирішите отримувати електронною поштою, надходитимуть на цю адресу.',
       footnote: 'Нічого іншого не змінилося.',
     },
     failing: {
-      subject: 'Kept: ваш вебхук не відповідає',
+      subject: 'SheepKeep: ваш вебхук не відповідає',
       body: (name) =>
-        `Kept близько доби намагався доставити нагадування на ваш вебхук ${name}, але той так і не відповів, тому нагадування до нього не доходять.`,
+        `SheepKeep близько доби намагався доставити нагадування на ваш вебхук ${name}, але той так і не відповів, тому нагадування до нього не доходять.`,
       next: 'Перевірте, чи правильна адреса і чи працює приймач, а потім надішліть тест з розділу «Налаштування → Я → Сповіщення».',
       action: 'Відкрити налаштування сповіщень',
       footnote: 'Це не стосується ваших інших каналів.',
@@ -266,9 +266,9 @@ const WORDS: Record<MailLocale, Words> = {
   },
   vi: {
     where: 'Ở đâu',
-    open: 'Mở trong Kept',
-    openKept: 'Mở Kept',
-    digestSubject: (count, day) => `Kept: ${count} cho ${day}`,
+    open: 'Mở trong SheepKeep',
+    openKept: 'Mở SheepKeep',
+    digestSubject: (count, day) => `SheepKeep: ${count} cho ${day}`,
     digestIntro: (day) => `Đến hạn và sắp hết hạn, tính đến ${day}:`,
     reminderFootnote: (url) =>
       `Bạn nhận được thông báo này vì loại lời nhắc này đang bật cho bạn. Thay đổi những gì bạn nhận trong Cài đặt → Tôi → Thông báo: ${url}`,
@@ -283,14 +283,14 @@ const WORDS: Record<MailLocale, Words> = {
         'Bạn nhận được thông báo này với tư cách chủ sở hữu. Để cấp lại quyền truy cập, hãy mời họ từ cài đặt của địa điểm.',
     },
     test: {
-      subject: 'Kept: một thông báo thử',
+      subject: 'SheepKeep: một thông báo thử',
       body: 'Đây là thông báo thử bạn gửi từ Cài đặt → Tôi → Thông báo. Những lời nhắc bạn chọn nhận qua email sẽ đến địa chỉ này.',
       footnote: 'Không có gì khác thay đổi.',
     },
     failing: {
-      subject: 'Kept: webhook của bạn không phản hồi',
+      subject: 'SheepKeep: webhook của bạn không phản hồi',
       body: (name) =>
-        `Kept đã thử khoảng một ngày để gửi một lời nhắc đến webhook ${name} của bạn, nhưng webhook không hề phản hồi, nên lời nhắc không đến được.`,
+        `SheepKeep đã thử khoảng một ngày để gửi một lời nhắc đến webhook ${name} của bạn, nhưng webhook không hề phản hồi, nên lời nhắc không đến được.`,
       next: 'Kiểm tra xem địa chỉ có đúng và bên nhận đang chạy không, sau đó gửi thử từ Cài đặt → Tôi → Thông báo.',
       action: 'Mở cài đặt thông báo',
       footnote: 'Các kênh khác của bạn không bị ảnh hưởng.',
@@ -314,7 +314,7 @@ type SummaryWords = {
 
 const SUMMARY: Record<MailLocale, SummaryWords> = {
   ar: {
-    subject: (month) => `Kept: الذكاء الاصطناعي في ${month}`,
+    subject: (month) => `SheepKeep: الذكاء الاصطناعي في ${month}`,
     line: (month, calls, tokens, cost) =>
       `الذكاء الاصطناعي في ${month}: الاستدعاءات ${calls}، والرموز ${tokens}${cost ? `، والتكلفة ≈ ${cost}` : ''}.`,
     unknown: (n) => `لم يكن لـ ${n} من الاستدعاءات سعر، لذا لا تشملها التكلفة.`,
@@ -323,7 +323,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'تصلك هذه الرسالة مرة في الشهر عن الذكاء الاصطناعي الذي دفع حسابك أو مفتاحك الخاص تكلفته. يمكنك إيقافها من الإعدادات ← أنا ← الإشعارات.',
   },
   de: {
-    subject: (month) => `Kept: KI im ${month}`,
+    subject: (month) => `SheepKeep: KI im ${month}`,
     line: (month, calls, tokens, cost) =>
       `KI im ${month}: ${calls} Aufrufe, ${tokens} Tokens${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `${n} Aufrufe hatten keinen Preis, die Kosten enthalten sie nicht.`,
@@ -332,7 +332,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'Du erhältst das einmal im Monat für die KI, die dein Konto oder dein eigener Schlüssel bezahlt hat. Schalte es unter Einstellungen → Profil → Benachrichtigungen aus.',
   },
   en: {
-    subject: (month) => `Kept: AI in ${month}`,
+    subject: (month) => `SheepKeep: AI in ${month}`,
     line: (month, calls, tokens, cost) =>
       `AI in ${month}: ${calls} calls, ${tokens} tokens${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `${n} of the calls had no price, so the cost leaves them out.`,
@@ -341,7 +341,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'You get this once a month for the AI your account or your own key paid for. Turn it off in Settings → Me → Notifications.',
   },
   es: {
-    subject: (month) => `Kept: IA en ${month}`,
+    subject: (month) => `SheepKeep: IA en ${month}`,
     line: (month, calls, tokens, cost) =>
       `IA en ${month}: llamadas: ${calls}, tokens: ${tokens}${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `Llamadas sin precio: ${n}. El costo no las incluye.`,
@@ -350,7 +350,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'Recibes esto una vez al mes por la IA que pagó tu cuenta o tu propia clave. Desactívalo en Configuración → Yo → Notificaciones.',
   },
   fr: {
-    subject: (month) => `Kept : l’IA en ${month}`,
+    subject: (month) => `SheepKeep : l’IA en ${month}`,
     line: (month, calls, tokens, cost) =>
       `L’IA en ${month} : ${calls} appels, ${tokens} jetons${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `${n} appels n’avaient pas de prix : le coût ne les inclut pas.`,
@@ -359,7 +359,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'Vous recevez ce message une fois par mois pour l’IA payée par votre compte ou votre propre clé. Désactivez-le dans Paramètres → Moi → Notifications.',
   },
   it: {
-    subject: (month) => `Kept: l’IA a ${month}`,
+    subject: (month) => `SheepKeep: l’IA a ${month}`,
     line: (month, calls, tokens, cost) =>
       `L’IA a ${month}: ${calls} chiamate, ${tokens} token${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `${n} chiamate non avevano un prezzo, quindi il costo non le conta.`,
@@ -368,7 +368,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'Ricevi questo messaggio una volta al mese per l’IA pagata dal tuo account o dalla tua chiave. Disattivalo in Impostazioni → Profilo → Notifiche.',
   },
   uk: {
-    subject: (month) => `Kept: ШІ, ${month}`,
+    subject: (month) => `SheepKeep: ШІ, ${month}`,
     line: (month, calls, tokens, cost) =>
       `ШІ, ${month}: викликів: ${calls}, токенів: ${tokens}${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `Викликів без ціни: ${n}. Вартість їх не враховує.`,
@@ -377,7 +377,7 @@ const SUMMARY: Record<MailLocale, SummaryWords> = {
       'Ви отримуєте це раз на місяць щодо ШІ, оплаченого вашим обліковим записом чи вашим власним ключем. Вимкнути це можна у розділі «Налаштування → Я → Сповіщення».',
   },
   vi: {
-    subject: (month) => `Kept: AI trong ${month}`,
+    subject: (month) => `SheepKeep: AI trong ${month}`,
     line: (month, calls, tokens, cost) =>
       `AI trong ${month}: ${calls} cuộc gọi, ${tokens} token${cost ? `, ≈ ${cost}` : ''}.`,
     unknown: (n) => `${n} cuộc gọi không có giá tiền, do đó chi phí không tính chúng.`,

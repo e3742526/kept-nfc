@@ -69,7 +69,7 @@ const WRONG_CREDENTIALS = new Set([
 
 const looksLikeEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
-/** A passkey belongs to Kept's own host name (its rpID). Under Home Assistant ingress (D273) the
+/** A passkey belongs to SheepKeep's own host name (its rpID). Under Home Assistant ingress (D273) the
  * page is on Home Assistant's, so passkey sign-in is offered only when the two are the same. On
  * one of KEPT_EXTRA_ADDRESSES (D275) it isn't offered: the server checks the main address. */
 function passkeysHere(): boolean {
@@ -93,7 +93,7 @@ function SignInPage() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  /** The address this Kept is set up for, when it was opened at another one. */
+  /** The address this SheepKeep is set up for, when it was opened at another one. */
   const [mismatch, setMismatch] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ id?: string; password?: string }>({});
   const [linkSentTo, setLinkSentTo] = useState<{ to: string; kind: 'sign-in' | 'reset' } | null>(
@@ -215,7 +215,7 @@ function SignInPage() {
   }
 
   return (
-    <AuthFrame title={t`Sign in to Kept`}>
+    <AuthFrame title={t`Sign in to SheepKeep`}>
       {oidcError ? (
         <OidcError code={oidcError} name={via === 'google' ? 'Google' : oidcName} />
       ) : null}
@@ -332,8 +332,8 @@ function SignInPage() {
       </LinkButton>
       <p className="m-0 text-small text-ink-3">
         <Trans>
-          No account yet? Ask someone who uses this Kept to invite you. The invite link creates your
-          account.
+          No account yet? Ask someone who uses this SheepKeep to invite you. The invite link creates
+          your account.
         </Trans>
       </p>
     </AuthFrame>

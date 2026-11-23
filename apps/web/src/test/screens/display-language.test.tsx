@@ -93,7 +93,7 @@ describe('Settings → Me → Display: the language', () => {
 describe('the sign-in pages', () => {
   it('send nothing: there is no session to keep it on', async () => {
     const { user, mock } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await pick(user, 'Deutsch');
     await waitFor(() => expect(document.documentElement.lang).toBe('de'));
     expect(mock.calls.some((c) => c.method === 'PATCH')).toBe(false);

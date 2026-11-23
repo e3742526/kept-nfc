@@ -83,7 +83,7 @@ function Recipe() {
       <p className="m-0 text-ink-2">
         <Trans>
           Tap the Shortcut at the pump or in the car park, type the odometer, and the reading is in
-          Kept, with undo, as if you'd logged it here.
+          SheepKeep, with undo, as if you'd logged it here.
         </Trans>
       </p>
       {withMeter.length > 1 ? (
@@ -103,7 +103,7 @@ function Recipe() {
       {!meterId && !cars.isPending ? (
         <Notice tone="info">
           <Trans>
-            Add your car to Kept with an odometer reading first; its address appears here then.
+            Add your car to SheepKeep with an odometer reading first; its address appears here then.
           </Trans>
         </Notice>
       ) : null}

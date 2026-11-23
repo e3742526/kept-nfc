@@ -25,9 +25,9 @@ describe('capture route stubs', () => {
   });
 
   it.each([
-    ['/settings/ai', 'What uses AI in Kept'],
-    ['/settings/me/ai', 'What uses AI in Kept'],
-    ['/admin/ai', 'What uses AI in Kept'],
+    ['/settings/ai', 'What uses AI in SheepKeep'],
+    ['/settings/me/ai', 'What uses AI in SheepKeep'],
+    ['/admin/ai', 'What uses AI in SheepKeep'],
     ['/settings/ai/usage', 'Every call'],
     ['/admin/ai/usage', 'Every call'],
   ])('%s is built (T29, T29a), not a placeholder', async (path, text) => {
@@ -39,7 +39,9 @@ describe('capture route stubs', () => {
   it('/l/<code> shows the code on label tape while it answers', async () => {
     await renderApp('/l/zzzzzz');
     expect(await screen.findByRole('img', { name: 'ZZZZZZ' })).toBeInTheDocument();
-    expect(await screen.findByRole('heading', { name: 'Not in your Kept' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Not in your SheepKeep' }),
+    ).toBeInTheDocument();
   });
 
   it('/l/<code> signed out goes to sign in, keeping the code to come back to', async () => {

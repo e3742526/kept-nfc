@@ -230,7 +230,7 @@ function PrintForm({
     if (!isApiError(e)) return errorText(e);
     switch (e.code) {
       case 'rate_limited':
-        return t`Kept makes at most five reports an hour. Try again later.`;
+        return t`SheepKeep makes at most five reports an hour. Try again later.`;
       case 'mail_not_configured':
         return t`Email isn't set up on this server.`;
       case 'no_email_address':
@@ -260,9 +260,9 @@ function PrintForm({
         {repeat !== 'never' ? (
           <p className="m-0 text-small text-ink-2">
             {repeat === 'weekly' ? (
-              <Trans>Kept emails this location's inventory every Monday morning.</Trans>
+              <Trans>SheepKeep emails this location's inventory every Monday morning.</Trans>
             ) : (
-              <Trans>Kept emails this location's inventory on the 1st of every month.</Trans>
+              <Trans>SheepKeep emails this location's inventory on the 1st of every month.</Trans>
             )}
           </p>
         ) : null}

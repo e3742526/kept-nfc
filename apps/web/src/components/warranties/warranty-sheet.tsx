@@ -278,7 +278,7 @@ function WarrantyForm({
       {!registered ? (
         <DatePicker
           label={t`Register by`}
-          description={t`Optional. Kept reminds you before this day.`}
+          description={t`Optional. SheepKeep reminds you before this day.`}
           value={deadline}
           onChange={setDeadline}
         />

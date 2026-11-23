@@ -49,7 +49,7 @@ function stateFor(browser: Browser, size: 'phone' | 'desktop', outDir: string): 
 
 async function signIn(page: Page) {
   await page.goto('/signin');
-  await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
   await page.getByLabel('Email or username', { exact: true }).fill('ibrahim@kept.test');
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -120,7 +120,7 @@ const toast = (page: Page, text: string | RegExp) =>
 
 /** The households seed's two secret values (its router's Wi-Fi password, its safe's combination). */
 const SEED_SECRETS = ['olive-kettle-42', '17-42-08'];
-const HTTPS_NEEDED = 'This needs a secure (HTTPS) connection to Kept.';
+const HTTPS_NEEDED = 'This needs a secure (HTTPS) connection to SheepKeep.';
 
 /** Every entry of a small ZIP, inflated: the central directory, then each local entry. */
 function unzip(zip: Buffer): Map<string, Buffer> {
@@ -313,7 +313,7 @@ for (const size of ['phone', 'desktop'] as const) {
         started.getByRole('listitem').filter({ hasText: 'Staying on my home network' }),
       ).toBeVisible();
       await expect(
-        started.getByRole('listitem').filter({ hasText: 'Put Kept on HTTPS' }),
+        started.getByRole('listitem').filter({ hasText: 'Put SheepKeep on HTTPS' }),
       ).toHaveCount(0);
     });
 
@@ -502,12 +502,12 @@ for (const size of ['phone', 'desktop'] as const) {
       const page = await context.newPage();
       try {
         await page.goto('/signin');
-        await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
         await page.getByLabel('Email or username', { exact: true }).fill('ibrahim@kept.test');
         await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
         await page.getByRole('button', { name: 'Sign in', exact: true }).click();
         await expect(page.getByRole('alert')).toContainText(
-          `This Kept is set up for ${LAN}. Open it there.`,
+          `This SheepKeep is set up for ${LAN}. Open it there.`,
         );
         await expect(page.getByText(/don't match/)).toHaveCount(0);
         const link = page.getByRole('link', { name: `Open ${LAN}` });

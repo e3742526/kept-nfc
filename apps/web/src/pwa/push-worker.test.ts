@@ -40,15 +40,15 @@ describe('readPushPayload', () => {
     });
   });
 
-  it('falls back to "Kept" when there is no payload or it is not JSON', () => {
-    expect(readPushPayload(null)).toEqual({ title: 'Kept' });
+  it('falls back to "SheepKeep" when there is no payload or it is not JSON', () => {
+    expect(readPushPayload(null)).toEqual({ title: 'SheepKeep' });
     const broken = {
       json: () => {
         throw new SyntaxError('not JSON');
       },
     };
-    expect(readPushPayload(broken)).toEqual({ title: 'Kept' });
-    expect(readPushPayload(json({ title: 42, body: '' }))).toEqual({ title: 'Kept' });
+    expect(readPushPayload(broken)).toEqual({ title: 'SheepKeep' });
+    expect(readPushPayload(json({ title: 42, body: '' }))).toEqual({ title: 'SheepKeep' });
   });
 });
 
@@ -60,7 +60,7 @@ describe('clickTarget', () => {
     );
   });
 
-  it('never leaves Kept: another origin, a scheme or nothing opens the centre', () => {
+  it('never leaves SheepKeep: another origin, a scheme or nothing opens the centre', () => {
     const centre = `${ORIGIN}${PUSH_FALLBACK_PATH}`;
     expect(clickTarget('https://evil.example/t/1', ORIGIN)).toBe(centre);
     expect(clickTarget('//evil.example/t/1', ORIGIN)).toBe(centre);
@@ -97,7 +97,7 @@ describe('the push event', () => {
     const { event, waits } = pushEvent(null);
     onPush({ registration: { showNotification } }, event);
     await Promise.all(waits);
-    expect(showNotification).toHaveBeenCalledWith('Kept', {
+    expect(showNotification).toHaveBeenCalledWith('SheepKeep', {
       icon: PUSH_ICON,
       data: { url: PUSH_FALLBACK_PATH },
     });
@@ -130,7 +130,7 @@ describe('the notificationclick event', () => {
     return { close, clients, worker, done: Promise.all(waits) };
   }
 
-  it('focuses the open Kept window and takes it to the URL', async () => {
+  it('focuses the open SheepKeep window and takes it to the URL', async () => {
     const { close, clients, worker, done } = click('/t/2HX9RB', [
       { url: 'https://other.example/' },
       { url: `${ORIGIN}/` },

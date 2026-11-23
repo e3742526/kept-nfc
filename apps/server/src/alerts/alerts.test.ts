@@ -184,7 +184,7 @@ describe('raiseAlert', () => {
       await raiseAlert(viaSmtp, 'failed_jobs_rising', key, { failedLastHour: 8 });
       await raiseAlert(viaSmtp, 'failed_jobs_rising', key, { failedLastHour: 11 });
       const [msg] = await mailpitWait(admin.email);
-      expect(msg?.Subject).toBe('Kept: تتعثّر مهام في الخلفية');
+      expect(msg?.Subject).toBe('SheepKeep: تتعثّر مهام في الخلفية');
       expect(msg?.Text).toContain('http://kept.test/admin/jobs');
       await new Promise((r) => setTimeout(r, 300));
       expect(await mailpitSearch(admin.email)).toHaveLength(1);

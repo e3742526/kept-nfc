@@ -166,7 +166,7 @@ export function CaptureForm({
       setStatus(
         error instanceof StorageFullError
           ? t`Your iPhone storage is full. Free up space and try again.`
-          : t`Kept could not save on this iPhone. Check available storage and try again.`,
+          : t`SheepKeep could not save on this iPhone. Check available storage and try again.`,
       );
     } finally {
       setBusy(false);

@@ -105,7 +105,7 @@ export function DisplayPrefs({ signedIn = false }: { signedIn?: boolean }) {
           onChange={(d) => void switchDigits(locale, d)}
           description={
             <Trans>
-              Used when Kept is in Arabic, for amounts, dates and counts. Short IDs, codes and
+              Used when SheepKeep is in Arabic, for amounts, dates and counts. Short IDs, codes and
               serials always stay 0–9.
             </Trans>
           }

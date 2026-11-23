@@ -144,8 +144,8 @@ function AlertDetail({ alert }: { alert: AdminAlert }) {
         <div>
           {lastOk ? (
             <Trans>
-              Kept last checked for due reminders {lastOk}. Until it checks again, nobody gets new
-              reminders.
+              SheepKeep last checked for due reminders {lastOk}. Until it checks again, nobody gets
+              new reminders.
             </Trans>
           ) : (
             <Trans>No check for due reminders has finished yet, so nobody gets reminders.</Trans>
@@ -175,7 +175,7 @@ function AlertsPage() {
       {open.length === 0 ? (
         <EmptyState icon={<CheckCircleIcon />} title={<Trans>Nothing needs you</Trans>}>
           <Trans>
-            Kept raises an alert here, and emails the instance admins at most once a day, when
+            SheepKeep raises an alert here, and emails the instance admins at most once a day, when
             something on the server needs a person.
           </Trans>
         </EmptyState>

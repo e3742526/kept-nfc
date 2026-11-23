@@ -58,7 +58,7 @@ export function seenThings(outputs: readonly unknown[]): Map<string, SeenThing> 
   return out;
 }
 
-/** A thumbnail URL Kept serves itself (a path on this origin), never one from elsewhere. */
+/** A thumbnail URL SheepKeep serves itself (a path on this origin), never one from elsewhere. */
 export const ownFileUrl = (url: string | null | undefined): url is string =>
   !!url && ((url.startsWith('/') && !url.startsWith('//')) || url.startsWith('data:image/'));
 

@@ -160,8 +160,8 @@ export function HomeboxChoicesStep({
           {connectionOff ? (
             <Notice tone="warn">
               <Trans>
-                Homebox's currency, <bdi dir="ltr">{fromConnection}</bdi>, isn't turned on in Kept.
-                An instance admin can turn it on in Admin → Currencies.
+                Homebox's currency, <bdi dir="ltr">{fromConnection}</bdi>, isn't turned on in
+                SheepKeep. An instance admin can turn it on in Admin → Currencies.
               </Trans>
             </Notice>
           ) : null}
@@ -315,8 +315,8 @@ export function HomeboxChoicesStep({
       {!hints ? (
         <Notice tone="info">
           <Trans>
-            Homebox's types are matched to Kept's by name, and its custom fields are added to their
-            types. The check shows what that does before anything is imported.
+            Homebox's types are matched to SheepKeep's by name, and its custom fields are added to
+            their types. The check shows what that does before anything is imported.
           </Trans>
         </Notice>
       ) : null}
@@ -390,7 +390,7 @@ function TypeMapping({
       values: {
         from: 'static',
         options: [
-          { value: 'matched', label: t`A Kept type`, count: count('matched') },
+          { value: 'matched', label: t`A SheepKeep type`, count: count('matched') },
           { value: 'create', label: t`A new type`, count: count('create') },
           { value: 'none', label: t`No type`, count: count('none') },
         ],
@@ -458,7 +458,7 @@ function TypeMapping({
   );
 }
 
-/** A Homebox type's Kept type: No type, New type… (named below), a Kept type, or a name typed
+/** A Homebox type's SheepKeep type: No type, New type… (named below), a SheepKeep type, or a name typed
  * here that no choice has, offered as a new type of that name (#320): the same as New type… and
  * typing the name. */
 function TypePicker({
@@ -497,7 +497,7 @@ function TypePicker({
       : options;
   return (
     <Combobox
-      aria-label={t`Kept type for ${name}`}
+      aria-label={t`SheepKeep type for ${name}`}
       items={items}
       selectedKey={
         state === 'matched' && choice && 'typeId' in choice

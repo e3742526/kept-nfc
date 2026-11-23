@@ -227,7 +227,7 @@ async function scan(rawValue: string, format = 'qr_code') {
 const pendingOps = async (store: MemoryStore) => (await store.pending()).map((e) => e.op);
 
 describe('scan outcomes, online', () => {
-  it('a Kept label you can see opens at once, from any host, and is marked seen', async () => {
+  it('a SheepKeep label you can see opens at once, from any host, and is marked seen', async () => {
     const { onOpen } = await renderScan();
     await scan('https://old.example/l/B0X3QF');
     await waitFor(() =>
@@ -265,11 +265,13 @@ describe('scan outcomes, online', () => {
     );
   });
 
-  it('"Not in your Kept" answers a code the server will not show, and never says why', async () => {
+  it('"Not in your SheepKeep" answers a code the server will not show, and never says why', async () => {
     const { user, onExit } = await renderScan();
     await scan('https://kept.example/l/ZZZZZZ');
     const sheet = await screen.findByRole('region', { name: 'Scan result' });
-    expect(within(sheet).getByRole('heading', { name: 'Not in your Kept' })).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole('heading', { name: 'Not in your SheepKeep' }),
+    ).toBeInTheDocument();
     expect(
       within(sheet).getByText('Nothing in the locations you belong to has this label.'),
     ).toBeInTheDocument();
@@ -439,7 +441,7 @@ describe('scan outcomes, online', () => {
     expect(within(result).getByText('4006381333931')).toBeInTheDocument();
     expect(within(result).getByText('K7Q2X9')).toBeInTheDocument();
     expect(
-      within(result).getByText('Kept stores the barcode and serial number with it.'),
+      within(result).getByText('SheepKeep stores the barcode and serial number with it.'),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Add as a new thing' }));
     await waitFor(() => expect(screen.getByRole('radio', { name: 'Unplaced' })).toBeChecked());
@@ -506,10 +508,12 @@ describe('scan outcomes, online', () => {
     );
   });
 
-  it('any other code is "Not a Kept label", its text shown and never a link', async () => {
+  it('any other code is "Not a SheepKeep label", its text shown and never a link', async () => {
     await renderScan();
     await scan('https://example.com/promo?x=1');
-    expect(await screen.findByRole('heading', { name: 'Not a Kept label' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Not a SheepKeep label' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('https://example.com/promo?x=1')).toBeInTheDocument();
     expect(screen.queryByRole('link')).toBeNull();
   });
@@ -573,7 +577,7 @@ describe('scan outcomes, offline', () => {
     expect(mock.calls).toHaveLength(0);
   });
 
-  it('a code not on this phone waits, then gets the same "Not in your Kept" once online', async () => {
+  it('a code not on this phone waits, then gets the same "Not in your SheepKeep" once online', async () => {
     const store = await phone();
     const first = await renderScan({ store, online: false });
     await scan('ZZZZZZ');
@@ -587,7 +591,9 @@ describe('scan outcomes, offline', () => {
     const { user } = await renderScan({ store, online: true });
     expect(await screen.findByText('1 scan from while you were offline')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Check now' }));
-    expect(await screen.findByRole('heading', { name: 'Not in your Kept' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: 'Not in your SheepKeep' }),
+    ).toBeInTheDocument();
     expect(
       screen.getByText('Nothing in the locations you belong to has this label.'),
     ).toBeInTheDocument();
@@ -797,13 +803,13 @@ describe('"Type the code"', () => {
       'hello{Enter}',
     );
     expect(
-      await screen.findByText('A Kept code is 6 letters and digits, like 7KQ‑4MZ.'),
+      await screen.findByText('A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ.'),
     ).toBeInTheDocument();
   });
 
   it('leads when the camera cannot be used', async () => {
     await renderScan({ camera: { secure: false, media: null } });
-    expect(await screen.findByText("Kept can't scan here")).toBeInTheDocument();
+    expect(await screen.findByText("SheepKeep can't scan here")).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Type the code' })).toBeInTheDocument();
   });
 
@@ -813,11 +819,11 @@ describe('"Type the code"', () => {
       .mockRejectedValueOnce(new DOMException('Could not start video source', 'NotReadableError'))
       .mockResolvedValue({ getTracks: () => [] });
     const { user } = await renderScan({ camera: { secure: true, media: { getUserMedia } } });
-    expect(await screen.findByText("Kept can't scan here")).toBeInTheDocument();
-    expect(screen.queryByText("Point at a Kept label, or a product's barcode.")).toBeNull();
+    expect(await screen.findByText("SheepKeep can't scan here")).toBeInTheDocument();
+    expect(screen.queryByText("Point at a SheepKeep label, or a product's barcode.")).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(
-      await screen.findByText("Point at a Kept label, or a product's barcode."),
+      await screen.findByText("Point at a SheepKeep label, or a product's barcode."),
     ).toBeInTheDocument();
     expect(getUserMedia).toHaveBeenCalledTimes(2);
   });

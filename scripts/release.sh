@@ -53,8 +53,7 @@
 #      script never commits, tags or pushes to git.
 #
 # Settings (environment):
-#   KEPT_RELEASE_REGISTRY    the image path; default ghcr.io/keptinventory/kept, INFERRED from the
-#                            Dockerfile's SOURCE default and to be confirmed; --registry
+#   KEPT_RELEASE_REGISTRY    the image path for a real release, or pass --registry.
 #   KEPT_RELEASE_CHART_REPO  where the chart goes; default <registry's parent>/charts
 #   KEPT_COSIGN_KEY          the private key file (a real run; never in the repository)
 #   COSIGN_PASSWORD          its password, read by cosign from the environment, never printed
@@ -83,7 +82,6 @@ cd "$repo"
 # shellcheck source=tools.sh
 source "$repo/scripts/tools.sh"
 
-DEFAULT_REGISTRY=ghcr.io/keptinventory/kept
 # Pins (Docker Hub, multi-arch index digests).
 BUILDKIT_IMAGE=moby/buildkit:v0.33.1@sha256:cec9f139f45e93c5c69c60f8b07cfad9f43f4ef6b6a6cd917527fea5ff2e3dea
 REGISTRY_IMAGE=registry:3.1.2@sha256:ddf754342cfc8acc51a56d5d0ab6af06826461864460636d8bd5c546dab2a7b8
@@ -332,13 +330,12 @@ if [[ -n $dry ]]; then
   builder=kept-release-dry-$$
   note "registry $registry (container $reg_container), throwaway key in $work, builder $builder"
 else
-  registry=${registry:-$DEFAULT_REGISTRY}
+  [[ -n $registry ]] || die "set KEPT_RELEASE_REGISTRY or pass --registry for the fork image"
   chart_repo=${KEPT_RELEASE_CHART_REPO:-$(dirname "$registry")/charts}
   http_registry=
   cosign_key=${KEPT_COSIGN_KEY:-}
   cosign_pub=$repo/cosign.pub
   builder=${KEPT_RELEASE_BUILDER:-kept-release}
-  [[ $registry == "$DEFAULT_REGISTRY" ]] && note "registry $registry (the inferred default, plan Q14)"
 fi
 # imagetools reads the registry settings (a dry run's plain-HTTP registry) from the builder; the
 # publish job builds nothing and has none, and its registry is GHCR.

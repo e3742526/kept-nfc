@@ -126,7 +126,7 @@ export function useOriginalFile(f: OriginalFile | null): OriginalHandle {
       toast({
         tone: 'danger',
         title: t`This file can't be shared from the installed app`,
-        description: t`Open Kept in Safari to download it.`,
+        description: t`Open SheepKeep in Safari to download it.`,
       });
       return;
     }

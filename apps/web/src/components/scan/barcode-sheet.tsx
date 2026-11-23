@@ -230,7 +230,7 @@ export function BarcodeSheet({
           <WherePicker store={store} label={t`Where it is`} value={place} onChange={pick} />
           {!store ? (
             <Notice tone="info">
-              <Trans>Opening this phone's copy of your Kept…</Trans>
+              <Trans>Opening this phone's copy of your SheepKeep…</Trans>
             </Notice>
           ) : null}
           <div className="grid grid-cols-2 gap-2">
@@ -250,13 +250,13 @@ export function BarcodeSheet({
         <>
           <p className="m-0 text-ink-2">
             {field === 'serial' ? (
-              <Trans>Kept stores it as the serial number.</Trans>
+              <Trans>SheepKeep stores it as the serial number.</Trans>
             ) : field === 'either' ? (
-              <Trans>Kept stores it as the serial number or the barcode: you pick.</Trans>
+              <Trans>SheepKeep stores it as the serial number or the barcode: you pick.</Trans>
             ) : read.serial ? (
-              <Trans>Kept stores the barcode and serial number with it.</Trans>
+              <Trans>SheepKeep stores the barcode and serial number with it.</Trans>
             ) : (
-              <Trans>Kept stores the barcode with it.</Trans>
+              <Trans>SheepKeep stores the barcode with it.</Trans>
             )}
           </p>
           <Button onPress={() => setAdding(true)}>

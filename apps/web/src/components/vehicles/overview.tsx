@@ -356,14 +356,14 @@ export function EstimateNote({
       {next ? (
         <Plural
           value={nudgeDays}
-          one={`A fresh one keeps ~${next} honest; Kept nudges you at # day.`}
-          other={`A fresh one keeps ~${next} honest; Kept nudges you at # days.`}
+          one={`A fresh one keeps ~${next} honest; SheepKeep nudges you at # day.`}
+          other={`A fresh one keeps ~${next} honest; SheepKeep nudges you at # days.`}
         />
       ) : (
         <Plural
           value={nudgeDays}
-          one="Kept nudges you at # day."
-          other="Kept nudges you at # days."
+          one="SheepKeep nudges you at # day."
+          other="SheepKeep nudges you at # days."
         />
       )}
     </p>

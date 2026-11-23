@@ -65,7 +65,7 @@ export type SubjectRef = {
   shortCode?: string | null;
 };
 
-/** A person in the account's registry: a name and whether they use Kept. Never contact details. */
+/** A person in the account's registry: a name and whether they use SheepKeep. Never contact details. */
 export type PersonRef = { id: string; name: string; isMember: boolean };
 
 /**

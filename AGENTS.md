@@ -1,4 +1,4 @@
-# Kept contributor workflow
+# SheepKeep contributor workflow
 
 - Use [CONTRIBUTING.md](CONTRIBUTING.md) for project conventions and the [local setup guide](apps/docs/src/content/docs/developers/local-setup.md) for development services. Use Node 24 and the pnpm version pinned in `package.json`.
 - Search the private `agent-skills` catalog before applying a reusable workflow. Pass this checkout's root as `repo_path` when searching.

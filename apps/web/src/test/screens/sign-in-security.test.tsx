@@ -276,7 +276,7 @@ describe('adding a passkey', () => {
       expect(screen.queryByRole('button', { name: 'Add a passkey' })).toBeNull();
       expect(
         screen.getByText(
-          "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put Kept on HTTPS to add one.",
+          "Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put SheepKeep on HTTPS to add one.",
         ),
       ).toBeInTheDocument();
       expect(screen.queryByText(/This browser can't add a passkey/)).toBeNull();

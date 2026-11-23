@@ -31,7 +31,7 @@ describe('the OAuth consent page', () => {
   it('names the app as it calls itself, starts with one location, read only, and allows', async () => {
     const to = vi.spyOn(leave, 'to').mockImplementation(() => undefined);
     const { user, mock } = await renderApp(at);
-    expect(await findHeading('Claude wants to use your Kept')).toBeInTheDocument();
+    expect(await findHeading('Claude wants to use your SheepKeep')).toBeInTheDocument();
     expect(screen.getByText(/the name the app gives itself/)).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Read only' })).toBeChecked();
     const boxes = screen.getAllByRole('checkbox');
@@ -52,7 +52,7 @@ describe('the OAuth consent page', () => {
   it('warns with more than one location and denies', async () => {
     const to = vi.spyOn(leave, 'to').mockImplementation(() => undefined);
     const { user } = await renderApp(at);
-    await findHeading('Claude wants to use your Kept');
+    await findHeading('Claude wants to use your SheepKeep');
     const unchecked = screen
       .getAllByRole('checkbox')
       .find((b) => !(b as HTMLInputElement).checked) as HTMLElement;
@@ -64,7 +64,7 @@ describe('the OAuth consent page', () => {
 
   it('says the app stays signed in after signing out here, and what makes it sign in again', async () => {
     await renderApp(at);
-    await findHeading('Claude wants to use your Kept');
+    await findHeading('Claude wants to use your SheepKeep');
     expect(
       screen.getByText(
         /It stays signed in after you sign out of this browser; anything that signs out all your other devices makes it sign in again\./,
@@ -104,7 +104,9 @@ describe('Sign in with OIDC', () => {
 
   it('explains invites when no account is linked', async () => {
     await renderApp('/signin?error=account_not_linked', { state: signedOutScenario() });
-    expect(await screen.findByText('No Kept account uses that sign-in yet')).toBeInTheDocument();
+    expect(
+      await screen.findByText('No SheepKeep account uses that sign-in yet'),
+    ).toBeInTheDocument();
     expect(screen.getByText(/open the invite/)).toBeInTheDocument();
   });
 
@@ -182,7 +184,7 @@ describe('location webhooks', () => {
     const done = within(await screen.findByRole('dialog', { name: 'Signing secret' }));
     const secret = document.querySelector('[data-webhook-secret]')?.textContent ?? '';
     expect(secret.length).toBeGreaterThan(20);
-    expect(done.getByText(/Kept-Signature/)).toBeInTheDocument();
+    expect(done.getByText(/SheepKeep-Signature/)).toBeInTheDocument();
     await user.click(done.getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(document.body.textContent).not.toContain(secret);
@@ -207,7 +209,7 @@ describe('location webhooks', () => {
     await user.type(sheet.getByRole('textbox', { name: 'Send to' }), 'https://hooks.invalid/kept');
     await user.click(sheet.getByRole('button', { name: 'Add webhook' }));
     expect(
-      await sheet.findByText("Kept can't reach that address. Check it for typos."),
+      await sheet.findByText("SheepKeep can't reach that address. Check it for typos."),
     ).toBeInTheDocument();
     expect(sheet.queryByText(/Some of that isn't valid/)).toBeNull();
   });

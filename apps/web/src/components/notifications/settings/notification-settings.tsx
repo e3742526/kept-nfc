@@ -30,10 +30,10 @@ export function NotificationSettings() {
   const s = settings.data;
   return (
     <>
-      <Section id="channels" title={<Trans>How Kept reaches you</Trans>}>
+      <Section id="channels" title={<Trans>How SheepKeep reaches you</Trans>}>
         <p className="m-0 text-small text-ink-2 [text-wrap:pretty]">
           <Trans>
-            Everything lands in the notification centre. These reach you outside Kept as well.
+            Everything lands in the notification centre. These reach you outside SheepKeep as well.
           </Trans>
         </p>
         <Channels settings={s} />

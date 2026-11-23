@@ -859,7 +859,7 @@ function useReadLabel(): (r: SessionRead) => string {
       case 'unmatched':
         return code ? t`Blank label ${code}` : t`Not matched: ${text}`;
       case 'not_in_your_kept':
-        return t`Not in your Kept`;
+        return t`Not in your SheepKeep`;
       case 'check_later':
         return t`Check later: ${text}`;
       default:

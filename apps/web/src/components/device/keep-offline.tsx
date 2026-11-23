@@ -51,7 +51,7 @@ export function KeepOffline({
     <div className="grid gap-3">
       <Notice tone="warn" title={<Trans>If this phone is lost</Trans>}>
         <Trans>
-          Whoever unlocks Kept sees prices and documents for these locations. The PIN keeps out
+          Whoever unlocks SheepKeep sees prices and documents for these locations. The PIN keeps out
           someone holding the phone, not someone who has copied the browser’s storage.
         </Trans>
       </Notice>
@@ -172,8 +172,8 @@ function KeepRow({
     const ok = await confirm({
       title: t`Keep ${location.name} available offline?`,
       body: about
-        ? t`Whoever unlocks Kept on this phone sees prices and documents for this location. About ${size(about.totalBytes)} to download.`
-        : t`Whoever unlocks Kept on this phone sees prices and documents for this location.`,
+        ? t`Whoever unlocks SheepKeep on this phone sees prices and documents for this location. About ${size(about.totalBytes)} to download.`
+        : t`Whoever unlocks SheepKeep on this phone sees prices and documents for this location.`,
       confirmLabel: t`Keep offline`,
     });
     if (ok) await keep();

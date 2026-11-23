@@ -41,7 +41,11 @@ export function UsageTotals({ usage }: { usage: AiUsage }) {
           value={fmt.num(totals.calls)}
           note={
             held > 0 ? (
-              <Plural value={held} one="# held back by Kept" other="# held back by Kept" />
+              <Plural
+                value={held}
+                one="# held back by SheepKeep"
+                other="# held back by SheepKeep"
+              />
             ) : undefined
           }
         />

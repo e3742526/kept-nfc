@@ -120,8 +120,8 @@ function Passkeys({ state }: { state: SignInState }) {
             </Trans>
           ) : servedOverHttp() ? (
             <Trans>
-              Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put Kept on
-              HTTPS to add one.
+              Passkeys need HTTPS. On a plain-HTTP address browsers don't offer them; put SheepKeep
+              on HTTPS to add one.
             </Trans>
           ) : (
             <Trans>This browser can't add a passkey. Try another browser or device.</Trans>
@@ -273,7 +273,7 @@ function AddPasskeySheet({
           <p className="m-0 text-ink-2">
             <Trans>
               Your browser asks for Face ID, a fingerprint or your screen lock. The passkey is kept
-              by this device or your password manager; Kept never sees it.
+              by this device or your password manager; SheepKeep never sees it.
             </Trans>
           </p>
           <TextField

@@ -181,7 +181,7 @@ function EmptyIntro() {
       <p className="m-0 [text-wrap:pretty]">
         <Trans>
           Ask where something is or what's due, or ask for a change. Nothing changes until you
-          confirm the card Kept shows you.
+          confirm the card SheepKeep shows you.
         </Trans>
       </p>
       <p className="m-0 [text-wrap:pretty]">

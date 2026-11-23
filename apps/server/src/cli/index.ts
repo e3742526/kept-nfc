@@ -27,7 +27,7 @@ import { runMigrations } from '../db/migrate.js';
 import { closePools, createPools } from '../db/pools.js';
 import { logMailer, type Mailer } from '../mail/mailer.js';
 import { createMailer, profileLocaleLookup } from '../mail/transport.js';
-// The seed builds a whole Kept app (seed/index.ts): loaded only by `kept admin seed`, so every
+// The seed builds a whole SheepKeep app (seed/index.ts): loaded only by `kept admin seed`, so every
 // other command starts without it (about 44 MiB less, measured on 1.14.2).
 import { SCENARIOS, type Scenario } from '../seed/scenarios.js';
 import { setupCodeLine } from '../setup/setup-code.js';
@@ -97,7 +97,7 @@ function cliMailer(env: ReturnType<typeof loadAdminEnv>): Mailer {
 /**
  * Whether `kept migrate` skips the pre-upgrade snapshot: `--skip-snapshot`,
  * KEPT_UPGRADE_SNAPSHOT=off, or the Home Assistant app (KEPT_HA=1, D272). The app has no target to
- * snapshot to (Admin → Backups refuses one: Home Assistant's backups hold Kept, and Home Assistant
+ * snapshot to (Admin → Backups refuses one: Home Assistant's backups hold SheepKeep, and Home Assistant
  * offers one before an update), so a snapshot would only log "NO BACKUP IS CONFIGURED" and leave
  * Admin → Status saying it upgraded without a backup, on every update.
  */
@@ -110,7 +110,7 @@ export function skipUpgradeSnapshot(
 
 export function buildCli(): Command {
   const program = new Command();
-  program.name('kept').description('Kept operator CLI');
+  program.name('kept').description('SheepKeep operator CLI');
 
   program
     .command('migrate')
@@ -141,7 +141,7 @@ export function buildCli(): Command {
   program
     .command('init')
     .description(
-      'Write .env for a Compose install: asks the address Kept will be opened at, presets the setup code and shows it',
+      'Write .env for a Compose install: asks the address SheepKeep will be opened at, presets the setup code and shows it',
     )
     .option('--url <address>', 'the address, without being asked (e.g. http://kept.home.arpa:8080)')
     .option('--dir <dir>', 'where .env goes (default: the current directory)')
@@ -182,7 +182,7 @@ export function buildCli(): Command {
   program
     .command('bootstrap')
     .description(
-      "Create or update Kept's four database logins and its extensions, as the Postgres superuser (Compose's bootstrap service, on every start)",
+      "Create or update SheepKeep's four database logins and its extensions, as the Postgres superuser (Compose's bootstrap service, on every start)",
     )
     .action(async () => {
       // libpq's variables, as charts/kept/files/roles.sh reads them: PGHOST, PGPORT, PGUSER,
@@ -220,7 +220,7 @@ export function buildCli(): Command {
       console.log(
         issued.url
           ? `Open ${issued.url} to choose a new password.`
-          : `Open /auth/reset#token=${issued.code} on this Kept's address to choose a new password.`,
+          : `Open /auth/reset#token=${issued.code} on this SheepKeep's address to choose a new password.`,
       );
     });
 
@@ -452,7 +452,7 @@ export function buildCli(): Command {
       );
     });
 
-  // From 1.13.0: a personal token from the server, for MCP clients and Home Assistant on a Kept
+  // From 1.13.0: a personal token from the server, for MCP clients and Home Assistant on a SheepKeep
   // served over plain HTTP, where the app can't make one (cli/token.ts).
   const token = admin
     .command('token')

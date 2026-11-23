@@ -11,7 +11,7 @@ export function downloadsAreOff(): void {
   toast({ title: t`Downloads are off in this demo.` });
 }
 
-/** One of Kept's own file URLs on this page's origin. */
+/** One of SheepKeep's own file URLs on this page's origin. */
 export function isServerFile(href: string, origin: string = location.origin): boolean {
   try {
     const url = new URL(href, origin);

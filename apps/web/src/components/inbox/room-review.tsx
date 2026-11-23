@@ -168,7 +168,7 @@ export function RoomReview({ item, current, blocked }: ItemProps) {
               </Trans>
             )
           ) : room.status === 'failed' ? (
-            <Trans>Kept couldn't read these photos. Retry, or take them again.</Trans>
+            <Trans>SheepKeep couldn't read these photos. Retry, or take them again.</Trans>
           ) : room.status === 'off' ? (
             <Trans>
               AI capture is off here, so nothing was listed. The photos wait on <bdi>{name}</bdi>.
@@ -253,9 +253,9 @@ export function RoomReview({ item, current, blocked }: ItemProps) {
           </section>
         ) : null}
         {room.already.length > 0 ? (
-          <section aria-label={t`Already in Kept`} className="grid gap-1">
+          <section aria-label={t`Already in SheepKeep`} className="grid gap-1">
             <h3 className="m-0 font-semibold text-ink text-small">
-              <Trans>Already in Kept</Trans>
+              <Trans>Already in SheepKeep</Trans>
             </h3>
             <ul className="m-0 grid list-none p-0">
               {room.already.map((a) => (
@@ -312,7 +312,12 @@ function RoomSummary({ room }: { room: InboxRoom }) {
       other: '# new things to review below',
     }),
     ...(room.already.length > 0
-      ? [plural(room.already.length, { one: '# already in Kept', other: '# already in Kept' })]
+      ? [
+          plural(room.already.length, {
+            one: '# already in SheepKeep',
+            other: '# already in SheepKeep',
+          }),
+        ]
       : []),
     ...(room.places.length > 0
       ? [

@@ -251,8 +251,8 @@ function ConvertForm({
         >
           {me.data?.user.instanceAdmin ? (
             <Trans>
-              Secrets are values Kept must be able to recover. Save the recovery kit on the status
-              page, then make the field secret again.
+              Secrets are values SheepKeep must be able to recover. Save the recovery kit on the
+              status page, then make the field secret again.
             </Trans>
           ) : (
             <Trans>

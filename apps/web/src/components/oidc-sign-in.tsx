@@ -124,11 +124,11 @@ export function OidcError({ code, name }: { code: string; name: string | null })
   switch (code) {
     case 'account_not_linked':
       return (
-        <Notice tone="warn" title={<Trans>No Kept account uses that sign-in yet</Trans>}>
+        <Notice tone="warn" title={<Trans>No SheepKeep account uses that sign-in yet</Trans>}>
           <Trans>
-            Kept never matches accounts by their email. If you're new here, open the invite someone
-            sent you and join with <bdi>{who}</bdi> from there. If you already have an account, sign
-            in another way.
+            SheepKeep never matches accounts by their email. If you're new here, open the invite
+            someone sent you and join with <bdi>{who}</bdi> from there. If you already have an
+            account, sign in another way.
           </Trans>
         </Notice>
       );
@@ -136,8 +136,8 @@ export function OidcError({ code, name }: { code: string; name: string | null })
       return (
         <Notice tone="warn" title={<Trans>There's no account for you here yet</Trans>}>
           <Trans>
-            This Kept lets people in by invite. Ask someone who uses it to invite you, then join
-            from the invite link.
+            This SheepKeep lets people in by invite. Ask someone who uses it to invite you, then
+            join from the invite link.
           </Trans>
         </Notice>
       );
@@ -145,15 +145,15 @@ export function OidcError({ code, name }: { code: string; name: string | null })
       return (
         <Notice tone="warn" title={<Trans>Your email isn't confirmed</Trans>}>
           <Trans>
-            <bdi>{who}</bdi> hasn't confirmed your email address, so Kept can't use it. Confirm it
-            there, then try again.
+            <bdi>{who}</bdi> hasn't confirmed your email address, so SheepKeep can't use it. Confirm
+            it there, then try again.
           </Trans>
         </Notice>
       );
     case 'email_undeliverable':
       return (
         <Notice tone="warn" title={<Trans>That email address can't be used</Trans>}>
-          <Trans>Kept needs an address that can receive mail for an account.</Trans>
+          <Trans>SheepKeep needs an address that can receive mail for an account.</Trans>
         </Notice>
       );
     case 'invite_email_mismatch':

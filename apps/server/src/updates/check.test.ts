@@ -111,7 +111,7 @@ describe('checkForUpdate', () => {
     const [req] = seen;
     expect(req?.method).toBe('GET');
     expect(req?.url).toBe('/repos/bruce/kept/releases/latest');
-    expect(req?.headers['user-agent']).toBe('Kept');
+    expect(req?.headers['user-agent']).toBe('SheepKeep');
     expect(req?.headers.accept).toBe('application/vnd.github+json');
     expect(req?.headers['x-github-api-version']).toBe('2026-03-10');
     // Nothing that identifies the instance or its version: no cookie, no auth, no referer, and
@@ -347,7 +347,7 @@ describe('the scheduled check, on the database', () => {
   });
 
   // #552: an answer stored while an older version ran outlived the upgrade, so a server running
-  // 1.14.7 said "Kept 1.14.7 is available".
+  // 1.14.7 said "SheepKeep 1.14.7 is available".
   const storeRaw = (value: unknown) =>
     inTx((c) =>
       c.query(

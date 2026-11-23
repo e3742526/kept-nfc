@@ -354,22 +354,22 @@ function topIndex(entries: ReadableEntry[], at: Date): string {
       )}</td><td data-label="Places">${n(e.places)}</td><td data-label="Note">${note}</td></tr>`;
     })
     .join('\n');
-  const body = `<h1><span class="tape">Kept</span> backup: every location</h1>
-<p class="muted">Written ${esc(at.toISOString().replace('T', ' ').slice(0, 16))} UTC. Each location opens in any browser, with no network and no Kept.</p>
+  const body = `<h1><span class="tape">SheepKeep</span> backup: every location</h1>
+<p class="muted">Written ${esc(at.toISOString().replace('T', ' ').slice(0, 16))} UTC. Each location opens in any browser, with no network and no SheepKeep.</p>
 <table>
 <thead><tr><th>Location</th><th>Kind</th><th>Owner</th><th>Things</th><th>Places</th><th></th></tr></thead>
 <tbody>
 ${rows || '<tr><td colspan="6">No locations.</td></tr>'}
 </tbody>
 </table>`;
-  return page({ lang: 'en', dir: 'ltr' }, 'Kept backup', body);
+  return page({ lang: 'en', dir: 'ltr' }, 'SheepKeep backup', body);
 }
 
-const README = `Kept: the readable copy of every location
+const README = `SheepKeep: the readable copy of every location
 ==========================================
 
-This folder is part of a Kept backup. It needs nothing but a web browser and, for the .csv
-files, a spreadsheet: no Kept, no database, no network.
+This folder is part of a SheepKeep backup. It needs nothing but a web browser and, for the .csv
+files, a spreadsheet: no SheepKeep, no database, no network.
 
   index.html            every location in this backup; open it in a browser
   <id>/index.html       one location: its places and things, with photos and documents
@@ -379,9 +379,9 @@ files, a spreadsheet: no Kept, no database, no network.
 
 Each location is written as its owner sees it. Secrets (safe combinations, alarm codes and the
 like) are never in this copy; they are only in the encrypted database dump beside it
-(backup/db/), which Kept's recovery kit opens.
+(backup/db/), which SheepKeep's recovery kit opens.
 
-To get this folder out of a restic backup without Kept:
+To get this folder out of a restic backup without SheepKeep:
 
   restic -r <repository> restore latest --target ./kept-backup --include /backup/readable
 

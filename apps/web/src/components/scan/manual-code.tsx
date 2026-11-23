@@ -24,7 +24,8 @@ export function ManualCode({
   const [tried, setTried] = useState(false);
   const code = normaliseInputCode(raw);
   const valid = isShortCode(code);
-  const error = tried && !valid ? t`A Kept code is 6 letters and digits, like 7KQ‑4MZ.` : undefined;
+  const error =
+    tried && !valid ? t`A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ.` : undefined;
   return (
     <Form
       aria-label={t`Type the code`}

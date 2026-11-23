@@ -23,7 +23,7 @@
  */
 import type { Box, Detect, Detected } from './label-recogniser';
 
-/** Read on every frame: Kept labels, product barcodes and Code 128 (BarcodeDetector names). */
+/** Read on every frame: SheepKeep labels, product barcodes and Code 128 (BarcodeDetector names). */
 export const HOT_FORMATS = ['qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] as const;
 
 /** What the scanner reads (BarcodeDetector format names): the one list, main thread and worker. */

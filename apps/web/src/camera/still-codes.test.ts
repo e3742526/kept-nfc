@@ -12,7 +12,7 @@ const decode = async (b: Blob) => ({
 const draw = (img: { source: CanvasImageSource }) => img.source as unknown as HTMLCanvasElement;
 
 describe('keptCodesIn', () => {
-  it('reads every Kept label in every photo, once each, and nothing else', async () => {
+  it('reads every SheepKeep label in every photo, once each, and nothing else', async () => {
     const found: Record<string, Detected[]> = {
       a: [
         { rawValue: 'https://kept.example/l/K7D2QX', format: 'qr_code' },

@@ -85,7 +85,7 @@ export type UpdateTokenBody = { name: string };
 
 // ----- linking Home Assistant (#376; apps/server/src/homeassistant/routes.ts) --------------------
 
-/** A request from the Kept integration in Home Assistant, waiting for a person. `code` is shown in
+/** A request from the SheepKeep integration in Home Assistant, waiting for a person. `code` is shown in
  * Home Assistant too, so the person approves the request they started. */
 export type HomeAssistantLinkRequest = {
   id: string;
@@ -104,7 +104,7 @@ export type ApproveLinkBody = Pick<
   'scope' | 'locationIds' | 'confirmCrossLocation'
 >;
 
-/** 202: approved. Kept makes the token when Home Assistant collects it, so it appears in the list
+/** 202: approved. SheepKeep makes the token when Home Assistant collects it, so it appears in the list
  * then; its secret goes only to Home Assistant. */
 export type ApprovedLink = { state: 'approved' };
 export type ApproveLinkResult = ApprovedLink | CrossLocationWarning;

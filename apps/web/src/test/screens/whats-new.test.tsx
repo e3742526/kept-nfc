@@ -81,7 +81,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const card = () => screen.queryByRole('dialog', { name: "What's new in Kept" });
+const card = () => screen.queryByRole('dialog', { name: "What's new in SheepKeep" });
 /** The slide on screen: the one group in the accessibility tree. */
 const current = () => screen.getByRole('group', { name: /^Slide \d of 3$/ });
 const videoOf = (el: HTMLElement) => el.querySelector('video');
@@ -102,7 +102,7 @@ function reducedMotion() {
 describe("What's new", () => {
   it('shows the release one slide at a time, and Got it on the last records the version', async () => {
     const { user, mock } = await renderApp('/', { state: updated() });
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     expect(dialog).toHaveTextContent('Version 9.4.2');
     // Slide 1: its clip, its bold title and one plain line, in English.
     const one = current();
@@ -170,7 +170,7 @@ describe("What's new", () => {
 
   it('a slide without media shows its area’s icon, not an empty box', async () => {
     const { user } = await renderApp('/', { state: updated() });
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     await user.click(within(dialog).getByRole('button', { name: 'Slide 3 of 3' }));
     const three = current();
     expect(three.querySelector('video, img')).toBeNull();
@@ -180,7 +180,7 @@ describe("What's new", () => {
 
   it('moves with the arrow keys and a swipe', async () => {
     await renderApp('/', { state: updated() });
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     // The focus starts on the dialog itself: the keys work from there too.
     act(() => void fireEvent.keyDown(dialog, { key: 'ArrowRight' }));
     expect(current()).toHaveAccessibleName('Slide 2 of 3');
@@ -206,7 +206,7 @@ describe("What's new", () => {
 
   it('plays the shown slide’s clip, muted, and pauses it when the tab is hidden', async () => {
     const { user } = await renderApp('/', { state: updated() });
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     const video = videoOf(current()) as HTMLVideoElement;
     await waitFor(() => expect(play.mock.contexts).toContain(video));
     expect(video).toHaveAttribute('autoplay');
@@ -229,7 +229,7 @@ describe("What's new", () => {
   it('with reduced motion shows the still poster and never starts a clip', async () => {
     reducedMotion();
     const { user } = await renderApp('/', { state: updated() });
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     const video = videoOf(current()) as HTMLVideoElement;
     expect(video).toHaveAttribute('poster', '/whats-new/9.4.2/shelves.webp');
     expect(video).not.toHaveAttribute('autoplay');
@@ -247,13 +247,13 @@ describe("What's new", () => {
     await findHeading('Help');
     expect(document.querySelector('[src*="whats-new"], [poster*="whats-new"]')).toBeNull();
     await user.click(screen.getByRole('button', { name: "What's new" }));
-    await screen.findByRole('dialog', { name: "What's new in Kept" });
+    await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     expect(document.querySelector('[src*="whats-new"]')).not.toBeNull();
   });
 
   it('offline, or when a clip fails to load, keeps the words and shows the icon', async () => {
     const { user } = await renderApp('/', { state: updated() });
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     // The last source failing: no format of it could load.
     fireEvent.error(videoOf(current())?.querySelector('source:last-of-type') as HTMLElement);
     expect(videoOf(current())).toBeNull();
@@ -281,11 +281,11 @@ describe("What's new", () => {
     expect(mock.lastCall('PUT', inventoryPaths.hint(KEY))).toBeUndefined();
   });
 
-  it('shows once to someone who used Kept before What’s new existed (a tour chapter done)', async () => {
+  it('shows once to someone who used SheepKeep before What’s new existed (a tour chapter done)', async () => {
     const state = ownerScenario();
     state.inventory.hints.push({ key: 'help.tours.basics', seenAt: at, dismissedAt: at });
     const { user, mock } = await renderApp('/', { state });
-    await screen.findByRole('dialog', { name: "What's new in Kept" });
+    await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     // Escape puts it away and records it too.
     await user.keyboard('{Escape}');
     await waitFor(() => expect(card()).toBeNull());
@@ -309,7 +309,9 @@ describe("What's new", () => {
     expect(card()).toBeNull();
     expect(mock.lastCall('PUT', inventoryPaths.hint(KEY))).toBeUndefined();
     await router.navigate({ to: '/' });
-    expect(await screen.findByRole('dialog', { name: "What's new in Kept" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('dialog', { name: "What's new in SheepKeep" }),
+    ).toBeInTheDocument();
   });
 
   it('waits on a scan session too', async () => {
@@ -327,19 +329,19 @@ describe("What's new", () => {
     expect(card()).toBeNull();
     expect(screen.getByRole('main')).toHaveTextContent('Version 9.4.2: its highlights.');
     await user.click(screen.getByRole('button', { name: "What's new" }));
-    const dialog = await screen.findByRole('dialog', { name: "What's new in Kept" });
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     expect(current()).toHaveAccessibleName('Slide 1 of 3');
     await user.click(within(dialog).getByRole('button', { name: 'Slide 3 of 3' }));
     await user.click(within(dialog).getByRole('button', { name: 'Got it' }));
     await waitFor(() => expect(card()).toBeNull());
     await user.click(screen.getByRole('button', { name: "What's new" }));
-    await screen.findByRole('dialog', { name: "What's new in Kept" });
+    await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
     expect(current()).toHaveAccessibleName('Slide 1 of 3');
   });
 
   it('in Arabic, its words are translated, the slides run right to left, and the highlights say they are in English', async () => {
     const { user } = await renderApp('/', { state: updated(), locale: 'ar' });
-    const dialog = await screen.findByRole('dialog', { name: 'ما الجديد في Kept' });
+    const dialog = await screen.findByRole('dialog', { name: 'ما الجديد في SheepKeep' });
     expect(dialog).toHaveTextContent('ملاحظات الإصدار بالإنجليزية.');
     const slide = () => screen.getByRole('group', { name: /^الشريحة/ });
     expect(slide()).toHaveAccessibleName('الشريحة ١ من ٣');

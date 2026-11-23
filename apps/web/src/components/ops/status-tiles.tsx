@@ -113,8 +113,8 @@ export function OpsNotices({ s }: { s: StatusPageData }) {
           }
         >
           <Trans>
-            Backups should run every night. Check the runs in Backups, and that Kept's worker is
-            running.
+            Backups should run every night. Check the runs in Backups, and that SheepKeep's worker
+            is running.
           </Trans>
         </Notice>
       ) : null}
@@ -148,8 +148,8 @@ export function OpsNotices({ s }: { s: StatusPageData }) {
           }
         >
           <Trans>
-            Kept allows one release back. Upgrade again when the problem that made you roll back is
-            fixed.
+            SheepKeep allows one release back. Upgrade again when the problem that made you roll
+            back is fixed.
           </Trans>
         </Notice>
       ) : null}
@@ -166,7 +166,7 @@ function HomeAssistantBackupsTile() {
       ok={null}
       detail={<Trans>Take or schedule them in Home Assistant → {place}.</Trans>}
     >
-      <Trans>Home Assistant backs up Kept</Trans>
+      <Trans>Home Assistant backs up SheepKeep</Trans>
     </Tile>
   );
 }
@@ -244,7 +244,7 @@ function VerifyTile({ backup }: { backup: Backup }) {
     <Tile
       label={<Trans>Repository check</Trans>}
       ok={backup.configured ? !overdue : null}
-      detail={<Trans>Every week, Kept checks that every snapshot can be read.</Trans>}
+      detail={<Trans>Every week, SheepKeep checks that every snapshot can be read.</Trans>}
     >
       {checkedAt ? <Trans>Checked {checkedAt}</Trans> : <Trans>Not checked yet</Trans>}
     </Tile>
@@ -266,7 +266,7 @@ function VersioningTile({ backup }: { backup: Backup }) {
         ) : v === 'on' ? (
           <Trans>The bucket keeps earlier versions of every file.</Trans>
         ) : (
-          <Trans>Kept checks it with each backup.</Trans>
+          <Trans>SheepKeep checks it with each backup.</Trans>
         )
       }
     >
@@ -312,7 +312,7 @@ function DiskTile({ disk }: { disk: NonNullable<StatusPageData['disk']> }) {
     <Tile
       label={<Trans>Disk</Trans>}
       ok={disk.data || disk.backup ? !low : null}
-      detail={<Trans>Kept warns at {warnAt}%.</Trans>}
+      detail={<Trans>SheepKeep warns at {warnAt}%.</Trans>}
     >
       {disk.data || disk.backup ? (
         <span className="grid gap-1">
@@ -395,19 +395,19 @@ export function useUpdateWords() {
     if (!u.enabled) {
       return {
         title: t`Off`,
-        detail: t`Kept doesn't ask for new versions. Turn it on in Admin → Sign-up.`,
+        detail: t`SheepKeep doesn't ask for new versions. Turn it on in Admin → Sign-up.`,
         ok: null,
       };
     }
     if (u.latest) {
       const v = u.latest.version;
-      return { title: t`Kept ${v} is available`, detail: null, ok: false };
+      return { title: t`SheepKeep ${v} is available`, detail: null, ok: false };
     }
     switch (u.error) {
       case 'unreachable':
         return {
           title: t`Couldn't reach GitHub`,
-          detail: t`The last check got no answer. Kept asks again tomorrow.`,
+          detail: t`The last check got no answer. SheepKeep asks again tomorrow.`,
           ok: null,
         };
       case 'not_found':
@@ -419,19 +419,19 @@ export function useUpdateWords() {
       case 'rate_limited':
         return {
           title: t`GitHub's limit reached`,
-          detail: t`Too many requests came from this server's address. Kept asks again tomorrow.`,
+          detail: t`Too many requests came from this server's address. SheepKeep asks again tomorrow.`,
           ok: null,
         };
       case 'not_github':
         return {
           title: t`Can't check this build`,
-          detail: t`This server's source code address isn't a GitHub repository, so Kept doesn't ask.`,
+          detail: t`This server's source code address isn't a GitHub repository, so SheepKeep doesn't ask.`,
           ok: null,
         };
       case 'bad_response':
         return {
           title: t`Couldn't read the answer`,
-          detail: t`GitHub's answer wasn't what Kept expected. Kept asks again tomorrow.`,
+          detail: t`GitHub's answer wasn't what SheepKeep expected. SheepKeep asks again tomorrow.`,
           ok: null,
         };
       default:

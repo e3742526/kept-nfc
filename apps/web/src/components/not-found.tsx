@@ -6,7 +6,7 @@ export function NotFound() {
   return (
     <AuthFrame
       title={<Trans>Nothing here</Trans>}
-      intro={<Trans>This address doesn't lead to a page in Kept. The link may be old.</Trans>}
+      intro={<Trans>This address doesn't lead to a page in SheepKeep. The link may be old.</Trans>}
       footer={
         <LinkButton to="/" variant="primary">
           <Trans>Go to Home</Trans>

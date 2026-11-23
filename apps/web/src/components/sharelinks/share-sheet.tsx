@@ -188,7 +188,7 @@ function MadeView({
         className="justify-self-start"
       />
       <p className="m-0 font-semibold text-[14px] text-ink">
-        <Trans>Copy it now. Kept shows this link once; make a new one if it's lost.</Trans>
+        <Trans>Copy it now. SheepKeep shows this link once; make a new one if it's lost.</Trans>
       </p>
       <Link
         to="/settings/location/$id/share-links"

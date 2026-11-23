@@ -111,13 +111,15 @@ describe('the note on Paperless titles a Homebox import kept (#422)', () => {
   it('says how many', async () => {
     const one = await renderUI(<TitlesKept count={1} />);
     expect(
-      screen.getByText("1 link keeps its Homebox title: Kept couldn't get one from Paperless."),
+      screen.getByText(
+        "1 link keeps its Homebox title: SheepKeep couldn't get one from Paperless.",
+      ),
     ).toBeTruthy();
     one.unmount();
     await renderUI(<TitlesKept count={12} />);
     expect(
       screen.getByText(
-        "12 links keep their Homebox titles: Kept couldn't get them from Paperless.",
+        "12 links keep their Homebox titles: SheepKeep couldn't get them from Paperless.",
       ),
     ).toBeTruthy();
   });

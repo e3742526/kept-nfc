@@ -75,7 +75,7 @@ export type SyncStatus = {
   /** The snapshot's own time: "as of last sync, 14:02" (D188). */
   asOf: string | null;
   counts: { waiting: number; uploading: number; needsAttention: number };
-  /** Only part of the Kept fits on this phone. */
+  /** Only part of the SheepKeep fits on this phone. */
   truncated: boolean;
   /** `navigator.storage.persist()`'s answer, once asked; null before. */
   persisted: boolean | null;

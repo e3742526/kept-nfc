@@ -66,7 +66,7 @@ test('the service worker installs, and the shell reloads offline', async ({ page
   await context.setOffline(true);
   try {
     await page.reload();
-    await expect(page).toHaveTitle('Kept');
+    await expect(page).toHaveTitle('SheepKeep');
     await expect(page.locator('#root')).not.toBeEmpty();
     // A deep link offline gets the precached shell too.
     await page.goto('/things/offline-deep-link');

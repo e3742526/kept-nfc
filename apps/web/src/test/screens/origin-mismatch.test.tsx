@@ -19,10 +19,10 @@ import { asOrigin, resetOriginMismatch } from '@/lib/origin-mismatch';
 import { findHeading, renderApp } from '@/test/app';
 
 const LAN = 'http://kept.lan:8080';
-const SENTENCE = `This Kept is set up for ${LAN}. Open it there.`;
+const SENTENCE = `This SheepKeep is set up for ${LAN}. Open it there.`;
 const refused = () =>
   new MockReply(403, {
-    error: `This Kept is set up for ${LAN}.`,
+    error: `This SheepKeep is set up for ${LAN}.`,
     code: 'origin_mismatch',
     hint: 'The request did not come from this site.',
     expectedOrigin: LAN,
@@ -35,7 +35,7 @@ async function signInPage(path: string) {
     state: signedOutScenario(),
     setup: (m) => m.on('POST', path, refused),
   });
-  await findHeading('Sign in to Kept');
+  await findHeading('Sign in to SheepKeep');
   return app;
 }
 
@@ -47,7 +47,7 @@ const notice = async () => {
   expect(screen.queryByText(/don't match/)).toBeNull();
 };
 
-describe('a Kept opened at another address', () => {
+describe('a SheepKeep opened at another address', () => {
   it('sign-in names the address it is set up for, with a link', async () => {
     const { user } = await signInPage(paths.auth.signInEmail);
     await user.type(screen.getByLabelText('Email or username'), 'ibrahim@example.com');
@@ -80,7 +80,7 @@ describe('a Kept opened at another address', () => {
             new MockReply(403, { code: 'INVALID_CALLBACK_URL', message: 'Invalid callbackURL' }),
         ),
     });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await wrongUrl.user.type(screen.getByLabelText('Email or username'), 'ibrahim@example.com');
     await wrongUrl.user.type(screen.getByLabelText('Password'), 'x');
     await wrongUrl.user.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -100,7 +100,7 @@ describe('a Kept opened at another address', () => {
             }),
         ),
     });
-    await findHeading('Sign in to Kept');
+    await findHeading('Sign in to SheepKeep');
     await wrongPassword.user.type(
       screen.getByLabelText('Email or username'),
       'ibrahim@example.com',
@@ -118,7 +118,7 @@ describe('a Kept opened at another address', () => {
     expect(screen.queryByRole('link', { name: `Open ${LAN}` })).toBeNull();
     await api.post(inventoryPaths.things, { name: 'HD webcam' }).catch(() => undefined);
     expect(await screen.findByRole('link', { name: `Open ${LAN}` })).toBeInTheDocument();
-    expect(screen.getAllByText(/This Kept is set up for/)).toHaveLength(1);
+    expect(screen.getAllByText(/This SheepKeep is set up for/)).toHaveLength(1);
   });
 
   it('the error sentence names the address; one without it still makes sense', async () => {
@@ -131,7 +131,7 @@ describe('a Kept opened at another address', () => {
     const named = new ApiError(403, 'origin_mismatch', 'x', { details: { expectedOrigin: LAN } });
     expect(plainText(result.current(named))).toBe(SENTENCE);
     const bare = new ApiError(403, 'origin_mismatch', 'x');
-    expect(result.current(bare)).toMatch(/^This Kept is set up for a different address\./);
+    expect(result.current(bare)).toMatch(/^This SheepKeep is set up for a different address\./);
   });
 
   it('only an http(s) origin is ever linked', () => {

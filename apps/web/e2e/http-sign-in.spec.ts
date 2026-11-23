@@ -303,7 +303,7 @@ for (const row of ROWS) {
       await setLeft(row.instance, first.id, -1);
       await go(page, '/settings');
       await expect(page).toHaveURL(/\/signin/);
-      await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
       expect((await fetchIn(page, '/api/v1/me/sessions')).status).toBe(401);
       expect(await sessionCookie(context)).toBeUndefined();
       await context.close();
@@ -430,7 +430,7 @@ test("the setting on 7: a managed account's admin code gives the same week", asy
 test('the setting on 7: no passkeys on a plain-HTTP address', async ({ browser }) => {
   const { context, page } = await weekPerson(browser);
   await go(page, '/signin');
-  await expect(page.getByRole('heading', { name: 'Sign in to Kept' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Sign in to SheepKeep' })).toBeVisible();
   const secure = await page.evaluate(() => ({
     context: window.isSecureContext,
     webauthn: typeof window.PublicKeyCredential,

@@ -133,10 +133,10 @@ function Summary({
 function HomeAssistantBackups() {
   const place = <HomeAssistantBackupsPlace />;
   return (
-    <Notice tone="info" title={<Trans>Home Assistant backs up Kept</Trans>}>
+    <Notice tone="info" title={<Trans>Home Assistant backs up SheepKeep</Trans>}>
       <Trans>
-        Home Assistant backs up Kept: the database, photos and files, and Kept's keys. Take or
-        schedule backups in Home Assistant → {place}.
+        Home Assistant backs up SheepKeep: the database, photos and files, and SheepKeep's keys.
+        Take or schedule backups in Home Assistant → {place}.
       </Trans>
     </Notice>
   );

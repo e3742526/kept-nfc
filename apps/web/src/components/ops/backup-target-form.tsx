@@ -177,13 +177,13 @@ export function useBackupErrorText() {
       case 'backup_password_weak':
         return t`Use a backup password of at least 12 characters. A few words are easiest.`;
       case 'https_required':
-        return t`This needs a secure (HTTPS) connection to Kept.`;
+        return t`This needs a secure (HTTPS) connection to SheepKeep.`;
       case 'recovery_kit_required':
         return t`Download the recovery kit first.`;
       case 'restic_failed':
         return t`The backup tool couldn't open the repository. Test says why.`;
       case 'home_assistant_backups':
-        return t`Home Assistant backs up Kept here: take or schedule backups in Home Assistant.`;
+        return t`Home Assistant backs up SheepKeep here: take or schedule backups in Home Assistant.`;
       default:
         return base(e);
     }
@@ -293,7 +293,7 @@ function TargetFields({
   );
   if (d.kind === 'dir') {
     return field('path', t`Folder`, {
-      description: t`An absolute path as the server sees it: another disk, or a NAS mount. Not the disk Kept's data is on.`,
+      description: t`An absolute path as the server sees it: another disk, or a NAS mount. Not the disk SheepKeep's data is on.`,
     });
   }
   if (d.kind === 's3') {
@@ -345,7 +345,7 @@ function TargetFields({
         description: t`Absolute, or relative to the user's home folder.`,
       })}
       {field('hostKey', t`Host key`, {
-        description: t`The server's own key, as ssh-keyscan prints it without the host name. Kept connects to no other.`,
+        description: t`The server's own key, as ssh-keyscan prints it without the host name. SheepKeep connects to no other.`,
       })}
       <WriteOnly
         label={<Trans>Private key</Trans>}
@@ -554,7 +554,7 @@ export function BackupForm({
                 autoComplete="new-password"
                 value={p.value}
                 onChange={p.onChange}
-                description={t`At least 12 characters. Without it nobody can read the backups, Kept included.`}
+                description={t`At least 12 characters. Without it nobody can read the backups, SheepKeep included.`}
                 isInvalid={!!errors.password}
                 errorMessage={errors.password}
               />
@@ -610,7 +610,7 @@ export function BackupForm({
             <Trans>
               Change the locked settings in the server's configuration (
               <code className="ltr whitespace-nowrap">{lockedVars.join(', ')}</code>) and restart
-              Kept.
+              SheepKeep.
             </Trans>
           </p>
         ) : null}

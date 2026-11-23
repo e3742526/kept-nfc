@@ -72,7 +72,7 @@ async function signInPage(mainAddress?: string) {
     state: signedOutScenario(),
     ...(mainAddress ? { setup: naming(mainAddress) } : {}),
   });
-  await findHeading('Sign in to Kept');
+  await findHeading('Sign in to SheepKeep');
 }
 
 describe('sign-in', () => {

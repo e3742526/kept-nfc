@@ -187,7 +187,7 @@ export function ExportSheet({
               isSelected={options.readable}
               onChange={(readable) => set({ readable, ...(readable ? {} : { pdf: false }) })}
             >
-              <Trans>A copy you can read without Kept</Trans>
+              <Trans>A copy you can read without SheepKeep</Trans>
             </Switch>
             <Switch
               isSelected={options.readable && options.pdf}
@@ -235,8 +235,8 @@ export function ExportSheet({
                   <PassphraseFields value={pass} onChange={setPass} />
                   <Notice tone="warn">
                     <Trans>
-                      Anyone with this file and the passphrase can read every secret in it. Kept
-                      can't recover a forgotten passphrase.
+                      Anyone with this file and the passphrase can read every secret in it.
+                      SheepKeep can't recover a forgotten passphrase.
                     </Trans>
                   </Notice>
                 </>

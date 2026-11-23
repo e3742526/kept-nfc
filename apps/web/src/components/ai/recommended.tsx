@@ -36,8 +36,8 @@ export function WhyGroq() {
     <div className="grid gap-2 text-small text-ink-2">
       <p className="m-0">
         <Trans>
-          In Kept's test on {date}, it read receipts, labels and nameplates correctly for the least
-          money of any model measured:
+          In SheepKeep's test on {date}, it read receipts, labels and nameplates correctly for the
+          least money of any model measured:
         </Trans>
       </p>
       <ul className="m-0 grid gap-1 ps-5">
@@ -62,11 +62,11 @@ export function WhyGroq() {
       </ul>
       <p className="m-0">
         <Trans>
-          That was a test with made-up photos; Kept's evaluation with real photos checks it again.
-          Groq has no embeddings model, so semantic search needs another provider or stays keyword
-          only. On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces
-          to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes while you carry
-          on.
+          That was a test with made-up photos; SheepKeep's evaluation with real photos checks it
+          again. Groq has no embeddings model, so semantic search needs another provider or stays
+          keyword only. On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute;
+          SheepKeep paces to it, so a {photos}-photo session is named over {fromMin}–{toMin} minutes
+          while you carry on.
         </Trans>
       </p>
     </div>
@@ -90,12 +90,12 @@ export function RecommendedCard() {
       </h3>
       <p className="m-0 text-small text-ink-2">
         <Trans>
-          The cheapest reliable result in Kept's test: about USD {perReceipt} a receipt, with{' '}
+          The cheapest reliable result in SheepKeep's test: about USD {perReceipt} a receipt, with{' '}
           <bdi dir="ltr" className="model-id font-mono text-[12.5px]">
             {RECOMMENDED.model}
           </bdi>
-          . On the key tier Kept measured, Groq reads {low}–{high} photos a minute; Kept paces to
-          it.
+          . On the key tier SheepKeep measured, Groq reads {low}–{high} photos a minute; SheepKeep
+          paces to it.
         </Trans>
       </p>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

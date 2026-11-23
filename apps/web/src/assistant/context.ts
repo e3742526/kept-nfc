@@ -24,7 +24,7 @@ export type PageContext = {
   /** What the server takes as `context.id`: a location's, place's or thing's id, or the query. */
   id?: string;
   locationId?: string;
-  /** The chip's words: a name (the person's own text, shown bidi-isolated) or Kept's own. */
+  /** The chip's words: a name (the person's own text, shown bidi-isolated) or SheepKeep's own. */
   label: string;
 };
 

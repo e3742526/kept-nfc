@@ -292,9 +292,9 @@ describe('the capture screen', () => {
     const getUserMedia = vi.fn().mockRejectedValue(new DOMException('no', 'NotAllowedError'));
     await renderCapture({ camera: { secure: true, media: { getUserMedia } } });
     expect(
-      await screen.findByRole('heading', { name: "Kept can't use the camera" }),
+      await screen.findByRole('heading', { name: "SheepKeep can't use the camera" }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Camera access is off for Kept.')).toBeInTheDocument();
+    expect(screen.getByText('Camera access is off for SheepKeep.')).toBeInTheDocument();
     expect(screen.getByText('How to allow it')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Take a photo/ }).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Choose photos' })).toBeInTheDocument();

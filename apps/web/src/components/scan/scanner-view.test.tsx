@@ -66,7 +66,7 @@ describe('when the decoder gives up', () => {
     await waitFor(() => expect(loop.starts).toBe(1));
     act(() => loop.unavailable?.());
 
-    expect(await screen.findByText("Kept can't scan here")).toBeInTheDocument();
+    expect(await screen.findByText("SheepKeep can't scan here")).toBeInTheDocument();
     expect(screen.getByText("The scanner didn't start.")).toBeInTheDocument();
     expect(screen.queryByText(/This browser can't read codes/)).not.toBeInTheDocument();
     expect(onProblem).toHaveBeenCalledWith('no_scanner');
@@ -77,7 +77,7 @@ describe('when the decoder gives up', () => {
     expect(onRetry).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(loop.starts).toBe(2));
     expect(getUserMedia).toHaveBeenCalledTimes(2);
-    expect(screen.queryByText("Kept can't scan here")).not.toBeInTheDocument();
+    expect(screen.queryByText("SheepKeep can't scan here")).not.toBeInTheDocument();
     expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
   });
 
@@ -109,7 +109,7 @@ describe('when the decoder gives up', () => {
         camera={{ secure: true, media: { getUserMedia: denied } }}
       />,
     );
-    expect(await screen.findByText('Camera access is off for Kept.')).toBeInTheDocument();
+    expect(await screen.findByText('Camera access is off for SheepKeep.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
   });
 });

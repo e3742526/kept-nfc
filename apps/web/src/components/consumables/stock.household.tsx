@@ -315,7 +315,7 @@ export function KeepAtLeastSection() {
       <div className="flex flex-wrap items-center gap-2 rounded-[10px] border border-line bg-surface p-3.5 text-[15px]">
         {min === null ? (
           <span className="text-ink-2">
-            <Trans>No minimum. Set one and Kept lists it as low when fewer are left.</Trans>
+            <Trans>No minimum. Set one and SheepKeep lists it as low when fewer are left.</Trans>
           </span>
         ) : (
           <>

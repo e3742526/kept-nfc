@@ -134,7 +134,7 @@ describe('a location’s position', () => {
     const { user } = await renderForm({ geo });
     await user.click(screen.getByRole('button', { name: 'Use where I am now' }));
     expect(
-      screen.getByText("Location access is off for Kept in this browser's settings."),
+      screen.getByText("Location access is off for SheepKeep in this browser's settings."),
     ).toBeInTheDocument();
   });
 
@@ -144,7 +144,7 @@ describe('a location’s position', () => {
     expect(screen.getByRole('button', { name: 'Use where I am now' })).toBeDisabled();
     expect(
       screen.getByText(
-        'Over plain HTTP, phones block the camera, installing Kept, push notifications and location.',
+        'Over plain HTTP, phones block the camera, installing SheepKeep, push notifications and location.',
       ),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Latitude')).toBeEnabled();

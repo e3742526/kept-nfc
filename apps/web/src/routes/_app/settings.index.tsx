@@ -177,7 +177,9 @@ function MePage() {
                 </IconTile>
               }
               title={<Trans>This device</Trans>}
-              subtitle={<Trans>Lock Kept with a PIN, and keep a location available offline.</Trans>}
+              subtitle={
+                <Trans>Lock SheepKeep with a PIN, and keep a location available offline.</Trans>
+              }
               trailing={
                 <LinkButton to="/settings/device" size="small">
                   <Trans>Open</Trans>

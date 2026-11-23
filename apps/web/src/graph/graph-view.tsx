@@ -59,7 +59,9 @@ export default function LocationGraph(props: GraphProps) {
     if (offline)
       return (
         <Notice title={t`Needs a connection`}>
-          <Trans>The graph is drawn from Kept’s server. The list has everything offline.</Trans>
+          <Trans>
+            The graph is drawn from SheepKeep’s server. The list has everything offline.
+          </Trans>
         </Notice>
       );
     if (q.error) return <ErrorState error={q.error} onRetry={() => void q.refetch()} />;

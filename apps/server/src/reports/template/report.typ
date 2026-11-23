@@ -1,4 +1,4 @@
-// Kept's inventory report (D201), ported from the first trial template.
+// SheepKeep's inventory report (D201), ported from the first trial template.
 // Typst 0.14 through @myriaddreamin/typst-ts-node-compiler 0.7.0, rendered by
 // src/reports/render/child.mjs. Everything comes from /data.json (reports/view.ts builds it):
 // strings, numbers, money and dates arrive formatted (Intl, in the reader's language and digits),
@@ -33,7 +33,7 @@
 #set text(font: sans, size: 9pt, fill: c.ink, lang: d.lang, dir: if isrtl { rtl } else { ltr }, hyphenate: false)
 #set par(leading: 0.6em)
 
-// Kept's lockup (D135): the label-tape mark with its punched hole (cut out, so the page shows
+// SheepKeep's lockup (D135): the label-tape mark with its punched hole (cut out, so the page shows
 // through) and KEPT in Plex Mono SemiBold, as the outlines scripts/render-icons.mjs draws. A brand
 // mark, so always laid out left-to-right.
 #let lockup(height: 40pt) = box(image(bytes("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 191 64'><path d='M9 2H55A7 7 0 0 1 62 9V55A7 7 0 0 1 55 62H9A7 7 0 0 1 2 55V9A7 7 0 0 1 9 2ZM12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5Z' fill='#F0B03A' fill-rule='evenodd'/><path d='M277 306 204 210V0H73V698H204V384H210L291 500L438 698H586L367 404L596 0H448Z' fill='#2E2100' transform='translate(21.4 48) scale(0.042 -0.042)'/><g fill='#1C1B19'><path d='M277 306 204 210V0H73V698H204V384H210L291 500L438 698H586L367 404L596 0H448Z' transform='translate(74 48) scale(0.042 -0.042)'/><path d='M83 0V698H524V590H214V408H513V300H214V108H524V0Z' transform='translate(104.2 48) scale(0.042 -0.042)'/><path d='M80 0V698H345Q447 698 501 640Q555 582 555 482Q555 382 501 324Q447 266 345 266H211V0ZM211 373H318Q371 373 394 394.5Q417 416 417 463V501Q417 548 394 569.5Q371 591 318 591H211Z' transform='translate(134.4 48) scale(0.042 -0.042)'/><path d='M365 590V0H235V590H25V698H575V590Z' transform='translate(164.6 48) scale(0.042 -0.042)'/></g></svg>"), format: "svg", height: height))

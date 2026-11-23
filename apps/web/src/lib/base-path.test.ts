@@ -110,7 +110,7 @@ describe('under ingress', () => {
     expect(new URL(hashHref('ai-key'), document.baseURI).pathname).toBe(`${PREFIX}/settings/ai`);
   });
 
-  it('names Kept’s own address for links people copy, not Home Assistant’s', () => {
+  it('names SheepKeep’s own address for links people copy, not Home Assistant’s', () => {
     expect(publicOrigin()).toBe('http://homeassistant.local:8080');
   });
 

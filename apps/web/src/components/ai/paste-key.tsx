@@ -45,7 +45,7 @@ export function PasteKey({
   scope: ProviderScope;
   provider: AiProvider | null;
   draft: ProviderDraft;
-  /** Kept can't tell the provider from the key: open Advanced. */
+  /** SheepKeep can't tell the provider from the key: open Advanced. */
   onNeedsProvider: () => void;
   /** After a save; `first` when this scope had no key before. */
   onSaved: (provider: AiProvider, first: boolean) => void;
@@ -100,7 +100,7 @@ export function PasteKey({
         return;
       }
       if (isApiError(e) && e.code === 'validation' && !kind) {
-        setError(t`Kept can't tell which provider this key is for. Choose it under Advanced.`);
+        setError(t`SheepKeep can't tell which provider this key is for. Choose it under Advanced.`);
         onNeedsProvider();
         return;
       }
@@ -118,7 +118,7 @@ export function PasteKey({
   const needsChoice = key.trim().length >= 8 && !kind;
   const submit = () => {
     if (needsChoice) {
-      setError(t`Kept can't tell which provider this key is for. Choose it under Advanced.`);
+      setError(t`SheepKeep can't tell which provider this key is for. Choose it under Advanced.`);
       onNeedsProvider();
       return;
     }
@@ -144,8 +144,8 @@ export function PasteKey({
         >
           {me.data?.user.instanceAdmin ? (
             <Trans>
-              The first AI key is a secret Kept must be able to recover. Save the recovery kit on
-              the status page, then paste the key again.
+              The first AI key is a secret SheepKeep must be able to recover. Save the recovery kit
+              on the status page, then paste the key again.
             </Trans>
           ) : (
             <Trans>
@@ -219,7 +219,7 @@ export function PasteKey({
                 <Trans>For {providerName(draft.kind)}, as chosen under Advanced.</Trans>
               ) : (
                 <Trans>
-                  Kept reads the provider from the key. It sends the key to the server once and
+                  SheepKeep reads the provider from the key. It sends the key to the server once and
                   never shows it again.
                 </Trans>
               )

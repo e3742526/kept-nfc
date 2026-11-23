@@ -87,7 +87,7 @@ export function LabelPanel({
   const messages = {
     scan: t`Hold the top of your iPhone near one NFC tag.`,
     multiple: t`Move other tags away and scan one tag.`,
-    written: t`Kept tag verified.`,
+    written: t`SheepKeep tag verified.`,
     matched: box ? t`Found ${isolate(box.name)}.` : t`Found box.`,
     retry: t`Hold steady against the tag and try again.`,
   };
@@ -154,7 +154,7 @@ export function LabelPanel({
         case 'blank':
           return t`This NFC tag is blank.`;
         case 'malformed':
-          return t`This tag does not contain a Kept label URL.`;
+          return t`This tag does not contain a SheepKeep label URL.`;
         case 'cancelled':
           return t`Scan cancelled.`;
         case 'timeout':
@@ -190,24 +190,30 @@ export function LabelPanel({
         }
         case 'ambiguous':
           return {
-            text: t`That code matches more than one item, so Kept cannot confirm whether it is this box. Scan another tag.`,
+            text: t`That code matches more than one item, so SheepKeep cannot confirm whether it is this box. Scan another tag.`,
             verifyDifferent: false,
           };
         case 'foreign':
-          return { text: t`This tag belongs to a different Kept server.`, verifyDifferent: false };
+          return {
+            text: t`This tag belongs to a different SheepKeep server.`,
+            verifyDifferent: false,
+          };
         case 'malformed':
-          return { text: t`This tag does not contain a Kept label URL.`, verifyDifferent: false };
+          return {
+            text: t`This tag does not contain a SheepKeep label URL.`,
+            verifyDifferent: false,
+          };
         case 'unassigned':
           return { text: t`This label has not been assigned.`, verifyDifferent: true };
         case 'not_kept':
-          return { text: t`Not a Kept label.`, verifyDifferent: false };
+          return { text: t`Not a SheepKeep label.`, verifyDifferent: false };
         case 'unresolved':
           return {
             text: t`This label could not be checked offline, so it is not confirmed as a different box.`,
             verifyDifferent: false,
           };
         default:
-          return { text: t`This label is unavailable in your Kept.`, verifyDifferent: false };
+          return { text: t`This label is unavailable in your SheepKeep.`, verifyDifferent: false };
       }
     },
     [cache, t],
@@ -290,15 +296,16 @@ export function LabelPanel({
       setStatus(t`Multiple records match this code. Choose one to open.`);
       return;
     }
-    if (result.status === 'foreign') setStatus(t`This tag belongs to a different Kept server.`);
+    if (result.status === 'foreign')
+      setStatus(t`This tag belongs to a different SheepKeep server.`);
     else if (result.status === 'malformed')
-      setStatus(t`This tag does not contain a Kept label URL.`);
+      setStatus(t`This tag does not contain a SheepKeep label URL.`);
     else if (result.status === 'unassigned') {
       setStatus(t`This label has not been assigned.`);
       setClaim(result.claim);
-    } else if (result.status === 'not_kept') setStatus(t`Not a Kept label.`);
+    } else if (result.status === 'not_kept') setStatus(t`Not a SheepKeep label.`);
     else if (result.status === 'unresolved') setStatus(t`This label could not be checked offline.`);
-    else setStatus(t`This label is unavailable in your Kept.`);
+    else setStatus(t`This label is unavailable in your SheepKeep.`);
   }
 
   function scanIdentify() {
@@ -418,7 +425,7 @@ export function LabelPanel({
         setStatus(nfcStatus(result));
       } else if (result.url === url) {
         setUnverifiedWrite(false);
-        setStatus(t`This tag already contains the verified Kept label.`);
+        setStatus(t`This tag already contains the verified SheepKeep label.`);
       } else if (!result.writable) {
         setStatus(nfcStatus({ status: 'read_only' }));
       } else if ((result.required ?? 1) > (result.capacity ?? 0)) {
@@ -448,7 +455,7 @@ export function LabelPanel({
       setExistingOwner(null);
       if (result.status === 'written') {
         setUnverifiedWrite(false);
-        setStatus(t`Kept tag verified.`);
+        setStatus(t`SheepKeep tag verified.`);
       } else {
         if (result.status === 'write_unverified') setUnverifiedWrite(true);
         setStatus(nfcStatus(result));
@@ -519,7 +526,7 @@ export function LabelPanel({
       )}
       {action === 'enroll' ? (
         <>
-          {url && <QrCode value={url} label={t`Kept QR label`} />}
+          {url && <QrCode value={url} label={t`SheepKeep QR label`} />}
           {url?.startsWith('https://') && box && (
             <Button
               variant="secondary"
@@ -546,7 +553,7 @@ export function LabelPanel({
           )}
           {canEnroll && !url?.startsWith('https://') && (
             <p>
-              <Trans>Connect to your Kept server over HTTPS to enroll NFC tags.</Trans>
+              <Trans>Connect to your SheepKeep server over HTTPS to enroll NFC tags.</Trans>
             </p>
           )}
           {inspection && (

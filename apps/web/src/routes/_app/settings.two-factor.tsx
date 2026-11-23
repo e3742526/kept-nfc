@@ -83,9 +83,9 @@ function ConfirmAddressFirst() {
       <div className="grid gap-3">
         <p className="m-0">
           <Trans>
-            Kept emails you a sign-in link; opening it confirms the address. Opening it also removes
-            this account's password, passkeys and other sessions, so nobody who set them up before
-            you keeps a way in. Then come back here within ten minutes.
+            SheepKeep emails you a sign-in link; opening it confirms the address. Opening it also
+            removes this account's password, passkeys and other sessions, so nobody who set them up
+            before you keeps a way in. Then come back here within ten minutes.
           </Trans>
         </p>
         {email ? (
@@ -204,7 +204,7 @@ function BackupCodes({ codes }: { codes: string[] }) {
   return (
     <div className="grid gap-4">
       <Notice tone="ok" title={<Trans>Two-factor is on</Trans>}>
-        <Trans>Next time you sign in, Kept asks for a code from your app.</Trans>
+        <Trans>Next time you sign in, SheepKeep asks for a code from your app.</Trans>
       </Notice>
       <BackupCodeList codes={codes} />
       <Button

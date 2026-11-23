@@ -21,7 +21,7 @@ const IPHONE =
 
 const channels = async () => {
   await findHeading('Notifications');
-  return screen.findByRole('heading', { name: 'How Kept reaches you' }, { timeout: 3000 });
+  return screen.findByRole('heading', { name: 'How SheepKeep reaches you' }, { timeout: 3000 });
 };
 
 function stubPushBrowser(permission: NotificationPermission = 'default') {
@@ -129,7 +129,7 @@ describe('channels', () => {
     expect(screen.queryByRole('button', { name: 'Enable' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'How to install' }));
     expect(
-      await screen.findByRole('dialog', { name: 'Install Kept on your phone' }),
+      await screen.findByRole('dialog', { name: 'Install SheepKeep on your phone' }),
     ).toBeInTheDocument();
   });
 
@@ -356,11 +356,11 @@ describe('what reaches you', () => {
     expect(screen.queryByRole('switch', { name: /^Overdue loans by .* in Garage/ })).toBeNull();
   });
 
-  it('In Kept off silences the kind: its other switches wait', async () => {
+  it('In SheepKeep off silences the kind: its other switches wait', async () => {
     const { user } = await renderApp(PATH);
     await channels();
     const inapp = await screen.findByRole('switch', {
-      name: 'Low stock by In Kept in all locations',
+      name: 'Low stock by In SheepKeep in all locations',
     });
     await user.click(inapp);
     await waitFor(() =>
@@ -368,10 +368,10 @@ describe('what reaches you', () => {
         screen.getByRole('switch', { name: 'Low stock by Email in all locations' }),
       ).toBeDisabled(),
     );
-    expect(screen.getByText('In Kept is off, so nothing is sent.')).toBeInTheDocument();
+    expect(screen.getByText('In SheepKeep is off, so nothing is sent.')).toBeInTheDocument();
   });
 
-  it('notices go only to Kept and email; a channel column appears once you have one', async () => {
+  it('notices go only to SheepKeep and email; a channel column appears once you have one', async () => {
     await renderApp(PATH);
     await channels();
     await screen.findByRole('switch', { name: 'AI monthly summary by Email in all locations' });
@@ -396,7 +396,15 @@ describe('what reaches you', () => {
         .getAllByRole('columnheader')
         .map((h) => h.textContent),
     ).toEqual(
-      expect.arrayContaining(['Due dates', 'Lending', 'Stock', 'People', 'AI', 'In Kept', 'Email']),
+      expect.arrayContaining([
+        'Due dates',
+        'Lending',
+        'Stock',
+        'People',
+        'AI',
+        'In SheepKeep',
+        'Email',
+      ]),
     );
     unmount();
     vi.unstubAllGlobals();

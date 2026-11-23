@@ -410,7 +410,7 @@ export function ScanScreen({
             ) : trayMode ? (
               <Trans>Point at the label of the place or box they go in.</Trans>
             ) : (
-              <Trans>Point at a Kept label, or a product's barcode.</Trans>
+              <Trans>Point at a SheepKeep label, or a product's barcode.</Trans>
             )}
           </p>
         )}
@@ -516,7 +516,7 @@ function TrayAnswer({
         <div className="grid min-w-0 flex-1 gap-0.5">
           <div className="flex flex-wrap items-center gap-2">
             <bdi className="font-semibold [overflow-wrap:anywhere]">{name}</bdi>
-            {/* A Kept label was just read, or it has a printed one: the tape; else no code. */}
+            {/* A SheepKeep label was just read, or it has a printed one: the tape; else no code. */}
             <LabelTape code={d?.shortCode ?? null} printed={res.code !== null || d?.labelPrinted} />
           </div>
           {where ? (
@@ -527,7 +527,7 @@ function TrayAnswer({
       {!d ? (
         <>
           <p className="m-0 text-ink-2">
-            <Trans>Kept can't tell what this is from here.</Trans>
+            <Trans>SheepKeep can't tell what this is from here.</Trans>
           </p>
           <UiButton onPress={() => onOpen(res.target)}>
             <Trans>Open it</Trans>

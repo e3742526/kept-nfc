@@ -17,7 +17,7 @@
 /** What the server sends in a push. */
 export type PushPayload = { title: string; body?: string; url?: string; tag?: string };
 
-/** Where a notification opens when its URL is missing or not Kept's own. */
+/** Where a notification opens when its URL is missing or not SheepKeep's own. */
 export const PUSH_FALLBACK_PATH = '/notifications';
 /** The icon a notification shows: the manifest's 192 px one. */
 export const PUSH_ICON = '/icon-192.png';
@@ -34,7 +34,7 @@ export function readPushPayload(data: { json(): unknown } | null | undefined): P
     raw = null;
   }
   const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
-  const title = text(o.title, 200) ?? 'Kept';
+  const title = text(o.title, 200) ?? 'SheepKeep';
   const body = text(o.body, 1000);
   const url = text(o.url, 2000);
   const tag = text(o.tag, 200);

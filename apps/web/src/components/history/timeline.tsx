@@ -195,7 +195,7 @@ export function EventRow({
   // No name: Kept itself, or a person whose name this viewer can no longer see (they left the
   // location, or their account was deleted, D225). Never "Kept" for what a person did.
   const who =
-    event.actor.displayName ?? (event.actor.type === 'user' ? t`A former member` : t`Kept`);
+    event.actor.displayName ?? (event.actor.type === 'user' ? t`A former member` : t`SheepKeep`);
   const moved = event.movedInFromElsewhere === true;
   const line = summarise(event);
   const summary = plainText(line);

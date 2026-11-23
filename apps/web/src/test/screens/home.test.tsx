@@ -113,7 +113,7 @@ describe('the signed-in gate', () => {
 
   it('sends a signed-out visitor to sign in, remembering where they were going', async () => {
     const { router } = await renderApp('/settings', { state: signedOutScenario() });
-    expect(await findHeading('Sign in to Kept')).toBeInTheDocument();
+    expect(await findHeading('Sign in to SheepKeep')).toBeInTheDocument();
     expect(pathOf(router)).toBe('/signin');
     expect(router.state.location.search).toEqual({ next: '/settings' });
   });
@@ -175,7 +175,9 @@ describe('Home', () => {
         ),
     });
     expect(
-      await screen.findByText("Kept can't reach its database right now. Try again in a minute."),
+      await screen.findByText(
+        "SheepKeep can't reach its database right now. Try again in a minute.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -224,9 +226,11 @@ describe('Home', () => {
     ).toBeInTheDocument();
     expect(within(recent).queryByRole('link', { name: 'All activity' })).not.toBeInTheDocument();
     // Over plain HTTP the admin still hears about HTTPS, and can say they're staying home.
-    expect(screen.getByText('Put Kept on HTTPS')).toBeInTheDocument();
+    expect(screen.getByText('Put SheepKeep on HTTPS')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Staying on my home network' }));
-    await waitFor(() => expect(screen.queryByText('Put Kept on HTTPS')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.queryByText('Put SheepKeep on HTTPS')).not.toBeInTheDocument(),
+    );
   });
 
   it('a new location gets an Invite card, and the cards list every location', async () => {
@@ -337,11 +341,11 @@ describe('Home: Get started', () => {
     const { user } = await renderApp('/');
     const started = await startedRegion();
     expect(within(started).getByText('3 of 7 done')).toBeInTheDocument();
-    expect(within(started).getByText('Put Kept on HTTPS')).toBeInTheDocument();
+    expect(within(started).getByText('Put SheepKeep on HTTPS')).toBeInTheDocument();
     expect(within(started).queryByRole('listitem')).not.toBeInTheDocument();
     const items = await openSteps(user);
     expect(items.map((i) => i.querySelector('[data-title]')?.textContent)).toEqual([
-      'Put Kept on HTTPS',
+      'Put SheepKeep on HTTPS',
       'Print your first label',
       'Connect an AI provider',
       'Install on your phone',
@@ -360,7 +364,7 @@ describe('Home: Get started', () => {
     expect(within(started).getByText('3 of 7 done')).toBeInTheDocument();
     const items = await openSteps(user);
     const https = items[0] as HTMLElement;
-    expect(https).toHaveTextContent('Put Kept on HTTPS');
+    expect(https).toHaveTextContent('Put SheepKeep on HTTPS');
     await user.click(within(https).getByRole('button', { name: 'Staying on my home network' }));
     await waitFor(() =>
       expect(mock.lastCall('PUT', p.hint('checklist.home_network'))?.body).toEqual({
@@ -399,7 +403,7 @@ describe('Home: Get started', () => {
     expect(within(await startedRegion()).getByText('3 of 6 done')).toBeInTheDocument();
     const items = await openSteps(user);
     expect(items[0]).toHaveTextContent('Print your first label');
-    expect(screen.queryByText('Put Kept on HTTPS')).not.toBeInTheDocument();
+    expect(screen.queryByText('Put SheepKeep on HTTPS')).not.toBeInTheDocument();
   });
 
   it('asks the instance admin to set up email while mail is off, with how', async () => {
@@ -450,7 +454,7 @@ describe('Home: Get started', () => {
     expect(screen.queryByText('Invite someone')).not.toBeInTheDocument();
     expect(screen.queryByText('Connect an AI provider')).not.toBeInTheDocument();
     expect(screen.queryByText(/Invite people to/)).not.toBeInTheDocument();
-    expect(screen.queryByText('Put Kept on HTTPS')).not.toBeInTheDocument();
+    expect(screen.queryByText('Put SheepKeep on HTTPS')).not.toBeInTheDocument();
   });
 
   it('hide for good and Undo go through the server, so another phone agrees', async () => {
@@ -511,7 +515,7 @@ describe('Home: Get started', () => {
       i.textContent?.includes('Install on your phone'),
     ) as HTMLElement;
     await user.click(within(install).getByRole('button', { name: 'How' }));
-    const sheet = await screen.findByRole('dialog', { name: 'Install Kept on your phone' });
+    const sheet = await screen.findByRole('dialog', { name: 'Install SheepKeep on your phone' });
     expect(
       within(sheet)
         .getAllByRole('tab')

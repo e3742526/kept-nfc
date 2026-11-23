@@ -54,7 +54,8 @@ function AdminLayout() {
           {servedOverHttp() ? (
             <Notice tone="warn" title={<Trans>This page is on plain HTTP</Trans>}>
               <Trans>
-                Kept limits admin actions over HTTP. Put Kept on HTTPS before you rely on them.
+                SheepKeep limits admin actions over HTTP. Put SheepKeep on HTTPS before you rely on
+                them.
               </Trans>
             </Notice>
           ) : null}

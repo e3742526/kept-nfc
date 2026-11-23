@@ -28,7 +28,7 @@ export function WhatUsesAi({
 }) {
   const q = useAiExplain(scope, locationId);
   return (
-    <Section title={<Trans>What uses AI in Kept</Trans>}>
+    <Section title={<Trans>What uses AI in SheepKeep</Trans>}>
       {q.isPending ? (
         <LoadingRows rows={3} />
       ) : q.isError ? (
@@ -100,7 +100,7 @@ function ExplainBody({ explain, whatIsSentId }: { explain: AiExplain; whatIsSent
           <Trans>From your last 30 days, for actions you've used at least 5 times.</Trans>
         ) : refDate ? (
           <Trans>
-            Measured by Kept on {fmt.day(`${refDate}T12:00:00Z`)} with Groq ·{' '}
+            Measured by SheepKeep on {fmt.day(`${refDate}T12:00:00Z`)} with Groq ·{' '}
             <bdi dir="ltr" className="model-id font-mono">
               {REFERENCE_FIGURES.model}
             </bdi>
@@ -136,7 +136,7 @@ function ExplainBody({ explain, whatIsSentId }: { explain: AiExplain; whatIsSent
       ) : null}
       {!hasPrice ? (
         <p className="m-0 text-small text-ink-2">
-          <Trans>Add a price to see cost. Until then Kept counts tokens only.</Trans>
+          <Trans>Add a price to see cost. Until then SheepKeep counts tokens only.</Trans>
         </p>
       ) : null}
       {whatIsSentId ? (

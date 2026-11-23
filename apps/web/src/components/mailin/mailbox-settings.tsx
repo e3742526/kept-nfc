@@ -39,12 +39,12 @@ function useMailErrorWords() {
     if (!code) return null;
     const words: Record<MailError, string> = {
       private_address: t`That address is on a private network. An instance admin can allow it in Admin → Settings.`,
-      unreachable: t`Kept couldn't reach that server. Check the host and port.`,
+      unreachable: t`SheepKeep couldn't reach that server. Check the host and port.`,
       tls_failed: t`The server's encryption didn't check out. Check the host and the security.`,
       auth_failed: t`The mailbox refused the user name or password.`,
       no_folder: t`That folder doesn't exist in the mailbox.`,
       timeout: t`The server took too long to answer.`,
-      failed: t`Kept couldn't sign in to the mailbox.`,
+      failed: t`SheepKeep couldn't sign in to the mailbox.`,
       creator_left: t`The person who connected it no longer administers this location.`,
     };
     return words[code as MailError] ?? words.failed;
@@ -91,7 +91,10 @@ function Status({ locationId, box }: { locationId: string; box: Mailbox }) {
       toast(
         ok
           ? { title: t`The mailbox works`, tone: 'ok' }
-          : { title: words(error) ?? t`Kept couldn't sign in to the mailbox.`, tone: 'danger' },
+          : {
+              title: words(error) ?? t`SheepKeep couldn't sign in to the mailbox.`,
+              tone: 'danger',
+            },
       ),
     onError: (e) => toast({ title: errorText(e), tone: 'danger' }),
   });
@@ -106,7 +109,7 @@ function Status({ locationId, box }: { locationId: string; box: Mailbox }) {
   const onRemove = async () => {
     const yes = await confirm({
       title: t`Remove this mailbox?`,
-      body: t`Kept stops checking it. The receipts it already made stay.`,
+      body: t`SheepKeep stops checking it. The receipts it already made stay.`,
       confirmLabel: t`Remove`,
       destructive: true,
     });
@@ -115,7 +118,7 @@ function Status({ locationId, box }: { locationId: string; box: Mailbox }) {
   return (
     <Section title={<Trans>Mailbox</Trans>}>
       {!box.active ? (
-        <Notice tone="warn" title={<Trans>Kept stopped checking this mailbox</Trans>}>
+        <Notice tone="warn" title={<Trans>SheepKeep stopped checking this mailbox</Trans>}>
           {words(box.disabledReason)} <Trans>Save it again to turn it back on.</Trans>
         </Notice>
       ) : box.lastError ? (
@@ -137,7 +140,7 @@ function Status({ locationId, box }: { locationId: string; box: Mailbox }) {
             {box.lastPolledAt ? (
               <Trans>Checked {fmt.relative(box.lastPolledAt)}</Trans>
             ) : (
-              <Trans>Not checked yet. Kept checks every 10 minutes.</Trans>
+              <Trans>Not checked yet. SheepKeep checks every 10 minutes.</Trans>
             )}
           </span>
           <span className="text-small text-ink-3">
@@ -215,9 +218,10 @@ function MailboxForm({ locationId, box }: { locationId: string; box: Mailbox | n
       {box ? null : (
         <p className="m-0 text-ink-2">
           <Trans>
-            Kept checks a folder in a mailbox you already have, every 10 minutes. Each message's
-            photos and PDFs, or its text when it has none, become a draft receipt in the Inbox. Only
-            mail that arrives after you connect is read, and nothing in the mailbox is changed.
+            SheepKeep checks a folder in a mailbox you already have, every 10 minutes. Each
+            message's photos and PDFs, or its text when it has none, become a draft receipt in the
+            Inbox. Only mail that arrives after you connect is read, and nothing in the mailbox is
+            changed.
           </Trans>
         </p>
       )}
@@ -289,7 +293,7 @@ function MailboxForm({ locationId, box }: { locationId: string; box: Mailbox | n
         {problem ? (
           <Notice
             tone="danger"
-            title={<Trans>Kept couldn't connect</Trans>}
+            title={<Trans>SheepKeep couldn't connect</Trans>}
             action={isPrivateAddressError(save.error) ? <PrivateAddressLink /> : undefined}
           >
             {problem}
@@ -321,7 +325,7 @@ function Recent({ recent }: { recent: RecentMail[] }) {
     >
       {recent.length === 0 ? (
         <EmptyState title={<Trans>No mail read yet</Trans>}>
-          <Trans>Messages that arrive in the folder show here once Kept has read them.</Trans>
+          <Trans>Messages that arrive in the folder show here once SheepKeep has read them.</Trans>
         </EmptyState>
       ) : (
         <List>

@@ -15,7 +15,7 @@ const URLS: Record<string, string> = Object.fromEntries(
   ).map(([path, url]) => [path.replace(/^.*\/([^/]+)\.glb$/, '$1'), url]),
 );
 
-/** The models Kept ships (for the readout and tests). */
+/** The models SheepKeep ships (for the readout and tests). */
 export const SHIPPED_MODELS = Object.keys(URLS);
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);

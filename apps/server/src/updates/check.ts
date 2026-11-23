@@ -16,8 +16,8 @@ import { guardedFetch } from '../net/ssrf.js';
 // Off by default. When an instance admin turns it on (or KEPT_UPDATE_CHECK=true locks it on), the
 // daily `update-check` job, or "Check now", asks GitHub one question: what is the latest release
 // of the repository KEPT_SOURCE_URL names (the image's OCI source label, so a fork asks about its
-// own releases). Nothing else is sent: a `User-Agent` of `Kept` (GitHub refuses a request without
-// one), the media type and the API version, and never Kept's version, the instance's address or
+// own releases). Nothing else is sent: a `User-Agent` of `SheepKeep` (GitHub refuses a request without
+// one), the media type and the API version, and never SheepKeep's version, the instance's address or
 // any identifier (D65: "nothing sent but the request"). Nothing is downloaded or installed; the
 // answer is stored for the status page.
 //
@@ -35,7 +35,7 @@ export const GITHUB_API = 'https://api.github.com';
 export const GITHUB_API_VERSION = '2026-03-10';
 /** The only headers sent. */
 export const UPDATE_CHECK_HEADERS = Object.freeze({
-  'User-Agent': 'Kept',
+  'User-Agent': 'SheepKeep',
   Accept: 'application/vnd.github+json',
   'X-GitHub-Api-Version': GITHUB_API_VERSION,
 });
@@ -73,7 +73,7 @@ export function githubRepoOf(
   return { owner, repo };
 }
 
-/** The fields Kept reads from a release (all required in GitHub's schema; `published_at` may be
+/** The fields SheepKeep reads from a release (all required in GitHub's schema; `published_at` may be
  * null). Everything else in the body is ignored. */
 const Release = z.object({
   tag_name: z.string().max(256),
@@ -227,7 +227,7 @@ type StoredState = z.infer<typeof StoredState>;
 /**
  * The stored release, only while it is newer than `running` (#552). The answer was right when it
  * was asked, but it outlives an upgrade: a server upgraded to the release it found would
- * otherwise say "Kept 1.14.7 is available" while running 1.14.7, until the next daily check. So
+ * otherwise say "SheepKeep 1.14.7 is available" while running 1.14.7, until the next daily check. So
  * every reader (the status page, the metric) compares again. A running version that isn't semver
  * (one set by hand, a commit hash say) can't be compared and keeps the answer; checkForUpdate never
  * stores one for it. A local build runs as 0.0.0-dev, which is semver, so every release is newer.

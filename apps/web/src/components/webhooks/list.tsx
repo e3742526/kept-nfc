@@ -316,7 +316,7 @@ function WebhookRowView({
           onPress={async () => {
             const ok = await confirm({
               title: t`Delete this webhook?`,
-              body: t`Kept stops sending to it, and its deliveries are forgotten.`,
+              body: t`SheepKeep stops sending to it, and its deliveries are forgotten.`,
               confirmLabel: t`Delete`,
               destructive: true,
             });

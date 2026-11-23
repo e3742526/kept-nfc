@@ -7,7 +7,7 @@ import { freshCode } from './totp';
 
 const kit = signInKit(SIGN_IN_INSTANCE, { phone: 50, desktop: 60 });
 
-test('a browser MFA session alone cannot sign in to Kept for iPhone', async ({ browser }) => {
+test('a browser MFA session alone cannot sign in to SheepKeep for iPhone', async ({ browser }) => {
   test.setTimeout(120_000);
   // MFA stays enabled after this test. Use a fresh login so concurrent specs and retries start clean.
   const login = await kit.createPasswordLogin(
@@ -51,7 +51,7 @@ test('a browser MFA session alone cannot sign in to Kept for iPhone', async ({ b
     const sessions = await context.request.get('/api/v1/me/sessions');
     expect(sessions.ok()).toBe(true);
     expect((await sessions.json()).sessions).not.toContainEqual(
-      expect.objectContaining({ userAgent: 'Kept for iPhone' }),
+      expect.objectContaining({ userAgent: 'SheepKeep for iPhone' }),
     );
   } finally {
     await context.close();

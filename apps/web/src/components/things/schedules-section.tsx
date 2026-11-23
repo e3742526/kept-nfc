@@ -66,7 +66,9 @@ export function ThingSchedulesSection({
         empty
       ) : q.data.items.length === 0 ? (
         <EmptyState icon={<ScheduleIcon />} title={<Trans>Nothing scheduled</Trans>}>
-          <Trans>A service or a check that comes round: Kept reminds you before it's due.</Trans>
+          <Trans>
+            A service or a check that comes round: SheepKeep reminds you before it's due.
+          </Trans>
         </EmptyState>
       ) : (
         <ul className="m-0 grid list-none gap-2 p-0">

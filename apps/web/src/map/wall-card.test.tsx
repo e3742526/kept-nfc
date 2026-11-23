@@ -128,7 +128,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/** The card inside a router (its details link to Kept's pages) and a query client (they read
+/** The card inside a router (its details link to SheepKeep's pages) and a query client (they read
  * the thing's facts, which never arrive here). */
 async function card(p: CardProps, locale: 'en' | 'ar' = 'en') {
   vi.stubGlobal('fetch', () => new Promise(() => {}));

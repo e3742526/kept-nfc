@@ -25,7 +25,7 @@ describe('the fetch wrapper', () => {
     expect((init.headers as Record<string, string>)['content-type']).toBe('application/json');
   });
 
-  it("maps Kept's {error, hint, code}", async () => {
+  it("maps SheepKeep's {error, hint, code}", async () => {
     vi.stubGlobal('fetch', reply(409, { error: 'Taken', hint: 'Pick another', code: 'conflict' }));
     const err = (await api.get('/x').catch((e) => e)) as ApiError;
     expect(err).toBeInstanceOf(ApiError);
@@ -83,7 +83,7 @@ describe('the fetch wrapper', () => {
     expect(await api.del('/x')).toBeUndefined();
   });
 
-  it("keeps a Kept error's extra fields as details (a 412's conflicts)", async () => {
+  it("keeps a SheepKeep error's extra fields as details (a 412's conflicts)", async () => {
     vi.stubGlobal(
       'fetch',
       reply(412, {
@@ -122,7 +122,7 @@ describe('the fetch wrapper', () => {
   });
 });
 
-describe('X-Kept-Audit-Event', () => {
+describe('X-SheepKeep-Audit-Event', () => {
   it('splits one id, several for a bulk move, or none', () => {
     expect(auditEventIds('a1')).toEqual(['a1']);
     expect(auditEventIds('a1, b2, c3')).toEqual(['a1', 'b2', 'c3']);

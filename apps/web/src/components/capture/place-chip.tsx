@@ -130,7 +130,7 @@ export function PlaceSheet({
       : suggest === 'none'
         ? t`None of your locations is nearby.`
         : suggest === 'denied'
-          ? t`Location access is off for Kept in this browser's settings.`
+          ? t`Location access is off for SheepKeep in this browser's settings.`
           : suggest === 'unavailable'
             ? t`Not available on this device.`
             : t`Compares your position with your locations on this phone. It is never sent or kept.`;

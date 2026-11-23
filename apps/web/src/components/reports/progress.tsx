@@ -109,7 +109,7 @@ function ReadyActions({
   if (TRY)
     return (
       <span className="text-small text-ink-2">
-        <Trans>Your own Kept makes the PDF here. This demo has no files.</Trans>
+        <Trans>Your own SheepKeep makes the PDF here. This demo has no files.</Trans>
       </span>
     );
   const canDownload = downloadsWork();

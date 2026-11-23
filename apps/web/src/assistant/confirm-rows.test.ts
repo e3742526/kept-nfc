@@ -93,7 +93,7 @@ describe('add_thing rows', () => {
     ]);
   });
 
-  it('shows the type Kept matched, else "not set" with the words the model used', () => {
+  it('shows the type SheepKeep matched, else "not set" with the words the model used', () => {
     const rows = add(
       [{ name: 'Sofa', type: 'Furniture' }, { name: 'Drill', type: 'Drill' }, { name: 'Mug' }],
       { 'type:Furniture': { kind: 'type', id: TYPE, name: 'Furniture', path: [] } },

@@ -236,7 +236,7 @@ function SchedulesPage() {
                 <EmptyState icon={<ScheduleIcon />} title={<Trans>Nothing scheduled</Trans>}>
                   <Trans>
                     Add a service or a check that comes round, like the boiler every year or the car
-                    every 10,000 km, and Kept reminds you before it's due.
+                    every 10,000 km, and SheepKeep reminds you before it's due.
                   </Trans>
                 </EmptyState>
               }

@@ -101,7 +101,7 @@ function SignedInFrame() {
   return (
     <AppLockGate userId={me.data.user.id}>
       <MainShell locations={locations.data ?? []} counts={counts}>
-        {/* Try Kept (D246): a constant, so other builds drop the banner altogether. */}
+        {/* Try SheepKeep (D246): a constant, so other builds drop the banner altogether. */}
         {TRY ? <TryBanner /> : null}
         <OriginMismatchBanner />
         <InsecureBanner userId={me.data.user.id} />

@@ -49,7 +49,7 @@ function useOidcErrorWords() {
       case 'http_status':
         return t`The provider's discovery document didn't load.`;
       default:
-        return t`The provider couldn't be reached when Kept started.`;
+        return t`The provider couldn't be reached when SheepKeep started.`;
     }
   };
 }
@@ -63,7 +63,7 @@ export function OidcStatus({ oidc }: { oidc: Oidc }) {
       {oidc.error ? (
         <Notice tone="warn" title={<Trans>OIDC sign-in is off</Trans>}>
           {reason(oidc.error)}{' '}
-          <Trans>Fix it, then restart Kept. Everything else works meanwhile.</Trans>
+          <Trans>Fix it, then restart SheepKeep. Everything else works meanwhile.</Trans>
         </Notice>
       ) : null}
       <List>
@@ -91,7 +91,7 @@ export function OidcStatus({ oidc }: { oidc: Oidc }) {
                   Set <code className="ltr whitespace-nowrap">KEPT_OIDC_ISSUER</code>,{' '}
                   <code className="ltr whitespace-nowrap">KEPT_OIDC_CLIENT_ID</code> and{' '}
                   <code className="ltr whitespace-nowrap">KEPT_OIDC_CLIENT_SECRET</code>, then
-                  restart Kept.
+                  restart SheepKeep.
                 </Trans>
               </span>
             </span>
@@ -113,7 +113,7 @@ export function OidcStatus({ oidc }: { oidc: Oidc }) {
       <p className="m-0 text-small text-ink-3">
         <Trans>
           Signing in this way reaches only an account already linked to it, or someone invited here.
-          Kept never joins accounts because their emails match.
+          SheepKeep never joins accounts because their emails match.
         </Trans>
       </p>
     </Section>
@@ -141,7 +141,7 @@ export function GoogleStatus({ google }: { google: NonNullable<AdminStatus['goog
                   Make an OAuth client in Google Cloud, set{' '}
                   <code className="ltr whitespace-nowrap">KEPT_GOOGLE_CLIENT_ID</code> and{' '}
                   <code className="ltr whitespace-nowrap">KEPT_GOOGLE_CLIENT_SECRET</code>, then
-                  restart Kept.
+                  restart SheepKeep.
                 </Trans>
               </span>
             </span>
