@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { createDeviceLabelBatch, deviceLabelCode, parseDeviceLabel, randomDeviceBatchId } from './device-labels.js';
+import {
+  createDeviceLabelBatch,
+  deviceLabelCode,
+  parseDeviceLabel,
+  randomDeviceBatchId,
+} from './device-labels.js';
 
 describe('device labels', () => {
   it('preserves the complete base36 alphabet', () => {
     expect(parseDeviceLabel(' tmp-oil0-0001 ')).toEqual({
-      code: 'TMP-OIL0-0001', prefix: 'TMP', batchId: 'OIL0', sequence: 1,
+      code: 'TMP-OIL0-0001',
+      prefix: 'TMP',
+      batchId: 'OIL0',
+      sequence: 1,
     });
     expect(parseDeviceLabel('TMP-0110-0001')?.code).not.toBe('TMP-OIL0-0001');
     expect(parseDeviceLabel('TMP-A09Z-0000')).toBeNull();
