@@ -8,6 +8,7 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
 import { sep, useBytes } from '@/lib/format';
 import { usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import { type CompletionState, type Connection, StorageFullError } from './bridge';
 import { type Destination, DestinationPicker, defaultDestination } from './destination';
 import { createBox, type InventoryCache } from './inventory';
@@ -175,9 +176,7 @@ export function CaptureForm({
 
   return (
     <section className="grid gap-4">
-      <Button className="justify-self-start" variant="ghost" isDisabled={busy} onPress={onClose}>
-        <Trans>Done</Trans>
-      </Button>
+      <BackButton onPress={onClose} isDisabled={busy} />
       <header className="grid gap-1 rounded-lg border border-line bg-surface p-3">
         <p className="text-label font-semibold uppercase tracking-wide text-ink-2">
           {photosOnly
@@ -401,9 +400,7 @@ export function NewBoxForm({
 
   return (
     <section className="grid gap-4">
-      <Button className="justify-self-start" variant="ghost" onPress={onClose} isDisabled={busy}>
-        <Trans>Back</Trans>
-      </Button>
+      <BackButton onPress={onClose} isDisabled={busy} />
       <h2 className="text-title font-semibold">
         <Trans>Create a box</Trans>
       </h2>

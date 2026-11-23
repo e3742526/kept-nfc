@@ -7,6 +7,7 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import type { Connection } from './bridge';
 import { LocationPicker, writableLocations } from './destination';
 import { type InventoryCache, inventoryPath } from './inventory';
@@ -70,9 +71,7 @@ export function Rooms({
 
   return (
     <section className="grid gap-4">
-      <Button variant="ghost" className="justify-self-start" onPress={onClose}>
-        <Trans>Back</Trans>
-      </Button>
+      <BackButton onPress={onClose} />
       <h2 className="text-title font-semibold">
         <Trans>Rooms</Trans>
       </h2>

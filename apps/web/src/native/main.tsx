@@ -1,7 +1,6 @@
 import { I18nProvider } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  ChevronLeft,
   History,
   Home,
   Inbox,
@@ -35,6 +34,7 @@ import { isolate } from '@/lib/bidi';
 import { sep, useBytes } from '@/lib/format';
 import { setThemePref, type ThemePref, usePrefs, watchSystemTheme } from '@/lib/prefs';
 import { NativePlatformProvider, usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import {
   type CompletionState,
   type Connection,
@@ -107,16 +107,6 @@ function tabFor(screen: Screen): TabKey {
     default:
       return 'home';
   }
-}
-
-/** Icon back button used on every phone sub-screen (iOS best practice). */
-function BackButton({ onPress }: { onPress: () => void }) {
-  return (
-    <Button variant="ghost" className="kept-back justify-self-start" onPress={onPress}>
-      <ChevronLeft size={20} aria-hidden />
-      <Trans>Back</Trans>
-    </Button>
-  );
 }
 
 /** Sticky bottom tab bar: the four main phone destinations, icon-first. */

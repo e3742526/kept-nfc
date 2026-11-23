@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import type { Connection } from './bridge';
 import type { Destination } from './destination';
 import { EditRecord } from './edit-record';
@@ -501,9 +502,7 @@ export function RecordScreen({
   const cover = online && previewUrl(thing?.thumbUrl, connection.origin);
   return (
     <section className="grid gap-5">
-      <Button className="justify-self-start" variant="ghost" onPress={onClose}>
-        <Trans>Back</Trans>
-      </Button>
+      <BackButton onPress={onClose} />
       {unavailable || !row ? (
         <p role="status">{status || t`Opening inventory…`}</p>
       ) : (

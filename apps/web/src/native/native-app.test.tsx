@@ -872,7 +872,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Winter gloves');
     await user.click(screen.getByRole('button', { name: 'Save capture' }));
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Rooms' }));
     await user.click(screen.getByRole('button', { name: /Attic/ }));
     expect(await screen.findByRole('button', { name: 'Winter gloves' })).toBeInTheDocument();
@@ -898,7 +898,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.upload(picker, new File(['image bytes'], 'bin.jpg', { type: 'image/jpeg' }));
     await user.click(screen.getByRole('button', { name: 'Save photos' }));
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'photo.jpg' }));
     expect(env.events.openedRemote.at(-1)?.thing).toBe(env.boxId);
     expect(screen.getByText('No cached contents.')).toBeInTheDocument();
@@ -1092,7 +1092,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByText('Entries in this batch: 1')).toBeInTheDocument();
 
     // Pending capture and pending original preview work inside the box before sync.
-    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(await screen.findByText('Pending captures')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'packing-guide.pdf' }));
     expect(env.events.openedPending).toHaveLength(1);
@@ -1290,7 +1290,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Save to box' }));
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'Back' }));
 
     expect(

@@ -10,6 +10,7 @@ import { QrCode } from '@/components/ui/qr-code';
 import { TextField } from '@/components/ui/text-field';
 import { isolate } from '@/lib/bidi';
 import { usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import type { Connection, FindTagEvent, TagReading } from './bridge';
 import { ClaimBinLabel } from './claim-bin-label';
 import type { InventoryCache } from './inventory';
@@ -491,9 +492,7 @@ export function LabelPanel({
   return (
     <section className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button className="justify-self-start" variant="ghost" onPress={onClose}>
-          <Trans>Back</Trans>
-        </Button>
+        <BackButton onPress={onClose} />
         {action === 'find' && box && (
           <Button variant="ghost" size="small" onPress={clearTarget}>
             <Trans>Clear target</Trans>

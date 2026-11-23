@@ -9,6 +9,7 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import type { Connection } from './bridge';
 import { LocationPicker, writableLocations } from './destination';
 import type { InventoryCache } from './inventory';
@@ -119,9 +120,7 @@ export function LabelSheets({
 
   return (
     <section className="grid gap-4">
-      <Button variant="ghost" className="justify-self-start" onPress={onClose}>
-        <Trans>Back</Trans>
-      </Button>
+      <BackButton onPress={onClose} />
       <h2 className="text-title font-semibold">
         <Trans>Print label sheets</Trans>
       </h2>

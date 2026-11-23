@@ -5,6 +5,7 @@ import type { Page, TrashItem } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { usePlatform } from './adapters';
+import { BackButton } from './back-button';
 import type { Connection } from './bridge';
 import type { InventoryCache } from './inventory';
 import type { Target } from './labels';
@@ -77,9 +78,7 @@ export function Trash({
 
   return (
     <section className="grid gap-3">
-      <Button variant="ghost" className="justify-self-start" onPress={onClose}>
-        <Trans>Back</Trans>
-      </Button>
+      <BackButton onPress={onClose} />
       <h2 className="text-title font-semibold">
         <Trans>Trash</Trans>
       </h2>
