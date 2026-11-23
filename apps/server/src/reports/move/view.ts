@@ -78,7 +78,7 @@ export function buildMoveView(
     move: g.name,
     route: g.toLocationName ? w.route(g.locationName, g.toLocationName) : g.locationName,
     generatedLine: w.generated(g.requesterName, when),
-    footer: ['Kept', ctx.instance, when].filter((x) => x !== '').join(sep),
+    footer: ['SheepKeep', ctx.instance, when].filter((x) => x !== '').join(sep),
     none: w.none,
     labels: { goesTo: w.goesTo, quantity: w.quantity, id: w.id, scan: w.scan },
     boxes: g.boxes.map((b) => ({

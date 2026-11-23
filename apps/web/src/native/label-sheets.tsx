@@ -1,5 +1,6 @@
 import { labelStock, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import { ChevronRight, Printer, Tags } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { capturePaths } from '@/api/capture/paths';
 import type { CreateLabelBatchBody, CreateLabelBatchResult, LabelBatch } from '@/api/capture/types';
@@ -8,8 +9,9 @@ import type { Page } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
+import { sep } from '@/lib/format';
 import { usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import { LocationPicker, writableLocations } from './destination';
 import type { InventoryCache } from './inventory';
@@ -120,38 +122,42 @@ export function LabelSheets({
 
   return (
     <section className="grid gap-4">
-      <BackButton onPress={onClose} />
-      <h2 className="text-title font-semibold">
-        <Trans>Print label sheets</Trans>
-      </h2>
-      <LocationPicker
-        cache={cache}
-        value={location}
-        onChange={(value) => {
-          setLocation(value);
-          setId(newId());
-        }}
-        disabled={busy}
+      <ScreenHeader
+        title={<Trans>Print label sheets</Trans>}
+        onBack={onClose}
+        icon={<Tags size={18} aria-hidden />}
       />
-      <Select
-        label={t`Labels per US Letter sheet`}
-        items={counts.map((value) => ({ id: value }))}
-        selectedKey={count}
-        onSelectionChange={(key) => {
-          if (key != null) setCount(Number(key));
-          setId(newId());
-        }}
-        isDisabled={busy}
-      >
-        {(option) => <SelectItem id={option.id}>{String(option.id)}</SelectItem>}
-      </Select>
-      <Button
-        isDisabled={!location || !adapters.media.shareLabelSheet}
-        isPending={busy}
-        onPress={() => void share()}
-      >
-        <Trans>Create blank labels</Trans>
-      </Button>
+      <div className="kept-card">
+        <LocationPicker
+          cache={cache}
+          value={location}
+          onChange={(value) => {
+            setLocation(value);
+            setId(newId());
+          }}
+          disabled={busy}
+        />
+        <Select
+          label={t`Labels per US Letter sheet`}
+          items={counts.map((value) => ({ id: value }))}
+          selectedKey={count}
+          onSelectionChange={(key) => {
+            if (key != null) setCount(Number(key));
+            setId(newId());
+          }}
+          isDisabled={busy}
+        >
+          {(option) => <SelectItem id={option.id}>{String(option.id)}</SelectItem>}
+        </Select>
+        <Button
+          isDisabled={!location || !adapters.media.shareLabelSheet}
+          isPending={busy}
+          onPress={() => void share()}
+        >
+          <Printer size={18} aria-hidden />
+          <Trans>Create blank labels</Trans>
+        </Button>
+      </div>
       {batches.length > 0 && (
         <ul className="grid gap-2">
           {batches.map((batch) => (
@@ -162,13 +168,26 @@ export function LabelSheets({
                 isDisabled={busy}
                 onPress={() => void share(batch)}
               >
-                <Trans>Reprint label sheet</Trans>
-                <span className="text-small">
-                  <time dateTime={batch.createdAt}>
-                    {new Date(batch.createdAt).toLocaleString()}
-                  </time>
+                <span className="kept-row-lead" aria-hidden>
+                  <Printer size={18} />
                 </span>
-                <bdi className="text-small">{batch.labels[0]?.code}</bdi>
+                <span className="kept-row-body">
+                  <span className="font-semibold">
+                    <Trans>Reprint label sheet</Trans>
+                  </span>
+                  <span className="text-small font-normal text-ink-2">
+                    <time dateTime={batch.createdAt}>
+                      {new Date(batch.createdAt).toLocaleString()}
+                    </time>
+                    {batch.labels[0]?.code && (
+                      <>
+                        {sep()}
+                        <bdi className="ltr">{batch.labels[0].code}</bdi>
+                      </>
+                    )}
+                  </span>
+                </span>
+                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
               </Button>
             </li>
           ))}

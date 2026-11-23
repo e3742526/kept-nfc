@@ -58,7 +58,7 @@ const inventory: PdfWords['inventory'] = {
 const readable: PdfWords['readable'] = {
   title: 'Bản sao đọc được',
   intro:
-    'Mọi thứ trong địa điểm này như Kept đã lưu. Chỉ cần một trình duyệt là mở được: ảnh, biên lai và tài liệu mở từ các tệp đi kèm.',
+    'Mọi thứ trong địa điểm này như SheepKeep đã lưu. Chỉ cần một trình duyệt là mở được: ảnh, biên lai và tài liệu mở từ các tệp đi kèm.',
   exported: (when) => `Xuất ngày ${when}`,
   places: 'Vị trí',
   things: 'Đồ vật',
@@ -145,12 +145,12 @@ const conditionReport: PdfWords['condition'] = {
     'Riêng tư: bản ghi tình trạng của ngôi nhà này. Chỉ chia sẻ với chủ nhà hoặc bên môi giới của bạn.',
   empty: 'Báo cáo này không có phòng nào.',
   notInReport: 'Không có trong báo cáo này.',
-  photoNote: 'Thời gian của mỗi ảnh là lúc Kept nhận được ảnh đó.',
+  photoNote: 'Thời gian của mỗi ảnh là lúc SheepKeep nhận được ảnh đó.',
   draft: 'Chưa hoàn thành: báo cáo này vẫn có thể thay đổi.',
   started: (who) => `Bắt đầu bởi ${who}`,
   finished: (who, when) => `Hoàn thành bởi ${who}, ${when}`,
   generated: (who, when) => `Tạo bởi ${who}, ${when}`,
-  more: (n) => `Còn ${n} ảnh khác trong Kept`,
+  more: (n) => `Còn ${n} ảnh khác trong SheepKeep`,
 };
 
 const move: PdfWords['move'] = {
@@ -163,10 +163,10 @@ const move: PdfWords['move'] = {
   quantity: 'SL',
   id: 'ID',
   holds: (n) => `chứa ${n}`,
-  more: (n) => `Còn ${n} mục khác trong Kept`,
+  more: (n) => `Còn ${n} mục khác trong SheepKeep`,
   states: { packed: 'Đã đóng gói', in_transit: 'Đang vận chuyển', unpacked: 'Đã dỡ' },
   route: (from, to) => `${from} → ${to}`,
-  scan: 'Quét mã để xem thùng này trong Kept và dỡ đồ.',
+  scan: 'Quét mã để xem thùng này trong SheepKeep và dỡ đồ.',
   generated: (who, when) => `In bởi ${who}, ${when}`,
   none: 'Không có thùng nào để in.',
 };
@@ -240,7 +240,7 @@ const vehicle: PdfWords['vehicle'] = {
   generated: (who, when) => `Tạo bởi ${who}, ${when}`,
   asOf: (day) => `Tính đến ${day}`,
   range: (from, to) => `Từ ${from} đến ${to}`,
-  more: (n) => `Còn ${n} ảnh khác trong Kept`,
+  more: (n) => `Còn ${n} ảnh khác trong SheepKeep`,
   moreInvoices: (n) => `+${n}`,
   moneyHidden: 'Không có chi phí: chi phí bị ẩn với bạn ở địa điểm này.',
   per100: (fuel, distance) => `${fuel}/100 ${distance}`,

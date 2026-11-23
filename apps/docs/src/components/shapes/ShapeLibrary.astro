@@ -6,6 +6,7 @@
  * the catalogue (library.ts). Plain HTML: everything is in the page, and the filter above it is
  * a small script that only hides cards; without it every shape shows.
  */
+import { SHAPE_CONTRIBUTION_URL } from '../../../../web/src/map/shape-links';
 import spriteUrl from '../../../../web/src/map/thumbs/shapes.webp?url';
 import { THUMB_COLS } from '../../../../web/src/map/thumbs/sprite';
 import { shapeLibrary } from './library';
@@ -15,7 +16,6 @@ const count = groups.reduce((n, g) => n + g.shapes.length, 0);
 const SIZE = 64;
 /** What the filter compares: lower case, no accents. */
 const fold = (s: string) => s.toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '');
-const request = 'https://github.com/keptinventory/kept/issues/new?template=shape-request.yml';
 ---
 
 <div class="kd-shapes not-content" data-shapes>
@@ -25,7 +25,7 @@ const request = 'https://github.com/keptinventory/kept/issues/new?template=shape
   </label>
   <p class="kd-shapes-count" data-count aria-live="polite">{count} shapes</p>
   <p class="kd-shapes-none" data-none hidden>
-    No shape matches. <a href={request}>Request it</a>.
+    No shape matches. <a href={SHAPE_CONTRIBUTION_URL}>Contribute a shape</a>.
   </p>
   {
     groups.map((group) => (

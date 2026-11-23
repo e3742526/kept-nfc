@@ -1,13 +1,15 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import { ChevronRight, Clock, MapPin, Package, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { inventoryPaths } from '@/api/inventory/paths';
 import type { CreatePlaceBody, PlaceView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
+import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import { LocationPicker, writableLocations } from './destination';
 import { type InventoryCache, inventoryPath } from './inventory';
@@ -41,12 +43,18 @@ export function Rooms({
   const [id, setId] = useState(newId);
   const locations = writableLocations(cache);
   const [locationId, setLocationId] = useState(locations[0]?.id ?? null);
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
-  const boxes = recent.flatMap((id) =>
-    cache.things.filter((thing) => thing.id === id && thing.isContainer),
+  const boxes = recent.flatMap((boxId) =>
+    cache.things.filter((thing) => thing.id === boxId && thing.isContainer),
   );
-  const rooms = cache.places.filter((place) => place.kindKey === 'room' && !place.isUnplaced);
+  const rooms = cache.places.filter(
+    (place) =>
+      place.kindKey === 'room' &&
+      !place.isUnplaced &&
+      (!locationFilter || place.locationId === locationFilter),
+  );
 
   async function create() {
     if (busy || !online || !locationId || !name.trim()) return;
@@ -71,13 +79,26 @@ export function Rooms({
 
   return (
     <section className="grid gap-4">
-      <BackButton onPress={onClose} />
-      <h2 className="text-title font-semibold">
-        <Trans>Rooms</Trans>
-      </h2>
-      {adding ? (
+      <ScreenHeader
+        title={<Trans>Rooms</Trans>}
+        onBack={onClose}
+        icon={<MapPin size={18} aria-hidden />}
+        trailing={
+          !adding && (
+            <Button
+              size="small"
+              isDisabled={!online || !locations.length}
+              onPress={() => setAdding(true)}
+            >
+              <Plus size={16} aria-hidden />
+              <Trans>Create room</Trans>
+            </Button>
+          )
+        }
+      />
+      {adding && (
         <form
-          className="grid gap-3"
+          className="kept-card"
           onSubmit={(event) => {
             event.preventDefault();
             void create();
@@ -102,30 +123,46 @@ export function Rooms({
             }}
             disabled={busy}
           />
-          <Button
-            type="submit"
-            isPending={busy}
-            isDisabled={!online || !locationId || !name.trim()}
-          >
-            <Trans>Create room</Trans>
-          </Button>
-          <Button variant="ghost" isDisabled={busy} onPress={() => setAdding(false)}>
-            <Trans>Cancel</Trans>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="submit"
+              isPending={busy}
+              isDisabled={!online || !locationId || !name.trim()}
+            >
+              <Plus size={16} aria-hidden />
+              <Trans>Create room</Trans>
+            </Button>
+            <Button variant="ghost" isDisabled={busy} onPress={() => setAdding(false)}>
+              <X size={16} aria-hidden />
+              <Trans>Cancel</Trans>
+            </Button>
+          </div>
           {status && <p role="alert">{status}</p>}
         </form>
-      ) : (
-        <Button
-          className="justify-self-start"
-          isDisabled={!online || !locations.length}
-          onPress={() => setAdding(true)}
+      )}
+      {cache.locations.length > 1 && (
+        <Select
+          label={t`Location`}
+          items={[
+            { id: 'all', name: t`All locations` },
+            ...cache.locations.map((loc) => ({ id: loc.id, name: loc.name })),
+          ]}
+          selectedKey={locationFilter ?? 'all'}
+          onSelectionChange={(key) =>
+            setLocationFilter(key === null || key === 'all' ? null : String(key))
+          }
         >
-          <Trans>Create room</Trans>
-        </Button>
+          {(item) => (
+            <SelectItem id={item.id} textValue={item.name}>
+              <bdi>{item.name}</bdi>
+            </SelectItem>
+          )}
+        </Select>
       )}
       {boxes.length > 0 && (
         <section className="grid gap-2">
-          <h3 className="font-semibold">
+          <h3 className="kept-card-title text-ink-2">
+            <Clock size={16} aria-hidden />
             <Trans>Recently opened boxes</Trans>
           </h3>
           <ul className="grid gap-2">
@@ -136,8 +173,16 @@ export function Rooms({
                   className="kept-phone-row"
                   onPress={() => onOpen({ kind: 'thing', id: box.id, locationId: box.locationId })}
                 >
-                  <bdi>{box.name ?? t`Untitled`}</bdi>
-                  <bdi className="text-small">{inventoryPath(cache, box).join(' › ')}</bdi>
+                  <span className="kept-row-lead" aria-hidden>
+                    <Package size={18} />
+                  </span>
+                  <span className="kept-row-body">
+                    <bdi className="text-body font-semibold">{box.name ?? t`Untitled`}</bdi>
+                    <bdi className="text-small font-normal text-ink-2">
+                      {inventoryPath(cache, box).join(' › ')}
+                    </bdi>
+                  </span>
+                  <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
                 </Button>
               </li>
             ))}
@@ -153,16 +198,22 @@ export function Rooms({
                 className="kept-phone-row"
                 onPress={() => onOpen({ kind: 'place', id: room.id, locationId: room.locationId })}
               >
-                <bdi>{room.name}</bdi>
-                <span className="text-small font-normal">
-                  <bdi>{inventoryPath(cache, room).join(' › ')}</bdi>
+                <span className="kept-row-lead" aria-hidden>
+                  <MapPin size={18} />
                 </span>
+                <span className="kept-row-body">
+                  <bdi className="text-body font-semibold">{room.name}</bdi>
+                  <span className="text-small font-normal text-ink-2">
+                    <bdi>{inventoryPath(cache, room).join(' › ')}</bdi>
+                  </span>
+                </span>
+                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
               </Button>
             </li>
           ))}
         </ul>
       ) : (
-        <p>
+        <p className="text-ink-2">
           <Trans>No rooms yet.</Trans>
         </p>
       )}

@@ -1,5 +1,15 @@
 import { AMOUNT_STRING, CONDITIONS, NATIVE_INVENTORY_PAYLOAD_VERSION, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  ArrowRightLeft,
+  Check,
+  CheckCircle2,
+  Compass,
+  Inbox,
+  MapPinOff,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
@@ -333,6 +343,7 @@ export function EditRecord({
             />
           )}
           <Button type="submit" isPending={busy} isDisabled={!(values?.name ?? roomName).trim()}>
+            <Check size={16} aria-hidden />
             <Trans>Save</Trans>
           </Button>
         </form>
@@ -379,32 +390,52 @@ export function EditRecord({
             isPending={busy}
             onPress={() => void move()}
           >
+            {correcting ? (
+              <Compass size={16} aria-hidden />
+            ) : (
+              <ArrowRightLeft size={16} aria-hidden />
+            )}
             {correcting ? t`Correct location` : t`Move`}
           </Button>
         </div>
       )}
       {mode === 'actions' && (
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button variant="secondary" isDisabled={busy} onPress={() => void mark(true)}>
+            <CheckCircle2 size={16} aria-hidden />
             <Trans>Seen here</Trans>
           </Button>
           <Button variant="secondary" isDisabled={busy} onPress={() => void mark(false)}>
+            <MapPinOff size={16} aria-hidden />
             <Trans>Not here</Trans>
           </Button>
           {thing &&
             thing.placeId !==
               cache.locations.find((location) => location.id === thing.locationId)
                 ?.unplacedPlaceId && (
-              <Button variant="secondary" isDisabled={busy} onPress={() => void remove()}>
+              <Button
+                variant="secondary"
+                className="col-span-2"
+                isDisabled={busy}
+                onPress={() => void remove()}
+              >
+                <Inbox size={16} aria-hidden />
                 <Trans>Remove without a destination</Trans>
               </Button>
             )}
-          <Button variant="secondary" isDisabled={busy} onPress={() => void trash()}>
+          <Button
+            variant="danger"
+            className="col-span-2"
+            isDisabled={busy}
+            onPress={() => void trash()}
+          >
+            <Trash2 size={16} aria-hidden />
             <Trans>Move to Trash</Trans>
           </Button>
         </div>
       )}
       <Button variant="ghost" isDisabled={busy} onPress={onClose}>
+        <X size={16} aria-hidden />
         <Trans>Cancel</Trans>
       </Button>
       {status && <p role="alert">{status}</p>}

@@ -1,11 +1,12 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import { ChevronRight, RotateCcw, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Page, TrashItem } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import type { InventoryCache } from './inventory';
 import type { Target } from './labels';
@@ -77,20 +78,21 @@ export function Trash({
   }
 
   return (
-    <section className="grid gap-3">
-      <BackButton onPress={onClose} />
-      <h2 className="text-title font-semibold">
-        <Trans>Trash</Trans>
-      </h2>
+    <section className="grid gap-4">
+      <ScreenHeader
+        title={<Trans>Trash</Trans>}
+        onBack={onClose}
+        icon={<Trash2 size={18} aria-hidden />}
+      />
       {page?.items.length ? (
         <ul className="grid gap-2">
           {page.items.map((item) => (
             <li
               key={item.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-line p-3"
+              className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-3"
             >
-              <div className="grid gap-1 min-w-0">
-                <bdi className="break-words">{item.name ?? t`Untitled`}</bdi>
+              <div className="grid min-w-0 gap-0.5">
+                <bdi className="break-words font-semibold">{item.name ?? t`Untitled`}</bdi>
                 <time className="text-small text-ink-2" dateTime={item.deletedAt}>
                   {new Date(item.deletedAt).toLocaleString()}
                 </time>
@@ -105,6 +107,7 @@ export function Trash({
                   isDisabled={!!busy}
                   onPress={() => void restore(item)}
                 >
+                  <RotateCcw size={15} aria-hidden />
                   <Trans>Restore</Trans>
                 </Button>
               )}
@@ -113,7 +116,7 @@ export function Trash({
         </ul>
       ) : (
         page && (
-          <p>
+          <p className="text-ink-2">
             <Trans>Trash is empty.</Trans>
           </p>
         )
@@ -121,6 +124,7 @@ export function Trash({
       {page?.next_cursor && (
         <Button variant="secondary" onPress={() => setCursor(page.next_cursor ?? undefined)}>
           <Trans>Next page</Trans>
+          <ChevronRight size={16} className="rtl:rotate-180" aria-hidden />
         </Button>
       )}
       {cursor && (

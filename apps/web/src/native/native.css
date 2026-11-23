@@ -1,12 +1,134 @@
 @import "../styles/index.css";
 @source "../";
 
+/*
+ * Color palette variations layered over SheepKeep Identity v2 tokens (tokens.css).
+ * Every variation works in both light and dark modes (plus system).
+ */
+:root[data-palette="slate"] {
+  --paper: #f4f6f9;
+  --surface: #ffffff;
+  --sunken: #e8ecf2;
+  --line: #cfd7e3;
+  --ink: #122136;
+  --ink-2: #41526b;
+  --ink-3: #64748b;
+  --amber: #2563eb;
+  --amber-ink: #ffffff;
+  --amber-text: #1d4ed8;
+}
+:root[data-palette="slate"][data-theme="dark"] {
+  --paper: #0f172a;
+  --surface: #1e293b;
+  --sunken: #0b1120;
+  --line: #334155;
+  --ink: #f1f5f9;
+  --ink-2: #cbd5e1;
+  --ink-3: #94a3b8;
+  --amber: #60a5fa;
+  --amber-ink: #0f172a;
+  --amber-text: #93c5fd;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="slate"]:not([data-theme="light"]) {
+    --paper: #0f172a;
+    --surface: #1e293b;
+    --sunken: #0b1120;
+    --line: #334155;
+    --ink: #f1f5f9;
+    --ink-2: #cbd5e1;
+    --ink-3: #94a3b8;
+    --amber: #60a5fa;
+    --amber-ink: #0f172a;
+    --amber-text: #93c5fd;
+  }
+}
+
+:root[data-palette="meadow"] {
+  --paper: #f3f7f2;
+  --surface: #fcfefb;
+  --sunken: #e4ede3;
+  --line: #c7d8c5;
+  --ink: #163322;
+  --ink-2: #3a5947;
+  --ink-3: #5a7565;
+  --amber: #2e7d4f;
+  --amber-ink: #ffffff;
+  --amber-text: #1f613b;
+}
+:root[data-palette="meadow"][data-theme="dark"] {
+  --paper: #102419;
+  --surface: #183424;
+  --sunken: #0b1a12;
+  --line: #2f5740;
+  --ink: #ecf7ee;
+  --ink-2: #c4dec9;
+  --ink-3: #96bda0;
+  --amber: #6ad095;
+  --amber-ink: #0b2014;
+  --amber-text: #8ae0ae;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="meadow"]:not([data-theme="light"]) {
+    --paper: #102419;
+    --surface: #183424;
+    --sunken: #0b1a12;
+    --line: #2f5740;
+    --ink: #ecf7ee;
+    --ink-2: #c4dec9;
+    --ink-3: #96bda0;
+    --amber: #6ad095;
+    --amber-ink: #0b2014;
+    --amber-text: #8ae0ae;
+  }
+}
+
+:root[data-palette="contrast"] {
+  --paper: #ffffff;
+  --surface: #ffffff;
+  --sunken: #f0f0f0;
+  --line: #4a4a4a;
+  --ink: #000000;
+  --ink-2: #1f1f1f;
+  --ink-3: #3d3d3d;
+  --amber: #000000;
+  --amber-ink: #ffffff;
+  --amber-text: #000000;
+}
+:root[data-palette="contrast"][data-theme="dark"] {
+  --paper: #000000;
+  --surface: #121212;
+  --sunken: #1f1f1f;
+  --line: #8a8a8a;
+  --ink: #ffffff;
+  --ink-2: #e5e5e5;
+  --ink-3: #cccccc;
+  --amber: #ffd166;
+  --amber-ink: #000000;
+  --amber-text: #ffd166;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="contrast"]:not([data-theme="light"]) {
+    --paper: #000000;
+    --surface: #121212;
+    --sunken: #1f1f1f;
+    --line: #8a8a8a;
+    --ink: #ffffff;
+    --ink-2: #e5e5e5;
+    --ink-3: #cccccc;
+    --amber: #ffd166;
+    --amber-ink: #000000;
+    --amber-text: #ffd166;
+  }
+}
+
 .kept-phone {
   max-inline-size: 42rem;
   min-block-size: 100dvb;
   margin-inline: auto;
-  padding-block: max(1rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-bottom));
-  padding-inline: 1.25rem;
+  padding-block-start: max(0.75rem, env(safe-area-inset-top));
+  padding-block-end: calc(5.25rem + env(safe-area-inset-bottom));
+  padding-inline: 1rem;
 }
 
 .kept-phone input,
@@ -18,33 +140,213 @@
   min-block-size: 2.75rem;
 }
 
+/* Compact signed-in app header bar. */
+.kept-appbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block: 0.375rem 0.75rem;
+  margin-block-end: 0.875rem;
+  border-block-end: 1px solid var(--line);
+}
+
+.kept-appbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+.kept-appbar-name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.kept-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-block-size: 2.25rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.625rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.kept-sync-dot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.kept-sync-dot-ok {
+  background: var(--ok);
+}
+
+.kept-sync-dot-warn {
+  background: var(--warn);
+}
+
+/* Compact iOS sub-screen header bar: back button + title + trailing slot. */
+.kept-screen-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-block-end: 0.375rem;
+  border-block-end: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.kept-screen-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.kept-screen-trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+/* Horizontal iOS list row with leading media/icon and trailing chevron. */
 .kept-phone .kept-phone-row {
   inline-size: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.125rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   padding-block: 0.625rem;
-  padding-inline: 0.875rem;
+  padding-inline: 0.75rem;
+  border-radius: 0.75rem;
   background: var(--surface);
   text-align: start;
   overflow-wrap: anywhere;
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease;
+}
+
+.kept-phone .kept-phone-row[data-pressed] {
+  transform: scale(0.985);
+}
+
+.kept-row-lead {
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.625rem;
+  background: var(--sunken);
+  color: var(--ink-2);
+}
+
+.kept-row-body {
+  display: grid;
+  gap: 0.125rem;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.kept-row-chevron {
+  flex-shrink: 0;
+  color: var(--ink-3);
 }
 
 .kept-thumb {
-  inline-size: 3rem;
-  block-size: 3rem;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
   flex-shrink: 0;
-  border-radius: 0.5rem;
+  border-radius: 0.625rem;
   object-fit: cover;
   border: 1px solid var(--line);
+}
+
+/* Elevated iOS cards and metadata chips. */
+.kept-card {
+  display: grid;
+  gap: 0.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding-block: 0.875rem;
+  padding-inline: 0.875rem;
+}
+
+.kept-card-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.kept-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.kept-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  border-radius: 999px;
+  background: var(--sunken);
+  padding-block: 0.1875rem;
+  padding-inline: 0.5625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* Compact quick-filter pill bar (e.g. Record compartments). */
+.kept-pill-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.kept-phone .kept-pill {
+  min-block-size: 2.25rem;
+  border-radius: 999px;
+  padding-block: 0.25rem;
+  padding-inline: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.kept-pill[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 
 .kept-badge {
   display: inline-flex;
   align-items: center;
+  gap: 0.25rem;
   border-radius: 999px;
   padding-block: 0.125rem;
-  padding-inline: 0.625rem;
+  padding-inline: 0.5625rem;
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -64,9 +366,14 @@
   color: var(--danger);
 }
 
+.kept-badge-neutral {
+  background: var(--sunken);
+  color: var(--ink-2);
+}
+
 .kept-match-card {
   border: 2px solid var(--ok);
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   background: color-mix(in srgb, var(--ok) 10%, var(--surface));
   padding-block: 1rem;
   padding-inline: 1rem;
@@ -83,16 +390,55 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
-  min-block-size: 4.75rem;
+  gap: 0.4375rem;
+  min-block-size: 5.25rem;
+  border-radius: 0.875rem;
+  background: var(--surface);
   padding-block: 0.75rem;
   padding-inline: 0.5rem;
   text-align: center;
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease;
 }
 
-.kept-tile svg {
-  flex-shrink: 0;
-  color: var(--ink-2);
+.kept-tile[data-pressed] {
+  transform: scale(0.97);
+}
+
+.kept-tile-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 2.375rem;
+  block-size: 2.375rem;
+  border-radius: 0.6875rem;
+  background: var(--sunken);
+  color: var(--ink);
+}
+
+.kept-tile-amber .kept-tile-icon {
+  background: color-mix(in srgb, var(--amber) 24%, var(--surface));
+  color: var(--amber-text);
+}
+
+.kept-tile-info .kept-tile-icon {
+  background: color-mix(in srgb, var(--info) 16%, var(--surface));
+  color: var(--info);
+}
+
+.kept-tile-ok .kept-tile-icon {
+  background: color-mix(in srgb, var(--ok) 15%, var(--surface));
+  color: var(--ok);
+}
+
+.kept-tile-violet .kept-tile-icon {
+  background: color-mix(in srgb, var(--violet) 16%, var(--surface));
+  color: var(--violet);
+}
+
+.kept-tile-danger .kept-tile-icon {
+  background: color-mix(in srgb, var(--danger) 14%, var(--surface));
+  color: var(--danger);
 }
 
 .kept-tile-label {
@@ -101,47 +447,101 @@
   line-height: 1.25;
 }
 
-/* Sticky bottom tab bar: the four main phone destinations. */
+/* Media capture button strip (Camera / Photos / PDF). */
+.kept-media-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.25rem, 1fr));
+  gap: 0.5rem;
+}
+
+.kept-media-btn {
+  flex-direction: column;
+  gap: 0.3125rem;
+  min-block-size: 4.25rem;
+  border-radius: 0.75rem;
+  background: var(--surface);
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Filter pull-down row for long lists. */
+.kept-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem;
+}
+
+/* Fixed bottom iOS tab bar: the four main phone destinations. */
 .kept-tabbar {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: 20;
+  max-inline-size: 42rem;
+  margin-inline: auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.25rem;
-  margin-block-start: 1rem;
-  margin-inline: -1.25rem;
-  padding-block: 0.5rem max(0.5rem, env(safe-area-inset-bottom));
-  padding-inline: 1rem;
-  background: color-mix(in srgb, var(--surface) 94%, transparent);
-  backdrop-filter: blur(8px);
+  padding-block-start: 0.375rem;
+  padding-block-end: max(0.5rem, env(safe-area-inset-bottom));
+  padding-inline: 0.75rem;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-block-start: 1px solid var(--line);
 }
 
 .kept-tabbar-button {
+  position: relative;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.125rem;
-  min-block-size: 3rem;
+  gap: 0.1875rem;
+  min-block-size: 3.125rem;
+  border-radius: 0.75rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.25rem;
   color: var(--ink-3);
 }
 
 .kept-tabbar-button[aria-current="page"] {
-  color: var(--info);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--amber) 24%, transparent);
 }
 
 .kept-tabbar-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
+}
+
+.kept-tabbar-badge {
+  position: absolute;
+  inset-block-start: 0.25rem;
+  inset-inline-end: 0.75rem;
+  min-inline-size: 1.125rem;
+  block-size: 1.125rem;
+  border-radius: 999px;
+  background: var(--warn);
+  color: var(--surface);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.125rem;
+  padding-inline: 0.25rem;
+  text-align: center;
 }
 
 /* Light / dark / system appearance switch. */
 .kept-theme-switch {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.375rem;
+}
+
+.kept-theme-option {
+  border-radius: 0.625rem;
+  background: var(--surface);
 }
 
 .kept-theme-option svg {
@@ -149,13 +549,65 @@
 }
 
 .kept-theme-option[aria-pressed="true"] {
-  outline: 2px solid var(--info);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* Palette variation cards with dual-tone color swatches. */
+.kept-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.kept-palette-option {
+  justify-content: flex-start;
+  border-radius: 0.75rem;
+  background: var(--surface);
+  padding-inline: 0.75rem;
+}
+
+.kept-palette-option[aria-pressed="true"] {
+  border-color: var(--ink);
+  outline: 2px solid var(--ink);
   outline-offset: -2px;
 }
 
+.kept-swatch {
+  display: inline-flex;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
+.kept-swatch-a,
+.kept-swatch-b {
+  flex: 1 1 50%;
+  block-size: 100%;
+}
+
 /* Icon back button shared by every phone sub-screen. */
+.kept-back {
+  padding-inline: 0.375rem 0.625rem;
+  color: var(--ink);
+}
+
 .kept-back svg {
   flex-shrink: 0;
+}
+
+@keyframes kept-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.kept-spin {
+  animation: kept-spin 1s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

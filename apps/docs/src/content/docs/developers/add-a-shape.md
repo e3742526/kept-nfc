@@ -5,8 +5,8 @@ description: Add a shape to the location map - the files it touches, the words t
 
 A shape is one entry in the location map's catalogue: a size, a group, the words that find it,
 and a way to draw it. The [shape library](/users/map-shapes/) and the shape picker read the same
-catalogue, so a new shape shows up in both once these steps are done. To ask for one instead,
-[open a shape request](https://github.com/keptinventory/kept/issues/new?template=shape-request.yml).
+catalogue, so a new shape shows up in both once these steps are done. Submit the changes as a
+[pull request to SheepKeep](https://github.com/e3742526/kept-nfc/pulls).
 
 ## The files a shape touches
 

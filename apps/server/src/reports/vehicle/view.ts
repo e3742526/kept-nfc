@@ -258,7 +258,7 @@ export function buildVehicleView(
       options.from || options.to
         ? w.range(options.from ? day(options.from) : '…', options.to ? day(options.to) : day(today))
         : '',
-    footer: ['Kept', ctx.instance, when].filter((x) => x !== '').join(sep),
+    footer: ['SheepKeep', ctx.instance, when].filter((x) => x !== '').join(sep),
     counts,
     readings: g.readings.map((r) => ({
       date: day(r.day),

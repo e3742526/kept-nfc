@@ -1,5 +1,26 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  ArrowRightLeft,
+  Camera,
+  CheckCheck,
+  ChevronRight,
+  Clock,
+  Compass,
+  Ellipsis,
+  FileText,
+  History,
+  Image,
+  Layers,
+  MapPin,
+  Package,
+  Pencil,
+  Plus,
+  QrCode,
+  Radar,
+  Sparkles,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { capturePaths } from '@/api/capture/paths';
 import type {
@@ -17,7 +38,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import type { Destination } from './destination';
 import { EditRecord } from './edit-record';
@@ -184,6 +205,7 @@ function SuggestionForm({
         </>
       ) : (
         <Button variant="secondary" isPending={busy} onPress={() => void check()}>
+          <Sparkles size={16} aria-hidden />
           <Trans>Check AI suggestions</Trans>
         </Button>
       )}
@@ -239,6 +261,7 @@ export function RecordScreen({
   const [request, setRequest] = useState(0);
   const [openingMedia, setOpeningMedia] = useState<string>();
   const [editor, setEditor] = useState<'edit' | 'move' | 'correct' | 'actions'>();
+  const [section, setSection] = useState<'all' | 'contents' | 'media' | 'history'>('all');
   const [editingFiles, setEditingFiles] = useState(false);
   const [changing, setChanging] = useState(false);
   const [checkId, setCheckId] = useState(newId);
@@ -500,43 +523,27 @@ export function RecordScreen({
 
   const unknown = thing?.locationUncertain && thing.path.some((step) => step.isUnplaced);
   const cover = online && previewUrl(thing?.thumbUrl, connection.origin);
+  const showContents = section === 'all' || section === 'contents';
+  const showMedia = section === 'all' || section === 'media';
+  const showHistory = section === 'all' || section === 'history';
+  const hasSections = browsable || attachments.length > 0 || (online && Boolean(thing || place));
   return (
-    <section className="grid gap-5">
-      <BackButton onPress={onClose} />
+    <section className="grid gap-4">
+      <ScreenHeader
+        onBack={onClose}
+        icon={
+          target.kind === 'place' ? (
+            <MapPin size={18} aria-hidden />
+          ) : (
+            <Package size={18} aria-hidden />
+          )
+        }
+      />
       {unavailable || !row ? (
         <p role="status">{status || t`Opening inventory…`}</p>
       ) : (
         <>
-          <header className="grid gap-1">
-            <h2 className="text-display font-semibold">
-              <bdi>{name}</bdi>
-            </h2>
-            {path && (
-              <p className="text-ink-2">
-                {unknown ? (
-                  <>
-                    <Trans>Location unknown</Trans>{' '}
-                  </>
-                ) : (
-                  'locationUncertain' in row &&
-                  row.locationUncertain && (
-                    <>
-                      <Trans>Last known location</Trans>{' '}
-                    </>
-                  )
-                )}
-                <bdi>{path}</bdi>
-              </p>
-            )}
-            {unknown && !!thing?.lastKnownPath?.length && (
-              <p className="text-ink-2">
-                <Trans>Last known location</Trans>{' '}
-                <bdi>{[locationName, ...thing.lastKnownPath].filter(Boolean).join(' › ')}</bdi>
-              </p>
-            )}
-            {'lastSeenAt' in row && row.lastSeenAt && (
-              <p className="text-small text-ink-2">{t`Last directly confirmed: ${new Date(row.lastSeenAt).toLocaleString()}`}</p>
-            )}
+          <header className="kept-card">
             {cover && (
               <img
                 alt=""
@@ -545,14 +552,58 @@ export function RecordScreen({
                 className="max-h-48 w-full rounded-lg object-cover"
               />
             )}
-            {'shortCode' in row && row.shortCode && (
-              <p className="text-small text-ink-2">
-                <Trans>Label code:</Trans> <bdi className="ltr">{row.shortCode}</bdi>
+            <h2 className="text-display font-semibold">
+              <bdi>{name}</bdi>
+            </h2>
+            {path && (
+              <p className="flex items-start gap-1.5 text-small text-ink-2">
+                <MapPin size={15} className="mt-0.5 shrink-0" aria-hidden />
+                <span>
+                  {unknown ? (
+                    <>
+                      <Trans>Location unknown</Trans>{' '}
+                    </>
+                  ) : (
+                    'locationUncertain' in row &&
+                    row.locationUncertain && (
+                      <>
+                        <Trans>Last known location</Trans>{' '}
+                      </>
+                    )
+                  )}
+                  <bdi>{path}</bdi>
+                </span>
               </p>
             )}
-            {'quantity' in row && Number(row.quantity) !== 1 && (
-              <p className="text-ink-2">{t`Quantity: ${row.quantity}`}</p>
+            {unknown && !!thing?.lastKnownPath?.length && (
+              <p className="text-small text-ink-2">
+                <Trans>Last known location</Trans>{' '}
+                <bdi>{[locationName, ...thing.lastKnownPath].filter(Boolean).join(' › ')}</bdi>
+              </p>
             )}
+            <div className="kept-chips">
+              {'shortCode' in row && row.shortCode && (
+                <span className="kept-chip">
+                  <QrCode size={13} aria-hidden />
+                  <span className="sr-only">
+                    <Trans>Label code:</Trans>{' '}
+                  </span>
+                  <bdi className="ltr">{row.shortCode}</bdi>
+                </span>
+              )}
+              {'quantity' in row && Number(row.quantity) !== 1 && (
+                <span className="kept-chip">
+                  <Layers size={13} aria-hidden />
+                  <span>{t`Quantity: ${row.quantity}`}</span>
+                </span>
+              )}
+              {'lastSeenAt' in row && row.lastSeenAt && (
+                <span className="kept-chip">
+                  <Clock size={13} aria-hidden />
+                  <span>{t`Last directly confirmed: ${new Date(row.lastSeenAt).toLocaleString()}`}</span>
+                </span>
+              )}
+            </div>
             {(cachedNotice || (!online && !detail && !place)) && cache && (
               <p className="text-small text-ink-2" role="status">
                 {t`Showing cached details from ${new Date(cache.asOf).toLocaleString()}`}
@@ -563,14 +614,17 @@ export function RecordScreen({
             <div className="flex flex-wrap gap-2">
               {canEdit && (
                 <Button onPress={() => onCapture(box, path)}>
+                  <Plus size={16} aria-hidden />
                   <Trans>Add to this box</Trans>
                 </Button>
               )}
               <Button variant="secondary" onPress={() => onLabel('find', box)}>
+                <Radar size={16} aria-hidden />
                 <Trans>Find this box</Trans>
               </Button>
               {box.shortCode && (
                 <Button variant="secondary" onPress={() => onLabel('enroll', box)}>
+                  <QrCode size={16} aria-hidden />
                   {canEdit ? <Trans>QR and NFC label</Trans> : <Trans>View QR label</Trans>}
                 </Button>
               )}
@@ -579,11 +633,13 @@ export function RecordScreen({
           <div className="flex flex-wrap gap-2">
             {canEdit && target.kind === 'place' && (
               <Button onPress={() => onCapture({ ...target, name, kind: 'place' }, path)}>
+                <Plus size={16} aria-hidden />
                 <Trans>Add to this room</Trans>
               </Button>
             )}
             {online && canEdit && place && !place.isUnplaced && (
               <Button variant="secondary" onPress={onCreateBox}>
+                <Package size={16} aria-hidden />
                 <Trans>Create box</Trans>
               </Button>
             )}
@@ -592,6 +648,7 @@ export function RecordScreen({
                 variant="secondary"
                 onPress={() => onCapture({ ...target, name, kind: 'photos' }, path)}
               >
+                <Camera size={16} aria-hidden />
                 <Trans>Add photos</Trans>
               </Button>
             )}
@@ -600,25 +657,30 @@ export function RecordScreen({
                 variant="secondary"
                 onPress={() => onCapture({ ...target, name, kind: 'documents' }, path)}
               >
+                <FileText size={16} aria-hidden />
                 <Trans>Add documents</Trans>
               </Button>
             )}
             {online && canEdit && (thing || place) && (
               <>
                 <Button variant="secondary" onPress={() => setEditor('edit')}>
+                  <Pencil size={16} aria-hidden />
                   <Trans>Edit</Trans>
                 </Button>
                 {thing && (
                   <>
                     <Button variant="secondary" onPress={() => setEditor('move')}>
+                      <ArrowRightLeft size={16} aria-hidden />
                       <Trans>Move</Trans>
                     </Button>
                     {editor === 'actions' && (
                       <Button variant="secondary" onPress={() => setEditor('correct')}>
+                        <Compass size={16} aria-hidden />
                         <Trans>Correct location</Trans>
                       </Button>
                     )}
                     <Button variant="secondary" onPress={() => setEditor('actions')}>
+                      <Ellipsis size={16} aria-hidden />
                       <Trans>More actions</Trans>
                     </Button>
                   </>
@@ -647,19 +709,70 @@ export function RecordScreen({
               onAuthError={onAuthError}
             />
           )}
-          {notes && (
-            <section>
-              <h3 className="font-semibold">
+          {hasSections && (
+            <fieldset className="kept-pill-bar m-0 border-0 p-0" aria-label={t`Filter`}>
+              <Button
+                variant="secondary"
+                size="small"
+                className="kept-pill"
+                aria-pressed={section === 'all'}
+                onPress={() => setSection('all')}
+              >
+                <Trans>All</Trans>
+              </Button>
+              {browsable && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  className="kept-pill"
+                  aria-pressed={section === 'contents'}
+                  onPress={() => setSection('contents')}
+                >
+                  <Package size={14} aria-hidden />
+                  <Trans>Contents</Trans>
+                </Button>
+              )}
+              {attachments.length > 0 && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  className="kept-pill"
+                  aria-pressed={section === 'media'}
+                  onPress={() => setSection('media')}
+                >
+                  <Image size={14} aria-hidden />
+                  <Trans>Photos</Trans>
+                </Button>
+              )}
+              {online && (thing || place) && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  className="kept-pill"
+                  aria-pressed={section === 'history'}
+                  onPress={() => setSection('history')}
+                >
+                  <History size={14} aria-hidden />
+                  <Trans>History</Trans>
+                </Button>
+              )}
+            </fieldset>
+          )}
+          {notes && section === 'all' && (
+            <section className="kept-card">
+              <h3 className="kept-card-title">
+                <FileText size={16} aria-hidden />
                 <Trans>Notes</Trans>
               </h3>
-              <p className="whitespace-pre-wrap break-words">
+              <p className="whitespace-pre-wrap break-words text-ink-2">
                 <bdi>{notes}</bdi>
               </p>
             </section>
           )}
-          {boxPending.length > 0 && (
-            <section className="grid gap-2 rounded-lg border border-line bg-surface p-3">
-              <h3 className="font-semibold">
+          {boxPending.length > 0 && showContents && (
+            <section className="kept-card">
+              <h3 className="kept-card-title">
+                <Clock size={16} aria-hidden />
                 <Trans>Pending captures</Trans>
               </h3>
               <ul className="grid gap-2">
@@ -713,139 +826,165 @@ export function RecordScreen({
               </ul>
             </section>
           )}
-          {online && canEdit && attachments.length > 0 && (
+          {showMedia && online && canEdit && attachments.length > 0 && (
             <Button
               variant="ghost"
+              size="small"
               className="justify-self-start"
               onPress={() => setEditingFiles((value) => !value)}
             >
+              <Pencil size={15} aria-hidden />
               {editingFiles ? t`Done` : t`Edit photos and files`}
             </Button>
           )}
-          {(['photo', 'other'] as const).map((group) => {
-            const entries = attachments.filter(
-              (attachment) => (attachment.role === 'photo') === (group === 'photo'),
-            );
-            if (!entries.length) return null;
-            return (
-              <section key={group}>
-                <h3 className="font-semibold">
-                  {group === 'photo' ? t`Photos` : t`Documents and files`}
-                </h3>
-                <ul
-                  className={group === 'photo' ? 'mt-2 grid grid-cols-2 gap-2' : 'mt-2 grid gap-2'}
-                >
-                  {entries.map((attachment) => {
-                    const label =
-                      attachment.name ?? (group === 'photo' ? t`Photograph` : t`Document`);
-                    const original = (detail?.attachments ?? place?.attachments)?.find(
-                      (entry) => entry.id === attachment.id,
-                    );
-                    const thumbnail =
-                      online &&
-                      group === 'photo' &&
-                      previewUrl(original?.file?.thumbUrl, connection.origin);
-                    const preview = group === 'photo' && !canEdit;
-                    return (
-                      <li key={attachment.id}>
-                        {original?.file && online && (!preview || original.file.displayUrl) ? (
-                          <Button
-                            variant="secondary"
-                            className={
-                              group === 'photo'
-                                ? 'grid w-full min-w-0 justify-items-start gap-2 p-2 text-start'
-                                : ''
-                            }
-                            isPending={openingMedia === attachment.id}
-                            isDisabled={
-                              openingMedia !== undefined && openingMedia !== attachment.id
-                            }
-                            onPress={() => void openRemoteFile(original, preview)}
-                          >
-                            {thumbnail && (
-                              <img
-                                alt=""
-                                src={thumbnail}
-                                loading="lazy"
-                                referrerPolicy="no-referrer"
-                                className="aspect-square w-full rounded object-cover"
-                              />
-                            )}
-                            <bdi className="break-all">{label}</bdi>
-                          </Button>
-                        ) : (
-                          <span className="text-ink-2">
-                            <bdi>{label}</bdi>
-                          </span>
-                        )}
-                        {original?.createdAt && (
-                          <time
-                            dateTime={original.createdAt}
-                            className="block text-small text-ink-2"
-                          >
-                            {new Date(original.createdAt).toLocaleString()}
-                          </time>
-                        )}
-                        {original && editingFiles && canEdit && online && (
-                          <div className="flex flex-wrap gap-1">
-                            {thing && original.role === 'photo' && original.file && (
+          {showMedia &&
+            (['photo', 'other'] as const).map((group) => {
+              const entries = attachments.filter(
+                (attachment) => (attachment.role === 'photo') === (group === 'photo'),
+              );
+              if (!entries.length) return null;
+              return (
+                <section key={group} className="kept-card">
+                  <h3 className="kept-card-title">
+                    {group === 'photo' ? (
+                      <Image size={16} aria-hidden />
+                    ) : (
+                      <FileText size={16} aria-hidden />
+                    )}
+                    {group === 'photo' ? t`Photos` : t`Documents and files`}
+                  </h3>
+                  <ul className={group === 'photo' ? 'grid grid-cols-2 gap-2' : 'grid gap-2'}>
+                    {entries.map((attachment) => {
+                      const label =
+                        attachment.name ?? (group === 'photo' ? t`Photograph` : t`Document`);
+                      const original = (detail?.attachments ?? place?.attachments)?.find(
+                        (entry) => entry.id === attachment.id,
+                      );
+                      const thumbnail =
+                        online &&
+                        group === 'photo' &&
+                        previewUrl(original?.file?.thumbUrl, connection.origin);
+                      const preview = group === 'photo' && !canEdit;
+                      return (
+                        <li key={attachment.id}>
+                          {original?.file && online && (!preview || original.file.displayUrl) ? (
+                            <Button
+                              variant="secondary"
+                              className={
+                                group === 'photo'
+                                  ? 'grid w-full min-w-0 justify-items-start gap-2 rounded-xl p-2 text-start'
+                                  : 'kept-phone-row'
+                              }
+                              isPending={openingMedia === attachment.id}
+                              isDisabled={
+                                openingMedia !== undefined && openingMedia !== attachment.id
+                              }
+                              onPress={() => void openRemoteFile(original, preview)}
+                            >
+                              {thumbnail && (
+                                <img
+                                  alt=""
+                                  src={thumbnail}
+                                  loading="lazy"
+                                  referrerPolicy="no-referrer"
+                                  className="aspect-square w-full rounded-lg object-cover"
+                                />
+                              )}
+                              {group !== 'photo' && (
+                                <span className="kept-row-lead" aria-hidden>
+                                  <FileText size={18} />
+                                </span>
+                              )}
+                              <bdi className="min-w-0 flex-1 break-all">{label}</bdi>
+                            </Button>
+                          ) : (
+                            <span className="text-ink-2">
+                              <bdi>{label}</bdi>
+                            </span>
+                          )}
+                          {original?.createdAt && (
+                            <time
+                              dateTime={original.createdAt}
+                              className="mt-1 block text-small text-ink-2"
+                            >
+                              {new Date(original.createdAt).toLocaleString()}
+                            </time>
+                          )}
+                          {original && editingFiles && canEdit && online && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {thing && original.role === 'photo' && original.file && (
+                                <Button
+                                  variant="ghost"
+                                  size="small"
+                                  isDisabled={changing}
+                                  onPress={() => void editAttachment(original, true)}
+                                >
+                                  <Trans>Use as cover</Trans>
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="small"
                                 isDisabled={changing}
-                                onPress={() => void editAttachment(original, true)}
+                                onPress={() => void editAttachment(original, false)}
                               >
-                                <Trans>Use as cover</Trans>
+                                <Trash2 size={14} aria-hidden />
+                                <Trans>Remove</Trans>
                               </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="small"
-                              isDisabled={changing}
-                              onPress={() => void editAttachment(original, false)}
-                            >
-                              <Trans>Remove</Trans>
-                            </Button>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            );
-          })}
-          {(box || target.kind === 'place') && (
-            <section>
-              <h3 className="font-semibold">
-                <Trans>Contents</Trans>
-              </h3>
-              {box && online && canEdit && !cache?.truncated && children.length <= 500 && (
-                <Button
-                  className="my-2"
-                  variant="secondary"
-                  isPending={changing}
-                  onPress={() => void checkContents()}
-                >
-                  <Trans>Contents checked, unchanged</Trans>
-                </Button>
-              )}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })}
+          {showContents && (box || target.kind === 'place') && (
+            <section className="kept-card">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="kept-card-title">
+                  <Package size={16} aria-hidden />
+                  <Trans>Contents</Trans>
+                </h3>
+                {box && online && canEdit && !cache?.truncated && children.length <= 500 && (
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    isPending={changing}
+                    onPress={() => void checkContents()}
+                  >
+                    <CheckCheck size={15} aria-hidden />
+                    <Trans>Contents checked, unchanged</Trans>
+                  </Button>
+                )}
+              </div>
               {children.length === 0 && childPlaces.length === 0 ? (
                 <p className="text-ink-2">
                   <Trans>No cached contents.</Trans>
                 </p>
               ) : (
-                <ul className="mt-2 grid gap-2">
+                <ul className="grid gap-2">
                   {childPlaces.map((child) => (
                     <li key={child.id}>
                       <Button
                         variant="secondary"
-                        className="w-full justify-start text-start"
+                        className="kept-phone-row"
                         onPress={() =>
                           onOpen({ id: child.id, kind: 'place', locationId: child.locationId })
                         }
                       >
-                        <bdi>{child.name}</bdi>
+                        <span className="kept-row-lead" aria-hidden>
+                          <MapPin size={18} />
+                        </span>
+                        <span className="kept-row-body">
+                          <bdi className="font-semibold">{child.name}</bdi>
+                        </span>
+                        <ChevronRight
+                          size={18}
+                          className="kept-row-chevron rtl:rotate-180"
+                          aria-hidden
+                        />
                       </Button>
                     </li>
                   ))}
@@ -853,33 +992,60 @@ export function RecordScreen({
                     <li key={child.id}>
                       <Button
                         variant="secondary"
-                        className="w-full justify-start text-start"
+                        className="kept-phone-row"
                         onPress={() =>
                           onOpen({ id: child.id, kind: 'thing', locationId: child.locationId })
                         }
                       >
                         {online &&
+                        (() => {
+                          const image = previewUrl(
+                            childRows.find((hit) => hit.id === child.id)?.thumbUrl,
+                            connection.origin,
+                          );
+                          return image ? (
+                            <img
+                              alt=""
+                              src={image}
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                              className="kept-thumb"
+                            />
+                          ) : null;
+                        })() ? (
                           (() => {
                             const image = previewUrl(
                               childRows.find((hit) => hit.id === child.id)?.thumbUrl,
                               connection.origin,
                             );
-                            return (
-                              image && (
-                                <img
-                                  alt=""
-                                  src={image}
-                                  loading="lazy"
-                                  referrerPolicy="no-referrer"
-                                  className="kept-thumb"
-                                />
-                              )
-                            );
-                          })()}
-                        <bdi>{child.name ?? t`Untitled`}</bdi>
-                        {Number(child.quantity) > 1 && (
-                          <span className="text-small">{t`Quantity: ${child.quantity}`}</span>
+                            return image ? (
+                              <img
+                                alt=""
+                                src={image}
+                                loading="lazy"
+                                referrerPolicy="no-referrer"
+                                className="kept-thumb"
+                              />
+                            ) : null;
+                          })()
+                        ) : (
+                          <span className="kept-row-lead" aria-hidden>
+                            <Package size={18} />
+                          </span>
                         )}
+                        <span className="kept-row-body">
+                          <bdi className="font-semibold">{child.name ?? t`Untitled`}</bdi>
+                          {Number(child.quantity) > 1 && (
+                            <span className="text-small font-normal text-ink-2">
+                              {t`Quantity: ${child.quantity}`}
+                            </span>
+                          )}
+                        </span>
+                        <ChevronRight
+                          size={18}
+                          className="kept-row-chevron rtl:rotate-180"
+                          aria-hidden
+                        />
                       </Button>
                     </li>
                   ))}
@@ -887,7 +1053,7 @@ export function RecordScreen({
               )}
             </section>
           )}
-          {online && (thing || place) && (
+          {showHistory && online && (thing || place) && (
             <RecordHistory
               key={request}
               connection={connection}
@@ -908,16 +1074,19 @@ export function RecordScreen({
               onAuthError={onAuthError}
             />
           )}
-          {thing && canEdit && detail.attachments.some((entry) => entry.role === 'photo') && (
-            <SuggestionForm
-              connection={connection}
-              thing={thing}
-              onChanged={() => setRequest((value) => value + 1)}
-              onAuthError={onAuthError}
-            />
-          )}
+          {section === 'all' &&
+            thing &&
+            canEdit &&
+            detail.attachments.some((entry) => entry.role === 'photo') && (
+              <SuggestionForm
+                connection={connection}
+                thing={thing}
+                onChanged={() => setRequest((value) => value + 1)}
+                onAuthError={onAuthError}
+              />
+            )}
           {status && (
-            <p className="text-ink-2" role="status">
+            <p className="rounded-xl bg-sunken p-3 text-ink-2" role="status">
               {status}
             </p>
           )}

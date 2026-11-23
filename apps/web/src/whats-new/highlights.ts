@@ -17,7 +17,7 @@ export function isReleaseVersion(version: string): boolean {
 
 /** The release's full notes on GitHub; its tags are `vX.Y.Z` (scripts/release-notes.test.mjs). */
 export function releaseNotesUrl(version: string): string {
-  return `https://github.com/keptinventory/kept/releases/tag/v${version}`;
+  return `https://github.com/e3742526/kept-nfc/releases/tag/v${version}`;
 }
 
 /** A bullet's markdown as plain text: links and code marks become their words; bold stays. */

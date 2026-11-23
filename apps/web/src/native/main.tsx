@@ -1,19 +1,27 @@
 import { I18nProvider } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
+  ChevronRight,
+  FileText,
   History,
   Home,
   Inbox,
+  LogOut,
   MapPin,
   Monitor,
   Moon,
   Package,
+  Palette,
   Plus,
   QrCode,
+  Radar,
+  RefreshCw,
   Settings,
   Sun,
   Tags,
   Trash2,
+  WifiOff,
+  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -23,7 +31,7 @@ import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Page, SearchResponse } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
-import { BrandLockup } from '@/components/brand';
+import { AppMark, BrandLockup } from '@/components/brand';
 import { ProjectNotice } from '@/components/project-notice';
 import { Button } from '@/components/ui/button';
 import { ConfirmProvider, useConfirm } from '@/components/ui/confirm';
@@ -34,7 +42,7 @@ import { isolate } from '@/lib/bidi';
 import { sep, useBytes } from '@/lib/format';
 import { setThemePref, type ThemePref, usePrefs, watchSystemTheme } from '@/lib/prefs';
 import { NativePlatformProvider, usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import {
   type CompletionState,
   type Connection,
@@ -71,6 +79,7 @@ import {
   retryCapture,
   syncOutbox,
 } from './outbox';
+import { applyPalette, type PaletteId, setPalette, usePalette } from './palette';
 import { RecordScreen } from './record';
 import { Rooms } from './rooms';
 import { Trash } from './trash';
@@ -109,8 +118,16 @@ function tabFor(screen: Screen): TabKey {
   }
 }
 
-/** Sticky bottom tab bar: the four main phone destinations, icon-first. */
-function TabBar({ tab, onTab }: { tab: TabKey; onTab: (tab: TabKey) => void }) {
+/** Fixed bottom tab bar: the four main phone destinations, icon-first. */
+function TabBar({
+  tab,
+  pendingCount = 0,
+  onTab,
+}: {
+  tab: TabKey;
+  pendingCount?: number;
+  onTab: (tab: TabKey) => void;
+}) {
   const { t } = useLingui();
   const tabs = [
     { key: 'home', label: t`Home`, Icon: Home },
@@ -130,11 +147,18 @@ function TabBar({ tab, onTab }: { tab: TabKey; onTab: (tab: TabKey) => void }) {
         >
           <Icon size={22} aria-hidden />
           <span className="kept-tabbar-label">{label}</span>
+          {key === 'capture' && pendingCount > 0 && (
+            <span className="kept-tabbar-badge" aria-hidden>
+              {pendingCount > 99 ? '99+' : pendingCount}
+            </span>
+          )}
         </Button>
       ))}
     </nav>
   );
 }
+
+type TileTone = 'amber' | 'info' | 'ok' | 'violet' | 'danger' | 'neutral';
 
 /** Icon tile for the compartmentalized home and More grids. */
 function ActionTile({
@@ -142,15 +166,24 @@ function ActionTile({
   onPress,
   isDisabled,
   Icon,
+  tone = 'neutral',
 }: {
   label: string;
   onPress: () => void;
   isDisabled?: boolean;
   Icon: typeof Home;
+  tone?: TileTone;
 }) {
   return (
-    <Button variant="secondary" className="kept-tile" isDisabled={isDisabled} onPress={onPress}>
-      <Icon size={24} aria-hidden />
+    <Button
+      variant="secondary"
+      className={`kept-tile kept-tile-${tone}`}
+      isDisabled={isDisabled}
+      onPress={onPress}
+    >
+      <span className="kept-tile-icon" aria-hidden>
+        <Icon size={20} />
+      </span>
       <span className="kept-tile-label">{label}</span>
     </Button>
   );
@@ -178,6 +211,38 @@ function ThemeSwitch() {
         >
           <Icon size={16} aria-hidden />
           {label}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+/** Color palette variations that layer over light, dark, and system modes. */
+function PaletteSwitch() {
+  const { t } = useLingui();
+  const palette = usePalette();
+  const options: { id: PaletteId; label: string; swatch: [string, string] }[] = [
+    { id: 'default', label: t`Default`, swatch: ['#173E37', '#E2B86B'] },
+    { id: 'slate', label: t`Slate`, swatch: ['#1E293B', '#2563EB'] },
+    { id: 'meadow', label: t`Meadow`, swatch: ['#163322', '#2E7D4F'] },
+    { id: 'contrast', label: t`High contrast`, swatch: ['#000000', '#FFD166'] },
+  ];
+  return (
+    <div className="kept-palette-grid">
+      {options.map(({ id, label, swatch }) => (
+        <Button
+          key={id}
+          variant="secondary"
+          size="small"
+          className="kept-palette-option"
+          aria-pressed={palette === id}
+          onPress={() => setPalette(id)}
+        >
+          <span className="kept-swatch" aria-hidden>
+            <span className="kept-swatch-a" style={{ background: swatch[0] }} />
+            <span className="kept-swatch-b" style={{ background: swatch[1] }} />
+          </span>
+          <span>{label}</span>
         </Button>
       ))}
     </div>
@@ -213,7 +278,7 @@ function ThingList({
               className="kept-phone-row"
               onPress={() => onOpen({ id: thing.id, kind: 'thing', locationId: thing.locationId })}
             >
-              {image && (
+              {image ? (
                 <img
                   alt=""
                   src={image}
@@ -221,9 +286,18 @@ function ThingList({
                   loading="lazy"
                   className="kept-thumb"
                 />
+              ) : (
+                <span className="kept-row-lead" aria-hidden>
+                  <Package size={18} />
+                </span>
               )}
-              <bdi className="text-body">{thing.name ?? t`Untitled`}</bdi>
-              {thing.path && <bdi className="font-normal text-small text-ink-2">{thing.path}</bdi>}
+              <span className="kept-row-body">
+                <bdi className="text-body font-semibold">{thing.name ?? t`Untitled`}</bdi>
+                {thing.path && (
+                  <bdi className="font-normal text-small text-ink-2">{thing.path}</bdi>
+                )}
+              </span>
+              <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
             </Button>
           </li>
         );
@@ -302,12 +376,13 @@ function Batches({
 
   return (
     <section className="grid gap-4">
-      <BackButton onPress={onClose} />
-      <h2 className="text-title font-semibold">
-        <Trans>Recent capture batches</Trans>
-      </h2>
+      <ScreenHeader
+        title={<Trans>Recent capture batches</Trans>}
+        onBack={onClose}
+        icon={<History size={18} aria-hidden />}
+      />
       {batches?.length === 0 && (
-        <p>
+        <p className="text-ink-2">
           <Trans>No capture batches yet.</Trans>
         </p>
       )}
@@ -320,9 +395,18 @@ function Batches({
               className="kept-phone-row"
               onPress={() => void review(batch)}
             >
-              <bdi>{path}</bdi>
-              <span>{t`Saved: ${batch.count}`}</span>
-              <span>{new Date(batch.capturedAt).toLocaleString()}</span>
+              <span className="kept-row-lead" aria-hidden>
+                <History size={18} />
+              </span>
+              <span className="kept-row-body">
+                <bdi className="font-semibold">{path}</bdi>
+                <span className="text-small font-normal text-ink-2">
+                  {t`Saved: ${batch.count}`}
+                  {sep()}
+                  {new Date(batch.capturedAt).toLocaleString()}
+                </span>
+              </span>
+              <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
             </Button>
             {batchId === batch.batchId &&
               reviews &&
@@ -358,6 +442,7 @@ export function Inventory({
   const confirm = useConfirm();
   const formatBytes = useBytes();
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
+  const backStack = useRef<Screen[]>([]);
   const [cache, setCache] = useState<InventoryCache>();
   const cacheRef = useRef<InventoryCache | undefined>(undefined);
   const [pending, setPending] = useState<PendingCapture[]>([]);
@@ -372,6 +457,8 @@ export function Inventory({
   const [openingPendingMedia, setOpeningPendingMedia] = useState<string>();
   const [query, setQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const [roomFilter, setRoomFilter] = useState<string | null>(null);
+  const [unplacedLocationFilter, setUnplacedLocationFilter] = useState<string | null>(null);
   const [found, setFound] = useState<SearchResponse>();
   const [cachedSearch, setCachedSearch] = useState(false);
   const [working, setWorking] = useState(false);
@@ -379,22 +466,26 @@ export function Inventory({
   const [status, setStatus] = useState('');
   const running = useRef<Promise<void> | null>(null);
   const mounted = useRef(true);
-  const goHome = () => setScreen({ kind: 'home' });
-  const goTab = (tab: TabKey) => {
-    switch (tab) {
-      case 'capture':
-        setScreen({ kind: 'capture' });
-        break;
-      case 'scan':
-        setScreen({ kind: 'identify' });
-        break;
-      case 'more':
-        setScreen({ kind: 'more' });
-        break;
-      default:
-        setScreen({ kind: 'home' });
-        break;
+  const canLeaveCapture = useRef<() => Promise<boolean>>(null);
+  const pushScreen = (next: Screen) => {
+    backStack.current = [...backStack.current.slice(-9), screen];
+    setScreen(next);
+  };
+  const goBack = () => {
+    const previous = backStack.current.pop();
+    setScreen(previous ?? { kind: 'home' });
+  };
+  const goHome = () => {
+    backStack.current = [];
+    setScreen({ kind: 'home' });
+  };
+  const goTab = async (tab: TabKey) => {
+    if (screen.kind === 'capture') {
+      if (tab === 'capture' || !(await canLeaveCapture.current?.())) return;
     }
+    const kind = tab === 'scan' ? 'identify' : tab;
+    backStack.current = [];
+    setScreen((current) => (current === screen ? { kind } : current));
   };
   const showTabs = screen.kind !== 'record' && screen.kind !== 'find' && screen.kind !== 'enroll';
   const open = (target: Target, backToRooms = false) => {
@@ -412,7 +503,18 @@ export function Inventory({
 
   const display = useCallback((next: InventoryCache | undefined) => {
     cacheRef.current = next;
-    if (mounted.current) setCache(next);
+    if (mounted.current) {
+      setCache(next);
+      setLocationFilter((selected) =>
+        next?.locations.some((location) => location.id === selected) ? selected : null,
+      );
+      setRoomFilter((selected) =>
+        next?.places.some((place) => place.id === selected) ? selected : null,
+      );
+      setUnplacedLocationFilter((selected) =>
+        next?.locations.some((location) => location.id === selected) ? selected : null,
+      );
+    }
   }, []);
 
   const refreshPendingState = useCallback(async () => {
@@ -574,8 +676,11 @@ export function Inventory({
         adapters,
       );
       if (!current) return;
-      if (resolved.status === 'resolved') setScreen({ kind: 'record', target: resolved.target });
-      else if (resolved.status === 'foreign')
+      if (resolved.status === 'resolved') {
+        const mayLeave = canLeaveCapture.current;
+        if (mayLeave && !(await mayLeave())) return;
+        if (current) setScreen({ kind: 'record', target: resolved.target });
+      } else if (resolved.status === 'foreign')
         setStatus(t`This tag belongs to a different SheepKeep server.`);
       else setStatus(t`This label is unavailable in your SheepKeep.`);
     };
@@ -756,10 +861,17 @@ export function Inventory({
   const editableBoxes = currentBoxes.filter((box) =>
     cache?.locations.some((loc) => loc.id === box.locationId && loc.role !== 'viewer'),
   );
-  const visibleBoxes =
-    locationFilter && !query.trim()
-      ? currentBoxes.filter((thing) => thing.locationId === locationFilter)
-      : currentBoxes;
+  const filterableRooms =
+    cache?.places.filter(
+      (place) => !place.isUnplaced && (!locationFilter || place.locationId === locationFilter),
+    ) ?? [];
+  const visibleBoxes = query.trim()
+    ? currentBoxes
+    : currentBoxes.filter((thing) => {
+        if (locationFilter && thing.locationId !== locationFilter) return false;
+        if (roomFilter && thing.placeId !== roomFilter) return false;
+        return true;
+      });
   const localResults = cache && cachedSearch ? localInventorySearch(cache, query) : [];
   const things = query.trim()
     ? (found?.things.items.map((thing) => ({
@@ -782,30 +894,65 @@ export function Inventory({
 
   return (
     <>
-      <div className="mb-5 grid gap-2">
+      <header className="kept-appbar">
+        <div className="kept-appbar-brand">
+          <AppMark size={28} />
+          <h1 className="kept-appbar-name m-0">SheepKeep</h1>
+        </div>
+        <Button
+          variant="ghost"
+          size="small"
+          className="kept-sync-pill"
+          isDisabled={working}
+          aria-label={online ? t`Refresh` : t`Offline`}
+          onPress={() => void refresh()}
+        >
+          <span
+            className={`kept-sync-dot ${online ? 'kept-sync-dot-ok' : 'kept-sync-dot-warn'}`}
+            aria-hidden
+          />
+          {online ? (
+            <RefreshCw size={14} className={working ? 'kept-spin' : undefined} aria-hidden />
+          ) : (
+            <>
+              <WifiOff size={14} aria-hidden />
+              <span>
+                <Trans>Offline</Trans>
+              </span>
+            </>
+          )}
+        </Button>
+      </header>
+      <div className="mb-4 grid gap-2">
         {status && (
-          <p className="rounded-lg bg-sunken p-3 text-ink-2" role="status">
+          <p className="rounded-xl bg-sunken p-3 text-ink-2" role="status">
             {status}
           </p>
         )}
         {screen.kind === 'home' && savedFindTarget && (
           <section
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-surface p-3"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface p-3"
             aria-label={t`Saved Find target`}
           >
-            <div className="grid gap-0.5">
-              <span className="text-small text-ink-2">
-                <Trans>Resumable Find target</Trans>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="kept-row-lead" aria-hidden>
+                <Radar size={18} />
               </span>
-              <strong className="font-semibold">
-                <bdi>{savedFindTarget.name}</bdi>
-              </strong>
+              <div className="grid min-w-0 gap-0.5">
+                <span className="text-small text-ink-2">
+                  <Trans>Resumable Find target</Trans>
+                </span>
+                <strong className="font-semibold">
+                  <bdi>{savedFindTarget.name}</bdi>
+                </strong>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button
                 size="small"
                 onPress={() => setScreen({ kind: 'find', box: savedFindTarget })}
               >
+                <Radar size={15} aria-hidden />
                 <Trans>Continue finding</Trans>
               </Button>
               <Button
@@ -816,6 +963,7 @@ export function Inventory({
                   setSavedFindTarget(undefined);
                 }}
               >
+                <X size={15} aria-hidden />
                 <Trans>Clear</Trans>
               </Button>
             </div>
@@ -1074,27 +1222,31 @@ export function Inventory({
             <ActionTile
               label={t`Capture inventory`}
               Icon={Plus}
+              tone="amber"
               isDisabled={!cache?.locations.some((location) => location.role !== 'viewer')}
-              onPress={() => setScreen({ kind: 'capture' })}
-            />
-            <ActionTile
-              label={t`Rooms`}
-              Icon={MapPin}
-              isDisabled={!cache}
-              onPress={() => setScreen({ kind: 'rooms' })}
-            />
-            <ActionTile
-              label={t`Create box`}
-              Icon={Package}
-              isDisabled={
-                !online || !cache?.locations.some((location) => location.role !== 'viewer')
-              }
-              onPress={() => setScreen({ kind: 'new' })}
+              onPress={() => pushScreen({ kind: 'capture' })}
             />
             <ActionTile
               label={t`Scan QR or NFC`}
               Icon={QrCode}
-              onPress={() => setScreen({ kind: 'identify' })}
+              tone="info"
+              onPress={() => pushScreen({ kind: 'identify' })}
+            />
+            <ActionTile
+              label={t`Rooms`}
+              Icon={MapPin}
+              tone="ok"
+              isDisabled={!cache}
+              onPress={() => pushScreen({ kind: 'rooms' })}
+            />
+            <ActionTile
+              label={t`Create box`}
+              Icon={Package}
+              tone="violet"
+              isDisabled={
+                !online || !cache?.locations.some((location) => location.role !== 'viewer')
+              }
+              onPress={() => pushScreen({ kind: 'new' })}
             />
           </div>
           <TextField
@@ -1103,27 +1255,54 @@ export function Inventory({
             onChange={setQuery}
             inputProps={{ type: 'search', maxLength: 200 }}
           />
-          {(cache?.locations.length ?? 0) > 1 && !query.trim() && (
-            <Select
-              label={t`Location`}
-              items={[
-                { id: 'all', name: t`All` },
-                ...(cache?.locations ?? []).map((location) => ({
-                  id: location.id,
-                  name: location.name,
-                })),
-              ]}
-              selectedKey={locationFilter ?? 'all'}
-              onSelectionChange={(key) =>
-                setLocationFilter(key === null || key === 'all' ? null : String(key))
-              }
-            >
-              {(item) => (
-                <SelectItem id={item.id} textValue={item.name}>
-                  <bdi>{item.name}</bdi>
-                </SelectItem>
+          {!query.trim() && ((cache?.locations.length ?? 0) > 1 || filterableRooms.length > 1) && (
+            <div className="kept-filters">
+              {(cache?.locations.length ?? 0) > 1 && (
+                <Select
+                  label={t`Location`}
+                  items={[
+                    { id: 'all', name: t`All` },
+                    ...(cache?.locations ?? []).map((location) => ({
+                      id: location.id,
+                      name: location.name,
+                    })),
+                  ]}
+                  selectedKey={locationFilter ?? 'all'}
+                  onSelectionChange={(key) => {
+                    setLocationFilter(key === null || key === 'all' ? null : String(key));
+                    setRoomFilter(null);
+                  }}
+                >
+                  {(item) => (
+                    <SelectItem id={item.id} textValue={item.name}>
+                      <bdi>{item.name}</bdi>
+                    </SelectItem>
+                  )}
+                </Select>
               )}
-            </Select>
+              {filterableRooms.length > 1 && (
+                <Select
+                  label={t`Room`}
+                  items={[
+                    { id: 'all', name: t`All` },
+                    ...filterableRooms.map((place) => ({
+                      id: place.id,
+                      name: place.name,
+                    })),
+                  ]}
+                  selectedKey={roomFilter ?? 'all'}
+                  onSelectionChange={(key) =>
+                    setRoomFilter(key === null || key === 'all' ? null : String(key))
+                  }
+                >
+                  {(item) => (
+                    <SelectItem id={item.id} textValue={item.name}>
+                      <bdi>{item.name}</bdi>
+                    </SelectItem>
+                  )}
+                </Select>
+              )}
+            </div>
           )}
           {cache && !online && (
             <p className="text-small text-ink-2">
@@ -1135,9 +1314,15 @@ export function Inventory({
               <Trans>Only part of your inventory is cached.</Trans>
             </p>
           )}
-          <h2 className="text-title font-semibold">
-            {query.trim() ? t`Search results` : t`Boxes`}
-          </h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="kept-card-title text-title">
+              <Package size={18} aria-hidden />
+              <span>{query.trim() ? t`Search results` : t`Boxes`}</span>
+            </h2>
+            {!query.trim() && things.length > 0 && (
+              <span className="kept-badge kept-badge-neutral">{things.length}</span>
+            )}
+          </div>
           <ThingList items={things} onOpen={open} origin={online ? connection.origin : undefined} />
           {(
             found?.places ??
@@ -1155,7 +1340,13 @@ export function Inventory({
               className="kept-phone-row"
               onPress={() => open({ id: place.id, locationId: place.locationId, kind: 'place' })}
             >
-              <bdi>{place.name}</bdi>
+              <span className="kept-row-lead" aria-hidden>
+                <MapPin size={18} />
+              </span>
+              <span className="kept-row-body">
+                <bdi className="font-semibold">{place.name}</bdi>
+              </span>
+              <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
             </Button>
           ))}
           {found?.documents.items
@@ -1173,16 +1364,22 @@ export function Inventory({
                   })
                 }
               >
-                <bdi>{doc.subject.name ?? t`Document`}</bdi>
-                {doc.snippet && (
-                  <span className="text-small font-normal">
-                    <bdi>{doc.snippet}</bdi>
-                  </span>
-                )}
+                <span className="kept-row-lead" aria-hidden>
+                  <FileText size={18} />
+                </span>
+                <span className="kept-row-body">
+                  <bdi className="font-semibold">{doc.subject.name ?? t`Document`}</bdi>
+                  {doc.snippet && (
+                    <span className="text-small font-normal text-ink-2">
+                      <bdi>{doc.snippet}</bdi>
+                    </span>
+                  )}
+                </span>
+                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
               </Button>
             ))}
           {!query.trim() && cache && things.length === 0 && (
-            <p>
+            <p className="text-ink-2">
               <Trans>No boxes yet.</Trans>
             </p>
           )}
@@ -1191,15 +1388,17 @@ export function Inventory({
             things.length === 0 &&
             !found?.places.length &&
             !found?.documents.items.length && (
-              <p>
+              <p className="text-ink-2">
                 <Trans>No matching inventory.</Trans>
               </p>
             )}
           <Button
             variant="ghost"
+            size="small"
             className="justify-self-start"
             onPress={() => void handleSignOut()}
           >
+            <LogOut size={16} aria-hidden />
             <Trans>Sign out</Trans>
           </Button>
         </section>
@@ -1245,7 +1444,7 @@ export function Inventory({
           cache={cache}
           online={online}
           recent={recentBoxes}
-          onClose={goHome}
+          onClose={goBack}
           onOpen={(target) => open(target, true)}
           onCreated={(target) => {
             setScreen({ kind: 'record', target, backToRooms: true });
@@ -1263,7 +1462,8 @@ export function Inventory({
           pending={pending}
           completions={completions}
           syncing={working}
-          onClose={() => (screen.back ? open(screen.back) : goHome())}
+          leaveRef={canLeaveCapture}
+          onClose={() => (screen.back ? open(screen.back) : goBack())}
           onSave={savedLocally}
         />
       )}
@@ -1276,7 +1476,7 @@ export function Inventory({
             open(target);
             if (online) void refresh();
           }}
-          onClose={goHome}
+          onClose={goBack}
           onAuthError={onSignOut}
         />
       )}
@@ -1303,24 +1503,46 @@ export function Inventory({
         <LabelSheets
           connection={connection}
           cache={cache}
-          onClose={goHome}
+          onClose={goBack}
           onAuthError={onSignOut}
         />
       )}
       {screen.kind === 'unplaced' && cache && (
-        <section className="grid gap-3">
-          <BackButton onPress={goHome} />
-          <h2 className="text-title font-semibold">
-            <Trans>Unplaced</Trans>
-          </h2>
+        <section className="grid gap-4">
+          <ScreenHeader
+            title={<Trans>Unplaced</Trans>}
+            onBack={goBack}
+            icon={<Inbox size={18} aria-hidden />}
+          />
+          {cache.locations.length > 1 && (
+            <Select
+              label={t`Location`}
+              items={[
+                { id: 'all', name: t`All locations` },
+                ...cache.locations.map((loc) => ({ id: loc.id, name: loc.name })),
+              ]}
+              selectedKey={unplacedLocationFilter ?? 'all'}
+              onSelectionChange={(key) =>
+                setUnplacedLocationFilter(key === null || key === 'all' ? null : String(key))
+              }
+            >
+              {(item) => (
+                <SelectItem id={item.id} textValue={item.name}>
+                  <bdi>{item.name}</bdi>
+                </SelectItem>
+              )}
+            </Select>
+          )}
           <ThingList
             onOpen={open}
+            origin={online ? connection.origin : undefined}
             items={cache.things
               .filter(
                 (thing) =>
+                  (!unplacedLocationFilter || thing.locationId === unplacedLocationFilter) &&
                   thing.placeId ===
-                  cache.locations.find((location) => location.id === thing.locationId)
-                    ?.unplacedPlaceId,
+                    cache.locations.find((location) => location.id === thing.locationId)
+                      ?.unplacedPlaceId,
               )
               .map((thing) => ({ ...thing, path: inventoryPath(cache, thing).join(' › ') }))}
           />
@@ -1330,7 +1552,7 @@ export function Inventory({
         <Trash
           connection={connection}
           cache={cache}
-          onClose={goHome}
+          onClose={goBack}
           onAuthError={onSignOut}
           onRestored={(target) => {
             open(target);
@@ -1339,66 +1561,88 @@ export function Inventory({
         />
       )}
       {screen.kind === 'batches' && (
-        <Batches connection={connection} onClose={goHome} onOpen={open} onAuthError={onSignOut} />
+        <Batches connection={connection} onClose={goBack} onOpen={open} onAuthError={onSignOut} />
       )}
       {screen.kind === 'more' && (
-        <section className="grid gap-5">
-          <h2 className="text-title font-semibold">
+        <section className="grid gap-4">
+          <h2 className="kept-card-title text-title">
+            <Settings size={18} aria-hidden />
             <Trans>More</Trans>
           </h2>
-          <section className="grid gap-2" aria-label={t`Settings`}>
-            <h3 className="text-small font-semibold text-ink-2">
+          <section className="kept-card" aria-label={t`Settings`}>
+            <h3 className="kept-card-title text-small text-ink-2">
+              <Palette size={15} aria-hidden />
               <Trans>Settings</Trans>
             </h3>
             <ThemeSwitch />
+            <PaletteSwitch />
           </section>
           <div className="kept-tiles">
             <ActionTile
               label={t`Scan QR or NFC`}
               Icon={QrCode}
-              onPress={() => setScreen({ kind: 'identify' })}
+              tone="info"
+              onPress={() => pushScreen({ kind: 'identify' })}
             />
             <ActionTile
               label={t`Print label sheets`}
               Icon={Tags}
+              tone="amber"
               isDisabled={!cache || !online}
-              onPress={() => setScreen({ kind: 'labelSheets' })}
+              onPress={() => pushScreen({ kind: 'labelSheets' })}
             />
             <ActionTile
               label={t`Recent capture batches`}
               Icon={History}
+              tone="violet"
               isDisabled={!online}
-              onPress={() => setScreen({ kind: 'batches' })}
-            />
-            <ActionTile
-              label={t`Trash`}
-              Icon={Trash2}
-              isDisabled={!online}
-              onPress={() => setScreen({ kind: 'trash' })}
-            />
-            <ActionTile
-              label={t`Unplaced`}
-              Icon={Inbox}
-              isDisabled={!cache}
-              onPress={() => setScreen({ kind: 'unplaced' })}
+              onPress={() => pushScreen({ kind: 'batches' })}
             />
             <ActionTile
               label={t`Rooms`}
               Icon={MapPin}
+              tone="ok"
               isDisabled={!cache}
-              onPress={() => setScreen({ kind: 'rooms' })}
+              onPress={() => pushScreen({ kind: 'rooms' })}
+            />
+            <ActionTile
+              label={t`Unplaced`}
+              Icon={Inbox}
+              tone="neutral"
+              isDisabled={!cache}
+              onPress={() => pushScreen({ kind: 'unplaced' })}
+            />
+            <ActionTile
+              label={t`Trash`}
+              Icon={Trash2}
+              tone="danger"
+              isDisabled={!online}
+              onPress={() => pushScreen({ kind: 'trash' })}
             />
           </div>
-          <Button
-            variant="ghost"
-            className="justify-self-start"
-            onPress={() => void handleSignOut()}
-          >
-            <Trans>Sign out</Trans>
-          </Button>
+          <section className="kept-card" aria-label={t`Account`}>
+            <h3 className="kept-card-title text-small text-ink-2">
+              <Trans>Account</Trans>
+            </h3>
+            <p className="break-all text-small text-ink-2">
+              <bdi>{connection.origin}</bdi>
+            </p>
+            <Button
+              variant="secondary"
+              size="small"
+              className="justify-self-start"
+              onPress={() => void handleSignOut()}
+            >
+              <LogOut size={16} aria-hidden />
+              <Trans>Sign out</Trans>
+            </Button>
+          </section>
+          <footer className="pt-2">
+            <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
+          </footer>
         </section>
       )}
-      {showTabs && <TabBar tab={tabFor(screen)} onTab={goTab} />}
+      {showTabs && <TabBar tab={tabFor(screen)} pendingCount={pending.length} onTab={goTab} />}
     </>
   );
 }
@@ -1475,54 +1719,51 @@ export function KeptPhone() {
 
   return (
     <main className="kept-phone">
-      <header className="mb-5 border-b border-line pb-4">
-        <h1 className="m-0">
-          <BrandLockup width={168} />
-        </h1>
-        {connection && (
-          <p className="break-all text-small text-ink-2">
-            <bdi>{connection.origin}</bdi>
-          </p>
-        )}
-      </header>
       {connection ? (
         <Inventory key={connection.id} connection={connection} onSignOut={signOut} />
       ) : (
         <>
-          <h2 className="mb-4 text-title font-semibold">
-            <Trans>Connect to your inventory</Trans>
-          </h2>
-          <form
-            className="grid gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (address.trim() && !busy) void signIn();
-            }}
-          >
-            <TextField
-              label={t`SheepKeep server address`}
-              placeholder="https://kept.example.com"
-              value={address}
-              onChange={setAddress}
-              isDisabled={busy}
-              inputProps={{
-                dir: 'ltr',
-                autoCapitalize: 'none',
-                autoCorrect: 'off',
-                inputMode: 'url',
+          <header className="mb-6 flex flex-col items-center gap-2 pt-6 text-center">
+            <h1 className="m-0">
+              <BrandLockup width={180} />
+            </h1>
+          </header>
+          <section className="kept-card">
+            <h2 className="text-title font-semibold">
+              <Trans>Connect to your inventory</Trans>
+            </h2>
+            <form
+              className="grid gap-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (address.trim() && !busy) void signIn();
               }}
-            />
-            <Button type="submit" isPending={busy} isDisabled={!address.trim()}>
-              <Trans>Sign in with Apple</Trans>
-            </Button>
-          </form>
+            >
+              <TextField
+                label={t`SheepKeep server address`}
+                placeholder="https://kept.example.com"
+                value={address}
+                onChange={setAddress}
+                isDisabled={busy}
+                inputProps={{
+                  dir: 'ltr',
+                  autoCapitalize: 'none',
+                  autoCorrect: 'off',
+                  inputMode: 'url',
+                }}
+              />
+              <Button type="submit" isPending={busy} isDisabled={!address.trim()}>
+                <Trans>Sign in with Apple</Trans>
+              </Button>
+            </form>
+          </section>
+          <footer className="mt-6 border-t border-line pt-4">
+            <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
+          </footer>
         </>
       )}
-      <footer className="mt-6 border-t border-line pt-4">
-        <ProjectNotice />
-      </footer>
       {status && (
-        <p className="mt-4 text-ink-2" role="status">
+        <p className="mt-4 rounded-xl bg-sunken p-3 text-ink-2" role="status">
           {status}
         </p>
       )}
@@ -1533,6 +1774,7 @@ export function KeptPhone() {
 async function start() {
   await startLocale();
   watchSystemTheme();
+  applyPalette();
   const root = document.getElementById('root');
   if (!root) throw new Error('Missing SheepKeep app root');
   createRoot(root).render(

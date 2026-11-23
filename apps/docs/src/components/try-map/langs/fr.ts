@@ -139,7 +139,7 @@ const pack: Pack = {
     undone: 'Annulé',
     shapesMore: [
       'Il manque une forme ? ',
-      'Demandez-la',
+      'Proposez-en une',
       ', ou parcourez la ',
       'bibliothèque de formes',
       '.',

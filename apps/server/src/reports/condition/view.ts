@@ -151,7 +151,7 @@ export function buildConditionView(
     },
     location: g.locationName,
     generatedLine: w.generated(g.requesterName, when),
-    footer: ['Kept', ctx.instance, when].filter((x) => x !== '').join(sep),
+    footer: ['SheepKeep', ctx.instance, when].filter((x) => x !== '').join(sep),
     compare,
     sides: g.sides.map((s) => ({
       title: titleOf(s),

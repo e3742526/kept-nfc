@@ -7,7 +7,7 @@
  * are one sprite (thumbs/shapes.webp, scripts/render-map-thumbs.mjs), fetched the first time the
  * picker opens. One listbox, so arrow keys, Home and End move through it and a screen reader
  * hears each shape's name. On a phone the sheet stays above the keyboard and only the shapes
- * scroll (Sheet's `fitKeyboard`). Under the shapes, "Missing a shape? Request it" opens the GitHub
+ * scroll (Sheet's `fitKeyboard`). Under the shapes, "Missing a shape? Contribute one" opens the GitHub
  * form for asking for one (#171), and the docs' shape library lists them all.
  */
 import {
@@ -38,12 +38,12 @@ import { Sheet } from '@/components/things/sheet';
 import { TextField } from '@/components/ui/text-field';
 import { useModelNames, useShapeGroupNames } from './labels';
 import type { Item } from './layout';
-import { SHAPE_LIBRARY_URL, SHAPE_REQUEST_URL } from './shape-links';
+import { SHAPE_CONTRIBUTION_URL, SHAPE_LIBRARY_URL } from './shape-links';
 import spriteUrl from './thumbs/shapes.webp?url';
 import { THUMB_CELLS, THUMB_COLS } from './thumbs/sprite';
 
 // The footer's two links, shared with the docs' Try the map (shape-links.ts).
-export { SHAPE_LIBRARY_URL, SHAPE_REQUEST_URL } from './shape-links';
+export { SHAPE_CONTRIBUTION_URL, SHAPE_LIBRARY_URL } from './shape-links';
 
 /** The search's language: the reader's, by its first subtag ("fr-CA" is French). */
 const shapeLang = (locale: string): ShapeLang => {
@@ -238,8 +238,8 @@ export function ShapePicker({
         <p className="kshape-more">
           <Trans>
             Missing a shape?{' '}
-            <a href={SHAPE_REQUEST_URL} target="_blank" rel="noopener noreferrer">
-              Request it
+            <a href={SHAPE_CONTRIBUTION_URL} target="_blank" rel="noopener noreferrer">
+              Contribute one
             </a>
             , or browse the{' '}
             <a href={SHAPE_LIBRARY_URL} target="_blank" rel="noopener noreferrer">

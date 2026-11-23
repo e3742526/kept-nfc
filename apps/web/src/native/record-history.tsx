@@ -1,4 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
+import { ChevronUp, History, Image, Undo2 } from 'lucide-react';
 import { useState } from 'react';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { AttachmentView, HistoryEvent, Page } from '@/api/inventory/types';
@@ -157,8 +158,9 @@ export function RecordHistory({
   }
 
   return (
-    <section className="grid gap-2">
-      <h3 className="font-semibold">
+    <section className="kept-card">
+      <h3 className="kept-card-title">
+        <History size={16} aria-hidden />
         <Trans>History</Trans>
       </h3>
       {!page ? (
@@ -168,6 +170,7 @@ export function RecordHistory({
           isPending={busy}
           onPress={() => void load()}
         >
+          <History size={16} aria-hidden />
           <Trans>View history</Trans>
         </Button>
       ) : (
@@ -231,6 +234,7 @@ export function RecordHistory({
                         size="small"
                         onPress={() => onOpenPhoto(photo)}
                       >
+                        <Image size={14} aria-hidden />
                         <bdi>{photo.name ?? t`Photograph`}</bdi>
                       </Button>
                     ))}
@@ -257,6 +261,7 @@ export function RecordHistory({
                           isPending={busy}
                           onPress={() => void undo(event.id)}
                         >
+                          <Undo2 size={14} aria-hidden />
                           <Trans>Undo</Trans>
                         </Button>
                       )}
@@ -265,7 +270,7 @@ export function RecordHistory({
               })}
             </ol>
           ) : (
-            <p>
+            <p className="text-ink-2">
               <Trans>No history yet.</Trans>
             </p>
           )}
@@ -284,6 +289,7 @@ export function RecordHistory({
             isDisabled={busy}
             onPress={() => setPage(undefined)}
           >
+            <ChevronUp size={16} aria-hidden />
             <Trans>Hide history</Trans>
           </Button>
         </>

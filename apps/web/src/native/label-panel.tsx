@@ -1,5 +1,19 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  ArrowRight,
+  Camera,
+  CheckCircle2,
+  ChevronRight,
+  Keyboard,
+  Nfc,
+  Package,
+  QrCode as QrCodeIcon,
+  Radar,
+  Share,
+  Square,
+  X,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { appDetect } from '@/camera/scanner';
 import { useErrorText } from '@/components/page';
@@ -10,7 +24,7 @@ import { QrCode } from '@/components/ui/qr-code';
 import { TextField } from '@/components/ui/text-field';
 import { isolate } from '@/lib/bidi';
 import { usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import type { Connection, FindTagEvent, TagReading } from './bridge';
 import { ClaimBinLabel } from './claim-bin-label';
 import type { InventoryCache } from './inventory';
@@ -489,27 +503,52 @@ export function LabelPanel({
         ? t`Find this box`
         : t`Write NFC tag`;
 
+  const headingIcon =
+    action === 'identify' ? (
+      <QrCodeIcon size={18} aria-hidden />
+    ) : action === 'find' ? (
+      <Radar size={18} aria-hidden />
+    ) : (
+      <Nfc size={18} aria-hidden />
+    );
+
   return (
     <section className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <BackButton onPress={onClose} />
-        {action === 'find' && box && (
-          <Button variant="ghost" size="small" onPress={clearTarget}>
-            <Trans>Clear target</Trans>
-          </Button>
-        )}
-      </div>
-      <h2 className="text-title font-semibold">{heading}</h2>
+      <ScreenHeader
+        title={heading}
+        onBack={onClose}
+        icon={headingIcon}
+        trailing={
+          action === 'find' &&
+          box && (
+            <Button variant="ghost" size="small" onPress={clearTarget}>
+              <X size={15} aria-hidden />
+              <Trans>Clear target</Trans>
+            </Button>
+          )
+        }
+      />
       {box && (
-        <div className="grid gap-1 rounded-lg border border-line bg-surface p-3">
-          <p className="font-semibold">
-            <bdi>{box.name}</bdi>
-          </p>
-          {box.shortCode && (
-            <p className="text-small text-ink-2">
-              <Trans>Label code:</Trans> <bdi className="ltr">{box.shortCode}</bdi>
-            </p>
-          )}
+        <div className="kept-card">
+          <div className="flex items-center gap-3">
+            <span className="kept-row-lead" aria-hidden>
+              <Package size={18} />
+            </span>
+            <div className="grid min-w-0 gap-0.5">
+              <p className="font-semibold">
+                <bdi>{box.name}</bdi>
+              </p>
+              {box.shortCode && (
+                <p className="kept-chip justify-self-start">
+                  <QrCodeIcon size={13} aria-hidden />
+                  <span className="sr-only">
+                    <Trans>Label code:</Trans>{' '}
+                  </span>
+                  <bdi className="ltr">{box.shortCode}</bdi>
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
       {action === 'identify' && cache && claim && (
@@ -524,39 +563,40 @@ export function LabelPanel({
         />
       )}
       {action === 'enroll' ? (
-        <>
+        <div className="kept-card justify-items-center">
           {url && <QrCode value={url} label={t`SheepKeep QR label`} />}
-          {url?.startsWith('https://') && box && (
-            <Button
-              variant="secondary"
-              className="justify-self-start"
-              isDisabled={busy}
-              onPress={() => {
-                setBusy(true);
-                setStatus('');
-                void adapters.media
-                  .shareLabelPdf(connection, { url, name: box.name })
-                  .catch((error: unknown) => setStatus(errorText(error)))
-                  .finally(() => setBusy(false));
-              }}
-            >
-              <Trans>Share QR label PDF</Trans>
-            </Button>
-          )}
-          {canEnroll && url?.startsWith('https://') && (
-            <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-wrap justify-center gap-2">
+            {url?.startsWith('https://') && box && (
+              <Button
+                variant="secondary"
+                isDisabled={busy}
+                onPress={() => {
+                  setBusy(true);
+                  setStatus('');
+                  void adapters.media
+                    .shareLabelPdf(connection, { url, name: box.name })
+                    .catch((error: unknown) => setStatus(errorText(error)))
+                    .finally(() => setBusy(false));
+                }}
+              >
+                <Share size={16} aria-hidden />
+                <Trans>Share QR label PDF</Trans>
+              </Button>
+            )}
+            {canEnroll && url?.startsWith('https://') && (
               <Button isPending={busy} onPress={() => void inspect()}>
+                <Nfc size={16} aria-hidden />
                 {unverifiedWrite ? <Trans>Verify tag now</Trans> : <Trans>Inspect NFC tag</Trans>}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
           {canEnroll && !url?.startsWith('https://') && (
-            <p>
+            <p className="text-small text-ink-2">
               <Trans>Connect to your SheepKeep server over HTTPS to enroll NFC tags.</Trans>
             </p>
           )}
           {inspection && (
-            <div className="grid gap-3 rounded-lg border border-line bg-surface p-4">
+            <div className="grid w-full gap-3 rounded-xl border border-line bg-sunken p-4">
               {inspection.occupied ? (
                 <p>
                   <Trans>
@@ -577,6 +617,7 @@ export function LabelPanel({
                 </p>
               )}
               <Button isPending={busy} onPress={() => void write()}>
+                <Nfc size={16} aria-hidden />
                 {inspection.occupied ? (
                   <Trans>Overwrite NFC tag</Trans>
                 ) : (
@@ -585,68 +626,80 @@ export function LabelPanel({
               </Button>
             </div>
           )}
-        </>
+        </div>
       ) : (
         <>
-          <p>
-            <Trans>Hold the top of your iPhone close to one tag at a time.</Trans>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {action === 'find' ? (
-              <Button isPending={busy} onPress={() => void startContinuousFind()}>
-                {finding ? (
-                  <Trans>Scanning…</Trans>
-                ) : findPausedState ? (
-                  <Trans>Continue scanning</Trans>
-                ) : (
+          <div className="kept-card">
+            <p className="text-small text-ink-2">
+              <Trans>Hold the top of your iPhone close to one tag at a time.</Trans>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {action === 'find' ? (
+                <Button isPending={busy} onPress={() => void startContinuousFind()}>
+                  <Nfc size={18} aria-hidden />
+                  {finding ? (
+                    <Trans>Scanning…</Trans>
+                  ) : findPausedState ? (
+                    <Trans>Continue scanning</Trans>
+                  ) : (
+                    <Trans>Scan NFC tag</Trans>
+                  )}
+                </Button>
+              ) : (
+                <Button isPending={busy} onPress={() => void scanIdentify()}>
+                  <Nfc size={18} aria-hidden />
                   <Trans>Scan NFC tag</Trans>
-                )}
-              </Button>
-            ) : (
-              <Button isPending={busy} onPress={() => void scanIdentify()}>
-                <Trans>Scan NFC tag</Trans>
-              </Button>
-            )}
-            {finding && (
-              <Button
-                variant="secondary"
-                onPress={() => {
-                  const sessionId = findSessionId.current ?? undefined;
-                  invalidateFindSession();
-                  setStatus(t`Scan cancelled.`);
-                  void adapters.nfc.cancelTag(sessionId).catch(() => {});
-                }}
-              >
-                <Trans>Stop scanning</Trans>
-              </Button>
-            )}
+                </Button>
+              )}
+              {finding && (
+                <Button
+                  variant="secondary"
+                  onPress={() => {
+                    const sessionId = findSessionId.current ?? undefined;
+                    invalidateFindSession();
+                    setStatus(t`Scan cancelled.`);
+                    void adapters.nfc.cancelTag(sessionId).catch(() => {});
+                  }}
+                >
+                  <Square size={15} aria-hidden />
+                  <Trans>Stop scanning</Trans>
+                </Button>
+              )}
+              {!camera && (
+                <Button variant="secondary" isDisabled={busy} onPress={() => setCamera(true)}>
+                  <Camera size={18} aria-hidden />
+                  <Trans>Scan QR code</Trans>
+                </Button>
+              )}
+            </div>
           </div>
           {matched && box && (
             <div className="kept-match-card grid gap-3" role="status">
-              <p className="text-title font-semibold text-ok">{t`Found ${isolate(box.name)}.`}</p>
+              <p className="flex items-center gap-2 text-title font-semibold text-ok">
+                <CheckCircle2 size={22} aria-hidden />
+                <span>{t`Found ${isolate(box.name)}.`}</span>
+              </p>
               <div className="flex flex-wrap gap-2">
                 <Button onPress={openMatchedBox}>
                   <Trans>Open box</Trans>
+                  <ArrowRight size={16} className="rtl:rotate-180" aria-hidden />
                 </Button>
               </div>
             </div>
           )}
-          {camera ? (
-            <div className="relative min-h-52 overflow-hidden rounded-lg bg-charcoal">
+          {camera && (
+            <div className="relative min-h-52 overflow-hidden rounded-xl bg-charcoal">
               <ScannerView detect={appDetect()} paused={busy} onRead={openCamera} />
               <div className="relative z-10 p-2">
                 <Button variant="secondary" onPress={() => setCamera(false)}>
+                  <X size={16} aria-hidden />
                   <Trans>Close camera</Trans>
                 </Button>
               </div>
             </div>
-          ) : (
-            <Button variant="secondary" isDisabled={busy} onPress={() => setCamera(true)}>
-              <Trans>Scan QR code</Trans>
-            </Button>
           )}
           <form
-            className="grid gap-3"
+            className="kept-card"
             onSubmit={(event) => {
               event.preventDefault();
               if (typed.trim()) void run(() => read(typed.trim(), 'qr'));
@@ -654,6 +707,7 @@ export function LabelPanel({
           >
             <TextField label={t`Type the code`} value={typed} onChange={setTyped} />
             <Button type="submit" variant="secondary" isDisabled={!typed.trim() || busy}>
+              <Keyboard size={16} aria-hidden />
               <Trans>Open label</Trans>
             </Button>
           </form>
@@ -674,15 +728,21 @@ export function LabelPanel({
                   })
                 }
               >
-                <bdi>{candidate.name || t`Untitled`}</bdi>
-                <bdi className="text-small font-normal text-ink-2">{candidate.locationName}</bdi>
+                <span className="kept-row-lead" aria-hidden>
+                  <Package size={18} />
+                </span>
+                <span className="kept-row-body">
+                  <bdi className="font-semibold">{candidate.name || t`Untitled`}</bdi>
+                  <bdi className="text-small font-normal text-ink-2">{candidate.locationName}</bdi>
+                </span>
+                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
               </Button>
             </li>
           ))}
         </ul>
       )}
       {!matched && status && (
-        <p role="status" className="text-ink-2">
+        <p role="status" className="rounded-xl bg-sunken p-3 text-ink-2">
           {status}
         </p>
       )}

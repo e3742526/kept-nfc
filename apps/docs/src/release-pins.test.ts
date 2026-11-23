@@ -1,21 +1,10 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { RELEASE } from './components/install/commands';
 
-// The install docs download files from the release they were published with. The release pull
-// request bumps the pins; a page it misses keeps sending people to an older release, in its
-// language only (1.14.6 left most translated install pages on 1.14.5). The README's quick start
-// is the same download.
 const root = join(import.meta.dirname, '../../..');
 const docs = join(import.meta.dirname, 'content/docs');
-
-const released = (() => {
-  const m = readFileSync(join(root, 'compose.yaml'), 'utf8').match(
-    /ghcr\.io\/keptinventory\/kept:(\d+\.\d+\.\d+)\}/,
-  );
-  if (!m) throw new Error('compose.yaml names no default image');
-  return m[1];
-})();
 
 function pages(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -36,14 +25,14 @@ function stalePins(files: string[]) {
     for (const m of readFileSync(file, 'utf8').matchAll(PIN)) {
       pins++;
       const version = m[1];
-      if (version !== released) stale.push(`${relative(root, file)}: ${version}`);
+      if (version !== RELEASE) stale.push(`${relative(root, file)}: ${version}`);
     }
   }
   return { stale, pins };
 }
 
 describe('release pins in the docs', () => {
-  it('name the release compose.yaml runs, on every page in every language', () => {
+  it('use a consistent version for upstream Kept downloads in every language', () => {
     const { stale, pins } = stalePins(pages(docs));
     expect(pins).toBeGreaterThan(0);
     expect(stale).toEqual([]);

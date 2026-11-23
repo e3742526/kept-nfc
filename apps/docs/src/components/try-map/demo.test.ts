@@ -7,7 +7,7 @@
  */
 import { builtinTypeName, printedCode } from '@kept/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SHAPE_LIBRARY_URL, SHAPE_REQUEST_URL } from '../../../../web/src/map/shape-links';
+import { SHAPE_CONTRIBUTION_URL, SHAPE_LIBRARY_URL } from '../../../../web/src/map/shape-links';
 
 type Sel = { type: 'room' | 'item'; id: string };
 type State = {
@@ -401,9 +401,9 @@ describe('Arrange', () => {
     click(byText(list(), '[data-act="list-thing"]', /^Sofa/));
     click(root.querySelector('[data-act="shapes"]'));
     const more = root.querySelector('dialog.kd-shapes[open] .kshape-more');
-    expect(more?.textContent).toBe('Missing a shape? Request it, or browse the shape library.');
+    expect(more?.textContent).toBe('Missing a shape? Contribute one, or browse the shape library.');
     expect([...(more?.querySelectorAll('a') ?? [])].map((a) => a.getAttribute('href'))).toEqual([
-      SHAPE_REQUEST_URL,
+      SHAPE_CONTRIBUTION_URL,
       SHAPE_LIBRARY_URL,
     ]);
   });

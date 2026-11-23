@@ -60,7 +60,7 @@ const inventory: PdfWords['inventory'] = {
 const readable: PdfWords['readable'] = {
   title: 'Lesbare Kopie',
   intro:
-    'Alles an diesem Standort, wie Kept es gespeichert hatte. Zum Öffnen genügt ein Browser: Fotos, Belege und Dokumente öffnen sich aus den Dateien daneben.',
+    'Alles an diesem Standort, wie SheepKeep es gespeichert hatte. Zum Öffnen genügt ein Browser: Fotos, Belege und Dokumente öffnen sich aus den Dateien daneben.',
   exported: (when) => `Exportiert am ${when}`,
   places: 'Orte',
   things: 'Gegenstände',
@@ -148,12 +148,12 @@ const conditionReport: PdfWords['condition'] = {
     'Privat: eine Aufzeichnung über den Zustand dieser Wohnung. Teile sie mit deinem Vermieter oder der Hausverwaltung und mit niemandem sonst.',
   empty: 'Keine Räume in diesem Protokoll.',
   notInReport: 'Nicht in diesem Protokoll.',
-  photoNote: 'Die Zeit jedes Fotos ist der Zeitpunkt, zu dem Kept es erhalten hat.',
+  photoNote: 'Die Zeit jedes Fotos ist der Zeitpunkt, zu dem SheepKeep es erhalten hat.',
   draft: 'Nicht abgeschlossen: Dieses Protokoll kann sich noch ändern.',
   started: (who) => `Begonnen von ${who}`,
   finished: (who, when) => `Abgeschlossen von ${who}, ${when}`,
   generated: (who, when) => `Erstellt von ${who}, ${when}`,
-  more: (n) => `${n} weitere in Kept`,
+  more: (n) => `${n} weitere in SheepKeep`,
 };
 
 const move: PdfWords['move'] = {
@@ -166,10 +166,10 @@ const move: PdfWords['move'] = {
   quantity: 'Menge',
   id: 'ID',
   holds: (n) => `enthält ${n}`,
-  more: (n) => `${n} weitere in Kept`,
+  more: (n) => `${n} weitere in SheepKeep`,
   states: { packed: 'Gepackt', in_transit: 'Unterwegs', unpacked: 'Ausgepackt' },
   route: (from, to) => `${from} → ${to}`,
-  scan: 'Scanne den Code, um diesen Karton in Kept zu sehen und auszupacken.',
+  scan: 'Scanne den Code, um diesen Karton in SheepKeep zu sehen und auszupacken.',
   generated: (who, when) => `Gedruckt von ${who}, ${when}`,
   none: 'Keine Kartons zum Drucken.',
 };
@@ -244,7 +244,7 @@ const vehicle: PdfWords['vehicle'] = {
   generated: (who, when) => `Erstellt von ${who}, ${when}`,
   asOf: (day) => `Stand: ${day}`,
   range: (from, to) => `Vom ${from} bis ${to}`,
-  more: (n) => `${n} weitere in Kept`,
+  more: (n) => `${n} weitere in SheepKeep`,
   moreInvoices: (n) => `+${n}`,
   moneyHidden: 'Ohne Kosten: Kosten sind für dich an diesem Standort ausgeblendet.',
   per100: (fuel, distance) => `${fuel}/100 ${distance}`,

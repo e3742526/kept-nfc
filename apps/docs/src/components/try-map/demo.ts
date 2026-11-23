@@ -84,7 +84,7 @@ import {
 } from '../../../../web/src/map/list';
 // Inline, not imported as stylesheets: Astro would link those from every page of the site.
 import mapCss from '../../../../web/src/map/map.css?inline';
-import { SHAPE_LIBRARY_URL, SHAPE_REQUEST_URL } from '../../../../web/src/map/shape-links';
+import { SHAPE_CONTRIBUTION_URL, SHAPE_LIBRARY_URL } from '../../../../web/src/map/shape-links';
 // D249: the shape picker's pictures, the app's own sprite (fetched when the picker first opens).
 import spriteUrl from '../../../../web/src/map/thumbs/shapes.webp?url';
 import { THUMB_CELLS, THUMB_COLS } from '../../../../web/src/map/thumbs/sprite';
@@ -1093,7 +1093,7 @@ export function mount(root: HTMLElement, { lang, installHref, pack }: MountOptio
     dlg.innerHTML = `<div class="kd-shapes-head"><h2 id="kd-shapes-title">${esc(w.shapeFor(it.name))}</h2><button type="button" class="kmap-x" data-shapes="close" aria-label="${esc(w.close)}">×</button></div>
       <input type="search" class="kmap-input" enterkeyhint="search" aria-label="${esc(w.findShape)}" placeholder="${esc(w.findShapeHint)}">
       <div class="kshape-list" role="listbox" aria-label="${esc(w.shapes)}"></div>
-      <p class="kshape-more">${esc(w.shapesMore[0])}<a href="${esc(SHAPE_REQUEST_URL)}" target="_blank" rel="noopener noreferrer">${esc(w.shapesMore[1])}</a>${esc(w.shapesMore[2])}<a href="${esc(SHAPE_LIBRARY_URL)}" target="_blank" rel="noopener noreferrer">${esc(w.shapesMore[3])}</a>${esc(w.shapesMore[4])}</p>`;
+      <p class="kshape-more">${esc(w.shapesMore[0])}<a href="${esc(SHAPE_CONTRIBUTION_URL)}" target="_blank" rel="noopener noreferrer">${esc(w.shapesMore[1])}</a>${esc(w.shapesMore[2])}<a href="${esc(SHAPE_LIBRARY_URL)}" target="_blank" rel="noopener noreferrer">${esc(w.shapesMore[3])}</a>${esc(w.shapesMore[4])}</p>`;
     const search = dlg.querySelector('input') as HTMLInputElement;
     const list = dlg.querySelector<HTMLElement>('[role="listbox"]') as HTMLElement;
     const option = (m: MapModelKey) =>

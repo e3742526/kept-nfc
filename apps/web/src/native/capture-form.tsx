@@ -1,14 +1,16 @@
 import { AMOUNT_STRING, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'react';
+import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
+import { type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { TextField as AriaTextField, FileTrigger, Label, TextArea } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
 import { inputClass } from '@/components/ui/field';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
 import { sep, useBytes } from '@/lib/format';
 import { usePlatform } from './adapters';
-import { BackButton } from './back-button';
+import { ScreenHeader } from './back-button';
 import { type CompletionState, type Connection, StorageFullError } from './bridge';
 import { type Destination, DestinationPicker, defaultDestination } from './destination';
 import { createBox, type InventoryCache } from './inventory';
@@ -39,6 +41,7 @@ export function CaptureForm({
   pending = [],
   completions = {},
   syncing = false,
+  leaveRef,
   onClose,
   onSave,
 }: {
@@ -50,11 +53,13 @@ export function CaptureForm({
   /** Durable terminal states; only `synced` counts as synchronized. */
   completions?: Readonly<Record<string, CompletionState>>;
   syncing?: boolean;
+  leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
+  const confirm = useConfirm();
   const formatBytes = useBytes();
   const [destination, setDestination] = useState(() => box ?? (cache && defaultDestination(cache)));
   const photosOnly = destination?.kind === 'photos';
@@ -70,6 +75,18 @@ export function CaptureForm({
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const previewUrlsRef = useRef<string[]>([]);
+
+  async function canLeave() {
+    if (busy) return false;
+    if (!name && !note && !quantity && !files.length) return true;
+    return confirm({
+      title: t`Discard this draft?`,
+      confirmLabel: t`Discard draft`,
+      destructive: true,
+    });
+  }
+
+  useImperativeHandle(leaveRef, () => canLeave);
 
   useEffect(() => {
     return () => {
@@ -174,30 +191,53 @@ export function CaptureForm({
     }
   }
 
+  const headerTitle = photosOnly
+    ? t`Record photos`
+    : documentsOnly
+      ? t`Add documents`
+      : box && box.kind !== 'place'
+        ? t`Adding to box`
+        : t`Capture inventory`;
+
   return (
     <section className="grid gap-4">
-      <BackButton onPress={onClose} isDisabled={busy} />
-      <header className="grid gap-1 rounded-lg border border-line bg-surface p-3">
-        <p className="text-label font-semibold uppercase tracking-wide text-ink-2">
-          {photosOnly
-            ? t`Record photos`
-            : documentsOnly
-              ? t`Add documents`
-              : box && box.kind !== 'place'
-                ? t`Adding to box`
-                : t`Capture inventory`}
-        </p>
-        {box && (
-          <h2 className="text-title font-semibold">
-            <bdi>{box.name}</bdi>
-          </h2>
-        )}
-        {location && (
-          <p className="text-small text-ink-2">
-            <bdi>{location}</bdi>
-          </p>
-        )}
-      </header>
+      <ScreenHeader
+        title={headerTitle}
+        onBack={() => {
+          void canLeave().then((ok) => {
+            if (ok) onClose();
+          });
+        }}
+        backDisabled={busy}
+        icon={
+          photosOnly ? (
+            <Camera size={18} aria-hidden />
+          ) : documentsOnly ? (
+            <FileText size={18} aria-hidden />
+          ) : (
+            <Plus size={18} aria-hidden />
+          )
+        }
+      />
+      {box && (
+        <header className="kept-card">
+          <div className="flex items-start gap-3">
+            <span className="kept-row-lead" aria-hidden>
+              {box.kind === 'place' ? <MapPin size={18} /> : <Package size={18} />}
+            </span>
+            <div className="grid min-w-0 gap-0.5">
+              <h3 className="text-body font-semibold">
+                <bdi>{box.name}</bdi>
+              </h3>
+              {location && (
+                <p className="text-small text-ink-2">
+                  <bdi>{location}</bdi>
+                </p>
+              )}
+            </div>
+          </div>
+        </header>
+      )}
       {batchEntryIds.length > 0 && (
         <div
           className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-small"
@@ -278,7 +318,7 @@ export function CaptureForm({
             />
           </>
         )}
-        <div className="flex flex-wrap gap-2">
+        <div className="kept-media-bar">
           {!documentsOnly && (
             <>
               <FileTrigger
@@ -286,7 +326,8 @@ export function CaptureForm({
                 defaultCamera="environment"
                 onSelect={(list) => choose(list, 'photo')}
               >
-                <Button variant="secondary" isDisabled={busy}>
+                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                  <Camera size={20} aria-hidden />
                   <Trans>Take a photo</Trans>
                 </Button>
               </FileTrigger>
@@ -295,7 +336,8 @@ export function CaptureForm({
                 allowsMultiple
                 onSelect={(list) => choose(list, 'photo')}
               >
-                <Button variant="secondary" isDisabled={busy}>
+                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                  <Images size={20} aria-hidden />
                   <Trans>Choose photos</Trans>
                 </Button>
               </FileTrigger>
@@ -307,7 +349,8 @@ export function CaptureForm({
               allowsMultiple
               onSelect={(list) => choose(list, 'document')}
             >
-              <Button variant="secondary" isDisabled={busy}>
+              <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                <FileText size={20} aria-hidden />
                 <Trans>Attach PDF</Trans>
               </Button>
             </FileTrigger>
@@ -317,12 +360,16 @@ export function CaptureForm({
           <ul className="grid gap-2">
             {files.map(({ file, key, role, previewUrl }) => (
               <li
-                className="flex items-center justify-between gap-3 rounded-lg border border-line bg-surface p-2"
+                className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-2"
                 key={key}
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  {previewUrl && (
+                  {previewUrl ? (
                     <img src={previewUrl} alt="" className="kept-thumb" loading="lazy" />
+                  ) : (
+                    <span className="kept-row-lead" aria-hidden>
+                      <FileText size={18} />
+                    </span>
                   )}
                   <div className="grid min-w-0 gap-0.5">
                     <bdi className="break-words font-medium">{file.name}</bdi>
@@ -339,6 +386,7 @@ export function CaptureForm({
                   isDisabled={busy}
                   onPress={() => removeFile(key)}
                 >
+                  <Trash2 size={15} aria-hidden />
                   <Trans>Remove</Trans>
                 </Button>
               </li>
@@ -346,6 +394,7 @@ export function CaptureForm({
           </ul>
         )}
         <Button type="submit" isPending={busy} isDisabled={!canSave}>
+          <Check size={18} aria-hidden />
           {photosOnly
             ? t`Save photos`
             : documentsOnly
@@ -400,12 +449,14 @@ export function NewBoxForm({
 
   return (
     <section className="grid gap-4">
-      <BackButton onPress={onClose} isDisabled={busy} />
-      <h2 className="text-title font-semibold">
-        <Trans>Create a box</Trans>
-      </h2>
+      <ScreenHeader
+        title={<Trans>Create a box</Trans>}
+        onBack={onClose}
+        backDisabled={busy}
+        icon={<Package size={18} aria-hidden />}
+      />
       <form
-        className="grid gap-4"
+        className="kept-card"
         onSubmit={(event) => {
           event.preventDefault();
           void submit();
@@ -426,6 +477,7 @@ export function NewBoxForm({
           placesOnly
         />
         <Button type="submit" isPending={busy} isDisabled={!target}>
+          <Plus size={18} aria-hidden />
           <Trans>Create box</Trans>
         </Button>
       </form>
