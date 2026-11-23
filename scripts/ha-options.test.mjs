@@ -22,6 +22,7 @@ describe('appEnv()', () => {
     expect(env).toEqual({
       KEPT_PUBLIC_URL: 'http://homeassistant.local:8080',
       KEPT_HA_TRUST_GROUPS: '0',
+      KEPT_HA_SUPERVISOR_VERSION: '',
       KEPT_LOG_LEVEL: 'info',
     });
     expect(lines).toContain(
@@ -507,13 +508,21 @@ describe('setup without the code, by Supervisor version', () => {
     appEnv({ options: {}, info: { ...info, supervisor: version }, self }).env;
 
   it('is on from 2026.10.4', () => {
-    for (const v of ['2026.10.4', '2026.10.5', '2026.11.0', '2027.1.0', '2026.10.5.dev2810']) {
+    for (const v of ['2026.10.4', '2026.10.5', '2026.11.0', '2027.1.0']) {
       expect(env(v).KEPT_HA_TRUST_GROUPS, v).toBe('1');
     }
   });
 
   it('is off before it, and when the version is unknown', () => {
-    for (const v of ['2026.10.3', '2026.9.9', '2025.12.0', 'dev', '', undefined]) {
+    for (const v of [
+      '2026.10.3',
+      '2026.9.9',
+      '2025.12.0',
+      '2026.10.5.dev2810',
+      'dev',
+      '',
+      undefined,
+    ]) {
       expect(env(v).KEPT_HA_TRUST_GROUPS, String(v)).toBe('0');
     }
     // Set to 0, not left out: a value the container was started with never gets through.

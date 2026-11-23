@@ -129,6 +129,7 @@ describe('kept admin token create', () => {
     await expect(make({ user: bruce.email, scope: 'admin' })).rejects.toThrow(/--scope/);
     await expect(make({ user: bruce.email, name: '  ' })).rejects.toThrow(/--name/);
     await expect(make({ user: bruce.email, expires: '0' })).rejects.toThrow(/--expires/);
+    await expect(make({ user: bruce.email, expires: '366' })).rejects.toThrow(/--expires/);
     await expect(make({ user: bruce.email, expires: 'soon' })).rejects.toThrow(/--expires/);
     const disabled = await person(t, db, 'peter');
     await own(db, 'UPDATE auth."user" SET banned = true WHERE id = $1', [disabled.userId]);

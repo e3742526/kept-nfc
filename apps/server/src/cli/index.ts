@@ -2,7 +2,7 @@
 import { chownSync, realpathSync, statSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { pathToFileURL } from 'node:url';
-import { KEPT_VERSION } from '@kept/shared';
+import { KEPT_VERSION, PERSONAL_TOKEN_MAX_AGE_DAYS } from '@kept/shared';
 import { Command } from 'commander';
 import pg from 'pg';
 import {
@@ -465,7 +465,10 @@ export function buildCli(): Command {
     .requiredOption('--user <login>', "the email address, or a managed account's username")
     .requiredOption('--scope <scope>', 'read, or write to let it change things too')
     .requiredOption('--name <name>', 'what it is for, e.g. "Home Assistant"')
-    .option('--expires <days>', 'stop working after this many days (default: until revoked)')
+    .option(
+      '--expires <days>',
+      `stop working after this many days (default and maximum: ${PERSONAL_TOKEN_MAX_AGE_DAYS})`,
+    )
     .option(
       '--location <id-or-name...>',
       'only these locations (default: every location the token can reach)',

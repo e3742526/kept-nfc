@@ -147,7 +147,12 @@ export function appEnv({ options, info, self }) {
     );
   }
 
-  if (atLeast(info?.supervisor, TRUSTED_GROUPS_SUPERVISOR)) {
+  // Both values come from the Supervisor info read by the start script. An unknown version
+  // clears any inherited value, so the server can independently check the group-trust floor.
+  env.KEPT_HA_SUPERVISOR_VERSION = /^\d{4}\.\d{1,2}\.\d+$/.test(info?.supervisor ?? '')
+    ? info.supervisor
+    : '';
+  if (atLeast(env.KEPT_HA_SUPERVISOR_VERSION, TRUSTED_GROUPS_SUPERVISOR)) {
     env.KEPT_HA_TRUST_GROUPS = '1';
   } else {
     // Always written, so a value the container was started with never gets through.

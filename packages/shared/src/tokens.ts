@@ -6,6 +6,7 @@
  */
 
 export const TOKEN_PREFIX = 'kpt_';
+export const PERSONAL_TOKEN_MAX_AGE_DAYS = 365;
 export const TOKEN_SCOPES = ['read', 'write'] as const;
 export type TokenScope = (typeof TOKEN_SCOPES)[number];
 export const TOKEN_KINDS = ['personal', 'oauth'] as const;

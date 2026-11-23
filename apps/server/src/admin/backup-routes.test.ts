@@ -162,12 +162,12 @@ describe('who may', () => {
 });
 
 describe('GET and PUT /api/v1/admin/backup', () => {
-  it('starts unconfigured, with the defaults and nothing locked', async () => {
+  it('starts unconfigured with an operator-managed destination', async () => {
     const res = await call(t, '/api/v1/admin/backup', { as: ibrahim });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({
       configured: false,
-      target: { value: null, locked: false },
+      target: { value: null, locked: true },
       passwordSet: { value: false, locked: false },
       time: { value: '02:30', locked: false },
       keep: {
@@ -185,13 +185,66 @@ describe('GET and PUT /api/v1/admin/backup', () => {
     expect(res.json().code).toBe('recovery_kit_required');
   });
 
-  // catalogue: PUT /api/v1/admin/backup
-  it('saves, seals the secrets, audits without a value, and needs If-Match', async () => {
+  it('refuses an external destination change after the recovery kit is acknowledged', async () => {
     await acknowledgeKit();
+    const before = await auditOf('instance.backup_settings');
+    const res = await put(
+      body({
+        target: {
+          kind: 's3',
+          bucket: 'private-backups',
+          accessKeyId: 'AKIDEXAMPLE',
+          secretAccessKey: S3_SECRET,
+        },
+      }),
+    );
+    expect([res.statusCode, res.json().code]).toEqual([400, 'setting_locked']);
+    expect(await auditOf('instance.backup_settings')).toEqual(before);
+    expect((await call(t, '/api/v1/admin/backup', { as: ibrahim })).json().target).toEqual({
+      value: null,
+      locked: true,
+    });
+  });
+
+  it('keeps a legacy target usable and read-only', async () => {
+    await acknowledgeKit();
+    await ownerTx(db, (c) =>
+      c.query("INSERT INTO public.instance_settings (key, value) VALUES ('backup', $1)", [
+        JSON.stringify({ target: DIR }),
+      ]),
+    );
+    const saved = await call(t, '/api/v1/admin/backup', { as: ibrahim });
+    const { version } = saved.json();
+    const refused = await put(body({ target: { ...DIR, path: '/mnt/elsewhere' } }), version);
+    expect([refused.statusCode, refused.json().code]).toEqual([400, 'setting_locked']);
+    const res = await put(body(), version);
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({
+      target: { value: DIR, locked: true },
+      configured: true,
+    });
+  });
+
+  // catalogue: PUT /api/v1/admin/backup
+  it('updates settings for the operator’s target, seals the password, and needs If-Match', async () => {
+    await acknowledgeKit();
+    const priorAuditCount = (await auditOf('instance.backup_settings')).length;
     expect(
       (await call(t, '/api/v1/admin/backup', { as: ibrahim, method: 'PUT', body: body() }))
         .statusCode,
     ).toBe(428);
+    configureBackupRoutes({
+      env: {
+        KEPT_DATA_DIR: '/data',
+        KEPT_BACKUP_S3_ENDPOINT: 'https://s3.example.org',
+        KEPT_BACKUP_S3_REGION: 'eu-central-1',
+        KEPT_BACKUP_S3_BUCKET: 'kept-backups',
+        KEPT_BACKUP_S3_PREFIX: 'kept/',
+        KEPT_BACKUP_S3_FORCE_PATH_STYLE: 'true',
+        KEPT_BACKUP_S3_ACCESS_KEY_ID: 'AKIDEXAMPLE',
+        KEPT_BACKUP_S3_SECRET_ACCESS_KEY: S3_SECRET,
+      },
+    });
     const res = await put(
       body({
         target: {
@@ -202,7 +255,6 @@ describe('GET and PUT /api/v1/admin/backup', () => {
           prefix: 'kept/',
           forcePathStyle: true,
           accessKeyId: 'AKIDEXAMPLE',
-          secretAccessKey: S3_SECRET,
         },
       }),
     );
@@ -210,7 +262,7 @@ describe('GET and PUT /api/v1/admin/backup', () => {
     const view = res.json();
     expect(view).toMatchObject({
       configured: true,
-      target: { value: { kind: 's3', secretAccessKeySet: true }, locked: false },
+      target: { value: { kind: 's3', secretAccessKeySet: true }, locked: true },
       passwordSet: { value: true },
       time: { value: '03:15' },
     });
@@ -222,7 +274,7 @@ describe('GET and PUT /api/v1/admin/backup', () => {
     // A stale version is refused.
     expect((await put(body(), view.version - 1)).statusCode).toBe(412);
 
-    const audit = await auditOf('instance.backup_settings');
+    const audit = (await auditOf('instance.backup_settings')).slice(priorAuditCount);
     expect(audit).toHaveLength(1);
     expect(audit[0]?.actor_id).toBe(ibrahim.userId);
     const stored = await asOwner(db, async (c) => {
@@ -240,7 +292,8 @@ describe('GET and PUT /api/v1/admin/backup', () => {
       expect(stored.idem).not.toContain(secret);
       expect(logLines.join('')).not.toContain(secret);
     }
-    expect(JSON.stringify(audit[0]?.diff)).toContain('s3SecretAccessKey');
+    expect(JSON.stringify(audit[0]?.diff)).toContain('password');
+    expect(JSON.stringify(audit[0]?.diff)).not.toContain('s3SecretAccessKey');
     // A kit downloaded before this change no longer holds the backup's credentials.
     const staleSince = await asOwner(
       db,
@@ -257,6 +310,7 @@ describe('GET and PUT /api/v1/admin/backup', () => {
   it('a worker starts the nightly backup at the saved time, unless KEPT_BACKUP_TIME is set', async () => {
     expect(await nightlyBackupTime(db.urls.owner, {})).toBe('02:30');
     await acknowledgeKit();
+    configureBackupRoutes({ env: { KEPT_DATA_DIR: '/data', KEPT_BACKUP_DIR: DIR.path } });
     expect((await put(body({ target: DIR, time: '04:45' }))).statusCode).toBe(200);
     expect(await nightlyBackupTime(db.urls.owner, {})).toBe('04:45');
     expect(await nightlyBackupTime(db.urls.owner, { KEPT_BACKUP_TIME: '01:10' })).toBe('01:10');
@@ -311,6 +365,10 @@ describe('GET and PUT /api/v1/admin/backup', () => {
 
 describe('test, run, runs and snapshots', () => {
   async function configure() {
+    configureBackupRoutes({
+      engine: fakeEngine,
+      env: { KEPT_DATA_DIR: '/data', KEPT_BACKUP_DIR: DIR.path },
+    });
     await acknowledgeKit();
     expect((await put(body())).statusCode).toBe(200);
   }

@@ -98,6 +98,12 @@ The policies read the settings through `kept.current_user_id()`, `kept.current_m
 `kept.current_token_id()`. Unset, the user id is null, every membership function returns
 nothing, and every policy denies: **fail closed**.
 
+PostgreSQL trusts the application to set these values. Keep user input in bound `$n` parameters
+and use `withScope` for tenant queries. `pnpm lint` flags direct app-pool access and changes to
+constructed SQL it recognizes. Review data flow through helpers and dynamically assembled
+fragments as part of every database change. For an intentional change, review the affected SQL
+before updating `scripts/db-sql-baseline.json` with `node scripts/check-db-scope.mjs --print-baseline`.
+
 `app.mfa` is whether this session proved a second factor; locations with `require_2fa` stay
 hidden while it is false. `app.token_id` is set when the request came with a personal token or
 an OAuth grant; the location functions then intersect the creator's memberships with the token's

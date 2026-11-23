@@ -508,7 +508,9 @@ export function BackupForm({
             <Fixed label={words.kind(view.target.value.kind)}>
               <span className="ltr">{words.where(view.target.value)}</span>
             </Fixed>
-            <LockedPill />
+            <Pill icon={<LockIcon />}>
+              <Trans>Managed by the server operator</Trans>
+            </Pill>
           </div>
         ) : (
           <>

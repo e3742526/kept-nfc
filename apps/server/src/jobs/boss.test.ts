@@ -70,6 +70,24 @@ describe('pg-boss under kept_system, sending from kept_app', () => {
     expect(await boss.fetch(queue)).toEqual([]);
   });
 
+  it('limits job readback to enqueues in the same transaction, including a savepoint', async () => {
+    const queue = `readback-${randomUUID()}`;
+    await boss.createQueue(queue);
+    const old = await inAppTx((client) => sendInTx(boss, client, queue, {}), true);
+    const id = await inAppTx(async (client) => {
+      await client.query('SAVEPOINT enqueue');
+      const current = await sendInTx(boss, client, queue, {});
+      await client.query('RELEASE SAVEPOINT enqueue');
+      const result = await client.query('SELECT id, start_after FROM pgboss.job_common');
+      expect(result.rows.map((row) => row.id)).toEqual([current]);
+      return current;
+    }, true);
+    const hidden = await pools.app.query('SELECT id FROM pgboss.job_common');
+    expect(hidden.rows).toEqual([]);
+    const jobs = await boss.fetch(queue, { batchSize: 2 });
+    expect(jobs.map((job) => job.id)).toEqual(expect.arrayContaining([old, id]));
+  });
+
   it('lets kept_app send but not read, claim or delete jobs', async () => {
     const client = await pools.app.connect();
     try {

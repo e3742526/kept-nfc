@@ -5,7 +5,13 @@
  * only. Webhooks are for the location's owner and admins (`webhooks.manage`); their PATCH takes
  * If-Match. OAuth consent lists the caller's locations, one pre-selected by the page.
  */
-import { formatToken, newTokenParts, TOKEN_SCOPES, WEBHOOK_EVENTS } from '@kept/shared';
+import {
+  formatToken,
+  newTokenParts,
+  PERSONAL_TOKEN_MAX_AGE_DAYS,
+  TOKEN_SCOPES,
+  WEBHOOK_EVENTS,
+} from '@kept/shared';
 import { now } from '../../inventory/mock/db';
 import { inventoryPaths } from '../../inventory/paths';
 import type { MockState } from '../../mock/fixtures';
@@ -100,6 +106,13 @@ export function connectionsMockRoutes(state: MockState): MockRoute[] {
       if (b.scope === 'write' && roles.includes('viewer')) return forbidden();
       if (b.scope === 'write' && b.locationIds.length > 1 && !b.confirmCrossLocation)
         return { warning: 'cross_location_write' };
+      const createdAt = now();
+      const issuedAt = Date.parse(createdAt);
+      const latest = issuedAt + PERSONAL_TOKEN_MAX_AGE_DAYS * 86_400_000;
+      const expiry = b.expiresAt === undefined ? latest : Date.parse(b.expiresAt);
+      if (!(expiry > issuedAt && expiry <= latest)) {
+        return err(400, 'validation', 'Pick an expiry date within the allowed token lifetime.');
+      }
       const parts = newTokenParts();
       const secret = formatToken(parts);
       const row: StoredToken = {
@@ -109,8 +122,8 @@ export function connectionsMockRoutes(state: MockState): MockRoute[] {
         name,
         scope: b.scope,
         locations: b.locationIds.map((id) => ({ id, name: nameOf(id), kind: kindOf(id) })),
-        createdAt: now(),
-        expiresAt: b.expiresAt ?? null,
+        createdAt,
+        expiresAt: new Date(expiry).toISOString(),
         lastUsedAt: null,
         revokedAt: null,
         revokedReason: null,

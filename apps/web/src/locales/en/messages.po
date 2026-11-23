@@ -30329,3 +30329,20 @@ msgstr "Use as cover"
 #: src/native/rooms.tsx
 msgid "Recently opened boxes"
 msgstr "Recently opened boxes"
+
+#: src/components/ops/backup-target-form.tsx
+#: src/routes/_app/admin.backups.tsx
+msgid "Managed by the server operator"
+msgstr "Managed by the server operator"
+
+#: src/components/connections/token-create.tsx
+msgid "Leave empty for a 365-day expiry."
+msgstr "Leave empty for a 365-day expiry."
+
+#: src/routes/_app/admin.backups.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password here."
+msgstr "Ask the server operator to configure a destination, then set a backup password here."
+
+#: src/components/ops/status-tiles.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
+msgstr "Ask the server operator to configure a destination, then set a backup password in Backups."

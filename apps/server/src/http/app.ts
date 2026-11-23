@@ -91,6 +91,7 @@ export type AppEnv = Pick<Env, 'KEPT_PUBLIC_URL'> &
       | 'KEPT_ERROR_DSN'
       | 'KEPT_HA'
       | 'KEPT_HA_TRUST_GROUPS'
+      | 'KEPT_HA_SUPERVISOR_VERSION'
     >
   >;
 

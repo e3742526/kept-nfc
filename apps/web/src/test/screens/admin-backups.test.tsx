@@ -33,30 +33,27 @@ describe('Admin → Backups', () => {
     expect(screen.getByText(/secret key saved/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
-    // Write-only fields: "Saved" with Replace, never their value.
-    expect(screen.getAllByText('Saved, never shown again').length).toBe(1);
+    expect(screen.getByText('Managed by the server operator')).toBeInTheDocument();
     expect(screen.getByText('Set, and in the recovery kit')).toBeInTheDocument();
-    const bucket = screen.getByRole('textbox', { name: 'Bucket' });
-    await user.clear(bucket);
-    await user.type(bucket, 'kept-archive');
+    expect(screen.queryByRole('textbox', { name: 'Bucket' })).not.toBeInTheDocument();
+    const daily = screen.getByRole('textbox', { name: 'Daily' });
+    await user.clear(daily);
+    await user.type(daily, '8');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(mock.lastCall('PUT', opsPaths.backup)).toBeTruthy());
     const call = mock.lastCall('PUT', opsPaths.backup);
     const body = call?.body as PutBody;
     expect(call?.headers['if-match']).toBe('7');
-    expect(body.target).toMatchObject({ kind: 's3', bucket: 'kept-archive' });
+    expect(body.target).toMatchObject({ kind: 's3', bucket: 'kept-backups' });
+    expect(body.keep.daily).toBe(8);
     expect(body.target).not.toHaveProperty('secretAccessKey');
     expect(body).not.toHaveProperty('password');
     expect(await screen.findByText('Backup settings saved')).toBeInTheDocument();
   });
 
-  it('sends a replaced secret key and a new password, and checks the password’s length first', async () => {
+  it('sends a replacement backup password after checking its length', async () => {
     const { user, mock } = await renderApp('/admin/backups');
     await user.click(await screen.findByRole('button', { name: 'Edit' }));
-    const replaces = screen.getAllByRole('button', { name: 'Replace' });
-    expect(replaces).toHaveLength(2);
-    await user.click(replaces[0] as HTMLElement);
-    await user.type(screen.getByLabelText('Secret access key'), 'new-secret-key');
     await user.click(screen.getByRole('button', { name: 'Replace' }));
     await user.type(screen.getByLabelText('Backup password'), 'too short');
     await user.click(screen.getByRole('button', { name: 'Save' }));
@@ -67,7 +64,7 @@ describe('Admin → Backups', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(mock.lastCall('PUT', opsPaths.backup)).toBeTruthy());
     const body = mock.lastCall('PUT', opsPaths.backup)?.body as PutBody;
-    expect(body.target.secretAccessKey).toBe('new-secret-key');
+    expect(body.target).not.toHaveProperty('secretAccessKey');
     expect(body.password).toBe('too short but now long enough');
   });
 
@@ -80,26 +77,33 @@ describe('Admin → Backups', () => {
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Edit' }));
     expect(screen.queryByRole('radio', { name: 'S3-compatible' })).not.toBeInTheDocument();
-    expect(screen.getAllByText("Set by the server's environment").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('Managed by the server operator')).toBeInTheDocument();
+    expect(screen.getByText("Set by the server's environment")).toBeInTheDocument();
     expect(screen.getByText('/mnt/backup/kept')).toBeInTheDocument();
     expect(screen.getByText(/KEPT_BACKUP_DIR, KEPT_BACKUP_PASSWORD/)).toBeInTheDocument();
     expect(screen.queryByLabelText('Backup password')).not.toBeInTheDocument();
   });
 
-  it('starts with the form when nothing is set up, needs a password, and asks for the kit first', async () => {
+  it('waits for a destination from the server operator', async () => {
     const state = ownerScenario();
     setOpsScenario(state, 'unconfigured');
+    await renderApp('/admin/backups', { state });
+    expect(await screen.findByText('No backup configured')).toBeInTheDocument();
+    expect(screen.getByText('Managed by the server operator')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+  });
+
+  it('requires a password and the kit once the operator configures the target', async () => {
+    const state = ownerScenario();
+    setOpsScenario(state, 'unconfigured');
+    ops(state).settings.target.value = { kind: 'dir', path: '/mnt/backup/kept' };
     ops(state).kit.acknowledgedAt = null;
     const { user, mock } = await renderApp('/admin/backups', { state });
     expect(await screen.findByText('No backup configured')).toBeInTheDocument();
-    await user.click(screen.getByRole('radio', { name: 'SFTP' }));
-    await user.type(screen.getByRole('textbox', { name: 'Server' }), 'nas.lan');
-    await user.type(screen.getByRole('textbox', { name: 'User' }), 'kept');
-    await user.type(screen.getByRole('textbox', { name: 'Folder on the server' }), 'backups/kept');
-    await user.type(
-      screen.getByRole('textbox', { name: 'Host key' }),
-      'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOq0ZcXcGv0rqk1E1Hb0bq3Gk5t8Lz1A2b3C4d5E6f7G',
-    );
+    const daily = screen.getByRole('textbox', { name: 'Daily' });
+    await user.clear(daily);
+    await user.type(daily, '8');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(
       await screen.findByText('Backups need a password: no password, no backup.'),
@@ -110,7 +114,7 @@ describe('Admin → Backups', () => {
     expect(await screen.findByText('Download the recovery kit first')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Download recovery kit' })).toBeInTheDocument();
     const body = mock.lastCall('PUT', opsPaths.backup)?.body as PutBody;
-    expect(body.target).toMatchObject({ kind: 'sftp', host: 'nas.lan', port: 22 });
+    expect(body.target).toEqual({ kind: 'dir', path: '/mnt/backup/kept' });
   });
 
   it('tests the saved settings and says why it failed, in words', async () => {

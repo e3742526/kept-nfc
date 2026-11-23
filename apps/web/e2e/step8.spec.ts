@@ -3,7 +3,7 @@
  * `households` seed, behind HTTPS and with the owner login a backup run needs (the `operations`
  * instance, e2e/instances.ts):
  *
- * 1. Admin → Backups: a directory target (outside the data directory) with a password, saved;
+ * 1. Admin → Backups: the operator's directory target with a password saved by the admin;
  *    Run now; the run is listed in "Backup runs" and finishes (OK, or Failed with its reason: the
  *    e2e server uses the machine's own pg_dump and restic, KEPT_RESTIC_BIN when set, so a laptop
  *    whose pg_dump is older than the database records `pg_version_mismatch`; the image ships
@@ -18,7 +18,6 @@
  *
  *   KEPT_E2E_INSTANCES=operations pnpm --filter @kept/web exec playwright test step8.spec.ts
  */
-import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { test } from '@playwright/test';
 import { OPERATIONS_INSTANCE, stateDirOf } from './instances';
@@ -30,21 +29,21 @@ test.use({ baseURL: BASE, ignoreHTTPSErrors: true });
 
 const PIN = '482913';
 
-test('Admin → Backups: a directory target saved, Run now, and the run listed', async ({
+test('Admin → Backups: a password saved for the operator target, Run now, and the run listed', async ({
   browser,
 }) => {
   onlyOn('desktop');
   test.setTimeout(240_000);
   // Beside the instance's data directory, never inside it (the server refuses that).
   const dir = path.join(stateDirOf(OPERATIONS_INSTANCE), 'backups');
-  mkdirSync(dir, { recursive: true });
   const { context, page } = await person(browser, IBRAHIM);
   await page.goto('/admin/backups');
   await expect(page.getByText('No backup configured')).toBeVisible();
   await axe(page, 'Admin → Backups, not configured');
 
-  await expect(page.getByRole('radio', { name: 'Directory' })).toBeChecked();
-  await page.getByRole('textbox', { name: 'Folder' }).fill(dir);
+  await expect(page.getByText('Managed by the server operator')).toBeVisible();
+  await expect(page.getByText(dir, { exact: true })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Folder' })).toHaveCount(0);
   await page.getByLabel('Backup password', { exact: true }).fill('e2e-backup-password-2026');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Notifications' })).toContainText(

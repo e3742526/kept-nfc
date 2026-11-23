@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { TOKEN_SCOPES, type TokenScope } from '@kept/shared';
+import { PERSONAL_TOKEN_MAX_AGE_DAYS, TOKEN_SCOPES, type TokenScope } from '@kept/shared';
 import type pg from 'pg';
 import { hiddenForTwoFactor } from '../accounts/me.js';
 import { findAuthUserByLogin, mailableAddress } from '../admin/account-ops.js';
@@ -32,7 +32,7 @@ export type TokenCreateInput = {
   user: string;
   scope: string;
   name: string;
-  /** Days until it stops working; none: it works until revoked. */
+  /** Days until it stops working; omitted: one year. */
   expires?: string;
   /** Location ids or names; none: every location the token can reach. */
   location?: string[];
@@ -60,7 +60,6 @@ export type CliToken = {
   leftOut: LeftOut[];
 };
 
-const MAX_DAYS = 3650;
 const DAY_MS = 86_400_000;
 
 type Membership = { id: string; name: string; require_2fa: boolean; role: string };
@@ -78,8 +77,8 @@ function parsed(input: TokenCreateInput, now: Date) {
   let expiresAt: string | undefined;
   if (input.expires !== undefined) {
     const days = /^\d{1,4}$/.test(input.expires) ? Number(input.expires) : Number.NaN;
-    if (!(days >= 1 && days <= MAX_DAYS)) {
-      throw new CliError(`--expires is a number of days, 1 to ${MAX_DAYS}`);
+    if (!(days >= 1 && days <= PERSONAL_TOKEN_MAX_AGE_DAYS)) {
+      throw new CliError(`--expires is a number of days, 1 to ${PERSONAL_TOKEN_MAX_AGE_DAYS}`);
     }
     expiresAt = new Date(now.getTime() + days * DAY_MS).toISOString();
   }

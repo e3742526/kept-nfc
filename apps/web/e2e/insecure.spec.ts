@@ -354,12 +354,13 @@ for (const size of ['phone', 'desktop'] as const) {
       await expect(sheet).toHaveCount(0);
       await expect(page).toHaveURL(/\/settings\/connections/);
 
-      // Backup settings: said up front, and Save stays off.
+      // Backup settings: the HTTPS requirement is visible even before the operator sets a target.
       await page.goto('/admin/backups');
       await expect(
         page.getByText('Backup settings and the recovery kit can only be changed over HTTPS.'),
       ).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Edit', exact: true })).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Save', exact: true })).toHaveCount(0);
 
       // The recovery kit's download from the browser (the server's command line can).
       await page.goto('/admin/status');

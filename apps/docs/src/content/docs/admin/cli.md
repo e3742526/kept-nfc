@@ -78,7 +78,7 @@ docker compose exec kept kept admin token create \
   one left out is named. `--location` (an id or a name, repeatable) picks them instead.
 - A write token across locations whose members differ stops with a warning, as in the app;
   `--confirm-cross-location` makes it anyway.
-- `--expires <days>` ends it after that many days; without it, it works until revoked.
+- `--expires <days>` accepts 1–365 days. The default is 365 days.
 
 It prints the token once, on the line starting `KEPT TOKEN:`, and the MCP server address. Kept keeps
 only a fingerprint of it. The person sees it in **Settings → Connections**, where they can revoke

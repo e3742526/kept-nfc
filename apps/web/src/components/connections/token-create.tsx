@@ -325,7 +325,7 @@ function CreateForm({
       {link ? null : (
         <DatePicker
           label={t`Expires`}
-          description={t`Leave empty to keep it until you revoke it.`}
+          description={t`Leave empty for a 365-day expiry.`}
           value={expiresOn}
           onChange={setExpiresOn}
           minValue={tomorrow()}

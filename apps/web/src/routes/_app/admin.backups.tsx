@@ -89,7 +89,7 @@ function Summary({
         </Pill>
         {view.target.locked ? (
           <Pill>
-            <Trans>Set by the server's environment</Trans>
+            <Trans>Managed by the server operator</Trans>
           </Pill>
         ) : null}
       </div>
@@ -117,7 +117,7 @@ function Summary({
         </Trans>
       </p>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" onPress={onEdit}>
+        <Button variant="secondary" onPress={onEdit} isDisabled={view.target.locked && !target}>
           <Trans>Edit</Trans>
         </Button>
         <TestButton disabled={!https || !view.configured} />
@@ -154,15 +154,15 @@ function AdminBackupsPage() {
     return <ErrorState error={settings.error} onRetry={() => void settings.refetch()} />;
   const view = settings.data;
   const https = status.data?.https !== false;
-  const showForm = editing || !view.configured;
+  const canEdit = !view.target.locked || view.target.value !== null;
+  const showForm = canEdit && (editing || !view.configured);
   return (
     <div className="grid gap-5">
       <Headline status={status.data} />
       {!view.configured ? (
         <Notice tone="warn" title={<Trans>No backup configured</Trans>}>
           <Trans>
-            Choose where backups go and a password. Kept then backs up the database, the files and a
-            readable copy of every location every night, encrypted.
+            Ask the server operator to configure a destination, then set a backup password here.
           </Trans>
         </Notice>
       ) : null}

@@ -30329,3 +30329,20 @@ msgstr "استخدام كصورة غلاف"
 #: src/native/rooms.tsx
 msgid "Recently opened boxes"
 msgstr "الصناديق التي فُتحت مؤخرًا"
+
+#: src/components/ops/backup-target-form.tsx
+#: src/routes/_app/admin.backups.tsx
+msgid "Managed by the server operator"
+msgstr "يديره مشغّل الخادم"
+
+#: src/components/connections/token-create.tsx
+msgid "Leave empty for a 365-day expiry."
+msgstr "اترك الحقل فارغًا لتنتهي صلاحية الرمز بعد 365 يومًا."
+
+#: src/routes/_app/admin.backups.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password here."
+msgstr "اطلب من مشغّل الخادم إعداد وجهة للنسخ الاحتياطي، ثم عيّن كلمة مرور هنا."
+
+#: src/components/ops/status-tiles.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
+msgstr "اطلب من مشغّل الخادم إعداد وجهة، ثم عيّن كلمة مرور في صفحة النسخ الاحتياطية."

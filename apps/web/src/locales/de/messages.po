@@ -30329,3 +30329,20 @@ msgstr "Als Titelbild verwenden"
 #: src/native/rooms.tsx
 msgid "Recently opened boxes"
 msgstr "Kürzlich geöffnete Boxen"
+
+#: src/components/ops/backup-target-form.tsx
+#: src/routes/_app/admin.backups.tsx
+msgid "Managed by the server operator"
+msgstr "Vom Serverbetreiber verwaltet"
+
+#: src/components/connections/token-create.tsx
+msgid "Leave empty for a 365-day expiry."
+msgstr "Leer lassen, damit das Token nach 365 Tagen abläuft."
+
+#: src/routes/_app/admin.backups.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password here."
+msgstr "Bitte den Serverbetreiber, ein Sicherungsziel einzurichten, und lege dann hier ein Sicherungspasswort fest."
+
+#: src/components/ops/status-tiles.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
+msgstr "Bitte den Serverbetreiber, ein Sicherungsziel einzurichten, und lege dann unter „Sicherungen“ ein Passwort fest."

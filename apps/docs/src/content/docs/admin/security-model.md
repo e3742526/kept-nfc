@@ -28,6 +28,11 @@ one for backups ([backups](/admin/backups/#turning-it-on)). An instance admin ha
 access** to other people's locations; an operator with database access can bypass that, which is
 why the database itself must stay private to the server.
 
+The worker login `kept_system` has cross-household access on tables used by instance-wide workers.
+Treat `KEPT_SYSTEM_DATABASE_URL` as a server secret, keep PostgreSQL on a private network, and
+rotate the login credential if exposed. Only the server operator sets the destination and storage
+credentials for whole-instance backups. The backup screen displays the effective destination.
+
 ## Keys and encryption
 
 - **`KEPT_SECRET_KEY`** seals every secret value: secret fields on things, AI keys, notification
@@ -90,6 +95,10 @@ prefixed cookies. Over plain HTTP they last 12 hours and are never extended, and
 the actions that reveal or change a secret ([HTTPS](/install/https/)). Sensitive actions ask for
 the password again, or a sign-in in the last ten minutes; renewing a sign-in doesn't reset those
 ten minutes.
+
+New personal API tokens, including tokens issued while linking Home Assistant, expire within
+365 days. Previously issued tokens retain their configured expiry. Settings → Connections lists
+tokens and lets their owner revoke them.
 
 `KEPT_HTTP_SIGN_IN_DAYS` (1 to 30, unset by default) lets whoever runs the server make a sign-in
 over plain HTTP last that many days, renewed as it is used. It's the one setting that loosens

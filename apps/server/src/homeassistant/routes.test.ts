@@ -159,6 +159,7 @@ describe('linking the Kept integration from the Home Assistant app', () => {
       kind: 'personal',
       name: 'Home Assistant',
       scope: 'read',
+      expiresAt: expect.any(String),
       locations: [{ id: home.id, name: 'Home' }],
     });
     const events = await tokenAudit(ibrahim);

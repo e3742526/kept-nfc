@@ -46,11 +46,10 @@ import {
 // page: the same Origin rule (auth/http.ts assertFromThisSite) runs before anything else, so a
 // page on another site can't make the first admin, and its attempts never count against the code.
 // In the Home Assistant app (D272, D273) GET also says `homeAssistant: {codeNeeded}`, and a
-// request through ingress from a member of Home Assistant's `system-admin` group sets up without
-// the code: Home Assistant has already signed that person in as its administrator. Only with
-// KEPT_HA_TRUST_GROUPS: the start script sets it on a Supervisor (2026.10.4+) that removes a
-// client's X-Remote-User-Groups and sets its own; on an older one a member could claim the group. The audit row
-// names their Home Assistant user id. A setup through ingress must carry Home Assistant's Origin.
+// request through ingress from a member of Home Assistant's `system-admin` group can set up
+// without the code. KEPT_HA_TRUST_GROUPS is honored with a Supervisor version reported by the start
+// script (2026.10.4+). These versions strip client-supplied group headers and set their own.
+// The audit row names the Home Assistant user id. Ingress setup must carry Home Assistant's Origin.
 
 export const SETUP_ATTEMPTS_PER_IP = 10;
 export const SETUP_ATTEMPTS_ALL = 200;
@@ -76,9 +75,15 @@ export async function setupRoutes(app: KeptApp, deps: SetupDeps): Promise<void> 
   const origin = new URL(deps.publicUrl).origin;
   const appMode = app.env.KEPT_HA === true;
   const extras = app.env.KEPT_EXTRA_ADDRESSES ?? [];
-  // Only where the Supervisor sets X-Remote-User-Groups itself (KEPT_HA_TRUST_GROUPS).
+  // Treat missing, old and prerelease Supervisor versions as requiring the setup code.
+  const version = /^(\d{4})\.(\d{1,2})\.(\d+)$/.exec(app.env.KEPT_HA_SUPERVISOR_VERSION ?? '');
+  const [year = 0, month = 0, patch = 0] = version?.slice(1).map(Number) ?? [];
+  const trustedGroups =
+    appMode &&
+    app.env.KEPT_HA_TRUST_GROUPS === true &&
+    (year > 2026 || (year === 2026 && (month > 10 || (month === 10 && patch >= 4))));
   const haAdmin = (ctx: Parameters<typeof isHomeAssistantAdmin>[0]) =>
-    app.env.KEPT_HA_TRUST_GROUPS === true && isHomeAssistantAdmin(ctx);
+    trustedGroups && isHomeAssistantAdmin(ctx);
 
   app.get(
     '/api/v1/setup',

@@ -32312,3 +32312,20 @@ msgstr "Зробити обкладинкою"
 #: src/native/rooms.tsx
 msgid "Recently opened boxes"
 msgstr "Нещодавно відкриті коробки"
+
+#: src/components/ops/backup-target-form.tsx
+#: src/routes/_app/admin.backups.tsx
+msgid "Managed by the server operator"
+msgstr "Керується оператором сервера"
+
+#: src/components/connections/token-create.tsx
+msgid "Leave empty for a 365-day expiry."
+msgstr "Залиште порожнім, щоб термін дії сплив через 365 днів."
+
+#: src/routes/_app/admin.backups.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password here."
+msgstr "Попросіть оператора сервера налаштувати місце для резервних копій, а потім задайте тут пароль."
+
+#: src/components/ops/status-tiles.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
+msgstr "Попросіть оператора сервера налаштувати місце для резервних копій, а потім задайте пароль у розділі «Резервні копії»."

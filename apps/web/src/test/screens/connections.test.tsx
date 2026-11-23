@@ -117,7 +117,7 @@ describe('Connections', () => {
     expect(within(list).getByText('WDJK-7QXR')).toBeInTheDocument();
     await user.click(within(list).getByRole('button', { name: 'Allow' }));
     const sheet = within(await screen.findByRole('dialog', { name: 'Connect Home Assistant' }));
-    // No name and no expiry: the token is "Home Assistant", kept until revoked.
+    // The server sets the name and expiry for Home Assistant.
     expect(sheet.queryByRole('textbox', { name: 'Name' })).toBeNull();
     expect(sheet.getByRole('checkbox', { name: 'Home' })).toBeChecked();
     await user.click(sheet.getByRole('button', { name: 'Allow' }));

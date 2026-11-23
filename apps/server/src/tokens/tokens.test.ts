@@ -120,6 +120,22 @@ describe('tokens', () => {
     expect(JSON.stringify(list)).not.toMatch(/"hash"/);
   });
 
+  it('defaults a new personal token to a year and rejects later expiry dates', async () => {
+    const year = 365 * 86_400_000;
+    const input = { name: 'Bounded reader', scope: 'read', locationIds: [home.id] };
+    const { token } = await makeToken(bruce, input);
+    expect(Date.parse(String(token.expiresAt)) - Date.parse(String(token.createdAt))).toBeCloseTo(
+      year,
+      -4,
+    );
+    const rejected = await call(t, '/api/v1/tokens', {
+      as: bruce,
+      body: { ...input, expiresAt: new Date(Date.now() + year + 86_400_000).toISOString() },
+    });
+    expect(rejected.statusCode).toBe(400);
+    expect(rejected.json().hint).toContain('365 days');
+  });
+
   it('reads with a read token, is refused writes and routes it is not open to, and sees only its locations', async () => {
     const thing = await createThing(t, ibrahim, home, { name: 'HDMI cable' });
     const elsewhere = await createThing(t, ibrahim, garage, { name: 'Drill' });

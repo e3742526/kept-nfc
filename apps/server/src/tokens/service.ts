@@ -1,6 +1,7 @@
 import {
   formatToken,
   newTokenParts,
+  PERSONAL_TOKEN_MAX_AGE_DAYS,
   TOKEN_KINDS,
   TOKEN_REVOKED_REASONS,
   TOKEN_SCOPES,
@@ -28,6 +29,7 @@ import { hashTokenSecret } from './verify.js';
 // in the create answer only.
 
 const Iso = z.iso.datetime({ offset: true });
+const PERSONAL_TOKEN_MAX_AGE_MS = PERSONAL_TOKEN_MAX_AGE_DAYS * 86_400_000;
 
 export const TokenRowSchema = z.object({
   id: z.uuid(),
@@ -289,7 +291,7 @@ export type CreateResult =
   | { kind: 'warning'; body: { warning: 'cross_location_write' } };
 
 export type TokenCheck =
-  | { kind: 'ok'; locationIds: string[]; expiresAt: Date | null }
+  | { kind: 'ok'; locationIds: string[]; expiresAt: Date }
   | { kind: 'warning'; body: { warning: 'cross_location_write' } };
 
 /** New token's checks, as the caller, without making anything: each location's
@@ -309,9 +311,13 @@ export async function checkNewToken(
       throw forbidden('A viewer’s token can only read; choose read access.');
     }
   }
-  const expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
-  if (expiresAt && expiresAt.getTime() <= now.getTime()) {
+  const latest = now.getTime() + PERSONAL_TOKEN_MAX_AGE_MS;
+  const expiresAt = body.expiresAt ? new Date(body.expiresAt) : new Date(latest);
+  if (!(expiresAt.getTime() > now.getTime())) {
     throw invalid('Pick an expiry date in the future.');
+  }
+  if (expiresAt.getTime() > latest) {
+    throw invalid(`Personal API tokens expire within ${PERSONAL_TOKEN_MAX_AGE_DAYS} days.`);
   }
   if (
     body.scope === 'write' &&

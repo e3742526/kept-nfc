@@ -165,7 +165,7 @@ function settingsOf(scenario: OpsScenario): BackupSettingsView {
   if (scenario === 'unconfigured') {
     return {
       configured: false,
-      target: locked(null),
+      target: locked(null, true),
       passwordSet: locked(false),
       time: locked('02:30'),
       keep,
@@ -185,16 +185,19 @@ function settingsOf(scenario: OpsScenario): BackupSettingsView {
   }
   return {
     configured: true,
-    target: locked({
-      kind: 's3',
-      endpoint: 'https://s3.example.org',
-      region: 'eu-central-1',
-      bucket: 'kept-backups',
-      prefix: 'kept-backups/',
-      forcePathStyle: false,
-      accessKeyId: 'KEPTEXAMPLEKEYID',
-      secretAccessKeySet: true,
-    }),
+    target: locked(
+      {
+        kind: 's3',
+        endpoint: 'https://s3.example.org',
+        region: 'eu-central-1',
+        bucket: 'kept-backups',
+        prefix: 'kept-backups/',
+        forcePathStyle: false,
+        accessKeyId: 'KEPTEXAMPLEKEYID',
+        secretAccessKeySet: true,
+      },
+      true,
+    ),
     passwordSet: locked(true),
     time: locked('02:30'),
     keep,

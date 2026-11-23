@@ -239,6 +239,17 @@ export async function backupRoutes(app: KeptApp, deps: InventoryDeps): Promise<v
           const { stored, version } = await readStoredBackupSettings(client);
           checkVersion({ rowVersion: version }, expected, ['target', 'password', 'time', 'keep']);
           const { next, audit } = applyBackupSettings(stored, input.data, overlay, keys.current);
+          if (
+            audit.changed.target ||
+            audit.changed.s3SecretAccessKey ||
+            audit.changed.sftpPrivateKey
+          ) {
+            throw new AppError(
+              'setting_locked',
+              400,
+              'The server operator sets the backup destination and storage credentials through KEPT_BACKUP_*.',
+            );
+          }
           const nextVersion = await writeStoredBackupSettings(client, next);
           // The kit holds the repository, its password and credentials: a kit downloaded
           // before this change is stale.

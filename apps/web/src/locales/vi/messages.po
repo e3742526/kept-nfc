@@ -22377,3 +22377,20 @@ msgstr "Dùng làm ảnh bìa"
 #: src/native/rooms.tsx
 msgid "Recently opened boxes"
 msgstr "Các hộp đã mở gần đây"
+
+#: src/components/ops/backup-target-form.tsx
+#: src/routes/_app/admin.backups.tsx
+msgid "Managed by the server operator"
+msgstr "Do người vận hành máy chủ quản lý"
+
+#: src/components/connections/token-create.tsx
+msgid "Leave empty for a 365-day expiry."
+msgstr "Để trống để mã hết hạn sau 365 ngày."
+
+#: src/routes/_app/admin.backups.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password here."
+msgstr "Yêu cầu người vận hành máy chủ cấu hình nơi lưu, sau đó đặt mật khẩu sao lưu tại đây."
+
+#: src/components/ops/status-tiles.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
+msgstr "Yêu cầu người vận hành máy chủ cấu hình nơi lưu, sau đó đặt mật khẩu trong mục Sao lưu."

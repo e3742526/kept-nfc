@@ -445,6 +445,10 @@ const schema = z.object({
     .describe(
       "`1` only from the Home Assistant app's start script, on a Supervisor that sets the user's groups itself: a Home Assistant administrator sets Kept up through ingress without the code",
     ),
+  KEPT_HA_SUPERVISOR_VERSION: z
+    .string()
+    .optional()
+    .describe('The running Supervisor version reported by the Home Assistant app’s start script'),
   // #376: the app's link secret, which its start script makes once and sends Home Assistant in the
   // discovery message (homeassistant/link.ts). Read only in app mode (KEPT_HA=1).
   KEPT_HA_LINK_SECRET_FILE: z

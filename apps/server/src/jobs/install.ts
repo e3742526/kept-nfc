@@ -27,7 +27,8 @@ export function pgBossSchemaVersion(): number {
 //   plans.js, public path, `slots: false`), so a request can't forge a job's state, output,
 //   start/finish times or retry count (Phase B review, item 4). It can still choose the data and
 //   options a sender chooses; see the rule in boss.ts. RETURNING needs SELECT on id and
-//   start_after. A pg-boss upgrade that writes another column shows up as a permission error in
+//   start_after. RLS limits that readback to this transaction’s enqueues. A pg-boss upgrade
+//   that writes another column shows up as a permission error in
 //   boss.test.ts, not silently.
 export const SEND_COLUMNS = [
   'id',
@@ -71,6 +72,22 @@ REVOKE INSERT ON ${PGBOSS_SCHEMA}.job_common FROM kept_app;
 GRANT INSERT (${SEND_COLUMNS.join(', ')}), SELECT (id, start_after)
   ON ${PGBOSS_SCHEMA}.job_common TO kept_app;
 GRANT SELECT ON ${PGBOSS_SCHEMA}.queue TO kept_app;
+
+-- Use the top-level transaction ID so enqueue and RETURNING work inside savepoints too.
+-- Adding the column before setting its default avoids rewriting existing jobs.
+ALTER TABLE ${PGBOSS_SCHEMA}.job ADD COLUMN IF NOT EXISTS kept_enqueue_xid xid8;
+ALTER TABLE ${PGBOSS_SCHEMA}.job ALTER COLUMN kept_enqueue_xid SET DEFAULT pg_current_xact_id();
+ALTER TABLE ${PGBOSS_SCHEMA}.job_common ALTER COLUMN kept_enqueue_xid SET DEFAULT pg_current_xact_id();
+ALTER TABLE ${PGBOSS_SCHEMA}.job_common ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS kept_job_app_send ON ${PGBOSS_SCHEMA}.job_common;
+CREATE POLICY kept_job_app_send ON ${PGBOSS_SCHEMA}.job_common FOR INSERT TO kept_app
+  WITH CHECK (kept_enqueue_xid = pg_current_xact_id_if_assigned());
+DROP POLICY IF EXISTS kept_job_app_readback ON ${PGBOSS_SCHEMA}.job_common;
+CREATE POLICY kept_job_app_readback ON ${PGBOSS_SCHEMA}.job_common FOR SELECT TO kept_app
+  USING (kept_enqueue_xid = pg_current_xact_id_if_assigned());
+DROP POLICY IF EXISTS kept_job_system ON ${PGBOSS_SCHEMA}.job_common;
+CREATE POLICY kept_job_system ON ${PGBOSS_SCHEMA}.job_common FOR ALL TO kept_system
+  USING (true) WITH CHECK (true);
 `;
 
 /**

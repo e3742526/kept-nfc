@@ -95,7 +95,10 @@ export function backupRoutes(state: MockState): MockRoute[] {
       const target = viewOf(input.target, cur.target.value);
       const keep = input.keep;
       const lockedChange =
-        (cur.target.locked && !sameTarget(cur.target.value, target)) ||
+        (cur.target.locked &&
+          (!sameTarget(cur.target.value, target) ||
+            (input.target.kind === 's3' && input.target.secretAccessKey !== undefined) ||
+            (input.target.kind === 'sftp' && input.target.privateKey !== undefined))) ||
         (cur.passwordSet.locked && input.password !== undefined) ||
         (cur.time.locked && cur.time.value !== input.time) ||
         (['daily', 'weekly', 'monthly'] as const).some(

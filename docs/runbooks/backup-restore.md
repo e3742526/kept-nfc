@@ -45,7 +45,8 @@ password and deduplicated:
 
 ## Where it goes
 
-Set one target, preferably another machine or site.
+The server operator sets one target, preferably another machine or site. A target saved through
+an older release remains active until superseded by the deployment configuration.
 
 | Target | Variables | The restic repository |
 |---|---|---|
@@ -54,8 +55,8 @@ Set one target, preferably another machine or site.
 | An SFTP server | `KEPT_BACKUP_SFTP` (restic's `sftp:` syntax), `KEPT_BACKUP_SFTP_KEY_FILE`, `KEPT_BACKUP_SFTP_KNOWN_HOSTS` | the path given |
 
 Plus `KEPT_BACKUP_PASSWORD` (12 characters or more; no password, no backup) and
-`KEPT_BACKUP_TIME` (`HH:MM` UTC, default `02:30`). Each can instead be set in **Admin → Backups**;
-a variable that is set wins and shows there as locked.
+`KEPT_BACKUP_TIME` (`HH:MM` UTC, default `02:30`). Instance admins can set the password, schedule,
+and retention in **Admin → Backups**. Values set through the deployment appear read-only.
 
 ## 1. Turn it on
 
@@ -83,9 +84,10 @@ a variable that is set wins and shows there as locked.
    sudo chmod 700 /mnt/backup/kept
    ```
 
-2. Acknowledge the recovery kit (Admin → Status), then set the target and password in Admin →
-   Backups and press **Test**, or put `KEPT_BACKUP_DIR=/backups` and `KEPT_BACKUP_PASSWORD=…` in
-   `.env`. `docker compose up -d`.
+2. Set `KEPT_BACKUP_DIR=/backups` in `.env` for the mounted directory above, then run
+   `docker compose up -d`. Acknowledge the recovery kit (Admin → Status), set the backup password
+   in Admin → Backups if the operator has not set it through `KEPT_BACKUP_PASSWORD`, and press
+   **Test**.
 3. Download the recovery kit again: it now holds the repository, its password and its
    credentials.
 

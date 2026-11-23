@@ -91,8 +91,8 @@ export function OpsNotices({ s }: { s: StatusPageData }) {
           }
         >
           <Trans>
-            Nothing on this server is backed up. Choose where backups go (another disk, an S3 bucket
-            or an SFTP server) and a password in Backups.
+            Ask the server operator to configure a destination, then set a backup password in
+            Backups.
           </Trans>
         </Notice>
       ) : null}

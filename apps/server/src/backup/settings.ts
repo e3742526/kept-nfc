@@ -25,10 +25,10 @@ import { BACKUP_SETTINGS_KEY } from '../secrets/rotate.js';
 // repository lives, its password, when the nightly run starts and how many snapshots it keeps.
 //
 // Two sources, and the environment wins:
-// - `instance_settings.backup`, written by Admin → Backups (PUT /api/v1/admin/backup). Its
-//   secrets (the restic password, an S3 secret key, an SFTP private key) are sealed with the
-//   envelope key, AAD `instance_settings|backup|<field>`, and registered for rotate-key in
-//   secrets/rotate.ts SEALED_SETTINGS;
+// - `instance_settings.backup`, which holds Admin → Backups settings and any legacy target.
+//   Existing targets still resolve, but changing the destination or its credentials requires
+//   operator configuration. Secrets are sealed with the envelope key, AAD
+//   `instance_settings|backup|<field>`, and registered for rotate-key in secrets/rotate.ts;
 // - the raw environment: `KEPT_BACKUP_DIR` / `KEPT_BACKUP_S3_*` / `KEPT_BACKUP_SFTP*` lock the
 //   target as a whole, `KEPT_BACKUP_PASSWORD` the password, `KEPT_BACKUP_TIME` and
 //   `KEPT_BACKUP_KEEP_*` (or the alpha's `KEPT_BACKUP_KEEP`, read as the daily count)
@@ -370,7 +370,7 @@ export function backupSettingsView(
   const keep = backupKeepEffective(stored, overlay);
   return {
     configured: targetComplete(target) && passwordSet,
-    target: { value: target, locked: overlay.target !== null },
+    target: { value: target, locked: true },
     passwordSet: { value: passwordSet, locked: overlay.password !== null },
     time: { value: backupTimeEffective(stored, overlay), locked: overlay.time !== null },
     keep: {

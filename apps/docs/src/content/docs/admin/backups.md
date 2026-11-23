@@ -36,10 +36,12 @@ host key from the known-hosts file and connects only if it matches.
 
 ## Turning it on
 
-Instance admins set the target and the password in **Admin → Backups**, over HTTPS, after
-acknowledging the recovery kit. "Test" checks Kept can open (or create) the repository; "Run now"
-runs one at once. An environment variable beats the screen and shows there as locked, so an
-operator can fix the target in the deployment.
+The server operator sets the destination and storage credentials in the deployment. **Admin →
+Backups** shows the destination as read-only. Previously saved destinations continue to run.
+To change one, configure its replacement in the deployment, where it takes precedence.
+
+After acknowledging the recovery kit, an instance admin can set the backup password over HTTPS.
+"Test" checks whether Kept can open or create the repository. "Run now" starts a backup.
 
 **The password** is at least 12 characters (`KEPT_BACKUP_PASSWORD`, or set on the screen).
 **No password, no backup:** Kept never writes an unencrypted backup. Lose the password and the
@@ -68,8 +70,8 @@ The owner's password comes from the `kept-owner` volume, where the bootstrap kee
 from before 1.13.0 with `KEPT_DB_OWNER_PASSWORD` in `.env` uses that instead, and the file line
 does nothing).
 
-Then either set the target and the password on the screen, or lock them in `.env`
-(`KEPT_BACKUP_DIR=/backups`, `KEPT_BACKUP_PASSWORD=…`).
+Set `KEPT_BACKUP_DIR=/backups` in `.env` for the mount above. Set the password in **Admin →
+Backups** or through `KEPT_BACKUP_PASSWORD` in the deployment.
 
 The directory must belong to Kept's user:
 

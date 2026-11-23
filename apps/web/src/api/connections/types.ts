@@ -97,8 +97,8 @@ export type HomeAssistantLinkRequest = {
 /** `GET /home-assistant/link-requests`: `available` only in the Home Assistant app. */
 export type HomeAssistantLinks = { available: boolean; items: HomeAssistantLinkRequest[] };
 
-/** `POST /home-assistant/link-requests/:id/approve`: New token's choices; the name is the server's
- * ("Home Assistant") and there is no expiry. */
+/** `POST /home-assistant/link-requests/:id/approve`: The server names the token "Home Assistant"
+ * and applies the default personal token lifetime. */
 export type ApproveLinkBody = Pick<
   CreateTokenBody,
   'scope' | 'locationIds' | 'confirmCrossLocation'

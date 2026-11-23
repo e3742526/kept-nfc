@@ -26,7 +26,8 @@
 //    this process listens on <port> with a self-signed certificate made by `openssl` for the run
 //    (the browser context takes ignoreHTTPSErrors) and forwards to the server on <port> + 1000.
 //    With --owner (step 8: Admin → Backups' Run now), the server also gets the owner login
-//    (KEPT_OWNER_DATABASE_URL), which a backup run needs; KEPT_RESTIC_BIN passes through when set.
+//    (KEPT_OWNER_DATABASE_URL) and a backup directory beside its data. KEPT_RESTIC_BIN passes
+//    through when set.
 //    With --trust-proxy (Sign-in and security's journeys), the server believes X-Forwarded-For
 //    from this machine (KEPT_TRUSTED_PROXIES), so a test can give its sign-ins an address of
 //    their own and Better Auth's per-address sign-in limit holds per journey.
@@ -238,6 +239,7 @@ async function tlsProxy() {
 rmSync(state, { recursive: true, force: true });
 mkdirSync(`${state}config`, { recursive: true });
 mkdirSync(`${state}data`, { recursive: true });
+if (owner) mkdirSync(`${state}backups`, { recursive: true });
 writeFileSync(logFile, '');
 
 // The runtime environment, the same for the seed command and the server.
@@ -255,7 +257,9 @@ const env = {
   KEPT_ROLE: 'all',
   KEPT_LOG_LEVEL: 'warn',
   ...(aiMock ? { KEPT_AI_MOCK: '1' } : {}),
-  ...(owner ? { KEPT_OWNER_DATABASE_URL: url('kept_owner') } : {}),
+  ...(owner
+    ? { KEPT_OWNER_DATABASE_URL: url('kept_owner'), KEPT_BACKUP_DIR: `${state}backups` }
+    : {}),
   ...(trustProxy ? { KEPT_TRUSTED_PROXIES: '127.0.0.1,::1' } : {}),
   ...(mailpit ? { KEPT_SMTP_URL: 'smtp://localhost:1025' } : {}),
   ...(httpSignInDays ? { KEPT_HTTP_SIGN_IN_DAYS: httpSignInDays } : {}),

@@ -1162,23 +1162,23 @@ describe('catalogue self-checks: each check flags the thing it looks for', () =>
     expect(found.views).toEqual(['public.leak_mat', 'public.leak_view']);
   });
 
-  it('flags an unlisted definer function, a newly executable one, and a changed grant', async () => {
+  it('flags an unlisted definer function and confirms new kept functions are private', async () => {
     const found = await inRolledBack(async (c) => {
       await c.query(
         `CREATE FUNCTION public.leak_door() RETURNS int LANGUAGE sql SECURITY DEFINER
          SET search_path = pg_catalog, public AS $$ SELECT 1 $$`,
       );
       await c.query('GRANT EXECUTE ON FUNCTION public.leak_door() TO kept_app');
-      // Schema kept's default privileges hand a new function to both runtime roles.
-      await c.query('CREATE FUNCTION kept.leak_open() RETURNS int LANGUAGE sql AS $$ SELECT 1 $$');
+      // New kept functions need an explicit EXECUTE grant.
+      await c.query(
+        `CREATE FUNCTION kept.leak_open() RETURNS int LANGUAGE sql SECURITY DEFINER
+         SET search_path = pg_catalog AS $$ SELECT 1 $$`,
+      );
       await c.query('GRANT EXECUTE ON FUNCTION kept.ensure_audit_partitions(integer) TO kept_app');
       return functionInventory(c);
     });
     expect(found['public.leak_door()']).toEqual({ roles: ['kept_app'], definer: true });
-    expect(found['kept.leak_open()']).toEqual({
-      roles: ['kept_app', 'kept_system'],
-      definer: false,
-    });
+    expect(found['kept.leak_open()']).toEqual({ roles: [], definer: true });
     expect(found['kept.ensure_audit_partitions(integer)']?.roles).toEqual([
       'kept_app',
       'kept_system',

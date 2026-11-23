@@ -30329,3 +30329,20 @@ msgstr "Usa come copertina"
 #: src/native/rooms.tsx
 msgid "Recently opened boxes"
 msgstr "Scatole aperte di recente"
+
+#: src/components/ops/backup-target-form.tsx
+#: src/routes/_app/admin.backups.tsx
+msgid "Managed by the server operator"
+msgstr "Gestito dall’operatore del server"
+
+#: src/components/connections/token-create.tsx
+msgid "Leave empty for a 365-day expiry."
+msgstr "Lascia vuoto per una scadenza dopo 365 giorni."
+
+#: src/routes/_app/admin.backups.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password here."
+msgstr "Chiedi all’operatore del server di configurare una destinazione, poi imposta qui una password di backup."
+
+#: src/components/ops/status-tiles.tsx
+msgid "Ask the server operator to configure a destination, then set a backup password in Backups."
+msgstr "Chiedi all’operatore del server di configurare una destinazione, poi imposta una password in Backup."

@@ -439,10 +439,16 @@ describe('first-run setup in app mode (§8.4)', () => {
   });
 });
 
-describe('first-run setup on a Supervisor older than 2026.10.4 (no KEPT_HA_TRUST_GROUPS)', () => {
+describe('first-run setup on a Supervisor older than 2026.10.4', () => {
   it("needs the code even for 'system-admin': that Supervisor passes a client's groups header on", async () => {
     await db.reset();
-    const t = await testApp(db, { web, appMode: true, trustedProxies: PROXIES });
+    const t = await testApp(db, {
+      web,
+      appMode: true,
+      trustedProxies: PROXIES,
+      haTrustGroups: true,
+      haSupervisorVersion: '2026.10.3',
+    });
     try {
       await ensureSetupCode(db.pools.system);
       const status = await fromSupervisor(t, {
