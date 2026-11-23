@@ -1752,4 +1752,61 @@ describe('KeptPhone mobile workflows', () => {
       await activateLocale('en');
     }
   });
+
+  it('navigates by tabs, switches appearance, and keeps overlap destinations reachable', async () => {
+    const conn: Connection = {
+      id: 'https://kept.example.com|ibrahim|epoch-1',
+      origin: 'https://kept.example.com',
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: conn });
+    const user = userEvent.setup();
+    env.renderApp();
+
+    // The tab bar is the main navigation: Home, Capture, Scan, More.
+    const tabbar = await screen.findByRole('navigation');
+    expect(within(tabbar).getByRole('button', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(within(tabbar).getByRole('button', { name: 'Capture' })).toBeInTheDocument();
+    expect(within(tabbar).getByRole('button', { name: 'Scan' })).toBeInTheDocument();
+    expect(within(tabbar).getByRole('button', { name: 'More' })).toBeInTheDocument();
+
+    // The Scan tab opens label identification with a back button.
+    await user.click(within(tabbar).getByRole('button', { name: 'Scan' }));
+    expect(await screen.findByRole('button', { name: 'Back' })).toBeInTheDocument();
+    expect(within(tabbar).getByRole('button', { name: 'Scan' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+
+    // The Capture tab opens the capture form with a back button.
+    await user.click(within(tabbar).getByRole('button', { name: 'Capture' }));
+    expect(await screen.findByLabelText('Description')).toBeInTheDocument();
+
+    // The More tab compartments settings, appearance, and secondary workflows.
+    await user.click(within(tabbar).getByRole('button', { name: 'More' }));
+    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+    for (const theme of ['Light', 'Dark', 'System']) {
+      expect(screen.getByRole('button', { name: theme })).toHaveAttribute('aria-pressed');
+    }
+    await user.click(screen.getByRole('button', { name: 'Dark' }));
+    expect(screen.getByRole('button', { name: 'Dark' })).toHaveAttribute('aria-pressed', 'true');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    await user.click(screen.getByRole('button', { name: 'System' }));
+
+    // Overlap destinations stay reachable from More with the same labels as Home.
+    await user.click(screen.getByRole('button', { name: 'Scan QR or NFC' }));
+    expect(await screen.findByRole('button', { name: 'Back' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+
+    // Home keeps its icon tiles, sign-out, and logical CSS.
+    await user.click(within(tabbar).getByRole('button', { name: 'Home' }));
+    expect(await screen.findByRole('button', { name: 'Capture inventory' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+    expectLogicalOnly();
+  });
 });

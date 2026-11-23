@@ -72,6 +72,92 @@
   padding-inline: 1rem;
 }
 
+/* Icon-first action tiles: compartmentalized workflows, two columns on phones. */
+.kept-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+}
+
+.kept-tile {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-block-size: 4.75rem;
+  padding-block: 0.75rem;
+  padding-inline: 0.5rem;
+  text-align: center;
+}
+
+.kept-tile svg {
+  flex-shrink: 0;
+  color: var(--ink-2);
+}
+
+.kept-tile-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Sticky bottom tab bar: the four main phone destinations. */
+.kept-tabbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25rem;
+  margin-block-start: 1rem;
+  margin-inline: -1.25rem;
+  padding-block: 0.5rem max(0.5rem, env(safe-area-inset-bottom));
+  padding-inline: 1rem;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-block-start: 1px solid var(--line);
+}
+
+.kept-tabbar-button {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-block-size: 3rem;
+  color: var(--ink-3);
+}
+
+.kept-tabbar-button[aria-current="page"] {
+  color: var(--info);
+}
+
+.kept-tabbar-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Light / dark / system appearance switch. */
+.kept-theme-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kept-theme-option svg {
+  flex-shrink: 0;
+}
+
+.kept-theme-option[aria-pressed="true"] {
+  outline: 2px solid var(--info);
+  outline-offset: -2px;
+}
+
+/* Icon back button shared by every phone sub-screen. */
+.kept-back svg {
+  flex-shrink: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kept-phone :is(*, *::before, *::after) {
     transition-duration: 0.01ms;

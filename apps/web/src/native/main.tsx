@@ -1,5 +1,21 @@
 import { I18nProvider } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  ChevronLeft,
+  History,
+  Home,
+  Inbox,
+  MapPin,
+  Monitor,
+  Moon,
+  Package,
+  Plus,
+  QrCode,
+  Settings,
+  Sun,
+  Tags,
+  Trash2,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { capturePaths } from '@/api/capture/paths';
@@ -17,7 +33,7 @@ import { TextField } from '@/components/ui/text-field';
 import { i18n, startLocale } from '@/i18n/i18n';
 import { isolate } from '@/lib/bidi';
 import { sep, useBytes } from '@/lib/format';
-import { watchSystemTheme } from '@/lib/prefs';
+import { setThemePref, type ThemePref, usePrefs, watchSystemTheme } from '@/lib/prefs';
 import { NativePlatformProvider, usePlatform } from './adapters';
 import {
   type CompletionState,
@@ -71,7 +87,112 @@ type Screen =
   | { kind: 'capture'; destination?: Destination; location?: string; back?: Target }
   | { kind: 'identify' }
   | { kind: 'find' | 'enroll'; box: LabelBox }
-  | { kind: 'batches' };
+  | { kind: 'batches' }
+  | { kind: 'more' };
+
+type TabKey = 'home' | 'capture' | 'scan' | 'more';
+
+function tabFor(screen: Screen): TabKey {
+  switch (screen.kind) {
+    case 'capture':
+      return 'capture';
+    case 'identify':
+      return 'scan';
+    case 'more':
+    case 'trash':
+    case 'unplaced':
+    case 'labelSheets':
+    case 'batches':
+      return 'more';
+    default:
+      return 'home';
+  }
+}
+
+/** Icon back button used on every phone sub-screen (iOS best practice). */
+function BackButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Button variant="ghost" className="kept-back justify-self-start" onPress={onPress}>
+      <ChevronLeft size={20} aria-hidden />
+      <Trans>Back</Trans>
+    </Button>
+  );
+}
+
+/** Sticky bottom tab bar: the four main phone destinations, icon-first. */
+function TabBar({ tab, onTab }: { tab: TabKey; onTab: (tab: TabKey) => void }) {
+  const { t } = useLingui();
+  const tabs = [
+    { key: 'home', label: t`Home`, Icon: Home },
+    { key: 'capture', label: t`Capture`, Icon: Plus },
+    { key: 'scan', label: t`Scan`, Icon: QrCode },
+    { key: 'more', label: t`More`, Icon: Settings },
+  ] as const;
+  return (
+    <nav className="kept-tabbar">
+      {tabs.map(({ key, label, Icon }) => (
+        <Button
+          key={key}
+          variant="ghost"
+          className="kept-tabbar-button"
+          aria-current={tab === key ? 'page' : undefined}
+          onPress={() => onTab(key)}
+        >
+          <Icon size={22} aria-hidden />
+          <span className="kept-tabbar-label">{label}</span>
+        </Button>
+      ))}
+    </nav>
+  );
+}
+
+/** Icon tile for the compartmentalized home and More grids. */
+function ActionTile({
+  label,
+  onPress,
+  isDisabled,
+  Icon,
+}: {
+  label: string;
+  onPress: () => void;
+  isDisabled?: boolean;
+  Icon: typeof Home;
+}) {
+  return (
+    <Button variant="secondary" className="kept-tile" isDisabled={isDisabled} onPress={onPress}>
+      <Icon size={24} aria-hidden />
+      <span className="kept-tile-label">{label}</span>
+    </Button>
+  );
+}
+
+/** Light / dark / system appearance switch (follows the OS on "system"). */
+function ThemeSwitch() {
+  const { t } = useLingui();
+  const { theme } = usePrefs();
+  const options: { id: ThemePref; label: string; Icon: typeof Sun }[] = [
+    { id: 'light', label: t`Light`, Icon: Sun },
+    { id: 'dark', label: t`Dark`, Icon: Moon },
+    { id: 'system', label: t`System`, Icon: Monitor },
+  ];
+  return (
+    <div className="kept-theme-switch">
+      {options.map(({ id, label, Icon }) => (
+        <Button
+          key={id}
+          variant="secondary"
+          size="small"
+          className="kept-theme-option"
+          aria-pressed={theme === id}
+          onPress={() => setThemePref(id)}
+        >
+          <Icon size={16} aria-hidden />
+          {label}
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 type PersistedFindTarget = LabelBox;
 
@@ -191,9 +312,7 @@ function Batches({
 
   return (
     <section className="grid gap-4">
-      <Button variant="ghost" className="justify-self-start" onPress={onClose}>
-        <Trans>Back</Trans>
-      </Button>
+      <BackButton onPress={onClose} />
       <h2 className="text-title font-semibold">
         <Trans>Recent capture batches</Trans>
       </h2>
@@ -262,6 +381,7 @@ export function Inventory({
   const [retargetBoxId, setRetargetBoxId] = useState<string | null>(null);
   const [openingPendingMedia, setOpeningPendingMedia] = useState<string>();
   const [query, setQuery] = useState('');
+  const [locationFilter, setLocationFilter] = useState<string | null>(null);
   const [found, setFound] = useState<SearchResponse>();
   const [cachedSearch, setCachedSearch] = useState(false);
   const [working, setWorking] = useState(false);
@@ -270,6 +390,23 @@ export function Inventory({
   const running = useRef<Promise<void> | null>(null);
   const mounted = useRef(true);
   const goHome = () => setScreen({ kind: 'home' });
+  const goTab = (tab: TabKey) => {
+    switch (tab) {
+      case 'capture':
+        setScreen({ kind: 'capture' });
+        break;
+      case 'scan':
+        setScreen({ kind: 'identify' });
+        break;
+      case 'more':
+        setScreen({ kind: 'more' });
+        break;
+      default:
+        setScreen({ kind: 'home' });
+        break;
+    }
+  };
+  const showTabs = screen.kind !== 'record' && screen.kind !== 'find' && screen.kind !== 'enroll';
   const open = (target: Target, backToRooms = false) => {
     setScreen({ kind: 'record', target, backToRooms });
     if (
@@ -629,6 +766,10 @@ export function Inventory({
   const editableBoxes = currentBoxes.filter((box) =>
     cache?.locations.some((loc) => loc.id === box.locationId && loc.role !== 'viewer'),
   );
+  const visibleBoxes =
+    locationFilter && !query.trim()
+      ? currentBoxes.filter((thing) => thing.locationId === locationFilter)
+      : currentBoxes;
   const localResults = cache && cachedSearch ? localInventorySearch(cache, query) : [];
   const things = query.trim()
     ? (found?.things.items.map((thing) => ({
@@ -644,7 +785,7 @@ export function Inventory({
         ...thing,
         path: cache ? inventoryPath(cache, thing).join(' › ') : '',
       })))
-    : currentBoxes.map((thing) => ({
+    : visibleBoxes.map((thing) => ({
         ...thing,
         path: cache ? inventoryPath(cache, thing).join(' › ') : '',
       }));
@@ -939,60 +1080,32 @@ export function Inventory({
       </div>
       {screen.kind === 'home' && (
         <section className="grid gap-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
+          <div className="kept-tiles">
+            <ActionTile
+              label={t`Capture inventory`}
+              Icon={Plus}
               isDisabled={!cache?.locations.some((location) => location.role !== 'viewer')}
               onPress={() => setScreen({ kind: 'capture' })}
-            >
-              <Trans>Capture inventory</Trans>
-            </Button>
-            <Button
-              variant="secondary"
+            />
+            <ActionTile
+              label={t`Rooms`}
+              Icon={MapPin}
               isDisabled={!cache}
               onPress={() => setScreen({ kind: 'rooms' })}
-            >
-              <Trans>Rooms</Trans>
-            </Button>
-            <Button
-              variant="secondary"
+            />
+            <ActionTile
+              label={t`Create box`}
+              Icon={Package}
               isDisabled={
                 !online || !cache?.locations.some((location) => location.role !== 'viewer')
               }
               onPress={() => setScreen({ kind: 'new' })}
-            >
-              <Trans>Create box</Trans>
-            </Button>
-            <Button variant="secondary" onPress={() => setScreen({ kind: 'identify' })}>
-              <Trans>Scan QR or NFC</Trans>
-            </Button>
-            <Button
-              variant="secondary"
-              isDisabled={!online}
-              onPress={() => setScreen({ kind: 'trash' })}
-            >
-              <Trans>Trash</Trans>
-            </Button>
-            <Button
-              variant="secondary"
-              isDisabled={!cache}
-              onPress={() => setScreen({ kind: 'unplaced' })}
-            >
-              <Trans>Unplaced</Trans>
-            </Button>
-            <Button
-              variant="secondary"
-              isDisabled={!cache || !online}
-              onPress={() => setScreen({ kind: 'labelSheets' })}
-            >
-              <Trans>Print label sheets</Trans>
-            </Button>
-            <Button
-              variant="secondary"
-              isDisabled={!online}
-              onPress={() => setScreen({ kind: 'batches' })}
-            >
-              <Trans>Recent capture batches</Trans>
-            </Button>
+            />
+            <ActionTile
+              label={t`Scan QR or NFC`}
+              Icon={QrCode}
+              onPress={() => setScreen({ kind: 'identify' })}
+            />
           </div>
           <TextField
             label={t`Search inventory`}
@@ -1000,6 +1113,28 @@ export function Inventory({
             onChange={setQuery}
             inputProps={{ type: 'search', maxLength: 200 }}
           />
+          {(cache?.locations.length ?? 0) > 1 && !query.trim() && (
+            <Select
+              label={t`Location`}
+              items={[
+                { id: 'all', name: t`All` },
+                ...(cache?.locations ?? []).map((location) => ({
+                  id: location.id,
+                  name: location.name,
+                })),
+              ]}
+              selectedKey={locationFilter ?? 'all'}
+              onSelectionChange={(key) =>
+                setLocationFilter(key === null || key === 'all' ? null : String(key))
+              }
+            >
+              {(item) => (
+                <SelectItem id={item.id} textValue={item.name}>
+                  <bdi>{item.name}</bdi>
+                </SelectItem>
+              )}
+            </Select>
+          )}
           {cache && !online && (
             <p className="text-small text-ink-2">
               {t`Cached inventory from ${new Date(cache.asOf).toLocaleString()}`}
@@ -1184,9 +1319,7 @@ export function Inventory({
       )}
       {screen.kind === 'unplaced' && cache && (
         <section className="grid gap-3">
-          <Button variant="ghost" className="justify-self-start" onPress={goHome}>
-            <Trans>Back</Trans>
-          </Button>
+          <BackButton onPress={goHome} />
           <h2 className="text-title font-semibold">
             <Trans>Unplaced</Trans>
           </h2>
@@ -1218,6 +1351,64 @@ export function Inventory({
       {screen.kind === 'batches' && (
         <Batches connection={connection} onClose={goHome} onOpen={open} onAuthError={onSignOut} />
       )}
+      {screen.kind === 'more' && (
+        <section className="grid gap-5">
+          <h2 className="text-title font-semibold">
+            <Trans>More</Trans>
+          </h2>
+          <section className="grid gap-2" aria-label={t`Settings`}>
+            <h3 className="text-small font-semibold text-ink-2">
+              <Trans>Settings</Trans>
+            </h3>
+            <ThemeSwitch />
+          </section>
+          <div className="kept-tiles">
+            <ActionTile
+              label={t`Scan QR or NFC`}
+              Icon={QrCode}
+              onPress={() => setScreen({ kind: 'identify' })}
+            />
+            <ActionTile
+              label={t`Print label sheets`}
+              Icon={Tags}
+              isDisabled={!cache || !online}
+              onPress={() => setScreen({ kind: 'labelSheets' })}
+            />
+            <ActionTile
+              label={t`Recent capture batches`}
+              Icon={History}
+              isDisabled={!online}
+              onPress={() => setScreen({ kind: 'batches' })}
+            />
+            <ActionTile
+              label={t`Trash`}
+              Icon={Trash2}
+              isDisabled={!online}
+              onPress={() => setScreen({ kind: 'trash' })}
+            />
+            <ActionTile
+              label={t`Unplaced`}
+              Icon={Inbox}
+              isDisabled={!cache}
+              onPress={() => setScreen({ kind: 'unplaced' })}
+            />
+            <ActionTile
+              label={t`Rooms`}
+              Icon={MapPin}
+              isDisabled={!cache}
+              onPress={() => setScreen({ kind: 'rooms' })}
+            />
+          </div>
+          <Button
+            variant="ghost"
+            className="justify-self-start"
+            onPress={() => void handleSignOut()}
+          >
+            <Trans>Sign out</Trans>
+          </Button>
+        </section>
+      )}
+      {showTabs && <TabBar tab={tabFor(screen)} onTab={goTab} />}
     </>
   );
 }
