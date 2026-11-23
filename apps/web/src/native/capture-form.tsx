@@ -1,8 +1,9 @@
 import { AMOUNT_STRING, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useRef, useState } from 'react';
+import { type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { TextField as AriaTextField, FileTrigger, Label, TextArea } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
 import { inputClass } from '@/components/ui/field';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
@@ -39,6 +40,7 @@ export function CaptureForm({
   pending = [],
   completions = {},
   syncing = false,
+  leaveRef,
   onClose,
   onSave,
 }: {
@@ -50,11 +52,13 @@ export function CaptureForm({
   /** Durable terminal states; only `synced` counts as synchronized. */
   completions?: Readonly<Record<string, CompletionState>>;
   syncing?: boolean;
+  leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
+  const confirm = useConfirm();
   const formatBytes = useBytes();
   const [destination, setDestination] = useState(() => box ?? (cache && defaultDestination(cache)));
   const photosOnly = destination?.kind === 'photos';
@@ -70,6 +74,18 @@ export function CaptureForm({
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const previewUrlsRef = useRef<string[]>([]);
+
+  async function canLeave() {
+    if (busy) return false;
+    if (!name && !note && !quantity && !files.length) return true;
+    return confirm({
+      title: t`Discard this draft?`,
+      confirmLabel: t`Discard draft`,
+      destructive: true,
+    });
+  }
+
+  useImperativeHandle(leaveRef, () => canLeave);
 
   useEffect(() => {
     return () => {
@@ -176,7 +192,12 @@ export function CaptureForm({
 
   return (
     <section className="grid gap-4">
-      <BackButton onPress={onClose} isDisabled={busy} />
+      <BackButton
+        onPress={async () => {
+          if (await canLeave()) onClose();
+        }}
+        isDisabled={busy}
+      />
       <header className="grid gap-1 rounded-lg border border-line bg-surface p-3">
         <p className="text-label font-semibold uppercase tracking-wide text-ink-2">
           {photosOnly

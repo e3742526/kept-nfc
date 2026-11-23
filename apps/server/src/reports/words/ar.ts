@@ -63,7 +63,7 @@ const inventory: PdfWords['inventory'] = {
 const readable: PdfWords['readable'] = {
   title: 'نسخة مقروءة',
   intro:
-    'كل ما في هذا الموقع كما حفظه Kept. تُفتح بالمتصفح وحده: الصور والإيصالات والمستندات تُفتح من الملفات التي بجانبها.',
+    'كل ما في هذا الموقع كما حفظه SheepKeep. تُفتح بالمتصفح وحده: الصور والإيصالات والمستندات تُفتح من الملفات التي بجانبها.',
   exported: (when) => `صُدّرت في ${when}`,
   places: 'الأماكن',
   things: 'الأشياء',
@@ -158,12 +158,12 @@ const condition: PdfWords['condition'] = {
   confidential: 'خاص: سجل بحالة هذا السكن. شاركه مع المالك أو الوكيل فقط.',
   empty: 'لا غرف في هذا التقرير.',
   notInReport: 'ليست في هذا التقرير.',
-  photoNote: 'وقت كل صورة هو وقت استلام Kept لها.',
+  photoNote: 'وقت كل صورة هو وقت استلام SheepKeep لها.',
   draft: 'لم يُنهَ بعد: قد يتغير هذا التقرير.',
   started: (who) => `بدأه ${who}`,
   finished: (who, when) => `أنهاه ${who}، ${when}`,
   generated: (who, when) => `أنشأه ${who}، ${when}`,
-  more: (n) => `${n} أخرى في Kept`,
+  more: (n) => `${n} أخرى في SheepKeep`,
 };
 
 const move: PdfWords['move'] = {
@@ -176,10 +176,10 @@ const move: PdfWords['move'] = {
   quantity: 'الكمية',
   id: 'المعرّف',
   holds: (n) => `فيه ${n}`,
-  more: (n) => `${n} أخرى في Kept`,
+  more: (n) => `${n} أخرى في SheepKeep`,
   states: { packed: 'مُعبّأ', in_transit: 'في الطريق', unpacked: 'تم تفريغه' },
   route: (from, to) => `${from} ← ${to}`,
-  scan: 'امسح الرمز لترى هذا الصندوق في Kept وتفرغه.',
+  scan: 'امسح الرمز لترى هذا الصندوق في SheepKeep وتفرغه.',
   generated: (who, when) => `طبعه ${who}، ${when}`,
   none: 'لا صناديق للطباعة.',
 };
@@ -253,7 +253,7 @@ const vehicle: PdfWords['vehicle'] = {
   generated: (who, when) => `أنشأه ${who}، ${when}`,
   asOf: (day) => `حتى ${day}`,
   range: (from, to) => `من ${from} إلى ${to}`,
-  more: (n) => `${n} أخرى في Kept`,
+  more: (n) => `${n} أخرى في SheepKeep`,
   moreInvoices: (n) => `+${n}`,
   moneyHidden: 'التكاليف غير مذكورة: فهي مخفية عنك في هذا الموقع.',
   per100: (fuel, distance) => `${fuel}/١٠٠ ${distance}`,

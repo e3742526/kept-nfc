@@ -6,19 +6,10 @@
  * README, admin/upgrades.md, CONTRIBUTING.md); each printed line from the code that prints it
  * (the server's `kept init` and recovery kit, the chart's NOTES.txt, the Home Assistant app's
  * start). install.test.ts checks every one against its source.
- *
- * The release is the one compose.yaml runs by default, which the release script sets with each
- * release, so the download address and the chart's version move with it.
  */
-import compose from '../../../../../compose.yaml?raw';
 
-const pinned = /image: \$\{KEPT_IMAGE:-ghcr\.io\/keptinventory\/kept:(\d+\.\d+\.\d+)\}/.exec(
-  compose,
-);
-if (!pinned?.[1]) throw new Error('compose.yaml names no release image');
-
-/** The release compose.yaml runs, such as `1.14.6`. */
-export const RELEASE: string = pinned[1];
+/** The Kept upstream release referenced by the upstream install examples. */
+export const RELEASE = '1.14.7';
 
 /** The address `init` is given in the docs' examples. */
 const EXAMPLE_ADDRESS = 'http://kept.home.arpa:8080';

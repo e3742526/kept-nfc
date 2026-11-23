@@ -337,7 +337,7 @@ describe('helpers', () => {
     expect(isReleaseVersion('0.0.0-dev')).toBe(false);
     expect(isReleaseVersion('1.14')).toBe(false);
     expect(releaseNotesUrl('1.14.1')).toBe(
-      'https://github.com/keptinventory/kept/releases/tag/v1.14.1',
+      'https://github.com/e3742526/kept-nfc/releases/tag/v1.14.1',
     );
   });
 });

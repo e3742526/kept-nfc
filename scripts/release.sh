@@ -24,7 +24,7 @@
 #
 # Stages, each stopping the run on failure:
 #   1. preconditions: a clean tree on `main`, a version newer than the last v* tag on a commit of
-#      its own, README.md's quick start installing it, disk room, and
+#      its own, disk room, and
 #      a gate record for this exact commit (optional in a dry run; with --ci, the tag at HEAD and
 #      its commit on origin/main instead); a real run also refuses a version the registry already
 #      holds, as an image or as a chart, before it builds anything;
@@ -185,13 +185,6 @@ note "version $version is newer than ${last_tag:-every tag (there are none)}"
 # A tag on the last release's commit is that release again under a new number (1.0.4 was 1.0.3).
 if [[ -n $last_tag && $(git rev-list -n1 "$last_tag") == "$commit" ]]; then
   die "v$version is $last_tag's commit (${commit:0:12}): nothing changed since, so there is nothing to release"
-fi
-# The quick start installs this version: it stayed on 1.0.0 through five releases, one of them a
-# security fix. Since 1.13.0 it downloads compose.yaml from the tag, and compose.yaml's default
-# image is the release: bump both pins (README's v$version/compose.yaml and kept:$version}).
-if ! grep -qF "/kept/v$version/compose.yaml" README.md || ! grep -qF "/kept:$version}" compose.yaml; then
-  [[ -n $dry ]] || die "README.md's quick start doesn't install $version: set its v$version/compose.yaml and compose.yaml's kept:$version first"
-  warn "README.md's quick start doesn't install $version (a dry run goes on)"
 fi
 # The Home Assistant app (D272) is not bumped here: Home Assistant reads main, so its config.yaml
 # names a version only once that version's kept-ha image is published. The release record bumps it
@@ -498,13 +491,13 @@ Published: $registry:$version ($index_digest), tags ${image_tags[*]}; $ha_regist
 Written: $record_files.
 
   1. The tag, on the built commit ${commit:0:12} (main is never pushed to directly):
-     git tag -a v$version -m "Kept $version" $commit && git push origin v$version
+     git tag -a v$version -m "SheepKeep $version" $commit && git push origin v$version
      (with release.yml in that commit the tag also starts the workflow, which stops at "already published")
   2. gh auth switch --user ibrahimroshdy   # the personal account
      node scripts/release/compose-notes.mjs --version $version --section $work/changelog-section.md \\
        --record $notes_file${last_tag:+ --from $last_tag} --to $commit --image $registry \\
        --chart oci://$chart_repo/kept --out $work/release-body.md
-     gh release create v$version --verify-tag --title "Kept $version" --notes-file $work/release-body.md \\
+     gh release create v$version --verify-tag --title "SheepKeep $version" --notes-file $work/release-body.md \\
        $work/THIRD-PARTY-NOTICES.txt $notes_file
 EOF
 if [[ $version == *-* ]]; then echo "     (add --prerelease: $version is a prerelease)"; fi

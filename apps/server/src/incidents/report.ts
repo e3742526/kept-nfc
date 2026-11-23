@@ -574,7 +574,7 @@ export function buildInsuranceView(
     ownerLine: g.ownerName ? w.owner(g.ownerName) : '',
     generatedBy: g.requesterName,
     generatedLine: w.generated(g.requesterName, when),
-    footer: ['Kept', host, when].filter((x) => x !== '').join(sep),
+    footer: ['SheepKeep', host, when].filter((x) => x !== '').join(sep),
     incident,
     totals: totals.map(([c, v]) => money(v, c)),
     convertedLabel,

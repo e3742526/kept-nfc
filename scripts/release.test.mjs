@@ -106,17 +106,9 @@ describe('release.sh refuses', { timeout: 30_000 }, () => {
     git('add', '.');
     git('commit', '-q', '-m', 'feat: the scripts');
     git('tag', 'v1.2.0');
-    // A commit after the last release, with a quick start that installs the versions these tests
-    // release (the preflight refuses one it doesn't, and a tag on v1.2.0's commit).
-    const versions = ['0.9.0', '1.1.0', '1.3.0'];
-    writeFileSync(
-      path.join(dir, 'README.md'),
-      versions.map((v) => `curl -fsSLO https://x/o/kept/v${v}/compose.yaml\n`).join(''),
-    );
-    writeFileSync(
-      path.join(dir, 'compose.yaml'),
-      versions.map((v) => `image: \${KEPT_IMAGE:-ghcr.io/o/kept:${v}}\n`).join(''),
-    );
+    // The fork's quick start builds from source and has no per-release image pin.
+    writeFileSync(path.join(dir, 'README.md'), 'docker build -t sheepkeep:local .\n');
+    writeFileSync(path.join(dir, 'compose.yaml'), `image: \${KEPT_IMAGE:-sheepkeep:local}\n`);
     git('add', 'README.md', 'compose.yaml');
     git('commit', '-q', '-m', 'docs: the quick start');
   });
@@ -137,7 +129,7 @@ describe('release.sh refuses', { timeout: 30_000 }, () => {
     expect(r.out).toContain('one or the other');
   });
 
-  it("a tag on the last release's commit, and a version the README doesn't install", () => {
+  it("refuses a tag on the last release's commit and accepts a source-build quick start", () => {
     git('tag', 'v1.2.1');
     let r = release('1.3.0');
     expect(r.status).not.toBe(0);
@@ -145,7 +137,7 @@ describe('release.sh refuses', { timeout: 30_000 }, () => {
     git('tag', '-d', 'v1.2.1');
     r = release('1.4.0');
     expect(r.status).not.toBe(0);
-    expect(r.out).toContain("README.md's quick start doesn't install 1.4.0");
+    expect(r.out).toContain('no gate record for 1.4.0');
   });
 
   it('not a Home Assistant app version: the record bumps that, after the image is out (D272)', () => {

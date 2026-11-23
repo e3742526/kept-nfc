@@ -152,7 +152,7 @@ export function buildCli(): Command {
         await runInit({
           dir,
           url: opts.url,
-          version: KEPT_VERSION,
+          image: process.env.KEPT_IMAGE,
           io: {
             interactive: process.stdin.isTTY === true,
             ask: (question) => rl.question(question),

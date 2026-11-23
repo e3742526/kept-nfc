@@ -18439,8 +18439,8 @@ msgstr "Tủ rack treo tường 6U"
 msgid "Wall rack 12U"
 msgstr "Tủ rack treo tường 12U"
 
-msgid "Missing a shape? <0>Request it</0>, or browse the <1>shape library</1>."
-msgstr "Thiếu hình dạng? <0>Yêu cầu thêm</0>, hoặc xem <1>thư viện hình dạng</1>."
+msgid "Missing a shape? <0>Contribute one</0>, or browse the <1>shape library</1>."
+msgstr "Thiếu hình dạng? <0>Đóng góp một hình</0>, hoặc xem <1>thư viện hình dạng</1>."
 
 msgid "{count, plural, one {# chapter} other {# chapters}}"
 msgstr "{count, plural, one {# chương} other {# chương}}"

@@ -27,6 +27,7 @@ beforeAll(async () => {
 
 type FakeEnvOptions = {
   initialConnection?: Connection | null;
+  cabinLocation?: boolean;
 };
 
 function createFakeEnvironment(opts: FakeEnvOptions = {}) {
@@ -34,6 +35,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
   let online = true;
   let failStorageFull = false;
   let forceDropReason: string | null = null;
+  let cabinLocation = opts.cabinLocation ?? false;
 
   const boxId = '11111111-1111-7111-8111-111111111111';
   const spareBoxId = '22222222-2222-7222-8222-222222222222';
@@ -279,6 +281,17 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 role: 'owner',
                 unplacedPlaceId: placeId,
               },
+              ...(cabinLocation
+                ? [
+                    {
+                      id: '55555555-5555-7555-8555-555555555555',
+                      ownerAccountId: 'acc-1',
+                      name: 'Cabin',
+                      role: 'viewer',
+                      unplacedPlaceId: '66666666-6666-7666-8666-666666666666',
+                    },
+                  ]
+                : []),
             ],
             types: {
               items: [{ id: 'type-box', builtinKey: 'box_bin', name: 'Box', isContainer: true }],
@@ -795,6 +808,9 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
     rooms,
     setOnline: (value: boolean) => {
       online = value;
+    },
+    revokeCabinLocation: () => {
+      cabinLocation = false;
     },
     setStorageFull: (value: boolean) => {
       failStorageFull = value;
@@ -1751,6 +1767,66 @@ describe('KeptPhone mobile workflows', () => {
       document.documentElement.dir = 'ltr';
       await activateLocale('en');
     }
+  });
+
+  it('keeps a capture draft and its original when navigation is cancelled', async () => {
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: 'https://kept.example.com|ibrahim|epoch-1',
+        origin: 'https://kept.example.com',
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    const view = env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(await screen.findByLabelText('Description'), 'Holiday decorations');
+    const original = new File(['a photo'], 'holiday.jpg', { type: 'image/jpeg' });
+    const fileInput = view.container.querySelector<HTMLInputElement>('input[type=file]');
+    if (!fileInput) throw new Error('Expected a photograph input');
+    await user.upload(fileInput, original);
+
+    const tabbar = screen.getByRole('navigation');
+    await user.click(within(tabbar).getByRole('button', { name: 'Capture' }));
+    expect(screen.getByText('Adding to box')).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+
+    await user.click(within(tabbar).getByRole('button', { name: 'More' }));
+    let dialog = await screen.findByRole('alertdialog', { name: 'Discard this draft?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByLabelText('Description')).toHaveValue('Holiday decorations');
+    expect(screen.getByText(/holiday.jpg/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    dialog = await screen.findByRole('alertdialog', { name: 'Discard this draft?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Discard draft' }));
+    expect(await screen.findByRole('button', { name: 'Add to this box' })).toBeInTheDocument();
+    expect(env.events.uploadedFiles).toHaveLength(0);
+  });
+
+  it('shows the remaining boxes when the selected location is revoked', async () => {
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: 'https://kept.example.com|ibrahim|epoch-1',
+        origin: 'https://kept.example.com',
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+      cabinLocation: true,
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    expect(await screen.findByRole('button', { name: /Winter Box/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Location/ }));
+    await user.click(screen.getByRole('option', { name: 'Cabin' }));
+    expect(screen.queryByRole('button', { name: /Winter Box/i })).not.toBeInTheDocument();
+
+    env.revokeCabinLocation();
+    act(() => env.emitAppState(true));
+    expect(await screen.findByRole('button', { name: /Winter Box/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Location/ })).not.toBeInTheDocument();
   });
 
   it('navigates by tabs, switches appearance, and keeps overlap destinations reachable', async () => {

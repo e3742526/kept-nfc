@@ -277,8 +277,8 @@ ARG VERSION=0.0.0-dev
 ARG REVISION=
 ARG SOURCE=https://github.com/e3742526/kept-nfc
 
-LABEL org.opencontainers.image.title="Kept for Home Assistant" \
-      org.opencontainers.image.description="Kept, a home inventory you can self-host, as a Home Assistant app with its own database" \
+LABEL org.opencontainers.image.title="SheepKeep for Home Assistant" \
+      org.opencontainers.image.description="SheepKeep, a home inventory you can self-host, as a Home Assistant app with its own database" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
       org.opencontainers.image.source="${SOURCE}" \
       org.opencontainers.image.revision="${REVISION}" \
@@ -332,8 +332,8 @@ ARG VERSION=0.0.0-dev
 ARG REVISION=
 ARG SOURCE=https://github.com/e3742526/kept-nfc
 
-LABEL org.opencontainers.image.title="Kept" \
-      org.opencontainers.image.description="Kept: a home inventory you can self-host" \
+LABEL org.opencontainers.image.title="SheepKeep" \
+      org.opencontainers.image.description="SheepKeep: a home inventory you can self-host" \
       org.opencontainers.image.licenses="AGPL-3.0-only" \
       org.opencontainers.image.source="${SOURCE}" \
       org.opencontainers.image.revision="${REVISION}" \

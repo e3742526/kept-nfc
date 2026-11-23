@@ -25730,8 +25730,8 @@ msgid "Wall rack 12U"
 msgstr "خزانة شبكة حائط ١٢ وحدة"
 
 #: src/map/shapes.tsx
-msgid "Missing a shape? <0>Request it</0>, or browse the <1>shape library</1>."
-msgstr "ينقصك شكل؟ <0>اطلبه</0>، أو تصفّح <1>مكتبة الأشكال</1>."
+msgid "Missing a shape? <0>Contribute one</0>, or browse the <1>shape library</1>."
+msgstr "ينقصك شكل؟ <0>ساهم بإضافته</0>، أو تصفّح <1>مكتبة الأشكال</1>."
 
 #: src/routes/_app/help.tsx
 msgid "{count, plural, one {# chapter} other {# chapters}}"

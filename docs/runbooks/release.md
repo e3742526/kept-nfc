@@ -67,7 +67,7 @@ minutes a month, both read from GitHub's billing docs on 2026-10-07). Re-pushing
 costs a minute or two: the build jobs stop at "already published".
 
 **The layer cache** is a registry cache per architecture in GHCR,
-`ghcr.io/keptinventory/kept-cache:buildcache-amd64` and `…-arm64` (`mode=max`: every stage's
+`$KEPT_RELEASE_REGISTRY-cache:buildcache-amd64` and `…-arm64` (`mode=max`: every stage's
 layers, not only the final image's). Every release reads the previous one's, so an unchanged
 lockfile skips both installs, and an unchanged OS stage skips apt and restic. Actions' own cache
 (`type=gha`, used for `0.9.0`) is scoped by ref, so a new tag could never read it. The first run
@@ -102,9 +102,8 @@ bash scripts/tools.sh fetch cosign          # cosign v3.1.3, checksum-verified, 
 COSIGN=$(bash scripts/tools.sh path cosign)
 mkdir -p ~/kept-signing && chmod 700 ~/kept-signing && cd ~/kept-signing
 "$COSIGN" generate-key-pair                 # asks for a password; writes cosign.key and cosign.pub
-gh auth switch --user ibrahimroshdy
-gh secret set COSIGN_PRIVATE_KEY -R keptinventory/kept < cosign.key
-gh secret set COSIGN_PASSWORD -R keptinventory/kept       # prompts; type the key's password
+gh secret set COSIGN_PRIVATE_KEY -R e3742526/kept-nfc < cosign.key
+gh secret set COSIGN_PASSWORD -R e3742526/kept-nfc       # prompts; type the key's password
 ```
 
 Put `cosign.key` and its password in your password manager too. Copy `cosign.pub` to the
@@ -113,12 +112,11 @@ it). `cosign.key` never enters the repository (`.gitignore` already ignores `*.k
 key-based (D187), not keyless: keyless signing records the signer in the public transparency log,
 which stays off while the repository is private.
 
-**W2. The registry path.** `ghcr.io/keptinventory/kept` (and the chart at
-`ghcr.io/keptinventory/charts/kept`) is **inferred** from the Dockerfile's `SOURCE` default
-(`https://github.com/keptinventory/kept`), never confirmed. Confirm it, or set
-`KEPT_RELEASE_REGISTRY` (and `KEPT_RELEASE_CHART_REPO`) in the release step's `env:` in
-`release.yml`. The chart's own default (`charts/kept/values.yaml` `image.repository`) carries the
-same path; a release rewrites it in the packaged chart to wherever it published.
+**W2. The registry path.** Set the `SHEEPKEEP_RELEASE_REGISTRY` GitHub Actions repository
+variable to the fork's image repository. For local releases use `KEPT_RELEASE_REGISTRY` or
+`--registry`; the chart destination defaults to the image repository's parent under `charts`.
+The release packages the chart with the published image and writes the explicit versioned
+`KEPT_IMAGE` into the Compose installation instructions in the release notes.
 
 **W3. The GHCR packages.** The workflow pushes with its own `GITHUB_TOKEN` (`packages: write`): no
 token to create. The first run creates `kept`, `charts/kept` and `kept-cache` (the layer cache), private and
@@ -130,11 +128,13 @@ both packages public (the old M4); the run then signs into the public transparen
 `--insecure-ignore-tlog`.
 
 **W3b. The Home Assistant app's package, and the launch (D272).** Every release from the one
-that carries the `ha` target also pushes `ghcr.io/keptinventory/kept-ha`, by the same
+that carries the `ha` target also pushes `${KEPT_RELEASE_REGISTRY}-ha`, by the same
 `GITHUB_TOKEN`; GHCR makes a first push private. Make it public once (the package's settings →
 Change visibility), or Home Assistant can't pull it: the Supervisor pulls without a login.
 
-The launch is `repository.yaml` at the repository's root: without it the Supervisor doesn't load
+The inherited Kept add-on still uses the upstream image. A separate SheepKeep add-on launch
+requires configuring its image and repository metadata and qualifying it on Home Assistant OS.
+The upstream launch used `repository.yaml` at the repository's root: without it the Supervisor doesn't load
 the repository, so `homeassistant/kept/` can sit on `main` unlisted. It goes in with the first
 release record (step 4 of "Each release") after `kept-ha:X.Y.Z` is published, made public, and
 the Home Assistant OS sign-off passed, in the same pull request that bumps the app to X.Y.Z:
@@ -166,10 +166,10 @@ tag. Actions must stay enabled for the repository (it is, with "all actions" all
 goes in by a pull request, the tag goes on the merged commit, and the record follows in a second
 pull request.
 
-1. The changelog section and the README's quick start, by a pull request, squash-merged. Its title
-   must be `chore(release): X.Y.Z` (a squash merge commits under the pull request's title, and a
-   `chore` subject stays out of the next changelog). The preflight refuses a version README.md
-   doesn't install, and a tag on the previous release's commit.
+1. Open a pull request for the changelog section and squash-merge it. Its title must be
+   `chore(release): X.Y.Z` so it stays out of the next changelog. The preflight rejects a tag
+   on the previous release's commit. The README and Compose quick start build SheepKeep from
+   source and need no version bump.
 
    First write the **highlights**: 2–4 bullets, each led by a bold sentence, with the pull request
    or issue it came from, in an ignored file (under `.tmp/`). They open the
@@ -188,12 +188,7 @@ pull request.
    git switch -c release-X.Y.Z
    node scripts/changelog.mjs --version X.Y.Z --from vPREVIOUS --highlights .tmp/highlights-X.Y.Z.md \
      --write CHANGELOG.md   # no --from for the first; run again to replace the section
-   # The install pins: the tag in compose.yaml's download URL, and the two Compose files' default
-   # image (scripts/check-compose-files.mjs fails when compose.full.yaml's differs).
-   PINS="README.md compose.yaml compose.full.yaml apps/docs/src/content/docs/install/compose.md apps/docs/src/content/docs/ar/install/compose.md apps/docs/src/content/docs/install/https.md"
-   for f in $PINS; do sed -i.bak -E -e 's|keptinventory/kept/v[0-9]+\.[0-9]+\.[0-9]+/|keptinventory/kept/vX.Y.Z/|g' \
-     -e 's|(ghcr\.io/keptinventory/kept):[0-9]+\.[0-9]+\.[0-9]+\}|\1:X.Y.Z}|g' "$f" && rm "$f.bak"; done
-   git commit -m "chore(release): X.Y.Z" -- CHANGELOG.md $PINS
+   git commit -m "chore(release): X.Y.Z" -- CHANGELOG.md
    git push -u origin release-X.Y.Z
    gh pr create --base main --title "chore(release): X.Y.Z" --body "The X.Y.Z changelog section."
    gh pr merge --squash --delete-branch      # once the checks are green
@@ -202,7 +197,7 @@ pull request.
 2. Wait for `ci` on the merged commit to pass on main (the gate, D222):
 
    ```sh
-   gh run watch "$(gh run list -R keptinventory/kept --workflow ci.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')" -R keptinventory/kept --exit-status
+   gh run watch "$(gh run list --workflow ci.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')" --exit-status
    ```
 
    The release workflow's preflight checks it again and refuses the tag if it hasn't passed.
@@ -211,26 +206,17 @@ pull request.
    from the same tag (a final release only), so the site follows the release, not `main`:
 
    ```sh
-   git tag -a vX.Y.Z -m "Kept X.Y.Z" && git push origin vX.Y.Z
-   gh run watch "$(gh run list -R keptinventory/kept --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')" -R keptinventory/kept
+   git tag -a vX.Y.Z -m "SheepKeep X.Y.Z" && git push origin vX.Y.Z
+   gh run watch "$(gh run list -R e3742526/kept-nfc --workflow release.yml --limit 1 --json databaseId --jq '.[0].databaseId')" -R e3742526/kept-nfc
    ```
 
 4. When it is green, the release record into the repository (it is also on the GitHub release), by
    a pull request:
 
-   The same pull request moves the Home Assistant app to X.Y.Z (D272): Home Assistant reads `main`,
-   so `homeassistant/kept/config.yaml` names a version only once its `kept-ha` image is published,
-   which is now.
-
    ```sh
    git switch -c release-record-X.Y.Z
-   gh release download vX.Y.Z -R keptinventory/kept -p 'X.Y.Z.md' -D docs/releases
-   HA=
-   if [ -f homeassistant/kept/config.yaml ]; then
-     node scripts/release/ha-app.mjs bump X.Y.Z
-     HA="homeassistant/kept/config.yaml homeassistant/kept/CHANGELOG.md homeassistant/.test/kept-demo/config.yaml"
-   fi
-   git add docs/releases/X.Y.Z.md $HA && git commit -m "docs(release): the X.Y.Z record"
+   gh release download vX.Y.Z -R e3742526/kept-nfc -p 'X.Y.Z.md' -D docs/releases
+   git add docs/releases/X.Y.Z.md && git commit -m "docs(release): the X.Y.Z record"
    git push -u origin release-record-X.Y.Z
    gh pr create --fill --base main && gh pr merge --squash --delete-branch
    ```
@@ -238,8 +224,9 @@ pull request.
 5. Verify from outside, as a user would (the commands are in the record):
 
    ```sh
-   cosign verify --key cosign.pub ghcr.io/keptinventory/kept:X.Y.Z
-   docker buildx imagetools inspect ghcr.io/keptinventory/kept:X.Y.Z --format '{{ json .SBOM }}'
+   # Set KEPT_RELEASE_REGISTRY to the image repository used for this release.
+   cosign verify --key cosign.pub "${KEPT_RELEASE_REGISTRY}:X.Y.Z"
+   docker buildx imagetools inspect "${KEPT_RELEASE_REGISTRY}:X.Y.Z" --format '{{ json .SBOM }}'
    ```
 
 **The release page** (`scripts/release/compose-notes.mjs`, run by `release.yml`'s "The GitHub
@@ -253,7 +240,7 @@ folded. `docs/releases/X.Y.Z.md` stays the record alone. `discord.yml` posts the
 without them, What's changed without the folded parts). Preview it before tagging:
 
 ```sh
-node scripts/release/compose-notes.mjs --version X.Y.Z --from vPREVIOUS --section <(awk '/^## X.Y.Z /{on=1;print;next} on&&/^## /{exit} on' CHANGELOG.md) \
+node scripts/release/compose-notes.mjs --version X.Y.Z --from vPREVIOUS --image "$KEPT_RELEASE_REGISTRY" --repo-url https://github.com/e3742526/kept-nfc --section <(awk '/^## X.Y.Z /{on=1;print;next} on&&/^## /{exit} on' CHANGELOG.md) \
   --record docs/releases/PREVIOUS.md
 ```
 
@@ -262,7 +249,7 @@ node scripts/release/compose-notes.mjs --version X.Y.Z --from vPREVIOUS --sectio
 A pushed tag is never moved. If the release needs a code fix, release the next version (or the
 next `-rc.N`). If the run failed for a reason outside the code (a registry timeout, a slow smoke),
 re-run it: "Re-run all jobs" on the run's page, or `gh workflow run release.yml -R
-keptinventory/kept -f tag=vX.Y.Z`. Nothing is tagged until both architectures passed and the
+e3742526/kept-nfc -f tag=vX.Y.Z`. Nothing is tagged until both architectures passed and the
 signature verified, so a failed run leaves only untagged digests behind (GHCR's untagged versions;
 delete them in the package settings if you like). After a failure in **publish** only, "Re-run
 failed jobs" re-runs publish alone with the build jobs' digests: no rebuild.
@@ -283,22 +270,23 @@ For when Actions can't run. The laptop needs credentials the workflow gets from 
 - **M1**, the key file: `KEPT_COSIGN_KEY` names it and `COSIGN_PASSWORD` holds its password (W1's
   `~/kept-signing/cosign.key`).
 - **M2**, the registry login: a GitHub token (classic) with `write:packages` (and
-  `read:packages`), as `ibrahimroshdy`:
+  `read:packages`), for a user with write access to the SheepKeep package:
 
   ```sh
-  echo "$GHCR_TOKEN" | docker login ghcr.io -u ibrahimroshdy --password-stdin
-  echo "$GHCR_TOKEN" | "$(bash scripts/tools.sh path helm)" registry login ghcr.io -u ibrahimroshdy --password-stdin
+  echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+  echo "$GHCR_TOKEN" | "$(bash scripts/tools.sh path helm)" registry login ghcr.io -u "$GHCR_USER" --password-stdin
   ```
 
   cosign reads Docker's login. Use the Docker config the release will use (`DOCKER_CONFIG`, or
   `~/.docker`), and make sure it has the `buildx` plugin (`docker buildx version`).
-- **M3**, `gh` as an admin of the `keptinventory` organisation: `gh auth switch --user ibrahimroshdy`.
+- **M3**, `gh` signed in as a maintainer of the SheepKeep fork.
 
 Then, on `main`, clean, at the commit to release, with the tools fetched
 (`bash scripts/tools.sh fetch`) and 15 GB free:
 
 ```sh
 bash scripts/release.sh X.Y.Z --run-gate
+export KEPT_RELEASE_REGISTRY=ghcr.io/your-owner/sheepkeep  # replace with your image repository
 export KEPT_COSIGN_KEY=~/kept-signing/cosign.key
 read -rs COSIGN_PASSWORD && export COSIGN_PASSWORD     # never echoed, never in shell history
 bash scripts/release.sh X.Y.Z                          # about 30–45 minutes
@@ -350,4 +338,4 @@ exercise the later stages meanwhile, a dry run (never a release) can smoke with 
 | publish, join | "the joined index has linux/… but the build job smoked …" | Never expected (imagetools copies manifests as they are). Re-run all jobs; if it repeats, release from the laptop and report it |
 | sign | `COSIGN_PASSWORD` wrong, or no registry login for cosign | W1 (the secret), M1–M2 on the laptop |
 | chart | "chart X.Y.Z is already published" | Release the next version (the chart's version is the release's; never bump `Chart.yaml`) |
-| GitHub release | the last step failed after everything was published | The notes are in that step's log: save them to a file, then `gh release create vX.Y.Z --verify-tag --title "Kept X.Y.Z" --notes-file <file>`, attaching `THIRD-PARTY-NOTICES.txt` (`docker run --rm --entrypoint cat ghcr.io/keptinventory/kept:X.Y.Z /app/THIRD-PARTY-NOTICES.txt`) |
+| GitHub release | the last step failed after everything was published | The notes are in that step's log: save them to a file, then `gh release create vX.Y.Z --verify-tag --title "SheepKeep X.Y.Z" --notes-file <file>`, attaching `THIRD-PARTY-NOTICES.txt` (`docker run --rm --entrypoint cat "${KEPT_RELEASE_REGISTRY}:X.Y.Z" /app/THIRD-PARTY-NOTICES.txt`) |

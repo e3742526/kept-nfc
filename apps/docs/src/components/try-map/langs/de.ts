@@ -139,7 +139,7 @@ const pack: Pack = {
     undone: 'Rückgängig gemacht',
     shapesMore: [
       'Fehlt eine Form? ',
-      'Anfordern',
+      'Steuere eine bei',
       ' oder die ',
       'Formenbibliothek',
       ' durchsuchen.',

@@ -62,7 +62,7 @@ const inventory: PdfWords['inventory'] = {
 const readable: PdfWords['readable'] = {
   title: 'Copia legible',
   intro:
-    'Todo lo que hay en esta ubicación, tal como lo guardaba Kept. Se abre solo con un navegador: las fotos, los recibos y los documentos se abren desde los archivos que la acompañan.',
+    'Todo lo que hay en esta ubicación, tal como lo guardaba SheepKeep. Se abre solo con un navegador: las fotos, los recibos y los documentos se abren desde los archivos que la acompañan.',
   exported: (when) => `Exportada el ${when}`,
   places: 'Lugares',
   things: 'Objetos',
@@ -151,12 +151,12 @@ const conditionReport: PdfWords['condition'] = {
     'Privado: un registro del estado de esta vivienda. Compártelo con tu arrendador o la inmobiliaria, y con nadie más.',
   empty: 'No hay habitaciones en este informe.',
   notInReport: 'No está en este informe.',
-  photoNote: 'La hora de cada foto es cuando Kept la recibió.',
+  photoNote: 'La hora de cada foto es cuando SheepKeep la recibió.',
   draft: 'Sin terminar: este informe todavía puede cambiar.',
   started: (who) => `Iniciado por ${who}`,
   finished: (who, when) => `Terminado por ${who}, ${when}`,
   generated: (who, when) => `Generado por ${who}, ${when}`,
-  more: (n) => `${n} más en Kept`,
+  more: (n) => `${n} más en SheepKeep`,
 };
 
 const move: PdfWords['move'] = {
@@ -169,10 +169,10 @@ const move: PdfWords['move'] = {
   quantity: 'Cant.',
   id: 'ID',
   holds: (n) => `contiene ${n}`,
-  more: (n) => `${n} más en Kept`,
+  more: (n) => `${n} más en SheepKeep`,
   states: { packed: 'Empacado', in_transit: 'En tránsito', unpacked: 'Desempacado' },
   route: (from, to) => `${from} → ${to}`,
-  scan: 'Escanea el código para ver esta caja en Kept y desempacarla.',
+  scan: 'Escanea el código para ver esta caja en SheepKeep y desempacarla.',
   generated: (who, when) => `Impreso por ${who}, ${when}`,
   none: 'No hay cajas para imprimir.',
 };
@@ -247,7 +247,7 @@ const vehicle: PdfWords['vehicle'] = {
   generated: (who, when) => `Generado por ${who}, ${when}`,
   asOf: (day) => `Al ${day}`,
   range: (from, to) => `Del ${from} al ${to}`,
-  more: (n) => `${n} más en Kept`,
+  more: (n) => `${n} más en SheepKeep`,
   moreInvoices: (n) => `+${n}`,
   moneyHidden: 'Los costos no se incluyen: están ocultos para ti en esta ubicación.',
   per100: (fuel, distance) => `${fuel}/100 ${distance}`,

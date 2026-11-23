@@ -63,7 +63,7 @@ const inventory: PdfWords['inventory'] = {
 const readable: PdfWords['readable'] = {
   title: 'Copie lisible',
   intro:
-    'Tout ce que contient ce lieu, tel que Kept le conservait. Un navigateur suffit pour l’ouvrir : les photos, reçus et documents s’ouvrent depuis les fichiers placés à côté.',
+    'Tout ce que contient ce lieu, tel que SheepKeep le conservait. Un navigateur suffit pour l’ouvrir : les photos, reçus et documents s’ouvrent depuis les fichiers placés à côté.',
   exported: (when) => `Exportée le ${when}`,
   places: 'Emplacements',
   things: 'Objets',
@@ -152,12 +152,12 @@ const conditionReport: PdfWords['condition'] = {
     'Document privé : un relevé de l’état de ce logement. Partagez-le avec votre bailleur ou votre agence, et personne d’autre.',
   empty: 'Aucune pièce dans cet état des lieux.',
   notInReport: 'Absente de cet état des lieux.',
-  photoNote: 'L’heure de chaque photo est celle de sa réception par Kept.',
+  photoNote: 'L’heure de chaque photo est celle de sa réception par SheepKeep.',
   draft: 'Non terminé : cet état des lieux peut encore changer.',
   started: (who) => `Commencé par ${who}`,
   finished: (who, when) => `Terminé par ${who}, le ${when}`,
   generated: (who, when) => `Créé par ${who}, le ${when}`,
-  more: (n) => `${n} autres dans Kept`,
+  more: (n) => `${n} autres dans SheepKeep`,
 };
 
 const move: PdfWords['move'] = {
@@ -170,10 +170,10 @@ const move: PdfWords['move'] = {
   quantity: 'Qté',
   id: 'ID',
   holds: (n) => `contient ${n}`,
-  more: (n) => `${n} autres dans Kept`,
+  more: (n) => `${n} autres dans SheepKeep`,
   states: { packed: 'Emballé', in_transit: 'En transit', unpacked: 'Déballé' },
   route: (from, to) => `${from} → ${to}`,
-  scan: 'Scannez le code pour voir ce carton dans Kept et le déballer.',
+  scan: 'Scannez le code pour voir ce carton dans SheepKeep et le déballer.',
   generated: (who, when) => `Imprimé par ${who}, le ${when}`,
   none: 'Aucun carton à imprimer.',
 };
@@ -248,7 +248,7 @@ const vehicle: PdfWords['vehicle'] = {
   generated: (who, when) => `Créé par ${who}, le ${when}`,
   asOf: (day) => `Au ${day}`,
   range: (from, to) => `Du ${from} au ${to}`,
-  more: (n) => `${n} autres dans Kept`,
+  more: (n) => `${n} autres dans SheepKeep`,
   moreInvoices: (n) => `+${n}`,
   moneyHidden: 'Les coûts ne figurent pas : ils vous sont masqués dans ce lieu.',
   per100: (fuel, distance) => `${fuel}/100 ${distance}`,

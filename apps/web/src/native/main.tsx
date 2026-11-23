@@ -379,22 +379,14 @@ export function Inventory({
   const [status, setStatus] = useState('');
   const running = useRef<Promise<void> | null>(null);
   const mounted = useRef(true);
+  const canLeaveCapture = useRef<() => Promise<boolean>>(null);
   const goHome = () => setScreen({ kind: 'home' });
-  const goTab = (tab: TabKey) => {
-    switch (tab) {
-      case 'capture':
-        setScreen({ kind: 'capture' });
-        break;
-      case 'scan':
-        setScreen({ kind: 'identify' });
-        break;
-      case 'more':
-        setScreen({ kind: 'more' });
-        break;
-      default:
-        setScreen({ kind: 'home' });
-        break;
+  const goTab = async (tab: TabKey) => {
+    if (screen.kind === 'capture') {
+      if (tab === 'capture' || !(await canLeaveCapture.current?.())) return;
     }
+    const kind = tab === 'scan' ? 'identify' : tab;
+    setScreen((current) => (current === screen ? { kind } : current));
   };
   const showTabs = screen.kind !== 'record' && screen.kind !== 'find' && screen.kind !== 'enroll';
   const open = (target: Target, backToRooms = false) => {
@@ -412,7 +404,12 @@ export function Inventory({
 
   const display = useCallback((next: InventoryCache | undefined) => {
     cacheRef.current = next;
-    if (mounted.current) setCache(next);
+    if (mounted.current) {
+      setCache(next);
+      setLocationFilter((selected) =>
+        next?.locations.some((location) => location.id === selected) ? selected : null,
+      );
+    }
   }, []);
 
   const refreshPendingState = useCallback(async () => {
@@ -574,8 +571,11 @@ export function Inventory({
         adapters,
       );
       if (!current) return;
-      if (resolved.status === 'resolved') setScreen({ kind: 'record', target: resolved.target });
-      else if (resolved.status === 'foreign')
+      if (resolved.status === 'resolved') {
+        const mayLeave = canLeaveCapture.current;
+        if (mayLeave && !(await mayLeave())) return;
+        if (current) setScreen({ kind: 'record', target: resolved.target });
+      } else if (resolved.status === 'foreign')
         setStatus(t`This tag belongs to a different SheepKeep server.`);
       else setStatus(t`This label is unavailable in your SheepKeep.`);
     };
@@ -1263,6 +1263,7 @@ export function Inventory({
           pending={pending}
           completions={completions}
           syncing={working}
+          leaveRef={canLeaveCapture}
           onClose={() => (screen.back ? open(screen.back) : goHome())}
           onSave={savedLocally}
         />
@@ -1519,7 +1520,7 @@ export function KeptPhone() {
         </>
       )}
       <footer className="mt-6 border-t border-line pt-4">
-        <ProjectNotice />
+        <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
       </footer>
       {status && (
         <p className="mt-4 text-ink-2" role="status">

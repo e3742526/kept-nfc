@@ -70,7 +70,7 @@ const inventory: PdfWords['inventory'] = {
 const readable: PdfWords['readable'] = {
   title: 'Копія для читання',
   intro:
-    'Усе в цій локації, як його зберігав Kept. Щоб відкрити, достатньо браузера: фото, чеки й документи відкриваються з файлів поруч.',
+    'Усе в цій локації, як його зберігав SheepKeep. Щоб відкрити, достатньо браузера: фото, чеки й документи відкриваються з файлів поруч.',
   exported: (when) => `Експортовано ${when}`,
   places: 'Місця',
   things: 'Речі',
@@ -158,12 +158,12 @@ const conditionReport: PdfWords['condition'] = {
     'Приватне: запис стану цього житла. Діліться ним з орендодавцем або агентом, і більше ні з ким.',
   empty: 'У цьому звіті немає кімнат.',
   notInReport: 'Немає в цьому звіті.',
-  photoNote: 'Час кожного фото — це час, коли Kept його отримав.',
+  photoNote: 'Час кожного фото — це час, коли SheepKeep його отримав.',
   draft: 'Не завершено: цей звіт ще може змінитися.',
   started: (who) => `Розпочато: ${who}`,
   finished: (who, when) => `Завершено: ${who}, ${when}`,
   generated: (who, when) => `Створено: ${who}, ${when}`,
-  more: (n) => `ще ${n} у Kept`,
+  more: (n) => `ще ${n} у SheepKeep`,
 };
 
 const move: PdfWords['move'] = {
@@ -176,10 +176,10 @@ const move: PdfWords['move'] = {
   quantity: 'К-сть',
   id: 'ID',
   holds: (n) => `містить ${n}`,
-  more: (n) => `ще ${n} у Kept`,
+  more: (n) => `ще ${n} у SheepKeep`,
   states: { packed: 'Зібрано', in_transit: 'У дорозі', unpacked: 'Розпаковано' },
   route: (from, to) => `${from} → ${to}`,
-  scan: 'Відскануйте код, щоб побачити цю коробку в Kept і розпакувати її.',
+  scan: 'Відскануйте код, щоб побачити цю коробку в SheepKeep і розпакувати її.',
   generated: (who, when) => `Надруковано: ${who}, ${when}`,
   none: 'Немає коробок для друку.',
 };
@@ -254,7 +254,7 @@ const vehicle: PdfWords['vehicle'] = {
   generated: (who, when) => `Створено: ${who}, ${when}`,
   asOf: (day) => `Станом на ${day}`,
   range: (from, to) => `З ${from} по ${to}`,
-  more: (n) => `ще ${n} у Kept`,
+  more: (n) => `ще ${n} у SheepKeep`,
   moreInvoices: (n) => `+${n}`,
   moneyHidden: 'Витрати не додано: у цій локації їх від вас приховано.',
   per100: (fuel, distance) => `${fuel}/100 ${distance}`,

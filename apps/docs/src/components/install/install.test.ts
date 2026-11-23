@@ -126,7 +126,7 @@ describe('the page in every language', () => {
 });
 
 describe('the commands', () => {
-  it('download the release compose.yaml runs, as the Compose guide does', () => {
+  it('download the same upstream Kept release as the Compose guide', () => {
     const guide = docs('install/compose.md');
     expect(guide).toContain(`/kept/v${RELEASE}/compose.yaml`);
     expect(guide).toContain(commands.compose.download);

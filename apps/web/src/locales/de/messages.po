@@ -25730,8 +25730,8 @@ msgid "Wall rack 12U"
 msgstr "Wandverteiler 12 HE"
 
 #: src/map/shapes.tsx
-msgid "Missing a shape? <0>Request it</0>, or browse the <1>shape library</1>."
-msgstr "Fehlt eine Form? <0>Fordere sie an</0> oder sieh dir die <1>Formenbibliothek</1> an."
+msgid "Missing a shape? <0>Contribute one</0>, or browse the <1>shape library</1>."
+msgstr "Fehlt eine Form? <0>Steuere eine bei</0> oder sieh dir die <1>Formenbibliothek</1> an."
 
 #: src/routes/_app/help.tsx
 msgid "{count, plural, one {# chapter} other {# chapters}}"

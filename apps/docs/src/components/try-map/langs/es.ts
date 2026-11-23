@@ -139,7 +139,7 @@ const pack: Pack = {
     undone: 'Deshecho',
     shapesMore: [
       '¿Falta una forma? ',
-      'Solicítala',
+      'Aporta una',
       ', o explora la ',
       'biblioteca de formas',
       '.',

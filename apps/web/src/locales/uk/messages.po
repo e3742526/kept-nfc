@@ -16191,8 +16191,8 @@ msgid "Missing ({0})"
 msgstr "Не вистачає ({0})"
 
 #: src/map/shapes.tsx
-msgid "Missing a shape? <0>Request it</0>, or browse the <1>shape library</1>."
-msgstr "Бракує форми? <0>Надішліть запит</0> або перегляньте <1>бібліотеку форм</1>."
+msgid "Missing a shape? <0>Contribute one</0>, or browse the <1>shape library</1>."
+msgstr "Бракує форми? <0>Додайте свою</0> або перегляньте <1>бібліотеку форм</1>."
 
 #: src/components/reports/insurance-report.tsx
 msgid "Missing rates"

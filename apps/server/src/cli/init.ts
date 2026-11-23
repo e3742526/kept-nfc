@@ -24,8 +24,8 @@ export type InitOptions = {
   dir: string;
   /** The address, given on the command line; nothing is asked. */
   url?: string | undefined;
-  /** The running image's version: a release is pinned into KEPT_IMAGE. */
-  version: string;
+  /** The image reference passed to init by Compose. */
+  image?: string | undefined;
   io: InitIO;
   generateCode?: () => string;
   /** Gives the new file to the folder's owner (the container runs as root to write it). */
@@ -43,9 +43,6 @@ export type InitResult = {
 
 export type AddressNote = 'assumed-http' | 'ip' | 'localhost' | 'https-proxy';
 export type Address = { url: string; port: number | null; notes: AddressNote[] };
-
-export const IMAGE_REPOSITORY = 'ghcr.io/keptinventory/kept';
-const RELEASE = /^\d+\.\d+\.\d+$/;
 
 /** The address as Kept needs it (scheme, host and port only), or an Error saying why not. */
 export function parseAddress(input: string): Address {
@@ -142,7 +139,7 @@ function merge(text: string, values: ReadonlyMap<string, string>): string {
 
 function fresh(values: ReadonlyMap<string, string>): string {
   return [
-    '# Written by `kept init`. compose.env.example in the Kept repository explains every other',
+    '# Written by `kept init`. compose.env.example in the SheepKeep repository explains every other',
     '# setting. The database passwords are not here: the bootstrap service generates them on',
     '# first start into the kept-config and kept-owner volumes.',
     ...[...values].map(([name, value]) => `${name}=${value}`),
@@ -212,14 +209,14 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     if (address.notes.includes('localhost')) io.print(LOCALHOST_WARNING);
   } else {
     io.print(
-      'Which address will you open Kept at? Printed labels carry it in their QR codes, so choose one that won’t change: a name such as http://kept.home.arpa:8080 or https://kept.example.org rather than an IP address.',
+      'Which address will you open SheepKeep at? Printed labels carry it in their QR codes, so choose one that won’t change: a name such as http://kept.home.arpa:8080 or https://kept.example.org rather than an IP address.',
     );
     address = await askAddress(io);
   }
   if (address.notes.includes('assumed-http')) io.print(`Using ${address.url}.`);
   if (address.notes.includes('https-proxy')) {
     io.print(
-      `Kept itself serves plain HTTP on KEPT_HTTP_PORT (8080); a proxy with the certificate serves ${address.url}: your own, or Caddy in compose.full.yaml (its https profile).`,
+      `SheepKeep itself serves plain HTTP on KEPT_HTTP_PORT (8080); a proxy with the certificate serves ${address.url}: your own, or Caddy in compose.full.yaml (its https profile).`,
     );
   }
 
@@ -228,8 +225,11 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     kept && isSetupCodeShape(kept) ? kept : (opts.generateCode ?? generateSetupCode)(),
   );
   const values = new Map<string, string>();
-  if (existing === null && RELEASE.test(opts.version)) {
-    values.set('KEPT_IMAGE', `${IMAGE_REPOSITORY}:${opts.version}`);
+  if (opts.image && existing === null) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._/:@-]*$/.test(opts.image)) {
+      throw new CliError('KEPT_IMAGE must be a container image reference.');
+    }
+    values.set('KEPT_IMAGE', opts.image);
   }
   values.set('KEPT_PUBLIC_URL', address.url);
   if (address.port !== null) values.set('KEPT_HTTP_PORT', String(address.port));

@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { getConfig } from '@lingui/conf';
 import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin';
@@ -10,11 +11,27 @@ const path = (relative: string) => fileURLToPath(new URL(relative, import.meta.u
 const configPath = path('./lingui.config.ts');
 const linguiConfig = getConfig({ configPath });
 
+function sourceRevision(): string {
+  const options = {
+    cwd: path('../..'),
+    encoding: 'utf8' as const,
+    stdio: ['ignore', 'pipe', 'ignore'] as const,
+  };
+  try {
+    if (execFileSync('git', ['rev-parse', '--show-prefix'], options).trim()) return '';
+    if (execFileSync('git', ['status', '--porcelain'], options).trim()) return '';
+    return execFileSync('git', ['rev-parse', 'HEAD'], options).trim();
+  } catch {
+    return '';
+  }
+}
+
 // The PWA's service worker and browser outbox belong to the web entry point.
 export default defineConfig({
   root: path('./native'),
   publicDir: false,
   base: './',
+  define: { 'import.meta.env.VITE_SHEEPKEEP_REVISION': JSON.stringify(sourceRevision()) },
   resolve: { alias: { '@': path('./src') } },
   plugins: [
     react(),

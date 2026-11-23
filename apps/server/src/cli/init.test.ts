@@ -68,7 +68,6 @@ describe('kept init', () => {
     const t = terminal(['http://kept.home.arpa:8080']);
     const result = await runInit({
       dir,
-      version: '1.13.0',
       io: t.io,
       generateCode: () => 'KPT2X9',
     });
@@ -81,12 +80,17 @@ describe('kept init', () => {
 
   it('writes .env with the address, the port, the image and the setup code, readable by its owner only', async () => {
     const t = terminal(['http://kept.home.arpa:8080']);
-    await runInit({ dir, version: '1.13.0', io: t.io, generateCode: () => 'KPT2X9' });
+    await runInit({
+      dir,
+      image: 'registry.example/sheepkeep:1.13.0',
+      io: t.io,
+      generateCode: () => 'KPT2X9',
+    });
     const text = await envFile();
     expect(line(text, 'KEPT_PUBLIC_URL')).toBe('http://kept.home.arpa:8080');
     expect(line(text, 'KEPT_HTTP_PORT')).toBe('8080');
     expect(line(text, 'KEPT_SETUP_CODE')).toBe('KPT-2X9');
-    expect(line(text, 'KEPT_IMAGE')).toBe('ghcr.io/keptinventory/kept:1.13.0');
+    expect(line(text, 'KEPT_IMAGE')).toBe('registry.example/sheepkeep:1.13.0');
     expect(text).not.toMatch(/PASSWORD/);
     expect((await stat(path.join(dir, '.env'))).mode & 0o777).toBe(0o600);
     // Every line is a comment, blank or NAME=value: Compose reads it as written.
@@ -95,7 +99,7 @@ describe('kept init', () => {
 
   it('prints the setup code and what to do next, and nothing else from .env', async () => {
     const t = terminal(['http://kept.home.arpa:8080']);
-    await runInit({ dir, version: '1.13.0', io: t.io, generateCode: () => 'KPT2X9' });
+    await runInit({ dir, io: t.io, generateCode: () => 'KPT2X9' });
     expect(t.shown).toContain('KEPT SETUP CODE: KPT-2X9');
     const out = t.all();
     expect(out).toContain('docker compose up -d');
@@ -103,9 +107,9 @@ describe('kept init', () => {
     expect(out).not.toMatch(/KEPT_IMAGE|ghcr\.io/);
   });
 
-  it('leaves the image out for a build that is not a release', async () => {
+  it('leaves image selection to Compose when no reference was passed', async () => {
     const t = terminal(['http://kept.lan']);
-    await runInit({ dir, version: '0.0.0-dev', io: t.io, generateCode: () => 'KPT2X9' });
+    await runInit({ dir, io: t.io, generateCode: () => 'KPT2X9' });
     const text = await envFile();
     expect(line(text, 'KEPT_IMAGE')).toBeUndefined();
     expect(line(text, 'KEPT_HTTP_PORT')).toBe('80');
@@ -113,21 +117,21 @@ describe('kept init', () => {
 
   it('says it assumed http:// when the scheme was left out', async () => {
     const t = terminal(['kept.home.arpa:8080']);
-    await runInit({ dir, version: '1.13.0', io: t.io });
+    await runInit({ dir, io: t.io });
     expect(t.shown.join('\n')).toContain('http://kept.home.arpa:8080');
     expect(line(await envFile(), 'KEPT_PUBLIC_URL')).toBe('http://kept.home.arpa:8080');
   });
 
   it('asks again after an address it refuses, saying why', async () => {
     const t = terminal(['http://kept.lan:8080/kept', 'http://kept.lan:8080']);
-    await runInit({ dir, version: '1.13.0', io: t.io });
+    await runInit({ dir, io: t.io });
     expect(t.asked).toHaveLength(2);
     expect(t.shown.join('\n')).toMatch(/no path/);
   });
 
   it('asks to confirm an IP address, and asks for another on no', async () => {
     const t = terminal(['http://192.168.1.20:8080', '', 'http://kept.lan:8080']);
-    await runInit({ dir, version: '1.13.0', io: t.io });
+    await runInit({ dir, io: t.io });
     expect(t.asked).toHaveLength(3);
     expect(t.asked[1]).toMatch(/\[y\/N\]/);
     expect(line(await envFile(), 'KEPT_PUBLIC_URL')).toBe('http://kept.lan:8080');
@@ -135,13 +139,13 @@ describe('kept init', () => {
 
   it('keeps an IP address on yes', async () => {
     const t = terminal(['http://192.168.1.20:8080', 'y']);
-    await runInit({ dir, version: '1.13.0', io: t.io });
+    await runInit({ dir, io: t.io });
     expect(line(await envFile(), 'KEPT_PUBLIC_URL')).toBe('http://192.168.1.20:8080');
   });
 
   it('takes --url without asking, warning about an IP address', async () => {
     const t = terminal([], false);
-    await runInit({ dir, url: 'http://192.168.1.20:8080', version: '1.13.0', io: t.io });
+    await runInit({ dir, url: 'http://192.168.1.20:8080', io: t.io });
     expect(t.asked).toHaveLength(0);
     expect(t.shown.join('\n')).toMatch(/IP address/);
     expect(line(await envFile(), 'KEPT_PUBLIC_URL')).toBe('http://192.168.1.20:8080');
@@ -149,19 +153,19 @@ describe('kept init', () => {
 
   it('refuses a bad --url instead of asking', async () => {
     const t = terminal([], false);
-    await expect(
-      runInit({ dir, url: 'ftp://kept.lan', version: '1.13.0', io: t.io }),
-    ).rejects.toThrow(/http:\/\/ or https:\/\//);
+    await expect(runInit({ dir, url: 'ftp://kept.lan', io: t.io })).rejects.toThrow(
+      /http:\/\/ or https:\/\//,
+    );
   });
 
   it('without a terminal and without --url, says which flag to use', async () => {
     const t = terminal([], false);
-    await expect(runInit({ dir, version: '1.13.0', io: t.io })).rejects.toThrow(/--url/);
+    await expect(runInit({ dir, io: t.io })).rejects.toThrow(/--url/);
   });
 
   it('for an https address leaves the port out and says a proxy serves it', async () => {
     const t = terminal(['https://kept.example.org']);
-    await runInit({ dir, version: '1.13.0', io: t.io });
+    await runInit({ dir, io: t.io });
     const text = await envFile();
     expect(line(text, 'KEPT_HTTP_PORT')).toBeUndefined();
     expect(t.shown.join('\n')).toMatch(/proxy/i);
@@ -169,7 +173,7 @@ describe('kept init', () => {
 
   it('for an https address names where Caddy is: compose.full.yaml, not compose.yaml (#414)', async () => {
     const t = terminal(['https://kept.example.org']);
-    await runInit({ dir, version: '1.13.0', io: t.io });
+    await runInit({ dir, io: t.io });
     const proxy = t.shown.find((l) => /proxy/i.test(l)) ?? '';
     expect(proxy).toContain('your own');
     expect(proxy).toContain('Caddy in compose.full.yaml');
@@ -191,7 +195,7 @@ describe('kept init', () => {
     const t = terminal(['y', 'http://kept.lan:8090']);
     const result = await runInit({
       dir,
-      version: '1.13.0',
+      image: 'registry.example/sheepkeep:1.13.0',
       io: t.io,
       generateCode: () => 'KPT2X9',
     });
@@ -215,7 +219,6 @@ describe('kept init', () => {
     const t = terminal(['', 'http://kept.lan:8080']);
     const result = await runInit({
       dir,
-      version: '1.13.0',
       io: t.io,
       generateCode: () => 'KPT2X9',
     });
@@ -226,7 +229,7 @@ describe('kept init', () => {
   it('leaves an existing .env untouched on no', async () => {
     await writeFile(path.join(dir, '.env'), 'KEPT_PUBLIC_URL=http://old.lan\n', { mode: 0o600 });
     const t = terminal(['n']);
-    const result = await runInit({ dir, version: '1.13.0', io: t.io });
+    const result = await runInit({ dir, io: t.io });
     expect(result.merged).toBe(false);
     expect(result.written).toBe(false);
     expect(await envFile()).toBe('KEPT_PUBLIC_URL=http://old.lan\n');
@@ -235,7 +238,7 @@ describe('kept init', () => {
   it('hands the new file to the folder owner when told how', async () => {
     const handed: string[] = [];
     const t = terminal(['http://kept.lan:8080']);
-    await runInit({ dir, version: '1.13.0', io: t.io, chownTo: (file) => handed.push(file) });
+    await runInit({ dir, io: t.io, chownTo: (file) => handed.push(file) });
     expect(handed).toHaveLength(1);
     expect(path.dirname(handed[0] as string)).toBe(dir);
   });
