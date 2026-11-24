@@ -20,7 +20,7 @@ import { withScope } from '../db/scope.js';
 import { AppError, notFound } from '../http/errors.js';
 import { findPlace, type PlaceRow, requirePlace } from '../places/view.js';
 import { viewOf } from '../things/view.js';
-import { runTool, unavailable as unavailableRefusal } from '../tools/context.js';
+import { runConfirmedProposal, unavailable as unavailableRefusal } from '../tools/context.js';
 import { placeRefOf, thingRefOf } from '../tools/output.js';
 import { handlerOf } from '../tools/registry.js';
 import { findRef, typeNamed } from '../tools/resolve.js';
@@ -31,6 +31,7 @@ import { PROPOSAL_COLUMNS, type ProposalRow } from './threads.js';
  * `before.rowVersion`): the thing's, or update_place's place's (#313). */
 const VERSIONED: ReadonlySet<string> = new Set([
   'update_thing',
+  'remove_inventory_record',
   'move_thing',
   'adjust_stock',
   'update_place',
@@ -39,7 +40,7 @@ const VERSIONED: ReadonlySet<string> = new Set([
 // Write proposals (D22, D123, D179, D213). The model never runs a write: each write
 // call becomes a proposal, drawn by the web from its `args`, `before` and `refs` (never from model
 // text), bound to the SHA-256 of its canonical arguments, open for 10 minutes, one batch (one card)
-// per step. Confirming runs it through runTool() **as the person** (actor `user`), each in its own
+// per step. Confirming runs the saved operation **as the person** (actor `user`), each in its own
 // transaction, with If-Match from `before.rowVersion`, and appends the outcome to the thread as the
 // call's result, so the next question sees it (convert.ts: the last result per call wins). No model
 // call follows.
@@ -324,6 +325,11 @@ export async function propose(
     };
   }
   const { refs, thing, place } = await refsOf(tx, client, scope, p.args, location);
+  if (p.tool === 'remove_inventory_record' && !thing)
+    return {
+      ok: false,
+      error: toolError('not_found', 'Find the record before proposing a change.'),
+    };
   const before =
     p.tool === 'update_place' && place
       ? placeBeforeOf(p.callId, p.args, place)
@@ -607,13 +613,14 @@ export async function confirmProposals(
     // that row check it. return_thing and update_claim match ifMatch against the loan's or the
     // claim's.
     const rowVersion = VERSIONED.has(row.tool) ? row.before.rowVersion : undefined;
-    const env = (await runTool(
+    const env = (await runConfirmedProposal(
       {
         deps: deps.tools,
         principal: { userId: scope.userId, mfa: scope.mfa, scope: 'write' },
         locale,
         requestId: `${requestId}:${i}`.slice(0, 100),
         via: 'assistant',
+        recordOnly: row.tool === 'remove_inventory_record',
         ...(typeof rowVersion === 'number' ? { ifMatch: rowVersion } : {}),
         now,
         // The card's location, and no other: a call that resolves elsewhere writes nothing. A

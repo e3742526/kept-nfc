@@ -25,6 +25,7 @@ import {
 import { providerKeyAad } from '../ai/db-keys.js';
 import { createAiDeps } from '../ai/routes.js';
 import { type Keyring, seal } from '../crypto/envelope.js';
+import { runTool } from '../tools/context.js';
 import { type LoopDeps, RetryTurn, runTurn } from './loop.js';
 import { argsHash, type ConfirmItem, confirmProposals } from './proposals.js';
 import { turnJobData } from './turn-job.js';
@@ -158,7 +159,11 @@ beforeEach(async () => {
   await own(db, 'DELETE FROM public.ai_usage_windows');
 });
 
-async function ask(p: Person, text: string, context?: { kind: string; id?: string }) {
+async function ask(
+  p: Person,
+  text: string,
+  context?: { kind: string; id?: string; recordOnly?: true },
+) {
   const thread = ok(await call(t, '/api/v1/assistant/threads', { as: p, body: { context } }), 201);
   const res = await call(t, `/api/v1/assistant/threads/${thread.id}/turns`, {
     as: p,
@@ -570,6 +575,161 @@ describe('writes are proposals the person confirms', () => {
       [lent.loan.id],
     );
     expect(loan).toEqual({ returned: true });
+  });
+
+  it('finds a room across locations and confirms or undoes removal of one audited record', async () => {
+    const shelf = await place(db, garage, 'Workshop shelf');
+    const record = await createThing(t, ibrahim, garage, {
+      name: 'Old socket wrench',
+      placeId: shelf,
+    });
+    const { threadId, turnId } = await ask(
+      louis,
+      'Find Workshop shelf and remove the old socket wrench record.',
+      {
+        kind: 'location',
+        id: home.id,
+        recordOnly: true,
+      },
+    );
+    const direct = await runTool(
+      {
+        deps: loop.tools,
+        principal: { ...scopeOf(louis), scope: 'write' },
+        locale: 'en',
+        via: 'assistant',
+        requestId: 'unconfirmed-trash',
+        recordOnly: true,
+        ifMatch: Number(record.rowVersion),
+      },
+      'remove_inventory_record',
+      { thing_id: record.id },
+    );
+    expect(direct).toMatchObject({ error: 'forbidden' });
+    script.push(
+      calls({ id: 'where', name: 'where_is', input: { query: 'Workshop shelf', kind: 'place' } }),
+      calls({ id: 'inside', name: 'list_contents', input: { place_id: shelf } }),
+      calls({ id: 'remove', name: 'remove_inventory_record', input: { thing_id: record.id } }),
+    );
+    expect(await run(louis, turnId)).toEqual({ status: 'done' });
+    const offered = prompts[0]?.tools?.flatMap((tool) => ('name' in tool ? [tool.name] : [])) ?? [];
+    expect(offered).toEqual(
+      expect.arrayContaining(['add_thing', 'update_thing', 'remove_inventory_record']),
+    );
+    expect(offered).not.toEqual(expect.arrayContaining(['move_thing']));
+    expect(JSON.stringify(prompts[2]?.prompt)).toContain(record.id);
+    const detailPath = `/api/v1/assistant/threads/${threadId}`;
+    const detail = () => call(t, detailPath, { as: louis, method: 'GET' });
+    const open = (await detail()).json().proposals[0];
+    expect(open).toMatchObject({ locationId: garage.id, status: 'open' });
+    expect((await eventsOf(db, garage.id, record.id)).map(({ action }) => action)).toEqual([
+      'thing.create',
+    ]);
+    const confirm = () =>
+      call(t, '/api/v1/assistant/proposals/confirm', {
+        as: louis,
+        body: { batchId: open.batchId, proposals: [{ id: open.id, argsHash: open.argsHash }] },
+      });
+    const accepted = (await confirm()).json().results[0];
+    expect(accepted).toMatchObject({ status: 'confirmed', audit: { eventId: expect.any(String) } });
+    const events = (await eventsOf(db, garage.id, record.id)).filter(
+      ({ action }) => action === 'thing.trash',
+    );
+    expect(events).toEqual([
+      expect.objectContaining({ id: accepted.audit.eventId, actor_id: louis.userId }),
+    ]);
+    expect(
+      await own(db, 'SELECT id FROM public.things WHERE id = $1 AND deleted_at IS NOT NULL', [
+        record.id,
+      ]),
+    ).toHaveLength(1);
+    expect((await confirm()).json().results[0].status).toBe('confirmed');
+    expect(
+      (await eventsOf(db, garage.id, record.id)).filter(({ action }) => action === 'thing.trash'),
+    ).toHaveLength(1);
+    ok(await call(t, `/api/v1/audit/${accepted.audit.eventId}/undo`, { as: louis, body: {} }));
+    expect(
+      await own(db, 'SELECT id FROM public.things WHERE id = $1 AND deleted_at IS NULL', [
+        record.id,
+      ]),
+    ).toHaveLength(1);
+    expect((await detail()).json().proposals[0].audit.undone).toBe(true);
+  });
+
+  it('leaves stale records and occupied bins intact when their removal is confirmed', async () => {
+    const box = await createThing(t, ibrahim, garage, {
+      name: 'Tool carrier',
+      typeId: await builtinType(db, 'box_bin'),
+    });
+    const child = await createThing(t, ibrahim, garage, {
+      name: 'File handle',
+      containerId: box.id,
+    });
+    const stale = await createThing(t, ibrahim, garage, { name: 'Calibration weight' });
+    const { threadId, turnId } = await ask(
+      louis,
+      'Remove the tool carrier and calibration weight records.',
+      {
+        kind: 'none',
+        recordOnly: true,
+      },
+    );
+    script.push(
+      calls(
+        { id: 'stale', name: 'remove_inventory_record', input: { thing_id: stale.id } },
+        { id: 'occupied', name: 'remove_inventory_record', input: { thing_id: box.id } },
+      ),
+    );
+    expect(await run(louis, turnId)).toEqual({ status: 'done' });
+    ok(
+      await call(t, `/api/v1/things/${stale.id}`, {
+        as: ibrahim,
+        method: 'PATCH',
+        headers: { 'if-match': String(stale.rowVersion) },
+        body: { name: 'Calibrated weight' },
+      }),
+    );
+    const detail = await call(t, `/api/v1/assistant/threads/${threadId}`, {
+      as: louis,
+      method: 'GET',
+    });
+    const cards = detail.json().proposals as {
+      id: string;
+      argsHash: string;
+      batchId: string;
+      args: { thing_id: string };
+    }[];
+    expect(cards).toHaveLength(2);
+    const result = await call(t, '/api/v1/assistant/proposals/confirm', {
+      as: louis,
+      body: {
+        batchId: cards[0]?.batchId,
+        proposals: cards.map(({ id, argsHash }) => ({ id, argsHash })),
+      },
+    });
+    expect(result.json().results).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: cards.find(({ args }) => args.thing_id === stale.id)?.id,
+          status: 'conflict',
+        }),
+        expect.objectContaining({
+          id: cards.find(({ args }) => args.thing_id === box.id)?.id,
+          error: 'contents_choice_required',
+          status: 'failed',
+        }),
+      ]),
+    );
+    expect(
+      await own(
+        db,
+        'SELECT id FROM public.things WHERE id = ANY ($1::uuid[]) AND deleted_at IS NULL',
+        [[stale.id, box.id, child.id]],
+      ),
+    ).toHaveLength(3);
+    expect(
+      (await eventsOf(db, garage.id, box.id)).filter(({ action }) => action === 'thing.trash'),
+    ).toEqual([]);
   });
 
   it('a thread on a hidden Personal: reads stay in it, and a card confirms there', async () => {

@@ -19,7 +19,9 @@ export const ASSISTANT_TURN_JOB = 'assistant-turn';
 
 export type AskBody = {
   text: string;
-  context?: { kind: ContextKind; id?: string | undefined } | undefined;
+  context?:
+    | { kind: ContextKind; id?: string | undefined; recordOnly?: true | undefined }
+    | undefined;
   locale: string;
 };
 

@@ -59,6 +59,7 @@ export function CaptureForm({
   completions = {},
   syncing = false,
   online = true,
+  preferredProvider = 'server',
   leaveRef,
   onClose,
   onSave,
@@ -77,6 +78,7 @@ export function CaptureForm({
   completions?: Readonly<Record<string, CompletionState>>;
   syncing?: boolean;
   online?: boolean;
+  preferredProvider?: CaptureAIProvider;
   leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
@@ -101,7 +103,7 @@ export function CaptureForm({
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState('');
   const [files, setFiles] = useState<ChosenFile[]>([]);
-  const [provider, setProvider] = useState<CaptureAIProvider>('server');
+  const [provider, setProvider] = useState<CaptureAIProvider>(preferredProvider);
   const photos = evidenceOnly ? [] : files.filter((item) => item.role === 'photo');
   const firstPhoto = photos[0];
   const captureLocation = cache?.locations.find(({ id }) => id === destination?.locationId);

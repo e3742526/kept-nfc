@@ -30,8 +30,10 @@ import {
   insertThing,
   liveThing,
   markSeen,
+  requireThingVersion,
   setLifecycle,
   updateThing,
+  writableThing,
 } from '../../things/service.js';
 import {
   type LifecycleBody,
@@ -40,6 +42,7 @@ import {
   type UpdateBody,
 } from '../../things/validate.js';
 import { viewOf } from '../../things/view.js';
+import { trashThing } from '../../trash/service.js';
 import { placePath, placeRefOf, thingPath, thingRefOf } from '../output.js';
 import {
   brandEnsured,
@@ -65,6 +68,26 @@ import { ensureTags } from './tags.js';
 function requireModule(loc: { modules: ReadonlySet<ModuleId> }, module: ModuleId) {
   if (!loc.modules.has(module)) throw new AppError('module_off', 409);
 }
+
+export const removeInventoryRecord: Handler<'remove_inventory_record'> = {
+  action: 'things.trash',
+  subjectLocation: (client, input) => locationOfRef(client, input.thing_id),
+  async run() {
+    throw new AppError('forbidden', 403, 'Review and confirm the inventory change first.');
+  },
+  async confirm(op, input) {
+    if (op.via !== 'assistant' || op.ifMatch === undefined)
+      throw new AppError('forbidden', 403, 'Review and confirm the inventory change first.');
+    const location = locationOf(op);
+    const id = await thingIn(op.client, location.id, input.thing_id);
+    const thing = await writableThing(op.client, id, 'things.trash');
+    if (thing.location_id !== location.id) throw notFound();
+    await requireThingVersion(op.client, id, op.ifMatch, ['deletedAt']);
+    // An empty choice refuses a non-empty container. Chat changes only the selected record.
+    await trashThing(op, id, {});
+    return { data: await writeResult(op, 'thing', id) };
+  },
+};
 
 const locationOf = (op: Op) => {
   if (!op.location) throw new Error('a write tool always runs in one location');

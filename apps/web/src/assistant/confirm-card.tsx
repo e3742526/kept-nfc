@@ -111,6 +111,7 @@ function useVerbLabels(): Record<Verb, string> {
     stock: t`Adjust stock`,
     box: t`Turn into a box`,
     boxes: t`Turn places into boxes`,
+    trash: t`Move to Trash`,
     other: t`Change`,
   };
 }

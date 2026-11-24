@@ -125,8 +125,12 @@ export function DestinationPicker({
   );
 }
 
-export function defaultDestination(cache: InventoryCache): Destination | undefined {
-  const location = writableLocations(cache)[0];
+export function defaultDestination(
+  cache: InventoryCache,
+  preferredId?: string,
+): Destination | undefined {
+  const locations = writableLocations(cache);
+  const location = locations.find(({ id }) => id === preferredId) ?? locations[0];
   const place = cache.places.find((entry) => entry.id === location?.unplacedPlaceId);
   return place ? { ...place, kind: 'place' } : undefined;
 }

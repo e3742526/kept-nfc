@@ -57,6 +57,7 @@ export type ToolContext = {
    * `before.rowVersion`); a write tool on a versioned row refuses a changed row with
    * `precondition_failed`. Absent, the row's current version is used. */
   ifMatch?: number;
+  recordOnly?: boolean;
   now?: () => Date;
   /** The assistant thread's location: a hidden Personal counts as reachable for a call in a thread
    * opened on it (#392), as it did when the thread's tools were offered (toolsFor's `also`). */
@@ -80,6 +81,7 @@ export type Op = {
   /** The question's interface language (ToolContext.locale). */
   locale: string;
   ifMatch: number | undefined;
+  recordOnly?: boolean;
   /** The location the call is about; null only for a `global` handler called without one. */
   location: ReachableLocation | null;
   /** Every location the call may read: the one above, or (global handlers) all reachable. */
@@ -118,6 +120,8 @@ export type Handler<N extends ToolName> = {
    * before the call's transaction and hands the vectors over as `op.semantic`. */
   meaning?: (input: ToolInput<N>) => string | undefined;
   run: (op: Op, input: ToolInput<N>) => Promise<HandlerResult<ToolOutput<N>>>;
+  /** An operation reserved for accepted, unexpired proposals. */
+  confirm?: (op: Op, input: ToolInput<N>) => Promise<HandlerResult<ToolOutput<N>>>;
 };
 
 export type HandlerTable = { [N in ToolName]?: Handler<N> };

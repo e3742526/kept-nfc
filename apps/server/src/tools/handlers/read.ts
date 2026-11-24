@@ -70,7 +70,7 @@ export const capabilities: Handler<'capabilities'> = {
         time_zone: l.timeZone,
         untrusted: { name: l.name },
         modules: [...l.modules],
-        tools: toolsIn(op.principal, op.via, l.role, l.modules),
+        tools: toolsIn(op.principal, op.via, l.role, l.modules, op.recordOnly),
       })),
     },
   }),

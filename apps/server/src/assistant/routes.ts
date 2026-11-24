@@ -29,7 +29,11 @@ import {
 
 const Id = z.object({ id: z.uuid() });
 const ContextBody = z
-  .object({ kind: z.enum(CONTEXT_KINDS), id: z.string().min(1).max(200).optional() })
+  .object({
+    kind: z.enum(CONTEXT_KINDS),
+    id: z.string().min(1).max(200).optional(),
+    recordOnly: z.literal(true).optional(),
+  })
   .optional();
 const ThreadsQuery = paginationQuery.extend({ q: z.string().max(200).optional() });
 const CreateBody = z.object({ context: ContextBody }).default({});

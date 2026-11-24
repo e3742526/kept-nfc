@@ -14,6 +14,7 @@ export type AssistantContext = {
    * `locationId`), `inbox` and `none`. */
   id?: string;
   locationId?: string;
+  recordOnly?: true;
 };
 
 export const MESSAGE_ROLES = ['user', 'assistant', 'tool'] as const;
@@ -118,7 +119,7 @@ export type Proposal = {
   status: ProposalStatus;
   expiresAt: string;
   result?: unknown;
-  audit?: { eventId: string; until: string };
+  audit?: { eventId: string; until: string; eventIds?: string[]; undone?: true };
 };
 
 export type ProposalRef = {

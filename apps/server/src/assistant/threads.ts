@@ -67,6 +67,7 @@ function contextOf(raw: unknown): AssistantContext {
     kind,
     ...(typeof c.id === 'string' ? { id: c.id } : {}),
     ...(typeof c.locationId === 'string' ? { locationId: c.locationId } : {}),
+    ...(c.recordOnly === true ? { recordOnly: true } : {}),
   };
 }
 
@@ -75,9 +76,19 @@ function contextOf(raw: unknown): AssistantContext {
  * its location; anything they can't see is dropped (`none`), never echoed back. A search keeps
  * its words (at most 200 characters).
  */
+type ContextInput = { kind: ContextKind; id?: string | undefined; recordOnly?: true | undefined };
+
 export async function resolveContext(
   client: pg.ClientBase,
-  input: { kind: ContextKind; id?: string | undefined } | undefined | null,
+  input: ContextInput | undefined | null,
+): Promise<AssistantContext> {
+  const page = await resolvePageContext(client, input);
+  return input?.recordOnly ? { ...page, recordOnly: true } : page;
+}
+
+async function resolvePageContext(
+  client: pg.ClientBase,
+  input: ContextInput | undefined | null,
 ): Promise<AssistantContext> {
   if (!input || input.kind === 'none' || input.kind === 'inbox') {
     return { kind: input?.kind ?? 'none' };
@@ -233,7 +244,11 @@ export const PROPOSAL_COLUMNS = `id, batch_id, turn_id, thread_id, location_id, 
 export function proposalOf(r: ProposalRow, now: Date): Proposal {
   const status: ProposalStatus =
     r.status === 'open' && r.expires_at.getTime() <= now.getTime() ? 'expired' : r.status;
-  const until = (r.result as { undo_until?: unknown } | null)?.undo_until;
+  const result = r.result as { undo_until?: unknown; audit_event_ids?: unknown } | null;
+  const until = result?.undo_until;
+  const eventIds = Array.isArray(result?.audit_event_ids)
+    ? result.audit_event_ids.filter((id): id is string => typeof id === 'string')
+    : undefined;
   return {
     id: r.id,
     batchId: r.batch_id,
@@ -248,7 +263,7 @@ export function proposalOf(r: ProposalRow, now: Date): Proposal {
     expiresAt: r.expires_at.toISOString(),
     ...(r.result !== null && r.result !== undefined ? { result: r.result } : {}),
     ...(r.audit_event_id && typeof until === 'string'
-      ? { audit: { eventId: r.audit_event_id, until } }
+      ? { audit: { eventId: r.audit_event_id, until, ...(eventIds?.length ? { eventIds } : {}) } }
       : {}),
   };
 }
@@ -268,7 +283,22 @@ export async function proposalsOf(
       ORDER BY created_at, id`,
     [id],
   );
-  return rows.map((r) => proposalOf(r, now));
+  const proposals = rows.map((row) => proposalOf(row, now));
+  const audits = proposals.flatMap(({ audit }) =>
+    audit ? (audit.eventIds ?? [audit.eventId]) : [],
+  );
+  if (!audits.length) return proposals;
+  const { rows: reversed } = await client.query<{ undo_of: string }>(
+    'SELECT DISTINCT undo_of FROM public.audit_events WHERE undo_of = ANY ($1::uuid[])',
+    [audits],
+  );
+  const undone = new Set(reversed.map(({ undo_of }) => undo_of));
+  for (const { audit } of proposals) {
+    if (audit && (audit.eventIds ?? [audit.eventId]).every((id) => undone.has(id))) {
+      audit.undone = true;
+    }
+  }
+  return proposals;
 }
 
 export type TurnRow = {

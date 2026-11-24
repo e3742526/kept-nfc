@@ -258,7 +258,10 @@ export function askOf(messages: readonly KeptMessage[]): Ask {
 export function offeredTools(available: readonly ToolName[], ask: Ask): ToolName[][] {
   const used = new Set(ask.used);
   const pick = (topics: Set<ToolName>) =>
-    available.filter((t) => CORE_TOOLS.includes(t) || used.has(t) || topics.has(t));
+    available.filter(
+      (t) =>
+        CORE_TOOLS.includes(t) || t === 'remove_inventory_record' || used.has(t) || topics.has(t),
+    );
   const all = new Set<ToolName>();
   for (const q of ask.questions) for (const t of topicTools(q)) all.add(t);
   const latest = ask.questions.at(-1);

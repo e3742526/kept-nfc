@@ -1,4 +1,4 @@
-import { isLiveTurn, newId, type SnapLocation, TURN_LIMITS } from '@kept/shared';
+import { isLiveTurn, newId, TURN_LIMITS } from '@kept/shared';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { QueryClient, QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
@@ -15,6 +15,8 @@ import type {
   TurnView,
 } from '@/api/assistant/types';
 import { ApiError } from '@/api/client';
+import { inventoryPaths } from '@/api/inventory/paths';
+import type { PlaceView, ThingView } from '@/api/inventory/types';
 import { FieldList, ProposalRowTitle } from '@/assistant/confirm-card';
 import { cardExpiry, cardRows } from '@/assistant/confirm-rows';
 import { LinkOnlyMarkdown, parse } from '@/assistant/link-only-markdown';
@@ -23,7 +25,6 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { usePlatform } from './adapters';
-import { ScreenHeader } from './back-button';
 import type { Connection, NativeRequestOptions } from './bridge';
 import type { InventoryCache } from './inventory';
 import type { Target } from './labels';
@@ -33,7 +34,9 @@ type Props = {
   connection: Connection;
   online: boolean;
   cache?: InventoryCache;
-  onBack: () => void;
+  defaultLocationId?: string;
+  threadId?: string;
+  onThreadChange: (id?: string) => void;
   onOpen: (target: Target) => void;
   onAuthError: (reason: 'expired' | 'restored') => void;
   onInventoryChanged: () => void;
@@ -57,7 +60,9 @@ function AssistantConversation({
   connection,
   online,
   cache,
-  onBack,
+  defaultLocationId,
+  threadId,
+  onThreadChange,
   onOpen,
   onAuthError,
   onInventoryChanged,
@@ -65,14 +70,10 @@ function AssistantConversation({
   const { t, i18n } = useLingui();
   const errorText = useErrorText();
   const { transport } = usePlatform();
-  const [locationId, setLocationId] = useState<string>();
-  const [threadId, setThreadId] = useState<string>();
   const [turnId, setTurnId] = useState<string>();
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<unknown>(null);
   const previousAsk = useRef<{ thread: string; input: string; key: string }>(null);
-  const locations = cache?.locations ?? [];
-  const location = locations.find((item) => item.id === locationId) ?? locations[0];
   const request = <T,>(path: string, options?: NativeRequestOptions) =>
     transport.request<T>(connection, path, options);
   const threads = useQuery({
@@ -104,18 +105,15 @@ function AssistantConversation({
   }, [activeTurnId, finished, refetchDetail, refetchThreads]);
 
   const ask = useMutation({
-    mutationFn: async ({ text, scope }: { text: string; scope?: SnapLocation }) => {
+    mutationFn: async (text: string) => {
       let id = threadId;
-      const existing = detail.data?.thread.context;
-      const context = existing
-        ? { kind: existing.kind, ...(existing.id ? { id: existing.id } : {}) }
-        : scope
-          ? { kind: 'location' as const, id: scope.id }
-          : { kind: 'none' as const };
+      const context = defaultLocationId
+        ? { kind: 'location' as const, id: defaultLocationId, recordOnly: true }
+        : { kind: 'none' as const, recordOnly: true };
       if (!id) {
         const created = await request<Thread>(paths.threads, { method: 'POST', body: { context } });
         id = created.id;
-        setThreadId(id);
+        onThreadChange(id);
       }
       const body = { text, context, locale: i18n.locale };
       const input = JSON.stringify(body);
@@ -160,7 +158,7 @@ function AssistantConversation({
     else if (isRestoreEpochMismatch(issue)) onAuthError('restored');
   }, [issue, onAuthError]);
   const selectThread = (id?: string) => {
-    setThreadId(id);
+    onThreadChange(id);
     setTurnId(undefined);
     setDraft('');
     setError(null);
@@ -179,11 +177,7 @@ function AssistantConversation({
   );
   const recent = threads.data?.items.filter((thread) => thread.title) ?? [];
   const threadLoading = !!threadId && !detail.data;
-  const threadLocation = locations.find(
-    (item) => item.id === detail.data?.thread.context.locationId,
-  );
-  const selectedLocation = threadId ? threadLocation : location;
-  const blocked = ask.isPending || live || threadLoading || (!threadId && !cache);
+  const blocked = ask.isPending || live || threadLoading;
   const text = draft.trim();
   const applyFeedback = async (changed: boolean) => {
     if (changed) onInventoryChanged();
@@ -192,13 +186,12 @@ function AssistantConversation({
 
   return (
     <section className="grid gap-3">
-      <ScreenHeader
-        title={<Trans>Assistant</Trans>}
-        onBack={onBack}
-        icon={<MessageSquare size={18} aria-hidden />}
-      />
+      <h2 className="kept-card-title text-title">
+        <MessageSquare size={18} aria-hidden />
+        <Trans>Assistant</Trans>
+      </h2>
       <p className="m-0 text-small text-ink-2">
-        <Trans>Server API</Trans>
+        <Trans>All locations</Trans>
       </p>
       <div className="flex flex-wrap items-end gap-2">
         {recent.length > 0 && (
@@ -230,40 +223,13 @@ function AssistantConversation({
           </Button>
         )}
       </div>
-      {threadId ? (
-        selectedLocation && (
-          <p className="m-0 text-small text-ink-2">
-            <bdi>{selectedLocation.name}</bdi>
-          </p>
-        )
-      ) : locations.length > 1 ? (
-        <Select
-          label={t`Location`}
-          items={locations}
-          selectedKey={location?.id}
-          isDisabled={!online || ask.isPending}
-          onSelectionChange={(key) => {
-            if (key) setLocationId(String(key));
-          }}
-        >
-          {(entry) => (
-            <SelectItem id={entry.id} textValue={entry.name}>
-              <bdi>{entry.name}</bdi>
-            </SelectItem>
-          )}
-        </Select>
-      ) : location ? (
-        <p className="m-0 text-small text-ink-2">
-          <bdi>{location.name}</bdi>
-        </p>
-      ) : null}
       <div role="log" aria-label={t`Assistant`} className="grid min-w-0 gap-3">
         {items.map((item) => {
           if (item.kind === 'card') {
             return (
               <ProposalCard
                 key={item.key}
-                proposals={item.proposals}
+                proposals={item.proposals.filter(({ tool }) => RECORD_TOOLS.has(tool))}
                 online={online && !live}
                 request={request}
                 onError={setError}
@@ -293,13 +259,25 @@ function AssistantConversation({
               renderLink={(link) => {
                 const pool = link.kind === 'thing' ? cache?.things : cache?.places;
                 const record = pool?.find((entry) => entry.id === link.id);
-                return record ? (
+                const open = async () => {
+                  try {
+                    const found =
+                      record ??
+                      (await request<ThingView | PlaceView>(
+                        link.kind === 'thing'
+                          ? inventoryPaths.thing(link.id)
+                          : inventoryPaths.place(link.id),
+                      ));
+                    onOpen({ id: found.id, locationId: found.locationId, kind: link.kind });
+                  } catch (failed) {
+                    setError(failed);
+                  }
+                };
+                return record || online ? (
                   <button
                     type="button"
                     className="text-start font-semibold underline underline-offset-2"
-                    onClick={() =>
-                      onOpen({ id: record.id, locationId: record.locationId, kind: link.kind })
-                    }
+                    onClick={() => void open()}
                   >
                     <bdi>{link.text}</bdi>
                   </button>
@@ -357,7 +335,7 @@ function AssistantConversation({
           event.preventDefault();
           if (!text || blocked || !online) return;
           setError(null);
-          ask.mutate({ text, scope: selectedLocation });
+          ask.mutate(text);
         }}
       >
         <label className="grid gap-1 text-small font-semibold">
@@ -384,6 +362,8 @@ function AssistantConversation({
   );
 }
 
+const RECORD_TOOLS = new Set(['add_thing', 'update_thing', 'remove_inventory_record']);
+
 function ProposalCard({
   proposals,
   online,
@@ -399,6 +379,7 @@ function ProposalCard({
 }) {
   const { t } = useLingui();
   const [settled, setSettled] = useState(false);
+  const [undone, setUndone] = useState<string[]>([]);
   const batchId = proposals[0]?.batchId ?? '';
   const open = proposals.filter((proposal) => proposal.status === 'open');
   const rows = cardRows(proposals);
@@ -428,6 +409,22 @@ function ProposalCard({
     },
     onError,
   });
+  const undo = useMutation({
+    mutationFn: async (proposal: Proposal) => {
+      const audit = proposal.audit;
+      if (!audit) return;
+      const events = audit.eventIds ?? [audit.eventId];
+      await request(
+        events.length === 1 ? inventoryPaths.undo(audit.eventId) : inventoryPaths.undoTogether,
+        { method: 'POST', body: events.length === 1 ? {} : { eventIds: events } },
+      );
+    },
+    onSuccess: async (_result, proposal) => {
+      setUndone((ids) => [...ids, proposal.id]);
+      await onChanged(true);
+    },
+    onError,
+  });
   const canConfirm = open.length > 0 && !expired && !settled;
   const count = rows.filter((row) => open.some((item) => item.id === row.proposalId)).length;
   const statusLabel = (status: Proposal['status']) => {
@@ -446,25 +443,50 @@ function ProposalCard({
         return t`Some changes couldn't be saved. Ask again.`;
     }
   };
+  if (!rows.length) return null;
   return (
     <fieldset className="m-0 grid min-w-0 gap-2 rounded-xl border border-line bg-surface p-3">
       <legend className="px-1 text-small font-semibold">
         <Trans>Changes</Trans>
       </legend>
       <ul className="m-0 grid list-none gap-2 p-0">
-        {rows.map((row) => (
-          <li key={row.key} className="min-w-0 border-line border-b pb-2">
-            <ProposalRowTitle row={row}>
-              <bdi>{row.target?.name ?? t`Something SheepKeep can't name`}</bdi>
-            </ProposalRowTitle>
-            <FieldList row={row} fields={row.fields} />
-            <p className="m-0 text-small text-ink-2">
-              {statusLabel(
-                proposals.find((proposal) => proposal.id === row.proposalId)?.status ?? 'failed',
-              )}
-            </p>
-          </li>
-        ))}
+        {rows.map((row, index) => {
+          const proposal = proposals.find((item) => item.id === row.proposalId);
+          const audit = proposal?.audit;
+          const reversed = audit?.undone || undone.includes(row.proposalId);
+          const lastRow = rows[index + 1]?.proposalId !== row.proposalId;
+          return (
+            <li key={row.key} className="min-w-0 border-line border-b pb-2">
+              <ProposalRowTitle row={row}>
+                <bdi>{row.target?.name ?? t`Something SheepKeep can't name`}</bdi>
+              </ProposalRowTitle>
+              <p className="m-0 text-small text-ink-2">
+                <bdi>{row.location.from}</bdi>
+              </p>
+              <FieldList row={row} fields={row.fields} />
+              <p className="m-0 text-small text-ink-2">
+                {reversed ? t`Undone` : statusLabel(proposal?.status ?? 'failed')}
+              </p>
+              {lastRow &&
+                proposal?.status === 'confirmed' &&
+                audit &&
+                !reversed &&
+                Date.parse(audit.until) > Date.now() && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    isDisabled={!online || undo.isPending}
+                    onPress={() => {
+                      onError(null);
+                      undo.mutate(proposal);
+                    }}
+                  >
+                    <Trans>Undo</Trans>
+                  </Button>
+                )}
+            </li>
+          );
+        })}
       </ul>
       {canConfirm && (
         <div className="grid grid-cols-2 gap-2">

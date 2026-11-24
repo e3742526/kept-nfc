@@ -32905,3 +32905,19 @@ msgstr "Cập nhật {0}?"
 #: src/native/photo-review.tsx
 msgid "Update existing record"
 msgstr "Cập nhật mục hiện có"
+
+#: src/native/main.tsx
+msgid "Automatic"
+msgstr "Tự động"
+
+#: src/native/main.tsx
+msgid "Could not save settings."
+msgstr "Không lưu được cài đặt."
+
+#: src/native/main.tsx
+msgid "Default location"
+msgstr "Vị trí mặc định"
+
+#: src/native/capture-ai.tsx
+msgid "Default photo AI"
+msgstr "AI mặc định cho ảnh"

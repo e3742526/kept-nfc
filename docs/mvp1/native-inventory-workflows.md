@@ -8,6 +8,12 @@ Starting revision `67f9fb0b` includes the iPhone assistant, local capture queue,
 - Native capture payloads carry the device save time. That timestamp does not establish when the original image was taken. Audit events carry the server recording time.
 - ROOM extraction can propose several objects. Its review and source retention rules are scoped to room walkthroughs. Bin capture must keep the original visible to each accepted entry and preserve separate replay identities.
 
+## Assistant
+
+The rightmost tab opens inventory chat. Searches cover the locations the user can access with Assistant enabled. The default location in **More** guides where a new entry goes when the user leaves the destination open. It also supplies the fallback location in **Add**. The default photo AI appears when multiple photo providers are available. Inventory chat uses the server's configured Assistant provider.
+
+The native chat’s record-only context offers add, edit and move-to-Trash proposals. Confirmation runs as the signed-in user and records an audit event. The Trash proposal checks the record version and requires an empty container if the record is a bin. The chat displays Undo while the audit event can be reversed, including when a thread is reopened.
+
 ## Photo review
 
 **Add** and **Add to this bin** show the recorded destination and action. Manual capture can save a broad description with optional categories, notes, quantity and photographs. **Suggest description** proposes a single description. **Suggest categories** keeps the entered description. **Suggest items** opens review with up to 12 entries. **Review multiple items** opens the same review without inference.

@@ -24,7 +24,7 @@ import type { AiDeps } from '../ai/routes.js';
 import type { Pools } from '../db/pools.js';
 import { type Scope, withScope } from '../db/scope.js';
 import type { JobMeta } from '../jobs/boss.js';
-import { runTool, toolsFor } from '../tools/context.js';
+import { assistantToolAllowed, runTool, toolsFor } from '../tools/context.js';
 import type { ToolDeps } from '../tools/types.js';
 import { checkLinks, locationsIn, seenIn } from './cite.js';
 import { fitToCeiling } from './fit.js';
@@ -280,6 +280,7 @@ async function steps(
     now,
     // A tool reaches what the thread's candidates reached: a hidden Personal, in a thread on it.
     threadLocation: context.locationId ?? null,
+    recordOnly: context.recordOnly === true,
   };
 
   while (step < TURN_LIMITS.maxSteps) {
@@ -651,6 +652,23 @@ async function runCalls(
         output: toolError(
           'tool_unavailable',
           'Call capabilities to see the tools you can use in each location.',
+        ),
+        locations: [],
+      });
+      continue;
+    }
+    if (
+      r.toolCtx.recordOnly &&
+      TOOL_DEFS[c.tool].scope === 'write' &&
+      (!assistantToolAllowed(c.tool, true) ||
+        (c.tool === 'add_thing' &&
+          TOOL_DEFS.add_thing.input.safeParse(c.input).data?.items.some((item) => item.new_place)))
+    ) {
+      done.push({
+        call: c,
+        output: toolError(
+          'tool_unavailable',
+          'This chat changes inventory records in existing destinations only.',
         ),
         locations: [],
       });

@@ -87,7 +87,7 @@ export const idOrCode = z
   .min(1)
   .max(64)
   .refine((v) => parseRef(v) !== null, { message: 'a UUID or a 6-character short ID' })
-  .describe('An id (UUID) or a 6-character short ID such as K7D2QX');
+  .describe('UUID or 6-character short ID');
 
 const uuid = z.uuid();
 const isoDate = z.iso.date().describe('A date, YYYY-MM-DD, in the location’s time zone');
@@ -790,6 +790,17 @@ export const TOOL_DEFS = Object.freeze({
       fields: updateFields,
     }),
     output: writeResult.extend({ thing: thingRef, changed_fields: z.array(z.string()) }),
+  }),
+  remove_inventory_record: tool({
+    name: 'remove_inventory_record',
+    title: 'Review removing an inventory record',
+    description: 'Propose sending a record to Trash. Confirm first. Use a record ID from where_is.',
+    scope: 'write',
+    doors: ['assistant'],
+    module: null,
+    since: 6,
+    input: z.object({ location_id: locationId, thing_id: uuid }),
+    output: writeResult,
   }),
   move_thing: tool({
     name: 'move_thing',

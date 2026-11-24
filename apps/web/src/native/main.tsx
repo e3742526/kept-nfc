@@ -47,6 +47,7 @@ import { NativePlatformProvider, usePlatform } from './adapters';
 import { AssistantScreen } from './assistant';
 import { ScreenHeader } from './back-button';
 import {
+  type CaptureAIProvider,
   type CompletionState,
   type Connection,
   nativeErrorCode,
@@ -55,7 +56,7 @@ import {
 import { Browse, browseDefaults } from './browse';
 import { CaptureAISettings } from './capture-ai';
 import { CaptureForm, NewBoxForm } from './capture-form';
-import type { Destination } from './destination';
+import { type Destination, defaultDestination, writableLocations } from './destination';
 import {
   type InventoryCache,
   inventoryPath,
@@ -93,7 +94,13 @@ import './native.css';
 
 type Screen =
   | { kind: 'home' }
-  | { kind: 'record'; target: Target; backToRooms?: boolean; backToBrowse?: boolean }
+  | {
+      kind: 'record';
+      target: Target;
+      backToRooms?: boolean;
+      backToBrowse?: boolean;
+      backToAssistant?: boolean;
+    }
   | { kind: 'new'; place?: Target }
   | { kind: 'rooms' }
   | { kind: 'unplaced' }
@@ -114,7 +121,7 @@ type Screen =
   | { kind: 'photoReview'; id: string }
   | { kind: 'more' };
 
-type TabKey = 'home' | 'capture' | 'scan' | 'more';
+type TabKey = 'home' | 'capture' | 'scan' | 'more' | 'assistant';
 
 function tabFor(screen: Screen): TabKey {
   switch (screen.kind) {
@@ -124,12 +131,13 @@ function tabFor(screen: Screen): TabKey {
       return 'capture';
     case 'identify':
       return 'scan';
+    case 'assistant':
+      return 'assistant';
     case 'more':
     case 'trash':
     case 'unplaced':
     case 'labelSheets':
     case 'batches':
-    case 'assistant':
       return 'more';
     default:
       return 'home';
@@ -137,7 +145,7 @@ function tabFor(screen: Screen): TabKey {
 }
 
 /**
- * Fixed bottom tab bar: the four main phone destinations, icon-first. Search and Add are the
+ * Fixed bottom tab bar: the main phone destinations, icon-first. Search and Add are the
  * two jobs people open the app for, so Search is the landing tab and Add is the emphasized one.
  * The unsynced-capture badge sits on Search, where the pending list lives.
  */
@@ -156,6 +164,7 @@ function TabBar({
     { key: 'capture', label: t`Add`, Icon: Plus },
     { key: 'scan', label: t`Scan`, Icon: QrCode },
     { key: 'more', label: t`More`, Icon: Settings },
+    { key: 'assistant', label: t`Assistant`, Icon: MessageSquare },
   ] as const;
   return (
     <nav className="kept-tabbar">
@@ -464,6 +473,40 @@ export function Inventory({
   const confirm = useConfirm();
   const formatBytes = useBytes();
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
+  const [assistantThreadId, setAssistantThreadId] = useState<string>();
+  const [preferredLocationId, setPreferredLocationId] = useState<string>();
+  const [preferredAI, setPreferredAI] = useState<CaptureAIProvider>('server');
+  const [preferenceError, setPreferenceError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      adapters.outbox.getValue(connection, 'defaultLocation'),
+      adapters.outbox.getValue(connection, 'defaultPhotoAI'),
+    ])
+      .then(([location, ai]) => {
+        if (!active) return;
+        setPreferredLocationId(location || undefined);
+        if (ai === 'server' || ai === 'apple' || ai === 'chatgpt') setPreferredAI(ai);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [adapters, connection]);
+
+  async function saveDefault(key: 'defaultLocation' | 'defaultPhotoAI', value: string) {
+    setPreferenceError(false);
+    try {
+      await adapters.outbox.setValue(connection, key, value);
+      if (key === 'defaultLocation') setPreferredLocationId(value || undefined);
+      else if (value === 'server' || value === 'apple' || value === 'chatgpt')
+        setPreferredAI(value);
+    } catch {
+      setPreferenceError(true);
+    }
+  }
+
   const [browseFilters, setBrowseFilters] = useState(browseDefaults);
   useEffect(() => {
     let active = true;
@@ -917,6 +960,10 @@ export function Inventory({
     onSignOut();
   }
 
+  const availableDefaultLocations = cache ? writableLocations(cache) : [];
+  const defaultLocationId = availableDefaultLocations.find(
+    ({ id }) => id === preferredLocationId,
+  )?.id;
   const currentBoxes = cache?.things.filter((thing) => thing.isContainer) ?? [];
   const editableBoxes = currentBoxes.filter((box) =>
     cache?.locations.some((loc) => loc.id === box.locationId && loc.role !== 'viewer'),
@@ -925,13 +972,17 @@ export function Inventory({
   // The box used most recently is the likeliest place for the next item.
   const suggestedBox = recentBoxes
     .map((id) => editableBoxes.find((box) => box.id === id))
-    .find((box) => box !== undefined);
-  const suggestedDestination: Destination | undefined = suggestedBox && {
-    id: suggestedBox.id,
-    locationId: suggestedBox.locationId,
-    name: suggestedBox.name ?? t`Untitled`,
-    kind: 'box',
-  };
+    .find(
+      (box) => box !== undefined && (!defaultLocationId || box.locationId === defaultLocationId),
+    );
+  const suggestedDestination: Destination | undefined = suggestedBox
+    ? {
+        id: suggestedBox.id,
+        locationId: suggestedBox.locationId,
+        name: suggestedBox.name ?? t`Untitled`,
+        kind: 'box',
+      }
+    : cache && defaultDestination(cache, defaultLocationId);
   const filterableRooms =
     cache?.places.filter(
       (place) => !place.isUnplaced && (!locationFilter || place.locationId === locationFilter),
@@ -1524,7 +1575,7 @@ export function Inventory({
           syncing={working}
           online={online}
           onClose={
-            screen.backToBrowse
+            screen.backToBrowse || screen.backToAssistant
               ? goBack
               : screen.backToRooms
                 ? () => setScreen({ kind: 'rooms' })
@@ -1582,6 +1633,7 @@ export function Inventory({
           completions={completions}
           syncing={working}
           online={online}
+          preferredProvider={preferredAI}
           leaveRef={canLeaveCapture}
           onClose={() => (screen.back ? open(screen.back) : goBack())}
           onSave={savedLocally}
@@ -1732,8 +1784,10 @@ export function Inventory({
           connection={connection}
           cache={cache}
           online={online}
-          onBack={goBack}
-          onOpen={(target) => open(target)}
+          defaultLocationId={defaultLocationId}
+          threadId={assistantThreadId}
+          onThreadChange={setAssistantThreadId}
+          onOpen={(target) => pushScreen({ kind: 'record', target, backToAssistant: true })}
           onAuthError={onSignOut}
           onInventoryChanged={() => {
             void refresh();
@@ -1753,15 +1807,35 @@ export function Inventory({
             </h3>
             <ThemeSwitch />
             <PaletteSwitch />
+            {availableDefaultLocations.length > 0 && (
+              <Select
+                label={t`Default location`}
+                items={[{ id: 'automatic', name: t`Automatic` }, ...availableDefaultLocations]}
+                selectedKey={defaultLocationId ?? 'automatic'}
+                onSelectionChange={(key) => {
+                  if (key)
+                    void saveDefault('defaultLocation', key === 'automatic' ? '' : String(key));
+                }}
+              >
+                {(item) => (
+                  <SelectItem id={item.id}>
+                    <bdi>{item.name}</bdi>
+                  </SelectItem>
+                )}
+              </Select>
+            )}
           </section>
-          <CaptureAISettings connection={connection} />
+          <CaptureAISettings
+            connection={connection}
+            preferred={preferredAI}
+            onPreferred={(provider) => void saveDefault('defaultPhotoAI', provider)}
+          />
+          {preferenceError && (
+            <p role="alert">
+              <Trans>Could not save settings.</Trans>
+            </p>
+          )}
           <div className="kept-tiles">
-            <ActionTile
-              label={t`Assistant`}
-              Icon={MessageSquare}
-              tone="violet"
-              onPress={() => pushScreen({ kind: 'assistant' })}
-            />
             <ActionTile
               label={t`Print label sheets`}
               Icon={Tags}

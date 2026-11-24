@@ -165,14 +165,45 @@ function ChatGPTConnection({
   );
 }
 
-export function CaptureAISettings({ connection }: { connection: Connection }) {
+export function CaptureAISettings({
+  connection,
+  preferred,
+  onPreferred,
+}: {
+  connection: Connection;
+  preferred: CaptureAIProvider;
+  onPreferred: (provider: CaptureAIProvider) => void;
+}) {
+  const { t } = useLingui();
+  const { captureAI } = usePlatform();
   const { status, setAccount } = useCaptureAI(connection);
+
+  const choices: { id: CaptureAIProvider; name: string }[] = [
+    ...(captureAI?.serverProposals ? [{ id: 'server' as const, name: t`Server API` }] : []),
+    ...(status?.apple === 'available'
+      ? [{ id: 'apple' as const, name: t`Apple Intelligence` }]
+      : []),
+    ...(status?.chatGPT ? [{ id: 'chatgpt' as const, name: t`ChatGPT plan` }] : []),
+  ];
 
   return (
     <section className="kept-card">
       <h3 className="kept-card-title text-small text-ink-2">
         <Trans>AI settings</Trans>
       </h3>
+      {choices.length > 1 && (
+        <Select
+          label={t`Default photo AI`}
+          items={choices}
+          selectedKey={choices.some(({ id }) => id === preferred) ? preferred : null}
+          onSelectionChange={(key) => {
+            const choice = choices.find(({ id }) => id === key);
+            if (choice) onPreferred(choice.id);
+          }}
+        >
+          {(choice) => <SelectItem id={choice.id}>{choice.name}</SelectItem>}
+        </Select>
+      )}
       {status && (
         <ChatGPTConnection
           connection={connection}

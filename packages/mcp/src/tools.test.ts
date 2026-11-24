@@ -29,6 +29,7 @@ const TABLE: Record<
   upcoming: ['read', 'schedules', 4],
   add_thing: ['write', null, 6],
   update_thing: ['write', null, 6],
+  remove_inventory_record: ['write', null, 6],
   move_thing: ['write', null, 6],
   mark_seen: ['write', null, 6],
   create_place: ['write', null, 6],
@@ -78,13 +79,17 @@ describe('TOOL_DEFS', () => {
   it('is exactly the plan’s table: scope, module and step', () => {
     expect(Object.keys(TOOL_DEFS).sort()).toEqual(Object.keys(TABLE).sort());
     for (const [name, d] of defs) expect([d.scope, d.module, d.since]).toEqual(TABLE[name]);
-    expect(TOOL_NAMES).toHaveLength(39);
+    expect(TOOL_NAMES).toHaveLength(40);
   });
 
-  it('offers every tool at both doors but Moving mode’s and change_lifecycle, which only MCP is offered', () => {
+  it('keeps MCP-only tools and the Assistant removal proposal at their own doors', () => {
     for (const [name, d] of defs) {
       expect([...d.doors].sort(), name).toEqual(
-        MCP_ONLY.includes(name) ? ['mcp'] : ['assistant', 'mcp'],
+        MCP_ONLY.includes(name)
+          ? ['mcp']
+          : name === 'remove_inventory_record'
+            ? ['assistant']
+            : ['assistant', 'mcp'],
       );
       expect(Object.isFrozen(d.doors)).toBe(true);
     }

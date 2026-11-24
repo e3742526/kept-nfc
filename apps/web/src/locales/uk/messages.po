@@ -32905,3 +32905,19 @@ msgstr "Оновити «{0}»?"
 #: src/native/photo-review.tsx
 msgid "Update existing record"
 msgstr "Оновити наявний запис"
+
+#: src/native/main.tsx
+msgid "Automatic"
+msgstr "Автоматично"
+
+#: src/native/main.tsx
+msgid "Could not save settings."
+msgstr "Не вдалося зберегти налаштування."
+
+#: src/native/main.tsx
+msgid "Default location"
+msgstr "Типове місце зберігання"
+
+#: src/native/capture-ai.tsx
+msgid "Default photo AI"
+msgstr "Типовий ШІ для фото"

@@ -1125,7 +1125,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: 'Create Decorations' })).toBeVisible();
   });
 
-  it('adds and modifies inventory in Assistant only after reviewing the proposal', async () => {
+  it('opens Assistant from its tab and confirms and undoes inventory changes', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
       initialConnection: {
@@ -1137,7 +1137,7 @@ describe('KeptPhone mobile workflows', () => {
     });
     const locationId = env.rooms[0]?.locationId;
     if (!locationId) throw new Error('The fixture needs an inventory location');
-    const context = { kind: 'location' as const, id: locationId, locationId };
+    const context = { kind: 'none' as const, recordOnly: true as const };
     const thread = { id: 'chat', title: null, context };
     const messages: { id: string; role: 'user'; parts: { type: 'text'; text: string }[] }[] = [];
     const proposals: Proposal[] = [];
@@ -1158,15 +1158,18 @@ describe('KeptPhone mobile workflows', () => {
             const id = String(proposals.length + 1);
             messages.push({ id, role: 'user', parts: [{ type: 'text', text: body.text }] });
             const adding = id === '1';
+            const removing = id === '3';
             proposals.push({
               id,
               batchId: id,
               turnId: id,
               locationId,
-              tool: adding ? 'add_thing' : 'update_thing',
+              tool: adding ? 'add_thing' : removing ? 'remove_inventory_record' : 'update_thing',
               args: adding
                 ? { items: [{ name: 'Socket wrench', quantity: 2 }] }
-                : { thing_id: env.boxId, fields: { name: 'Metric socket wrench' } },
+                : removing
+                  ? { thing_id: env.boxId }
+                  : { thing_id: env.boxId, fields: { name: 'Metric socket wrench' } },
               argsHash: `fixture-${id}`,
               before: adding ? {} : { name: 'Socket wrench' },
               refs: {
@@ -1186,25 +1189,40 @@ describe('KeptPhone mobile workflows', () => {
             if (!proposal) throw new Error('The request must confirm an existing proposal');
             expect(body.proposals).toEqual([{ id: proposal.id, argsHash: proposal.argsHash }]);
             proposal.status = 'confirmed';
+            if (proposal.tool === 'remove_inventory_record') {
+              proposal.audit = {
+                eventId: 'trash-event',
+                until: new Date(Date.now() + 600_000).toISOString(),
+              };
+            }
             inventory.push(proposal.tool);
             return { results: [{ id: proposal.id, status: 'confirmed' }] } as T;
+          }
+          if (path === inventoryPaths.undo('trash-event')) {
+            inventory.pop();
+            const removed = proposals.at(-1);
+            if (removed?.audit) removed.audit.undone = true;
+            return {} as T;
           }
           return original<T>(conn, path, options);
         },
       );
     const user = userEvent.setup();
     env.renderApp();
+    const tabs = within(await screen.findByRole('navigation')).getAllByRole('button');
+    expect(tabs.at(-2)).toHaveTextContent('More');
+    expect(tabs.at(-1)).toHaveTextContent('Assistant');
     await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Assistant' }),
     );
-    await user.click(await screen.findByRole('button', { name: 'Assistant' }));
+    expect(screen.queryByRole('button', { name: /^Location/ })).not.toBeInTheDocument();
     const question = screen.getByRole('textbox', { name: 'Ask the assistant' });
     await user.type(question, 'Add two socket wrenches');
     await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(await screen.findByText('Socket wrench')).toBeVisible();
     expect(ask).toHaveBeenCalledWith({
       text: 'Add two socket wrenches',
-      context: { kind: 'location', id: locationId },
+      context,
       locale: 'en',
     });
     expect(inventory).toEqual([]);
@@ -1216,6 +1234,17 @@ describe('KeptPhone mobile workflows', () => {
     expect(inventory).toEqual(['add_thing']);
     await user.click(screen.getByRole('button', { name: 'Confirm 1' }));
     await waitFor(() => expect(inventory).toEqual(['add_thing', 'update_thing']));
+    await user.type(question, 'Delete the old record');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(await screen.findByText('Move to Trash')).toBeVisible();
+    expect(inventory).toEqual(['add_thing', 'update_thing']);
+    await user.click(screen.getByRole('button', { name: 'Confirm 1' }));
+    await waitFor(() =>
+      expect(inventory).toEqual(['add_thing', 'update_thing', 'remove_inventory_record']),
+    );
+    await user.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(inventory).toEqual(['add_thing', 'update_thing']));
+    expect(await screen.findByText('Undone')).toBeVisible();
     expect(
       request.mock.calls
         .filter(([, , options]) => options?.method === 'POST')
@@ -1226,7 +1255,61 @@ describe('KeptPhone mobile workflows', () => {
       assistantPaths.proposalsConfirm,
       assistantPaths.threadTurns(thread.id),
       assistantPaths.proposalsConfirm,
+      assistantPaths.threadTurns(thread.id),
+      assistantPaths.proposalsConfirm,
+      inventoryPaths.undo('trash-event'),
     ]);
+  });
+
+  it('keeps the native defaults from More across a relaunch and applies the photo provider', async () => {
+    const origin = 'https://defaults.kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(),
+      serverProposals: vi.fn(),
+    };
+    const user = userEvent.setup();
+    const first = env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
+    );
+    await user.click(await screen.findByRole('button', { name: /Default location/ }));
+    await user.click(await screen.findByRole('option', { name: 'Home' }));
+    await user.click(await screen.findByRole('button', { name: /Default photo AI/ }));
+    await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
+    await waitFor(async () => {
+      expect(await env.adapters.outbox.getValue(connection, 'defaultLocation')).toBe(
+        env.rooms[0]?.locationId,
+      );
+      expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBe('apple');
+    });
+    first.unmount();
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
+    );
+    expect(await screen.findByRole('button', { name: /Default location/ })).toHaveTextContent(
+      'Home',
+    );
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Photo picker is missing');
+    await user.upload(picker, new File(['photo'], 'default.jpg', { type: 'image/jpeg' }));
+    expect(await screen.findByRole('button', { name: /AI provider/ })).toHaveTextContent(
+      'Apple Intelligence',
+    );
   });
 
   it('uses an authorized ChatGPT photo suggestion only when accepted, then skips server suggestions', async () => {

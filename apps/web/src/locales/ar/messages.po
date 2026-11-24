@@ -32905,3 +32905,19 @@ msgstr "هل تريد تحديث {0}؟"
 #: src/native/photo-review.tsx
 msgid "Update existing record"
 msgstr "تحديث السجل الموجود"
+
+#: src/native/main.tsx
+msgid "Automatic"
+msgstr "تلقائي"
+
+#: src/native/main.tsx
+msgid "Could not save settings."
+msgstr "تعذّر حفظ الإعدادات."
+
+#: src/native/main.tsx
+msgid "Default location"
+msgstr "الموقع الافتراضي"
+
+#: src/native/capture-ai.tsx
+msgid "Default photo AI"
+msgstr "الذكاء الاصطناعي الافتراضي للصور"

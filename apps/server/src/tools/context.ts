@@ -80,12 +80,21 @@ export function principalScope(principal: ToolPrincipal): Scope {
     : { userId: principal.userId, mfa: principal.mfa };
 }
 
+const RECORD_WRITES = new Set<ToolName>(['add_thing', 'update_thing', 'remove_inventory_record']);
+
+export function assistantToolAllowed(name: ToolName, recordOnly: boolean): boolean {
+  return recordOnly
+    ? TOOL_DEFS[name].scope === 'read' || RECORD_WRITES.has(name)
+    : name !== 'remove_inventory_record';
+}
+
 /** The tools `principal` may call in a location where they have `role` and `modules` are on. */
 export function toolsIn(
   principal: ToolPrincipal,
   via: ToolVia,
   role: Role,
   modules: ReadonlySet<ModuleId>,
+  recordOnly = false,
 ): ToolName[] {
   if (!modules.has(DOOR_MODULE[via])) return [];
   const out: ToolName[] = [];
@@ -94,7 +103,11 @@ export function toolsIn(
     const handler = handlerOf(name) as Handler<ToolName> | undefined;
     if (!handler) continue;
     // A tool for one door only (the moving tools are MCP's): never offered at the other.
-    if (!def.doors.includes(via)) continue;
+    if (
+      !def.doors.includes(via) ||
+      (via === 'assistant' && !assistantToolAllowed(name, recordOnly))
+    )
+      continue;
     if (def.module && !modules.has(def.module)) continue;
     if (def.scope === 'write' && principal.scope !== 'write') continue;
     if (!can(role, handler.action)) continue;
@@ -153,7 +166,7 @@ export async function reachableAll(
  * step). `locationIds` narrows to those (a thread's candidates); unknown ones are left
  * out. */
 export async function toolsFor(
-  ctx: Pick<ToolContext, 'deps' | 'principal' | 'via'>,
+  ctx: Pick<ToolContext, 'deps' | 'principal' | 'via' | 'recordOnly'>,
   locationIds?: readonly string[],
   also: string | null = null,
 ): Promise<{ location: ReachableLocation; tools: ToolName[] }[]> {
@@ -166,7 +179,7 @@ export async function toolsFor(
       .filter((l) => !wanted || wanted.has(l.id))
       .map((location) => ({
         location,
-        tools: toolsIn(ctx.principal, ctx.via, location.role, location.modules),
+        tools: toolsIn(ctx.principal, ctx.via, location.role, location.modules, ctx.recordOnly),
       }));
   });
 }
@@ -193,10 +206,24 @@ type LocationInput = { location_id?: string | undefined };
 
 /** Runs one tool call for `ctx.principal` and answers its envelope. Never throws for a refusal;
  * an unexpected error is logged and answered as `internal`. */
-export async function runTool(
+export function runTool(ctx: ToolContext, name: string, args: unknown): Promise<Envelope<unknown>> {
+  return executeTool(ctx, name, args, false);
+}
+
+/** Runs a proposal after the confirmation route validates and claims the card. */
+export function runConfirmedProposal(
   ctx: ToolContext,
   name: string,
   args: unknown,
+): Promise<Envelope<unknown>> {
+  return executeTool(ctx, name, args, true);
+}
+
+async function executeTool(
+  ctx: ToolContext,
+  name: string,
+  args: unknown,
+  confirmed: boolean,
 ): Promise<Envelope<unknown>> {
   if (!isToolName(name)) return toolError('tool_unavailable', UNAVAILABLE_HINT);
   const handler = handlerOf(name) as Handler<ToolName> | undefined;
@@ -216,7 +243,7 @@ export async function runTool(
     const scope = principalScope(ctx.principal);
     const also = ctx.threadLocation ?? null;
     const eligible = (l: ReachableLocation): boolean =>
-      toolsIn(ctx.principal, ctx.via, l.role, l.modules).includes(name);
+      toolsIn(ctx.principal, ctx.via, l.role, l.modules, ctx.recordOnly).includes(name);
     // Semantic search's query embedding, before the transaction: no model call runs inside
     // one (D166). Over the asked location, else the ones this tool may run in: the question goes
     // to no provider of a location where the door is off (D113).
@@ -301,12 +328,13 @@ export async function runTool(
         via: ctx.via,
         locale: ctx.locale,
         ifMatch: ctx.ifMatch,
+        recordOnly: ctx.recordOnly === true,
         location,
         locations,
         link: (path) => `${base}${path}`,
         semantic,
       };
-      return handler.run(op, input);
+      return confirmed && handler.confirm ? handler.confirm(op, input) : handler.run(op, input);
     });
     const envelope = ok(result.data, now(), result.nextCursor ?? undefined);
     const opts = result.cursorAt ? { cursorAt: result.cursorAt } : {};

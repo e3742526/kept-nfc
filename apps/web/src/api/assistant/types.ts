@@ -50,7 +50,7 @@ export type ThreadsParams = {
 };
 
 /** `POST /assistant/threads` (201). */
-export type CreateThreadBody = { context?: { kind: ContextKind; id?: string } };
+export type CreateThreadBody = { context?: { kind: ContextKind; id?: string; recordOnly?: true } };
 export type Thread = ThreadSummary & { locale: string; createdAt: string };
 
 /** The turn in flight on a thread, if any (one at a time, 409 `turn_running`). */
@@ -78,7 +78,7 @@ export type ThreadDetail = {
  */
 export type AskBody = {
   text: string;
-  context?: { kind: ContextKind; id?: string };
+  context?: { kind: ContextKind; id?: string; recordOnly?: true };
   locale: string;
 };
 export type AskResult = { turnId: string };

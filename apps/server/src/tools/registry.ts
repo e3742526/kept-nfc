@@ -42,6 +42,7 @@ import {
   logReading,
   markSeenTool,
   moveThing,
+  removeInventoryRecord,
   updateThingTool,
 } from './handlers/write.js';
 import type { Handler, HandlerTable } from './types.js';
@@ -63,6 +64,7 @@ const HANDLERS: HandlerTable = {
   find_documents: findDocuments,
   add_thing: addThing,
   update_thing: updateThingTool,
+  remove_inventory_record: removeInventoryRecord,
   move_thing: moveThing,
   mark_seen: markSeenTool,
   // 1.x: a thing's lifecycle (sold, given away, put away, back in use), MCP only.

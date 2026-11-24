@@ -32905,3 +32905,19 @@ msgstr "Mettre à jour {0} ?"
 #: src/native/photo-review.tsx
 msgid "Update existing record"
 msgstr "Mettre à jour la fiche existante"
+
+#: src/native/main.tsx
+msgid "Automatic"
+msgstr "Automatique"
+
+#: src/native/main.tsx
+msgid "Could not save settings."
+msgstr "Impossible d’enregistrer les paramètres."
+
+#: src/native/main.tsx
+msgid "Default location"
+msgstr "Emplacement par défaut"
+
+#: src/native/capture-ai.tsx
+msgid "Default photo AI"
+msgstr "IA par défaut pour les photos"

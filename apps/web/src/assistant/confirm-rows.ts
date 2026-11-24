@@ -110,6 +110,7 @@ export type Verb =
   | 'move'
   | 'add'
   | 'change'
+  | 'trash'
   | 'seen'
   | 'newPlace'
   | 'attach'
@@ -327,6 +328,9 @@ export function rowsOf(p: Proposal): CardRow[] {
         },
       ];
     }
+    case 'remove_inventory_record':
+      push('from', pathOf(b.container_id ?? b.place_id));
+      return [{ ...base, verb: 'trash', target: target(a.thing_id), fields }];
     case 'update_thing': {
       const f = rec(a.fields);
       const was = (k: string): Val | undefined => {
