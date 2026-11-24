@@ -32730,3 +32730,178 @@ msgstr "Các danh mục hiện có với tên tương tự gồm {near}."
 
 msgid "Suggest categories"
 msgstr "Đề xuất danh mục"
+
+#. placeholder {0}: existing.name
+#: src/native/category-editor.tsx
+msgid "A category named {0} already exists."
+msgstr "Đã có danh mục tên {0}."
+
+#: src/native/record-history.tsx
+msgid "Added {count} entries from photo review"
+msgstr "Đã thêm {count} mục sau khi xem lại ảnh"
+
+#. placeholder {0}: row.estimatedQuantity
+#: src/native/photo-review.tsx
+msgid "AI estimate: {0}"
+msgstr "Ước tính của AI: {0}"
+
+#: src/native/photo-review.tsx
+msgid "Attach photos only"
+msgstr "Chỉ đính kèm ảnh"
+
+#: src/native/category-editor.tsx
+msgid "Automotive"
+msgstr "Đồ dùng ô tô"
+
+#: src/native/category-editor.tsx
+msgid "Books"
+msgstr "Sách"
+
+#: src/native/category-editor.tsx
+msgid "Camping and outdoors"
+msgstr "Cắm trại và dã ngoại"
+
+#: src/native/capture-ai.tsx
+msgid "Cancel suggestions"
+msgstr "Hủy đề xuất"
+
+#: src/native/category-picker.tsx
+msgid "Category"
+msgstr "Danh mục"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives copies of the photos you ask it to analyze and uses your plan allowance."
+msgstr "ChatGPT nhận bản sao những ảnh bạn yêu cầu phân tích và sử dụng hạn mức gói của bạn."
+
+#: src/native/category-editor.tsx
+msgid "Clothes"
+msgstr "Quần áo"
+
+#: src/native/photo-review.tsx
+msgid "Combine selected"
+msgstr "Gộp các mục đã chọn"
+
+#: src/native/category-editor.tsx
+msgid "Craft supplies"
+msgstr "Vật liệu thủ công"
+
+#: src/native/photo-review.tsx
+msgid "Create a new entry"
+msgstr "Tạo mục mới"
+
+#: src/native/category-editor.tsx
+msgid "Decorations"
+msgstr "Đồ trang trí"
+
+#: src/native/photo-review.tsx
+msgid "Description (optional)"
+msgstr "Mô tả (không bắt buộc)"
+
+#: src/native/category-editor.tsx
+msgid "Electrical"
+msgstr "Đồ điện"
+
+#: src/native/category-editor.tsx
+msgid "Hardware"
+msgstr "Kim khí"
+
+#: src/native/category-editor.tsx
+msgid "Household supplies"
+msgstr "Đồ dùng gia đình"
+
+#: src/native/browse.tsx
+msgid "Last recorded activity"
+msgstr "Hoạt động được ghi nhận gần nhất"
+
+#. placeholder {0}: new Date(row.lastSeenAt).toLocaleString()
+#: src/native/record.tsx
+msgid "Last recorded activity: {0}"
+msgstr "Hoạt động được ghi nhận gần nhất: {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open original photo {0}"
+msgstr "Mở ảnh gốc {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open supporting photo {0}"
+msgstr "Mở ảnh minh chứng {0}"
+
+#: src/native/record-history.tsx
+msgid "Photo added. No inventory or location changes recorded."
+msgstr "Đã thêm ảnh. Chưa ghi nhận thay đổi nào về kho đồ hoặc vị trí."
+
+#: src/native/category-editor.tsx
+msgid "Pictures and artwork"
+msgstr "Ảnh và tác phẩm nghệ thuật"
+
+#: src/native/photo-review.tsx
+msgid "Possible matches in this destination"
+msgstr "Các mục có thể trùng ở vị trí này"
+
+#: src/native/category-picker.tsx
+msgid "Recently used"
+msgstr "Dùng gần đây"
+
+#: src/native/record-history.tsx
+msgid "Recorded {count} entries from photo review"
+msgstr "Đã ghi nhận {count} mục sau khi xem lại ảnh"
+
+#: src/native/category-picker.tsx
+msgid "Remove category {name}"
+msgstr "Gỡ danh mục {name}"
+
+#: src/native/photo-review.tsx
+msgid "Remove proposal"
+msgstr "Bỏ đề xuất"
+
+#. placeholder {0}: row.name
+#: src/native/photo-review.tsx
+msgid "Remove proposal {0}"
+msgstr "Bỏ đề xuất {0}"
+
+#: src/native/photo-review.tsx
+msgid "Review update"
+msgstr "Xem lại thay đổi"
+
+#: src/native/photo-review.tsx
+msgid "Save review for later"
+msgstr "Lưu để xem lại sau"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded."
+msgstr "Khi lưu, tên và mô tả bạn nhập sẽ được cập nhật, đồng thời các danh mục đã chọn sẽ được thêm. Số lượng và vị trí đã ghi vẫn giữ nguyên."
+
+#: src/native/category-editor.tsx
+msgid "Seasonal items"
+msgstr "Đồ dùng theo mùa"
+
+#: src/native/photo-review.tsx
+msgid "Select each existing record only once."
+msgstr "Chỉ chọn mỗi mục hiện có một lần."
+
+#: src/native/category-editor.tsx
+msgid "Shoes"
+msgstr "Giày dép"
+
+#: src/native/category-picker.tsx
+msgid "Showing cached categories"
+msgstr "Đang hiển thị danh mục đã lưu trên thiết bị"
+
+#: src/native/category-editor.tsx
+msgid "Spare parts"
+msgstr "Phụ tùng"
+
+#: src/native/category-editor.tsx
+msgid "Toys and games"
+msgstr "Đồ chơi và trò chơi"
+
+#. placeholder {0}: thing.name ?? t`Item`
+#: src/native/photo-review.tsx
+msgid "Update {0}?"
+msgstr "Cập nhật {0}?"
+
+#: src/native/photo-review.tsx
+msgid "Update existing record"
+msgstr "Cập nhật mục hiện có"

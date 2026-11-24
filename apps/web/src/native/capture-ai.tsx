@@ -1,4 +1,9 @@
-import { type DevicePhotoProposal, DevicePhotoProposals, normalize } from '@kept/shared';
+import {
+  DEVICE_PHOTO_PROPOSAL_LIMIT,
+  type DevicePhotoProposal,
+  DevicePhotoProposals,
+  normalize,
+} from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-aria-components';
@@ -12,6 +17,34 @@ import {
   type Connection,
   nativeErrorCode,
 } from './bridge';
+
+export type PhotoSuggestion = DevicePhotoProposal & { evidence?: number[] };
+
+export function mergePhotoSuggestions(photos: readonly DevicePhotoProposal[][]): PhotoSuggestion[] {
+  const merged = new Map<string, PhotoSuggestion>();
+  for (const [index, items] of photos.entries()) {
+    for (const item of items) {
+      const key = normalize(item.name);
+      const previous = merged.get(key);
+      if (!previous) {
+        if (merged.size < DEVICE_PHOTO_PROPOSAL_LIMIT)
+          merged.set(key, { ...item, evidence: [index] });
+        continue;
+      }
+      const categories = new Map(
+        [...(previous.categories ?? []), ...(item.categories ?? [])].map((name) => [
+          normalize(name),
+          name,
+        ]),
+      );
+      previous.categories = [...categories.values()].slice(0, 4);
+      if (previous.quantity !== item.quantity) previous.quantity = null;
+      previous.description ??= item.description;
+      if (!previous.evidence?.includes(index)) previous.evidence?.push(index);
+    }
+  }
+  return [...merged.values()];
+}
 
 function useCaptureAI(connection: Connection) {
   const { captureAI, lifecycle } = usePlatform();
@@ -162,8 +195,9 @@ export function CaptureAISettings({ connection }: { connection: Connection }) {
 
 export function CaptureSuggestion({
   connection,
-  file,
+  files,
   locationId,
+  online,
   provider,
   onProviderChange,
   onUse,
@@ -172,13 +206,14 @@ export function CaptureSuggestion({
   disabled,
 }: {
   connection: Connection;
-  file: File;
+  files: readonly File[];
   locationId?: string;
+  online: boolean;
   provider: CaptureAIProvider;
   onProviderChange: (provider: CaptureAIProvider) => void;
   onUse: (name: string) => void;
-  onProposals?: (items: DevicePhotoProposal[]) => Promise<void>;
-  onCategories?: (items: DevicePhotoProposal[]) => Promise<void>;
+  onProposals?: (items: PhotoSuggestion[]) => Promise<void>;
+  onCategories?: (items: PhotoSuggestion[]) => Promise<void>;
   disabled: boolean;
 }) {
   const { t } = useLingui();
@@ -189,17 +224,17 @@ export function CaptureSuggestion({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [suggestion, setSuggestion] = useState('');
-  const active = useRef(true);
+  const generation = useRef(0);
   const reviewCallbacks = useRef({ items: onProposals, categories: onCategories });
   useLayoutEffect(() => {
     reviewCallbacks.current = { items: onProposals, categories: onCategories };
   }, [onProposals, onCategories]);
-  useEffect(() => {
-    active.current = true;
-    return () => {
-      active.current = false;
-    };
-  }, []);
+  useEffect(
+    () => () => {
+      generation.current += 1;
+    },
+    [],
+  );
   const providers: { id: CaptureAIProvider; name: string }[] = [
     { id: 'server', name: t`Server API` },
     { id: 'apple', name: t`Apple Intelligence` },
@@ -229,40 +264,37 @@ export function CaptureSuggestion({
   }, [captureAI, connection, provider, status, t]);
 
   async function suggest(review?: 'items' | 'categories') {
-    if (!captureAI || busy) return;
+    if (!captureAI || busy || !files[0]) return;
+    const run = ++generation.current;
+    const current = () => generation.current === run;
     setBusy(true);
     setSuggestion('');
     setMessage('');
     try {
       const modelId = provider === 'chatgpt' ? model : undefined;
-      if (review) {
+      if (!review && provider !== 'server') {
+        const { name } = await captureAI.suggest(connection, provider, files[0], modelId);
+        if (current()) setSuggestion(name);
+        return;
+      }
+      const results: DevicePhotoProposal[][] = [];
+      for (const file of review ? files : [files[0]]) {
         let value: unknown;
         if (provider === 'server') {
           if (!locationId || !captureAI.serverProposals) return;
           value = await captureAI.serverProposals(connection, locationId, file);
         } else {
           const { name } = await captureAI.suggest(connection, provider, file, modelId, true);
-          const raw = name.replace(/^\s*\x60{3}(?:json)?\s*|\s*\x60{3}\s*$/gi, '');
-          value = JSON.parse(raw);
+          value = JSON.parse(name.replace(/^\s*\x60{3}(?:json)?\s*|\s*\x60{3}\s*$/gi, ''));
         }
-        const { items } = DevicePhotoProposals.parse(value);
-        if (!active.current) return;
-        const seen = new Set<string>();
-        await reviewCallbacks.current[review]?.(
-          items.filter((item) => {
-            const key = normalize(item.name);
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          }),
-        );
-      } else if (provider !== 'server') {
-        const { name } = await captureAI.suggest(connection, provider, file, modelId);
-        if (active.current) setSuggestion(name);
+        if (!current()) return;
+        results.push(DevicePhotoProposals.parse(value).items);
       }
+      if (review) await reviewCallbacks.current[review]?.(mergePhotoSuggestions(results));
+      else if (results[0]?.[0]) setSuggestion(results[0][0].name);
     } catch (error) {
       const code = nativeErrorCode(error);
-      if (!active.current) return;
+      if (!current()) return;
       setMessage(
         code === 'quota'
           ? t`Your ChatGPT plan reached a usage limit.`
@@ -277,7 +309,7 @@ export function CaptureSuggestion({
                   : t`Could not suggest a description from this photo.`,
       );
     } finally {
-      if (active.current) setBusy(false);
+      if (current()) setBusy(false);
     }
   }
 
@@ -294,9 +326,10 @@ export function CaptureSuggestion({
   const canSuggest =
     provider === 'apple'
       ? status.apple === 'available'
-      : provider === 'chatgpt' && models.some(({ id }) => id === model);
-  const canReview =
-    canSuggest || (provider === 'server' && !!locationId && !!captureAI.serverProposals);
+      : online &&
+        (provider === 'chatgpt'
+          ? models.some(({ id }) => id === model)
+          : !!locationId && !!captureAI.serverProposals);
 
   return (
     <div className="kept-card">
@@ -325,7 +358,10 @@ export function CaptureSuggestion({
       {provider === 'chatgpt' && (
         <>
           <p className="text-small text-ink-2">
-            <Trans>ChatGPT receives a copy of this photo and uses your plan allowance.</Trans>
+            <Trans>
+              ChatGPT receives copies of the photos you ask it to analyze and uses your plan
+              allowance.
+            </Trans>
           </p>
           {(!status.chatGPT || message) && (
             <ChatGPTConnection
@@ -369,7 +405,7 @@ export function CaptureSuggestion({
           <Trans>Suggest description</Trans>
         </Button>
       )}
-      {canReview && onProposals && (
+      {canSuggest && onProposals && (
         <Button
           variant="secondary"
           isPending={busy}
@@ -379,7 +415,7 @@ export function CaptureSuggestion({
           <Trans>Suggest items</Trans>
         </Button>
       )}
-      {canReview && onCategories && (
+      {canSuggest && onCategories && (
         <Button
           variant="secondary"
           isPending={busy}
@@ -387,6 +423,17 @@ export function CaptureSuggestion({
           onPress={() => void suggest('categories')}
         >
           <Trans>Suggest categories</Trans>
+        </Button>
+      )}
+      {busy && (
+        <Button
+          variant="ghost"
+          onPress={() => {
+            generation.current += 1;
+            setBusy(false);
+          }}
+        >
+          <Trans>Cancel suggestions</Trans>
         </Button>
       )}
       {suggestion && (

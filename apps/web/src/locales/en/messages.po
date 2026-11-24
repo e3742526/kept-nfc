@@ -32730,3 +32730,178 @@ msgstr "Existing categories with similar names include {near}."
 
 msgid "Suggest categories"
 msgstr "Suggest categories"
+
+#. placeholder {0}: existing.name
+#: src/native/category-editor.tsx
+msgid "A category named {0} already exists."
+msgstr "A category named {0} already exists."
+
+#: src/native/record-history.tsx
+msgid "Added {count} entries from photo review"
+msgstr "Added {count} entries from photo review"
+
+#. placeholder {0}: row.estimatedQuantity
+#: src/native/photo-review.tsx
+msgid "AI estimate: {0}"
+msgstr "AI estimate: {0}"
+
+#: src/native/photo-review.tsx
+msgid "Attach photos only"
+msgstr "Attach photos only"
+
+#: src/native/category-editor.tsx
+msgid "Automotive"
+msgstr "Automotive"
+
+#: src/native/category-editor.tsx
+msgid "Books"
+msgstr "Books"
+
+#: src/native/category-editor.tsx
+msgid "Camping and outdoors"
+msgstr "Camping and outdoors"
+
+#: src/native/capture-ai.tsx
+msgid "Cancel suggestions"
+msgstr "Cancel suggestions"
+
+#: src/native/category-picker.tsx
+msgid "Category"
+msgstr "Category"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives copies of the photos you ask it to analyze and uses your plan allowance."
+msgstr "ChatGPT receives copies of the photos you ask it to analyze and uses your plan allowance."
+
+#: src/native/category-editor.tsx
+msgid "Clothes"
+msgstr "Clothes"
+
+#: src/native/photo-review.tsx
+msgid "Combine selected"
+msgstr "Combine selected"
+
+#: src/native/category-editor.tsx
+msgid "Craft supplies"
+msgstr "Craft supplies"
+
+#: src/native/photo-review.tsx
+msgid "Create a new entry"
+msgstr "Create a new entry"
+
+#: src/native/category-editor.tsx
+msgid "Decorations"
+msgstr "Decorations"
+
+#: src/native/photo-review.tsx
+msgid "Description (optional)"
+msgstr "Description (optional)"
+
+#: src/native/category-editor.tsx
+msgid "Electrical"
+msgstr "Electrical"
+
+#: src/native/category-editor.tsx
+msgid "Hardware"
+msgstr "Hardware"
+
+#: src/native/category-editor.tsx
+msgid "Household supplies"
+msgstr "Household supplies"
+
+#: src/native/browse.tsx
+msgid "Last recorded activity"
+msgstr "Last recorded activity"
+
+#. placeholder {0}: new Date(row.lastSeenAt).toLocaleString()
+#: src/native/record.tsx
+msgid "Last recorded activity: {0}"
+msgstr "Last recorded activity: {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open original photo {0}"
+msgstr "Open original photo {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open supporting photo {0}"
+msgstr "Open supporting photo {0}"
+
+#: src/native/record-history.tsx
+msgid "Photo added. No inventory or location changes recorded."
+msgstr "Photo added. No inventory or location changes recorded."
+
+#: src/native/category-editor.tsx
+msgid "Pictures and artwork"
+msgstr "Pictures and artwork"
+
+#: src/native/photo-review.tsx
+msgid "Possible matches in this destination"
+msgstr "Possible matches in this destination"
+
+#: src/native/category-picker.tsx
+msgid "Recently used"
+msgstr "Recently used"
+
+#: src/native/record-history.tsx
+msgid "Recorded {count} entries from photo review"
+msgstr "Recorded {count} entries from photo review"
+
+#: src/native/category-picker.tsx
+msgid "Remove category {name}"
+msgstr "Remove category {name}"
+
+#: src/native/photo-review.tsx
+msgid "Remove proposal"
+msgstr "Remove proposal"
+
+#. placeholder {0}: row.name
+#: src/native/photo-review.tsx
+msgid "Remove proposal {0}"
+msgstr "Remove proposal {0}"
+
+#: src/native/photo-review.tsx
+msgid "Review update"
+msgstr "Review update"
+
+#: src/native/photo-review.tsx
+msgid "Save review for later"
+msgstr "Save review for later"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded."
+msgstr "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded."
+
+#: src/native/category-editor.tsx
+msgid "Seasonal items"
+msgstr "Seasonal items"
+
+#: src/native/photo-review.tsx
+msgid "Select each existing record only once."
+msgstr "Select each existing record only once."
+
+#: src/native/category-editor.tsx
+msgid "Shoes"
+msgstr "Shoes"
+
+#: src/native/category-picker.tsx
+msgid "Showing cached categories"
+msgstr "Showing cached categories"
+
+#: src/native/category-editor.tsx
+msgid "Spare parts"
+msgstr "Spare parts"
+
+#: src/native/category-editor.tsx
+msgid "Toys and games"
+msgstr "Toys and games"
+
+#. placeholder {0}: thing.name ?? t`Item`
+#: src/native/photo-review.tsx
+msgid "Update {0}?"
+msgstr "Update {0}?"
+
+#: src/native/photo-review.tsx
+msgid "Update existing record"
+msgstr "Update existing record"

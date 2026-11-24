@@ -7,6 +7,7 @@ import type { AskBody, ConfirmBody, Proposal } from '@/api/assistant/types';
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
+import type { Tag } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import * as cameraSession from '@/camera/session';
 import { ConfirmProvider } from '@/components/ui/confirm';
@@ -31,6 +32,7 @@ beforeAll(async () => {
 type FakeEnvOptions = {
   initialConnection?: Connection | null;
   cabinLocation?: boolean;
+  tags?: Tag[];
 };
 
 function createFakeEnvironment(opts: FakeEnvOptions = {}) {
@@ -271,6 +273,10 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           if (meOverride) return meOverride(_conn) as T;
           return { id: 'ibrahim', email: 'ibrahim@kept.test' } as T;
         }
+        if (path === inventoryPaths.thingsTags) return { changed: [], events: [] } as T;
+        if (path.startsWith(inventoryPaths.accountRegistry('acc-1', 'tags'))) {
+          return { items: opts.tags ?? [], next_cursor: null } as T;
+        }
         if (path.startsWith(capturePaths.syncSnapshot)) {
           return {
             asOf: '2026-11-22T20:00:00Z',
@@ -296,6 +302,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                   ]
                 : []),
             ],
+            tags: { items: (opts.tags ?? []).map((tag) => ({ ...tag, accountId: 'acc-1' })) },
             types: {
               items: [{ id: 'type-box', builtinKey: 'box_bin', name: 'Box', isContainer: true }],
             },
@@ -529,6 +536,23 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                   captured_at: { after: '2026-11-22T19:30:00Z', before: null, class: 'plain' },
                 },
               },
+              ...['Cordless drill', 'Extension cords'].map((name) => ({
+                id: `review-${name}`,
+                at: '2026-11-22T19:59:00Z',
+                location_id: locId,
+                entity: { type: 'thing', id: `fixture-${name}` },
+                actor: { displayName: 'Ibrahim' },
+                action: 'thing.capture',
+                summaryKey: 'thing.capture.recorded',
+                summaryParams: { name },
+                diff: {
+                  capture_intent: { before: null, after: 'record', class: 'plain' },
+                  batch_id: { before: null, after: 'one-review', class: 'plain' },
+                  file_ids: { before: null, after: ['shared-photo'], class: 'plain' },
+                  container_id: { before: null, after: boxId, class: 'plain' },
+                  last_seen_at: { before: null, after: '2026-11-22T19:30:00Z', class: 'plain' },
+                },
+              })),
               {
                 id: 'history-trash',
                 at: '2026-11-22T19:58:00Z',
@@ -878,9 +902,19 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
 }
 
 describe('KeptPhone mobile workflows', () => {
-  it('resumes a saved photo review and syncs only selected entries with one original', async () => {
+  it('resumes a two-photo review and syncs only selected entries with shared originals', async () => {
     const origin = 'https://kept.example.com';
+    const category = (id: string, name: string): Tag => ({
+      id,
+      name,
+      ownerAccountId: 'acc-1',
+      rowVersion: 1,
+      colour: null,
+    });
+    const tools = category('tools', 'Tools');
+    const electrical = category('electrical', 'Electrical');
     const env = createFakeEnvironment({
+      tags: [tools, electrical],
       initialConnection: {
         id: `${origin}|ibrahim|epoch-1`,
         origin,
@@ -893,13 +927,16 @@ describe('KeptPhone mobile workflows', () => {
       connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
       disconnect: vi.fn(async () => ({ revoked: true })),
       models: vi.fn(async () => []),
-      suggest: vi.fn(async () => ({
+      suggest: vi.fn(async (_connection, _provider, file) => ({
         name: JSON.stringify({
-          items: [
-            { name: 'Drill', quantity: 2, categories: ['Tools'] },
-            { name: 'Tape measure' },
-            { name: 'False positive' },
-          ],
+          items:
+            file.name === 'second.jpg'
+              ? [{ name: 'drill', quantity: 3 }, { name: 'Extension cord' }]
+              : [
+                  { name: 'Drill', quantity: 2, categories: ['Tools'] },
+                  { name: 'Tape measure' },
+                  { name: 'False positive' },
+                ],
         }),
       })),
     };
@@ -914,19 +951,34 @@ describe('KeptPhone mobile workflows', () => {
       'input[type=file][accept="image/*"][multiple]',
     );
     if (!picker) throw new Error('Photo input is missing');
-    await user.upload(
-      picker,
+    await user.upload(picker, [
       new File([new Uint8Array([1, 2, 3])], 'review.jpg', { type: 'image/jpeg' }),
-    );
+      new File([new Uint8Array([4, 5, 6])], 'second.jpg', { type: 'image/jpeg' }),
+    ]);
     await user.click(await screen.findByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
     await user.click(screen.getByRole('button', { name: 'Suggest items' }));
-    const drill = (await screen.findAllByRole('textbox', { name: 'Description' }))[0];
+    const names = await screen.findAllByRole('textbox', { name: 'Name' });
+    expect(names).toHaveLength(4);
+    const drill = names[0];
     if (!drill) throw new Error('Missing suggestion');
+    const firstRow = drill.closest('.kept-card');
+    if (!(firstRow instanceof HTMLElement)) throw new Error('Missing proposal card');
+    await user.click(within(firstRow).getByRole('button', { name: 'Tools' }));
+    await user.click(within(firstRow).getByText('Categories', { selector: 'summary' }));
+    await user.type(
+      await within(firstRow).findByRole('textbox', { name: 'Search categories' }),
+      'elec',
+    );
+    await user.click(within(firstRow).getByRole('checkbox', { name: 'Electrical' }));
     await user.clear(drill);
     await user.type(drill, 'Cordless drill');
     await user.click(screen.getByRole('checkbox', { name: /False positive/ }));
-    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Add entry' }));
+    const manual = screen.getAllByRole('textbox', { name: 'Name' }).at(-1);
+    if (!manual) throw new Error('Missing manual row');
+    await user.type(manual, 'Christmas lights');
+    await user.click(screen.getByRole('button', { name: 'Save review for later' }));
     await screen.findByRole('button', { name: /^Review$/ });
     expect(request.mock.calls.filter(([, path]) => path === capturePaths.syncOps)).toEqual([]);
     expect(upload).not.toHaveBeenCalled();
@@ -939,21 +991,98 @@ describe('KeptPhone mobile workflows', () => {
     await waitFor(() =>
       expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(true),
     );
-    expect(upload).toHaveBeenCalledTimes(1);
+    expect(upload).toHaveBeenCalledTimes(2);
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        expect.anything(),
+        inventoryPaths.thingsTags,
+        expect.objectContaining({
+          body: expect.objectContaining({ add: [tools.id, electrical.id] }),
+        }),
+      ),
+    );
     const sent = request.mock.calls.find(([, path]) => path === capturePaths.syncOps)?.[2]?.body;
     expect(sent).toMatchObject({
       ops: [
         {
           payloadVersion: 4,
-          payload: { name: 'Cordless drill', quantity: '2', skipServerSuggestions: true },
+          payload: {
+            name: 'Cordless drill',
+            quantity: undefined,
+            captureIntent: 'record',
+            skipServerSuggestions: true,
+          },
         },
         { payloadVersion: 4, payload: { name: 'Tape measure', skipServerSuggestions: true } },
+        { payloadVersion: 4, payload: { name: 'Extension cord', skipServerSuggestions: true } },
+        { payloadVersion: 4, payload: { name: 'Christmas lights', skipServerSuggestions: true } },
       ],
     });
   });
 
+  it('keeps manual photo capture usable after empty, malformed and cancelled proposals', async () => {
+    const origin = 'https://workshop.kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    let resolveLate: (proposal: unknown) => void = () => {};
+    const late = new Promise((resolve) => {
+      resolveLate = resolve;
+    });
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'unsupported' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({ name: '' })),
+      serverProposals: vi
+        .fn()
+        .mockResolvedValueOnce({ items: [] })
+        .mockResolvedValueOnce({ items: [{ name: false }] })
+        .mockReturnValueOnce(late),
+    };
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+    );
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Photo picker is missing');
+    await user.upload(picker, new File(['photo'], 'manual.jpg', { type: 'image/jpeg' }));
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
+      expect(await screen.findByText('Could not suggest items from this photo.')).toBeVisible();
+    }
+    await user.click(screen.getByRole('button', { name: 'Suggest items' }));
+    await user.click(await screen.findByRole('button', { name: 'Cancel suggestions' }));
+    await act(async () => resolveLate({ items: [{ name: 'Late drill' }] }));
+    expect(screen.queryByDisplayValue('Late drill')).toBeNull();
+    expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(false);
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Manual tools');
+    await user.click(screen.getByRole('button', { name: /^Save (capture|to box)$/ }));
+    await waitFor(() => {
+      const sync = request.mock.calls.find(([, path]) => path === capturePaths.syncOps);
+      expect(sync?.[2]?.body).toMatchObject({
+        ops: [
+          {
+            payloadVersion: 4,
+            payload: { name: 'Manual tools', captureIntent: 'record', skipServerSuggestions: true },
+          },
+        ],
+      });
+    });
+  });
+
   it('offers optional categories for one broad description without replacing it', async () => {
-    const origin = 'https://kept.example.com';
+    const origin = 'https://holiday.kept.example.com';
     const env = createFakeEnvironment({
       initialConnection: {
         id: `${origin}|ibrahim|epoch-1`,
@@ -991,7 +1120,7 @@ describe('KeptPhone mobile workflows', () => {
     );
     await user.click(await screen.findByRole('button', { name: 'Suggest categories' }));
     expect(await screen.findByDisplayValue('Holiday supplies')).toBeVisible();
-    expect(screen.getAllByRole('textbox', { name: 'Description' })).toHaveLength(1);
+    expect(screen.getAllByRole('textbox', { name: 'Name' })).toHaveLength(1);
     expect(screen.getByRole('button', { name: 'Create Electrical' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Create Decorations' })).toBeVisible();
   });
@@ -1277,7 +1406,7 @@ describe('KeptPhone mobile workflows', () => {
     // The picker stays open until Done, so choosing a location never files the item by accident.
     expect(screen.getByRole('button', { name: /Room or box/ })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Done' }));
-    expect(screen.getByText('Attic')).toBeInTheDocument();
+    expect(screen.getByText('Home › Attic')).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Winter gloves');
     await user.click(screen.getByRole('button', { name: 'Save capture' }));
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
@@ -1342,16 +1471,21 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByText(/Last known location/)).toHaveTextContent('Home › Garage');
     await user.click(screen.getByRole('button', { name: 'View history' }));
     expect(
-      await screen.findByText('Photo added to the record. Inventory unchanged.'),
+      await screen.findByText('Photo added. No inventory or location changes recorded.'),
     ).toBeInTheDocument();
     expect(screen.getByText(/Record for .*Spare Box.* moved to Trash/)).toBeInTheDocument();
     const photoEvent = screen
-      .getByText('Photo added to the record. Inventory unchanged.')
+      .getByText('Photo added. No inventory or location changes recorded.')
       .closest('li');
     expect(photoEvent?.querySelector('time')?.dateTime).toBe('2026-11-22T20:00:00Z');
     expect(photoEvent?.querySelectorAll('time')[1]?.dateTime).toBe('2026-11-22T19:30:00Z');
     expect(photoEvent).toHaveTextContent('Recorded at');
     expect(photoEvent).toHaveTextContent('Saved on device');
+    const group = screen.getByText('Recorded 2 entries from photo review');
+    await user.click(group);
+    expect(screen.getByText(/Recorded .*Cordless drill.* in .*Holiday bin/)).toBeVisible();
+    expect(screen.getByText(/Recorded .*Extension cords.* in .*Holiday bin/)).toBeVisible();
+    expect(screen.queryByText('Observed at')).not.toBeInTheDocument();
   });
 
   it('keeps the address and allows retry after the browser sign-in sheet is cancelled', async () => {

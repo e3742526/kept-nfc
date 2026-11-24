@@ -605,12 +605,14 @@ export function Inventory({
       switch (reason) {
         case 'target_trashed':
         case 'target_missing':
-          return fields.boxId
+          return fields.boxId && !fields.review
             ? t`The destination box is missing or in Trash. Move this capture to another box or discard it.`
             : t`Could not sync this capture automatically. Retry or review it.`;
         case 'not_permitted':
         case 'location_revoked':
           return t`You no longer have write permission in that box’s location.`;
+        case 'precondition_failed':
+          return t`This record changed while you were editing. Close and reopen it to see the latest version.`;
         case 'unsupported_media_type':
           return t`An attached file format is not supported by SheepKeep.`;
         case 'payload_too_large':
@@ -1030,7 +1032,8 @@ export function Inventory({
                   {fields.review?.accepted && (
                     <p className="m-0 text-small">
                       <Trans>Synced</Trans> {fields.review.verified?.length ?? 0}/
-                      {fields.review.entries.filter((row) => row.include).length}
+                      {fields.review.entries.filter((row) => row.include).length +
+                        (fields.binEvidenceId ? 1 : 0)}
                     </p>
                   )}
                   {entry.failure && (
@@ -1578,6 +1581,7 @@ export function Inventory({
           pending={pending}
           completions={completions}
           syncing={working}
+          online={online}
           leaveRef={canLeaveCapture}
           onClose={() => (screen.back ? open(screen.back) : goBack())}
           onSave={savedLocally}

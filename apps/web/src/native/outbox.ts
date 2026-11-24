@@ -24,6 +24,13 @@ export type ReviewEntry = {
   tagRequestId: string;
   name: string;
   quantity: string;
+  note?: string;
+  estimatedQuantity?: number;
+  evidence?: number[];
+  existing?: {
+    id: string;
+    update?: { key: string; rowVersion: number; name: string; note: string | null };
+  };
   include: boolean;
   categories: string[];
   tags: string[];
@@ -46,6 +53,8 @@ export type DraftFields = {
   quantity?: string;
   batchId?: string;
   review?: PhotoReviewDraft;
+  tags?: string[];
+  binEvidenceId?: string;
 };
 type StoredFields = DraftFields & {
   version: number;
@@ -64,6 +73,7 @@ export const ACTION_REQUIRED_FAILURES = new Set([
   'location_revoked',
   'unsupported_media_type',
   'idempotency_mismatch',
+  'precondition_failed',
   'validation',
   'payload_too_large',
   'checksum_mismatch',
@@ -274,6 +284,37 @@ export async function replayCapture(
       ? NATIVE_INVENTORY_PAYLOAD_VERSION
       : NATIVE_CAPTURE_PAYLOAD_VERSION;
   await ensureCaptureCompatible(connection, adapters, required);
+  const verified = new Set(fields.review?.verified);
+  const entries = reviewed ?? [
+    {
+      id: capture.id,
+      tagRequestId: capture.id,
+      name: fields.name,
+      quantity: fields.quantity,
+      note: fields.note,
+      tags: fields.tags ?? [],
+      existing: fields.attachToThingId ? { id: fields.attachToThingId } : undefined,
+    },
+  ];
+  const work = [
+    ...entries,
+    ...(fields.binEvidenceId && fields.boxId
+      ? [
+          {
+            id: fields.binEvidenceId,
+            tagRequestId: fields.binEvidenceId,
+            name: '',
+            quantity: undefined,
+            tags: [],
+            existing: { id: fields.boxId },
+          },
+        ]
+      : []),
+  ].filter(({ id }) => !verified.has(id));
+  if (!work.length) {
+    await adapters.outbox.complete(connection, capture.id);
+    return;
+  }
   const uploadedFiles: { fileId: string; role: 'photo' | 'document'; sha256: string }[] = [];
 
   for (const { file, sha256 } of capture.files) {
@@ -286,16 +327,15 @@ export async function replayCapture(
     if (uploaded.sha256 !== sha256 || uploaded.bytes !== file.bytes) {
       throw new ReplayError('checksum_mismatch');
     }
-    // On a per-location dedupe hit (`deduplicatedFrom`), `uploaded.id` is the canonical server file id.
+    // A per-location dedupe hit returns the canonical server file id.
     if (!uploadedFiles.some((entry) => entry.fileId === uploaded.id && entry.role === file.role)) {
       uploadedFiles.push({ fileId: uploaded.id, role: file.role, sha256 });
     }
   }
 
-  const entries = reviewed ?? [{ id: capture.id, name: fields.name, quantity: fields.quantity }];
-  const ops = entries.map((entry) => ({
+  const ops = work.map((entry) => ({
     clientVersion: KEPT_VERSION,
-    payloadVersion: fields.attachToThingId ? PAYLOAD_VERSION : required,
+    payloadVersion: entry.existing ? PAYLOAD_VERSION : required,
     clientId: entry.id,
     idempotencyKey: reviewed ? entry.id : (fields.attemptId ?? entry.id),
     op: 'create_thing' as const,
@@ -310,14 +350,14 @@ export async function replayCapture(
           ? { placeId: fields.placeId }
           : { unplaced: true },
       mode: 'thing',
-      ...(fields.attachToThingId
-        ? { attachToThingId: fields.attachToThingId }
+      ...(entry.existing
+        ? { attachToThingId: entry.existing.id }
         : {
             reviewSuggestions: true,
             captureIntent: fields.captureIntent,
             skipServerSuggestions: fields.skipServerSuggestions,
             name: entry.name,
-            note: fields.note,
+            note: ('note' in entry ? entry.note : fields.note)?.trim() || undefined,
             quantity: entry.quantity || undefined,
           }),
       files: uploadedFiles,
@@ -328,28 +368,49 @@ export async function replayCapture(
     capturePaths.syncOps,
     { method: 'POST', body: { clientVersion: KEPT_VERSION, ops } },
   );
-  const verified = new Set(fields.review?.verified);
   let failed: string | undefined;
-  for (const op of ops) {
-    const subject = fields.attachToThingId ?? op.clientId;
-    const result = response.results.find((entry) => entry.clientId === op.clientId);
+  for (const entry of work) {
+    const subject = entry.existing?.id ?? entry.id;
+    const result = response.results.find(({ clientId }) => clientId === entry.id);
     if (
       result?.outcome !== 'applied' ||
-      result.idempotencyKey !== op.idempotencyKey ||
+      result.idempotencyKey !== (reviewed ? entry.id : (fields.attemptId ?? entry.id)) ||
       result.entity?.type !== 'thing' ||
       result.entity?.id !== subject
     ) {
       failed ??= result?.reason ?? 'needs_review';
       continue;
     }
-    if (verified.has(op.clientId)) continue;
-    const entry = reviewed?.find(({ id }) => id === op.clientId);
-    if (entry?.tags.length) {
-      await adapters.transport.request(connection, inventoryPaths.thingsTags, {
-        method: 'POST',
-        idempotencyKey: entry.tagRequestId,
-        body: { thingIds: [subject], add: entry.tags },
-      });
+    try {
+      if (entry.existing && 'update' in entry.existing && entry.existing.update) {
+        const { key, rowVersion, name, note } = entry.existing.update;
+        await adapters.transport.request(connection, inventoryPaths.thing(subject), {
+          method: 'PATCH',
+          ifMatch: rowVersion,
+          idempotencyKey: key,
+          body: { name, ...(note !== null ? { notes: note } : {}) },
+        });
+      }
+      if (
+        entry.tags.length &&
+        (!entry.existing || ('update' in entry.existing && entry.existing.update))
+      ) {
+        await adapters.transport.request(connection, inventoryPaths.thingsTags, {
+          method: 'POST',
+          idempotencyKey: entry.tagRequestId,
+          body: { thingIds: [subject], add: entry.tags },
+        });
+      }
+    } catch (error) {
+      if (
+        !(error instanceof ApiError) ||
+        !ACTION_REQUIRED_FAILURES.has(error.code) ||
+        isAuthRefusal(error) ||
+        isRestoreEpochMismatch(error)
+      )
+        throw error;
+      failed ??= error.code;
+      continue;
     }
     if (capture.files.length) {
       const remaining = new Set(
@@ -372,7 +433,7 @@ export async function replayCapture(
         continue;
       }
     }
-    verified.add(op.clientId);
+    verified.add(entry.id);
     if (fields.review) {
       await adapters.outbox.retarget(
         connection,
@@ -535,6 +596,9 @@ export function heldCaptureExport(
     ...(fields.note ? { note: fields.note } : {}),
     ...(fields.quantity ? { quantity: fields.quantity } : {}),
     ...(fields.batchId ? { batchId: fields.batchId } : {}),
+    ...(fields.tags?.length ? { tags: fields.tags } : {}),
+    ...(fields.review ? { review: fields.review } : {}),
+    ...(fields.binEvidenceId ? { binEvidenceId: fields.binEvidenceId } : {}),
     failure: entry.failure ?? null,
     files: entry.capture.files.map(({ file, sha256 }) => ({
       fileId: file.id,

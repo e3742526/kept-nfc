@@ -40,7 +40,7 @@ import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
-import { CategoryEditor } from './category-editor';
+import { CategoryPicker } from './category-picker';
 import { CustomFieldDetails } from './custom-fields';
 import type { Destination } from './destination';
 import { EditRecord } from './edit-record';
@@ -364,6 +364,12 @@ export function RecordScreen({
     target.kind === 'place'
       ? (cache?.places.filter((item) => item.parentId === target.id) ?? [])
       : [];
+  const categoryTags =
+    thing?.tags ??
+    (cached && 'tagIds' in cached
+      ? cache?.tags?.filter(({ id }) => cached.tagIds?.includes(id))
+      : undefined) ??
+    [];
   const canEdit = cache?.locations.some(
     (location) => location.id === target.locationId && location.role !== 'viewer',
   );
@@ -604,7 +610,7 @@ export function RecordScreen({
               {'lastSeenAt' in row && row.lastSeenAt && (
                 <span className="kept-chip">
                   <Clock size={13} aria-hidden />
-                  <span>{t`Last directly confirmed: ${new Date(row.lastSeenAt).toLocaleString()}`}</span>
+                  <span>{t`Last recorded activity: ${new Date(row.lastSeenAt).toLocaleString()}`}</span>
                 </span>
               )}
             </div>
@@ -713,6 +719,15 @@ export function RecordScreen({
               onAuthError={onAuthError}
             />
           )}
+          {section === 'all' && categoryTags.length > 0 && (!categorizing || !online) && (
+            <ul aria-label={t`Categories`} className="flex flex-wrap gap-2">
+              {categoryTags.map((tag) => (
+                <li className="rounded-lg bg-sunken px-2 py-1" key={tag.id}>
+                  <bdi>{tag.name}</bdi>
+                </li>
+              ))}
+            </ul>
+          )}
           {thing && section === 'all' && (
             <>
               <CustomFieldDetails
@@ -721,15 +736,6 @@ export function RecordScreen({
                 attachments={detail?.attachments ?? []}
                 online={online}
               />
-              {thing.tags.length > 0 && (
-                <ul aria-label={t`Categories`} className="flex flex-wrap gap-2">
-                  {thing.tags.map((tag) => (
-                    <li className="rounded-lg bg-sunken px-2 py-1" key={tag.id}>
-                      <bdi>{tag.name}</bdi>
-                    </li>
-                  ))}
-                </ul>
-              )}
               {canEdit && currentLocation?.ownerAccountId && (
                 <>
                   <Button
@@ -739,17 +745,46 @@ export function RecordScreen({
                   >
                     <Trans>Categories</Trans>
                   </Button>
-                  {categorizing && (
-                    <CategoryEditor
-                      connection={connection}
-                      accountId={currentLocation.ownerAccountId}
-                      online={online}
-                      manage={false}
-                      things={[thing.id]}
-                      assigned={thing.tags}
-                      onChange={changed}
-                    />
-                  )}
+                  {categorizing &&
+                    (online ? (
+                      <CategoryPicker
+                        key={thing.id}
+                        connection={connection}
+                        accountId={currentLocation.ownerAccountId}
+                        online
+                        canCreate
+                        options={[
+                          ...thing.tags,
+                          ...(cache?.tags?.filter(
+                            (tag) => tag.accountId === currentLocation.ownerAccountId,
+                          ) ?? []),
+                        ]}
+                        selected={thing.tags.map(({ id }) => id)}
+                        disabled={changing}
+                        onChange={(ids) => {
+                          const add = ids.filter((id) => !thing.tags.some((tag) => tag.id === id));
+                          const remove = thing.tags
+                            .filter(({ id }) => !ids.includes(id))
+                            .map(({ id }) => id);
+                          void update(async () => {
+                            await adapters.transport.request(
+                              connection,
+                              inventoryPaths.thingsTags,
+                              {
+                                method: 'POST',
+                                idempotencyKey: newId(),
+                                body: { thingIds: [thing.id], add, remove },
+                              },
+                            );
+                            changed();
+                          });
+                        }}
+                      />
+                    ) : (
+                      <p>
+                        <Trans>Needs a connection</Trans>
+                      </p>
+                    ))}
                 </>
               )}
             </>

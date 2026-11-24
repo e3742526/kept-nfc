@@ -32730,3 +32730,178 @@ msgstr "Схожі назви наявних категорій: {near}."
 
 msgid "Suggest categories"
 msgstr "Запропонувати категорії"
+
+#. placeholder {0}: existing.name
+#: src/native/category-editor.tsx
+msgid "A category named {0} already exists."
+msgstr "Категорія «{0}» вже існує."
+
+#: src/native/record-history.tsx
+msgid "Added {count} entries from photo review"
+msgstr "Додано записи після перевірки фото ({count})"
+
+#. placeholder {0}: row.estimatedQuantity
+#: src/native/photo-review.tsx
+msgid "AI estimate: {0}"
+msgstr "Оцінка ШІ: {0}"
+
+#: src/native/photo-review.tsx
+msgid "Attach photos only"
+msgstr "Лише прикріпити фото"
+
+#: src/native/category-editor.tsx
+msgid "Automotive"
+msgstr "Автомобільні товари"
+
+#: src/native/category-editor.tsx
+msgid "Books"
+msgstr "Книги"
+
+#: src/native/category-editor.tsx
+msgid "Camping and outdoors"
+msgstr "Кемпінг і відпочинок на природі"
+
+#: src/native/capture-ai.tsx
+msgid "Cancel suggestions"
+msgstr "Скасувати пропозиції"
+
+#: src/native/category-picker.tsx
+msgid "Category"
+msgstr "Категорія"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives copies of the photos you ask it to analyze and uses your plan allowance."
+msgstr "ChatGPT отримує копії фото, які ви просите проаналізувати, і використовує ліміт вашого тарифу."
+
+#: src/native/category-editor.tsx
+msgid "Clothes"
+msgstr "Одяг"
+
+#: src/native/photo-review.tsx
+msgid "Combine selected"
+msgstr "Об’єднати вибране"
+
+#: src/native/category-editor.tsx
+msgid "Craft supplies"
+msgstr "Матеріали для рукоділля"
+
+#: src/native/photo-review.tsx
+msgid "Create a new entry"
+msgstr "Створити запис"
+
+#: src/native/category-editor.tsx
+msgid "Decorations"
+msgstr "Декор"
+
+#: src/native/photo-review.tsx
+msgid "Description (optional)"
+msgstr "Опис (необов’язково)"
+
+#: src/native/category-editor.tsx
+msgid "Electrical"
+msgstr "Електротовари"
+
+#: src/native/category-editor.tsx
+msgid "Hardware"
+msgstr "Кріплення та фурнітура"
+
+#: src/native/category-editor.tsx
+msgid "Household supplies"
+msgstr "Господарські товари"
+
+#: src/native/browse.tsx
+msgid "Last recorded activity"
+msgstr "Остання зафіксована дія"
+
+#. placeholder {0}: new Date(row.lastSeenAt).toLocaleString()
+#: src/native/record.tsx
+msgid "Last recorded activity: {0}"
+msgstr "Остання зафіксована дія: {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open original photo {0}"
+msgstr "Відкрити оригінал фото {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open supporting photo {0}"
+msgstr "Відкрити фото-підтвердження {0}"
+
+#: src/native/record-history.tsx
+msgid "Photo added. No inventory or location changes recorded."
+msgstr "Фото додано. Змін в інвентарі чи місці зберігання не зафіксовано."
+
+#: src/native/category-editor.tsx
+msgid "Pictures and artwork"
+msgstr "Зображення й твори мистецтва"
+
+#: src/native/photo-review.tsx
+msgid "Possible matches in this destination"
+msgstr "Можливі збіги в цьому місці"
+
+#: src/native/category-picker.tsx
+msgid "Recently used"
+msgstr "Нещодавно використані"
+
+#: src/native/record-history.tsx
+msgid "Recorded {count} entries from photo review"
+msgstr "Зафіксовано записи після перевірки фото ({count})"
+
+#: src/native/category-picker.tsx
+msgid "Remove category {name}"
+msgstr "Вилучити категорію «{name}»"
+
+#: src/native/photo-review.tsx
+msgid "Remove proposal"
+msgstr "Вилучити пропозицію"
+
+#. placeholder {0}: row.name
+#: src/native/photo-review.tsx
+msgid "Remove proposal {0}"
+msgstr "Вилучити пропозицію «{0}»"
+
+#: src/native/photo-review.tsx
+msgid "Review update"
+msgstr "Перевірити зміни"
+
+#: src/native/photo-review.tsx
+msgid "Save review for later"
+msgstr "Зберегти перевірку на потім"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded."
+msgstr "Після збереження оновляться назва та введений опис і додадуться вибрані категорії. Кількість і місце залишаться такими, як у записі."
+
+#: src/native/category-editor.tsx
+msgid "Seasonal items"
+msgstr "Сезонні речі"
+
+#: src/native/photo-review.tsx
+msgid "Select each existing record only once."
+msgstr "Вибирайте кожен наявний запис лише раз."
+
+#: src/native/category-editor.tsx
+msgid "Shoes"
+msgstr "Взуття"
+
+#: src/native/category-picker.tsx
+msgid "Showing cached categories"
+msgstr "Показано категорії з кешу"
+
+#: src/native/category-editor.tsx
+msgid "Spare parts"
+msgstr "Запасні частини"
+
+#: src/native/category-editor.tsx
+msgid "Toys and games"
+msgstr "Іграшки та ігри"
+
+#. placeholder {0}: thing.name ?? t`Item`
+#: src/native/photo-review.tsx
+msgid "Update {0}?"
+msgstr "Оновити «{0}»?"
+
+#: src/native/photo-review.tsx
+msgid "Update existing record"
+msgstr "Оновити наявний запис"

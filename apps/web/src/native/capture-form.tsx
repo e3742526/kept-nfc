@@ -1,4 +1,4 @@
-import { AMOUNT_STRING, type DevicePhotoProposal, newId, normalize } from '@kept/shared';
+import { AMOUNT_STRING, newId, normalize } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
 import { type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -17,18 +17,19 @@ import {
   type Connection,
   StorageFullError,
 } from './bridge';
-import { CaptureSuggestion } from './capture-ai';
+import { CaptureSuggestion, type PhotoSuggestion } from './capture-ai';
+import { CategoryPicker } from './category-picker';
 import { type Destination, DestinationPicker, defaultDestination } from './destination';
 import { createBox, type InventoryCache, inventoryPath } from './inventory';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
 
-/** Where the item goes, as `Room › Box` (the location name is left to the picker). */
-function destinationLabel(cache: InventoryCache, destination: Destination): string {
+/** Return the recorded path, with the location name when the screen has room for it. */
+function destinationLabel(cache: InventoryCache, destination: Destination, full = false): string {
   const row = [...cache.places, ...cache.things].find((entry) => entry.id === destination.id);
   return row
-    ? [...inventoryPath(cache, row).slice(1), destination.name].join(' › ')
+    ? [...inventoryPath(cache, row).slice(full ? 0 : 1), destination.name].join(' › ')
     : destination.name;
 }
 
@@ -57,6 +58,7 @@ export function CaptureForm({
   pending = [],
   completions = {},
   syncing = false,
+  online = true,
   leaveRef,
   onClose,
   onSave,
@@ -74,6 +76,7 @@ export function CaptureForm({
   /** Durable terminal states; only `synced` counts as synchronized. */
   completions?: Readonly<Record<string, CompletionState>>;
   syncing?: boolean;
+  online?: boolean;
   leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
@@ -91,6 +94,7 @@ export function CaptureForm({
   const photosOnly = destination?.kind === 'photos';
   const documentsOnly = destination?.kind === 'documents';
   const evidenceOnly = photosOnly || documentsOnly;
+  const [tags, setTags] = useState<string[]>([]);
   const [intent, setIntent] = useState<'record' | 'add'>('record');
   const [batchId] = useState(newId);
   const [name, setName] = useState(initialName);
@@ -98,7 +102,10 @@ export function CaptureForm({
   const [quantity, setQuantity] = useState('');
   const [files, setFiles] = useState<ChosenFile[]>([]);
   const [provider, setProvider] = useState<CaptureAIProvider>('server');
-  const firstPhoto = evidenceOnly ? undefined : files.find((item) => item.role === 'photo');
+  const photos = evidenceOnly ? [] : files.filter((item) => item.role === 'photo');
+  const firstPhoto = photos[0];
+  const captureLocation = cache?.locations.find(({ id }) => id === destination?.locationId);
+  const account = captureLocation?.ownerAccountId;
   const [batchEntryIds, setBatchEntryIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
@@ -106,7 +113,7 @@ export function CaptureForm({
 
   async function canLeave() {
     if (busy) return false;
-    if (!name && !note && !quantity && !files.length) return true;
+    if (!name && !note && !quantity && !files.length && !tags.length) return true;
     return confirm({
       title: t`Discard this draft?`,
       confirmLabel: t`Discard draft`,
@@ -176,17 +183,12 @@ export function CaptureForm({
     });
   }
 
-  async function reviewPhoto(items: DevicePhotoProposal[] = [], single = false) {
-    if (busy || !firstPhoto || !destination || evidenceOnly || files.length !== 1 || !onReview)
-      return;
+  async function reviewPhoto(items: PhotoSuggestion[] = [], single = false) {
+    if (busy || !firstPhoto || !destination || evidenceOnly || !onReview) return;
     setBusy(true);
     setStatus('');
     try {
-      const account = cache?.locations.find(
-        ({ id }) => id === destination.locationId,
-      )?.ownerAccountId;
-      const matches = cache?.tags?.filter((tag) => tag.accountId === account) ?? [];
-      const proposals: DevicePhotoProposal[] =
+      const proposals: PhotoSuggestion[] =
         items.length && !single ? items : [{ name: name.trim() }];
       const categories = new Map(
         items.flatMap((item) => item.categories ?? []).map((tag) => [normalize(tag), tag]),
@@ -197,35 +199,28 @@ export function CaptureForm({
           locationId: destination.locationId,
           ...(destination.kind === 'place'
             ? { placeId: destination.id }
-            : { boxId: destination.id }),
+            : { boxId: destination.id, binEvidenceId: newId() }),
           name: name.trim() || t`Photo review`,
           captureIntent: intent,
           skipServerSuggestions: true,
-          ...(note.trim() ? { note: note.trim() } : {}),
-          batchId,
+          batchId: newId(),
           review: {
             accepted: false,
-            entries: proposals.map((item) => {
-              const suggestions = single
-                ? [...categories.values()].slice(0, 4)
-                : (item.categories ?? []);
-              return {
-                id: newId(),
-                tagRequestId: newId(),
-                name: item.name,
-                quantity: items.length && !single ? String(item.quantity ?? '') : quantity,
-                include: true,
-                categories: suggestions,
-                tags: matches
-                  .filter((tag) =>
-                    suggestions.some((name) => normalize(name) === normalize(tag.name)),
-                  )
-                  .map(({ id }) => id),
-              };
-            }),
+            entries: proposals.map((item) => ({
+              id: newId(),
+              tagRequestId: newId(),
+              name: item.name,
+              note: items.length && !single ? (item.description ?? note.trim()) : note.trim(),
+              quantity: items.length && !single ? '' : quantity,
+              estimatedQuantity: items.length && !single ? (item.quantity ?? undefined) : undefined,
+              evidence: item.evidence,
+              include: true,
+              categories: single ? [...categories.values()].slice(0, 8) : (item.categories ?? []),
+              tags,
+            })),
           },
         },
-        [firstPhoto],
+        [...photos, ...files.filter((item) => item.role === 'document')],
         adapters,
       );
       for (const item of files) revokePreviewUrl(item.previewUrl);
@@ -234,6 +229,8 @@ export function CaptureForm({
       setName('');
       setQuantity('');
       setNote('');
+      setIntent('record');
+      setTags([]);
       onSave();
       onReview(id);
     } catch {
@@ -258,8 +255,8 @@ export function CaptureForm({
               ? { placeId: destination.id }
               : { boxId: destination.id }),
           name: evidenceOnly ? destination.name : name.trim(),
-          ...(!evidenceOnly ? { captureIntent: intent } : {}),
-          ...(firstPhoto && provider !== 'server' ? { skipServerSuggestions: true } : {}),
+          ...(!evidenceOnly ? { captureIntent: intent, tags } : {}),
+          ...(firstPhoto ? { skipServerSuggestions: true } : {}),
           ...(note.trim() ? { note: note.trim() } : {}),
           ...(quantity ? { quantity } : {}),
           batchId,
@@ -273,6 +270,8 @@ export function CaptureForm({
       setName('');
       setNote('');
       setQuantity('');
+      setIntent('record');
+      setTags([]);
       setFiles([]);
       setStatus(t`Saved on device.`);
       onSave();
@@ -328,9 +327,9 @@ export function CaptureForm({
               <h3 className="text-body font-semibold">
                 <bdi>{box.name}</bdi>
               </h3>
-              {location && (
+              {(location || (cache && destinationLabel(cache, box) !== box.name)) && (
                 <p className="text-small text-ink-2">
-                  <bdi>{location}</bdi>
+                  <bdi>{cache ? destinationLabel(cache, box, true) : location}</bdi>
                 </p>
               )}
             </div>
@@ -371,6 +370,56 @@ export function CaptureForm({
           void save();
         }}
       >
+        {cache && !box && (
+          <div className="grid gap-2">
+            {destination && !changingDestination ? (
+              <div className="kept-card kept-destination">
+                <span className="kept-row-lead" aria-hidden>
+                  {destination.kind === 'place' ? <MapPin size={18} /> : <Package size={18} />}
+                </span>
+                <div className="grid min-w-0 flex-1 gap-0.5">
+                  <span className="text-small text-ink-2">
+                    <Trans>Destination</Trans>
+                  </span>
+                  <bdi className="font-semibold">{destinationLabel(cache, destination, true)}</bdi>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  isDisabled={busy}
+                  onPress={() => setChangingDestination(true)}
+                >
+                  <Trans>Change</Trans>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                <DestinationPicker
+                  cache={cache}
+                  value={destination}
+                  onChange={(next) => {
+                    const owner = cache.locations.find(
+                      ({ id }) => id === next?.locationId,
+                    )?.ownerAccountId;
+                    if (account !== owner) setTags([]);
+                    setDestination(next);
+                  }}
+                  disabled={busy}
+                />
+                {destination && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    className="justify-self-start"
+                    onPress={() => setChangingDestination(false)}
+                  >
+                    <Trans>Done</Trans>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {!evidenceOnly && (
           <TextField
             label={t`Description`}
@@ -463,23 +512,24 @@ export function CaptureForm({
         )}
         {firstPhoto && (
           <CaptureSuggestion
-            key={`${firstPhoto.key}:${destination?.id ?? ''}`}
+            key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
             connection={connection}
-            file={firstPhoto.file}
+            files={photos.map(({ file }) => file)}
             locationId={destination?.locationId}
             provider={provider}
             onProviderChange={setProvider}
             onUse={setName}
-            onProposals={destination && files.length === 1 && onReview ? reviewPhoto : undefined}
+            onProposals={destination && onReview ? reviewPhoto : undefined}
             onCategories={
-              destination && files.length === 1 && onReview && name.trim()
+              destination && onReview && name.trim()
                 ? (items) => reviewPhoto(items, true)
                 : undefined
             }
+            online={online}
             disabled={busy}
           />
         )}
-        {firstPhoto && files.length === 1 && onReview && (
+        {firstPhoto && onReview && (
           <Button
             variant="secondary"
             isDisabled={busy || !destination}
@@ -488,49 +538,32 @@ export function CaptureForm({
             <Trans>Review multiple items</Trans>
           </Button>
         )}
-        {cache && !box && (
-          <div className="grid gap-2">
-            {destination && !changingDestination ? (
-              <div className="kept-card kept-destination">
-                <span className="kept-row-lead" aria-hidden>
-                  {destination.kind === 'place' ? <MapPin size={18} /> : <Package size={18} />}
-                </span>
-                <div className="grid min-w-0 flex-1 gap-0.5">
-                  <span className="text-small text-ink-2">
-                    <Trans>Destination</Trans>
-                  </span>
-                  <bdi className="font-semibold">{destinationLabel(cache, destination)}</bdi>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  isDisabled={busy}
-                  onPress={() => setChangingDestination(true)}
-                >
-                  <Trans>Change</Trans>
-                </Button>
-              </div>
-            ) : (
-              <div className="grid gap-3">
-                <DestinationPicker
-                  cache={cache}
-                  value={destination}
-                  onChange={setDestination}
-                  disabled={busy}
-                />
-                {destination && (
-                  <Button
-                    variant="secondary"
-                    size="small"
-                    className="justify-self-start"
-                    onPress={() => setChangingDestination(false)}
-                  >
-                    <Trans>Done</Trans>
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+        {!evidenceOnly && (
+          <Select
+            label={t`Action`}
+            selectedKey={intent}
+            isDisabled={busy}
+            items={[
+              { id: 'record', label: t`Record existing contents` },
+              { id: 'add', label: t`Add contents` },
+            ]}
+            onSelectionChange={(key) => setIntent(key === 'add' ? 'add' : 'record')}
+          >
+            {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
+          </Select>
+        )}
+        {!evidenceOnly && account && (
+          <CategoryPicker
+            key={account}
+            connection={connection}
+            accountId={account}
+            online={online}
+            canCreate={captureLocation.role !== 'viewer'}
+            options={cache?.tags?.filter((tag) => tag.accountId === account) ?? []}
+            selected={tags}
+            disabled={busy}
+            onChange={setTags}
+          />
         )}
         {!evidenceOnly && (
           <details className="kept-details">
@@ -538,18 +571,6 @@ export function CaptureForm({
               <Trans>Details</Trans>
             </summary>
             <div className="grid gap-4 pt-3">
-              <Select
-                label={t`Action`}
-                selectedKey={intent}
-                isDisabled={busy}
-                items={[
-                  { id: 'record', label: t`Record existing contents` },
-                  { id: 'add', label: t`Add contents` },
-                ]}
-                onSelectionChange={(key) => setIntent(key === 'add' ? 'add' : 'record')}
-              >
-                {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
-              </Select>
               <TextField
                 label={t`Quantity (optional)`}
                 value={quantity}

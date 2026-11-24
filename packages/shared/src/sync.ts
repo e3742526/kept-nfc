@@ -41,6 +41,7 @@ export const DevicePhotoProposals = z.strictObject({
     .array(
       z.strictObject({
         name: z.string().trim().min(1).max(200),
+        description: z.string().trim().min(1).max(500).nullable().optional(),
         quantity: z.number().int().positive().max(10_000).nullable().optional(),
         categories: z.array(z.string().trim().min(1).max(60)).max(4).nullable().optional(),
       }),

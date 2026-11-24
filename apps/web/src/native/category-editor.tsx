@@ -9,6 +9,7 @@ import { useConfirm } from '@/components/ui/confirm';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
+import { equivalentCategory } from './category-picker';
 
 export function CategoryEditor({
   connection,
@@ -16,7 +17,7 @@ export function CategoryEditor({
   online,
   manage,
   things,
-  assigned,
+  cached = [],
   onChange,
   onPick,
 }: {
@@ -25,9 +26,9 @@ export function CategoryEditor({
   online: boolean;
   manage: boolean;
   things?: string[];
-  assigned?: ThingTag[];
+  cached?: readonly ThingTag[];
   onChange?: () => void;
-  onPick?: (tag: Tag) => void;
+  onPick?: (tag: Pick<Tag, 'id'>) => void;
 }) {
   const { t } = useLingui();
   const { transport } = usePlatform();
@@ -38,11 +39,31 @@ export function CategoryEditor({
   const [editing, setEditing] = useState<Tag>();
   const [page, setPage] = useState<Page<Tag>>();
   const [error, setError] = useState<unknown>();
+  const [duplicate, setDuplicate] = useState('');
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
   const path = inventoryPaths.accountRegistry(accountId, 'tags');
   const query = search.trim();
-  const starters = [t`Tools`, t`Electronics`, t`Kitchen`, t`Documents`];
+  const starters = [
+    t`Tools`,
+    t`Hardware`,
+    t`Electrical`,
+    t`Electronics`,
+    t`Clothes`,
+    t`Shoes`,
+    t`Pictures and artwork`,
+    t`Documents`,
+    t`Decorations`,
+    t`Seasonal items`,
+    t`Books`,
+    t`Toys and games`,
+    t`Kitchen`,
+    t`Craft supplies`,
+    t`Camping and outdoors`,
+    t`Automotive`,
+    t`Household supplies`,
+    t`Spare parts`,
+  ];
   // biome-ignore lint/correctness/useExhaustiveDependencies: revision refreshes the active query after a write.
   useEffect(() => {
     if (!online) return;
@@ -69,6 +90,7 @@ export function CategoryEditor({
     if (!online || busy) return;
     setBusy(true);
     setError(undefined);
+    setDuplicate('');
     try {
       await work();
       setRevision((value) => value + 1);
@@ -97,9 +119,29 @@ export function CategoryEditor({
         <Trans>Categories</Trans>
       </h3>
       {!online ? (
-        <p>
-          <Trans>Needs a connection</Trans>
-        </p>
+        <>
+          <p>
+            <Trans>Showing cached categories</Trans>
+          </p>
+          <TextField label={t`Search categories`} value={search} onChange={setSearch} />
+          <div className="flex flex-wrap gap-2">
+            {cached
+              .filter((tag) => tag.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()))
+              .map((tag) => (
+                <Button
+                  key={tag.id}
+                  variant="secondary"
+                  isDisabled={!onPick}
+                  onPress={() => onPick?.(tag)}
+                >
+                  <bdi>{tag.name}</bdi>
+                </Button>
+              ))}
+          </div>
+          <p>
+            <Trans>Needs a connection</Trans>
+          </p>
+        </>
       ) : (
         <>
           <TextField label={t`Search categories`} value={search} onChange={setSearch} />
@@ -111,6 +153,17 @@ export function CategoryEditor({
                 const next = name.trim();
                 if (!next) return;
                 void perform(async () => {
+                  const { items } = await transport.request<Page<Tag>>(
+                    connection,
+                    path + qs({ q: next, limit: 30 }),
+                  );
+                  const existing = items.find(
+                    (tag) => tag.id !== editing?.id && equivalentCategory(tag.name, next),
+                  );
+                  if (existing) {
+                    setDuplicate(t`A category named ${existing.name} already exists.`);
+                    return;
+                  }
                   await transport.request(
                     connection,
                     editing ? inventoryPaths.registryItem('tags', editing.id) : path,
@@ -155,16 +208,20 @@ export function CategoryEditor({
                 <Trans>Starter categories</Trans>
               </summary>
               <div className="flex flex-wrap gap-2">
-                {starters.map((label) => (
-                  <Button
-                    key={label}
-                    variant="secondary"
-                    size="small"
-                    onPress={() => setName(label)}
-                  >
-                    {label}
-                  </Button>
-                ))}
+                {starters
+                  .filter(
+                    (label) => !page?.items.some((tag) => equivalentCategory(tag.name, label)),
+                  )
+                  .map((label) => (
+                    <Button
+                      key={label}
+                      variant="secondary"
+                      size="small"
+                      onPress={() => setName(label)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
               </div>
             </details>
           )}
@@ -174,19 +231,25 @@ export function CategoryEditor({
             </p>
           )}
           {page?.items.map((tag) => {
-            const attached = assigned?.some(({ id }) => id === tag.id);
             return (
               <div className="flex flex-wrap items-center gap-2" key={tag.id}>
                 <Button variant="secondary" isDisabled={!onPick} onPress={() => onPick?.(tag)}>
+                  {tag.colour && (
+                    <span
+                      aria-hidden
+                      className="size-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: tag.colour }}
+                    />
+                  )}
                   <bdi>{tag.name}</bdi>
                   {tag.thingCount !== undefined ? ` · ${tag.thingCount}` : ''}
                 </Button>
                 {things?.length ? (
-                  <Button variant="ghost" isDisabled={busy} onPress={() => assign(tag, !!attached)}>
-                    {attached ? t`Remove` : t`Assign`}
+                  <Button variant="ghost" isDisabled={busy} onPress={() => assign(tag, false)}>
+                    <Trans>Assign</Trans>
                   </Button>
                 ) : null}
-                {things?.length && !assigned ? (
+                {things?.length ? (
                   <Button variant="ghost" isDisabled={busy} onPress={() => assign(tag, true)}>
                     <Trans>Remove</Trans>
                   </Button>
@@ -257,6 +320,7 @@ export function CategoryEditor({
           )}
         </>
       )}
+      {duplicate && <p role="alert">{duplicate}</p>}
       {error ? <p role="alert">{errorText(error)}</p> : null}
     </section>
   );

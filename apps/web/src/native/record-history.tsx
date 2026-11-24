@@ -90,18 +90,15 @@ export function RecordHistory({
   }
 
   function summary(event: HistoryEvent) {
-    const mode = event.diff?.mode;
     if (
       event.summaryKey === 'attachment.create.photo' ||
-      (event.summaryKey === 'thing.capture.attach' &&
-        mode &&
-        'after' in mode &&
-        mode.after === 'thing')
+      event.summaryKey === 'thing.capture.attach'
     )
-      return t`Photo added to the record. Inventory unchanged.`;
+      return t`Photo added. No inventory or location changes recorded.`;
     const name = isolate(event.summaryParams.name ?? t`Item`);
+    if (event.summaryKey === 'thing.restore' || event.action === 'thing.restore')
+      return t`Record for ${name} restored`;
     if (event.action === 'thing.trash') return t`Record for ${name} moved to Trash`;
-    if (event.action === 'thing.restore') return t`Record for ${name} restored`;
     if (event.action === 'thing.update') {
       const tags = event.diff?.tag_ids;
       if (tags && 'before' in tags) {
@@ -135,7 +132,8 @@ export function RecordHistory({
       return formatSummary(event);
     if (
       event.summaryKey === 'thing.capture.recorded' ||
-      event.summaryKey === 'thing.capture.named'
+      event.summaryKey === 'thing.capture.named' ||
+      event.action === 'thing.create'
     ) {
       const parent = event.diff?.container_id;
       const path = recordedPath(event, 'after');
@@ -143,13 +141,15 @@ export function RecordHistory({
         container && parent && 'after' in parent && parent.after === target.id
           ? (cache?.things.find((item) => item.id === target.id)?.name ?? path)
           : path;
-      if (where) {
+      const intent = event.diff?.capture_intent;
+      if (intent && 'after' in intent && intent.after === 'add') {
+        if (!where) return formatSummary(event);
         const destination = isolate(where);
-        return event.summaryKey === 'thing.capture.recorded'
-          ? t`Recorded ${name} in ${destination}`
-          : t`Added ${name} to ${destination}`;
+        return t`Added ${name} to ${destination}`;
       }
-      return formatSummary(event);
+      if (!where) return t`Recorded ${name}`;
+      const destination = isolate(where);
+      return t`Recorded ${name} in ${destination}`;
     }
     if (container && event.entity.id !== target.id) {
       const parent = event.diff?.container_id;
@@ -157,13 +157,6 @@ export function RecordHistory({
         if (parent.before === target.id) return t`${name} moved out of this box`;
         if (parent.after === target.id) return t`${name} moved into this box`;
       }
-      if (
-        (event.action === 'thing.create' || event.action === 'thing.capture') &&
-        parent &&
-        'after' in parent &&
-        parent.after === target.id
-      )
-        return t`${name} added to this box`;
     }
     return formatSummary(event);
   }
@@ -182,6 +175,106 @@ export function RecordHistory({
     ]
       .filter(Boolean)
       .join(' › ');
+  }
+
+  function renderEvent(event: HistoryEvent) {
+    const before = recordedPath(event, 'before');
+    const after = recordedPath(event, 'after');
+    const evidence = event.diff?.attachment_ids;
+    const fileIds = event.diff?.file_ids;
+    const attached = evidence && 'after' in evidence ? evidence.after : null;
+    const files = fileIds && 'after' in fileIds ? fileIds.after : null;
+    const photos = attachments.filter(
+      (entry) =>
+        entry.role === 'photo' &&
+        entry.file &&
+        ((Array.isArray(attached) && attached.includes(entry.id)) ||
+          (!attached &&
+            event.entity.id === target.id &&
+            Array.isArray(files) &&
+            files.includes(entry.file.id))),
+    );
+    const captured = event.diff?.captured_at;
+    const related =
+      event.entity.id !== target.id && event.entity.type === 'thing'
+        ? cache?.things.find((item) => item.id === event.entity.id)
+        : undefined;
+    const savedOnDevice = eventTime(captured);
+    const observed = event.action === 'thing.capture' ? null : eventTime(event.diff?.last_seen_at);
+    return (
+      <li key={event.id} className="grid gap-1 rounded-lg border border-line bg-surface p-3">
+        <p>
+          <bdi>{summary(event)}</bdi>
+        </p>
+        {event.action.endsWith('.move') && before && after && before !== after && (
+          <p className="text-small">
+            <Trans>From</Trans> <bdi>{before}</bdi>
+            <br />
+            <Trans>To</Trans> <bdi>{after}</bdi>
+          </p>
+        )}
+        <p className="text-small text-ink-2">
+          <Trans>Recorded at</Trans>{' '}
+          <time dateTime={event.at}>{new Date(event.at).toLocaleString()}</time>
+          {event.actor.displayName && (
+            <>
+              {sep()}
+              <bdi>{event.actor.displayName}</bdi>
+            </>
+          )}
+        </p>
+        {savedOnDevice && (
+          <p className="text-small text-ink-2">
+            <Trans>Saved on device</Trans>{' '}
+            <time dateTime={savedOnDevice}>{new Date(savedOnDevice).toLocaleString()}</time>
+          </p>
+        )}
+        {observed && (
+          <p className="text-small text-ink-2">
+            <Trans>Observed at</Trans>{' '}
+            <time dateTime={observed}>{new Date(observed).toLocaleString()}</time>
+          </p>
+        )}
+        {photos.map((photo) => (
+          <Button
+            key={photo.id}
+            variant="secondary"
+            size="small"
+            onPress={() => onOpenPhoto(photo)}
+          >
+            <Image size={14} aria-hidden />
+            <bdi>{photo.name ?? t`Photograph`}</bdi>
+          </Button>
+        ))}
+        {related && (
+          <Button
+            variant="secondary"
+            size="small"
+            onPress={() =>
+              onOpen({ kind: 'thing', id: related.id, locationId: related.locationId })
+            }
+          >
+            <Trans>Open</Trans> <bdi>{related.name ?? t`Untitled`}</bdi>
+          </Button>
+        )}
+        {canEdit &&
+          !event.undone &&
+          !event.undo_of &&
+          event.undoable_until &&
+          Date.parse(event.undoable_until) > Date.now() &&
+          ['thing.move', 'thing.trash', 'box.check'].includes(event.action) && (
+            <Button
+              variant="ghost"
+              size="small"
+              isPending={busy}
+              onPress={() => void undo(event.id)}
+            >
+              <Undo2 size={14} aria-hidden />
+              <Trans>Undo</Trans>
+            </Button>
+          )}
+      </li>
+    );
   }
 
   return (
@@ -204,107 +297,22 @@ export function RecordHistory({
         <>
           {page.items.length ? (
             <ol className="grid gap-2">
-              {page.items.map((event) => {
-                const before = recordedPath(event, 'before');
-                const after = recordedPath(event, 'after');
-                const evidence = event.diff?.attachment_ids;
-                const fileIds = event.diff?.file_ids;
-                const attached = evidence && 'after' in evidence ? evidence.after : null;
-                const files = fileIds && 'after' in fileIds ? fileIds.after : null;
-                const photos = attachments.filter(
-                  (entry) =>
-                    entry.role === 'photo' &&
-                    entry.file &&
-                    ((Array.isArray(attached) && attached.includes(entry.id)) ||
-                      (!attached &&
-                        event.entity.id === target.id &&
-                        Array.isArray(files) &&
-                        files.includes(entry.file.id))),
-                );
-                const captured = event.diff?.captured_at;
-                const related =
-                  event.entity.id !== target.id && event.entity.type === 'thing'
-                    ? cache?.things.find((item) => item.id === event.entity.id)
-                    : undefined;
-                const savedOnDevice = eventTime(captured);
-                const observed = eventTime(event.diff?.last_seen_at);
+              {captureGroups(page.items, container).map((events) => {
+                const first = events[0];
+                if (!first) return null;
+                if (events.length === 1) return renderEvent(first);
+                const count = events.length;
+                const isRecord = first.summaryKey === 'thing.capture.recorded';
                 return (
-                  <li
-                    key={event.id}
-                    className="grid gap-1 rounded-lg border border-line bg-surface p-3"
-                  >
-                    <p>
-                      <bdi>{summary(event)}</bdi>
-                    </p>
-                    {event.action.endsWith('.move') && before && after && before !== after && (
-                      <p className="text-small">
-                        <Trans>From</Trans> <bdi>{before}</bdi>
-                        <br />
-                        <Trans>To</Trans> <bdi>{after}</bdi>
-                      </p>
-                    )}
-                    <p className="text-small text-ink-2">
-                      <Trans>Recorded at</Trans>{' '}
-                      <time dateTime={event.at}>{new Date(event.at).toLocaleString()}</time>
-                      {event.actor.displayName && (
-                        <>
-                          {sep()}
-                          <bdi>{event.actor.displayName}</bdi>
-                        </>
-                      )}
-                    </p>
-                    {savedOnDevice && (
-                      <p className="text-small text-ink-2">
-                        <Trans>Saved on device</Trans>{' '}
-                        <time dateTime={savedOnDevice}>
-                          {new Date(savedOnDevice).toLocaleString()}
-                        </time>
-                      </p>
-                    )}
-                    {observed && (
-                      <p className="text-small text-ink-2">
-                        <Trans>Observed at</Trans>{' '}
-                        <time dateTime={observed}>{new Date(observed).toLocaleString()}</time>
-                      </p>
-                    )}
-                    {photos.map((photo) => (
-                      <Button
-                        key={photo.id}
-                        variant="secondary"
-                        size="small"
-                        onPress={() => onOpenPhoto(photo)}
-                      >
-                        <Image size={14} aria-hidden />
-                        <bdi>{photo.name ?? t`Photograph`}</bdi>
-                      </Button>
-                    ))}
-                    {related && (
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onPress={() =>
-                          onOpen({ kind: 'thing', id: related.id, locationId: related.locationId })
-                        }
-                      >
-                        <Trans>Open</Trans> <bdi>{related.name ?? t`Untitled`}</bdi>
-                      </Button>
-                    )}
-                    {canEdit &&
-                      !event.undone &&
-                      !event.undo_of &&
-                      event.undoable_until &&
-                      Date.parse(event.undoable_until) > Date.now() &&
-                      ['thing.move', 'thing.trash', 'box.check'].includes(event.action) && (
-                        <Button
-                          variant="ghost"
-                          size="small"
-                          isPending={busy}
-                          onPress={() => void undo(event.id)}
-                        >
-                          <Undo2 size={14} aria-hidden />
-                          <Trans>Undo</Trans>
-                        </Button>
-                      )}
+                  <li key={first.id} className="rounded-lg border border-line bg-surface p-3">
+                    <details>
+                      <summary className="min-h-10 font-semibold">
+                        {isRecord
+                          ? t`Recorded ${count} entries from photo review`
+                          : t`Added ${count} entries from photo review`}
+                      </summary>
+                      <ol className="grid gap-2 pt-2">{events.map(renderEvent)}</ol>
+                    </details>
                   </li>
                 );
               })}
@@ -346,4 +354,38 @@ function eventTime(change: NonNullable<HistoryEvent['diff']>[string] | undefined
     Number.isFinite(Date.parse(change.after))
     ? change.after
     : null;
+}
+
+/** Group only approved photo captures sharing a session in the loaded history. */
+export function captureGroups(events: HistoryEvent[], container: boolean): HistoryEvent[][] {
+  const groups = new Map<string, HistoryEvent[]>();
+  const ordered: HistoryEvent[][] = [];
+  for (const event of events) {
+    const batch = event.diff?.batch_id;
+    const files = event.diff?.file_ids;
+    if (
+      !container ||
+      (event.summaryKey !== 'thing.capture.recorded' &&
+        event.summaryKey !== 'thing.capture.named') ||
+      !batch ||
+      !('after' in batch) ||
+      typeof batch.after !== 'string' ||
+      !files ||
+      !('after' in files) ||
+      !Array.isArray(files.after) ||
+      !files.after.length
+    ) {
+      ordered.push([event]);
+      continue;
+    }
+    const key = JSON.stringify([batch.after, event.summaryKey, [...files.after].sort()]);
+    const group = groups.get(key);
+    if (group) group.push(event);
+    else {
+      const created = [event];
+      groups.set(key, created);
+      ordered.push(created);
+    }
+  }
+  return ordered;
 }

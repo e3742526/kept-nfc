@@ -393,7 +393,7 @@ export function Browse({
                     { id: 'recorded', name: t`Recorded at` },
                     { id: 'updated', name: t`Last modified` },
                   ]),
-              { id: 'lastSeen', name: t`Last directly confirmed` },
+              { id: 'lastSeen', name: t`Last recorded activity` },
             ]}
             selectedKey={displayedSort}
             onSelectionChange={(key) => update({ sort: key as Sort })}
@@ -481,6 +481,17 @@ export function Browse({
             : t`Match any selected category`}
         </p>
       )}
+      {f.mode === 'categories' && (
+        <Button
+          variant="secondary"
+          aria-pressed={f.untagged}
+          onPress={() =>
+            update({ tags: [], untagged: !f.untagged, inherit: false, groupMode: 'all' })
+          }
+        >
+          <Trans>Uncategorized</Trans>
+        </Button>
+      )}
       {(f.mode === 'categories' || selected.length > 0) && owner?.ownerAccountId && (
         <>
           {accounts.length > 1 && (
@@ -502,9 +513,12 @@ export function Browse({
             connection={connection}
             online={online}
             accountId={owner.ownerAccountId}
+            cached={tagOptions.filter((tag) => tag.accountId === owner.ownerAccountId)}
             manage={f.mode === 'categories' && (owner.role === 'owner' || owner.role === 'admin')}
             things={selected.length ? selected : undefined}
-            onPick={(tag) => update({ tags: [...new Set([...f.tags, tag.id])] })}
+            onPick={(tag) =>
+              update({ tags: [tag.id], untagged: false, inherit: false, groupMode: 'all' })
+            }
             onChange={() => {
               setRevision((value) => value + 1);
               onInventoryChanged();
@@ -583,6 +597,15 @@ export function Browse({
                   <span className="text-small">
                     <bdi>{row.path}</bdi>
                   </span>
+                  {row.tags.length > 0 && (
+                    <span className="flex flex-wrap gap-1">
+                      {row.tags.map((tag) => (
+                        <bdi key={tag.id} className="rounded-md bg-sunken px-2 py-0.5 text-small">
+                          {tag.name}
+                        </bdi>
+                      ))}
+                    </span>
+                  )}
                   {row.shortCode && <bdi className="text-small">{row.shortCode}</bdi>}
                   {f.mode === 'bins' && cache.things.some((item) => item.id === row.id) && (
                     <span className="text-small">

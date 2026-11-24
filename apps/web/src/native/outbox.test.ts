@@ -5,7 +5,13 @@ import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
 import { paths } from '@/api/paths';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
-import { type Capture, type Connection, type PendingCapture, StorageFullError } from './bridge';
+import {
+  type Capture,
+  type Connection,
+  type NativeRequestOptions,
+  type PendingCapture,
+  StorageFullError,
+} from './bridge';
 import {
   ACTION_REQUIRED_FAILURES,
   captureCapabilitiesPath,
@@ -585,6 +591,135 @@ describe('native outbox staging and replay', () => {
       locationName: 'Home',
     });
     expect(exported.files[0]?.sha256).toBe('e'.repeat(64));
+  });
+
+  it('retries only the unfinished review work after a record-version conflict', async () => {
+    const existingId = newId();
+    const binId = newId();
+    const binEvidenceId = newId();
+    const updateId = newId();
+    const createdId = newId();
+    const patchKey = newId();
+    const fileId = newId();
+    const sha256 = 'a'.repeat(64);
+    const patches: unknown[] = [];
+    const calls: string[][] = [];
+    let conflicting = true;
+    const { adapters, captures, completionStates } = makeInMemoryAdapters({
+      capabilities: () => ({
+        contractVersion: 1,
+        capturePayloadVersions: [2, 3, 4],
+        account: connection.account,
+        epoch: connection.epoch,
+      }),
+      async uploadOriginal() {
+        return {
+          id: fileId,
+          sha256,
+          bytes: 5,
+          mime: 'image/jpeg',
+          class: 'evidence',
+          hasGps: false,
+          width: 1,
+          height: 1,
+          derivativeState: 'ready',
+          thumbUrl: null,
+          displayUrl: null,
+        };
+      },
+      async request<T>(
+        _connection: Connection,
+        path: string,
+        options?: NativeRequestOptions,
+      ): Promise<T> {
+        if (path === capturePaths.syncOps && options) {
+          const { ops } = options.body as {
+            ops: {
+              clientId: string;
+              idempotencyKey: string;
+              payloadVersion: number;
+              payload: { attachToThingId?: string };
+            }[];
+          };
+          calls.push(ops.map(({ clientId }) => clientId));
+          return {
+            results: ops.map((op) => ({
+              clientId: op.clientId,
+              idempotencyKey: op.idempotencyKey,
+              outcome: 'applied',
+              entity: { type: 'thing', id: op.payload.attachToThingId ?? op.clientId },
+            })),
+          } as T;
+        }
+        if (path === inventoryPaths.thing(existingId)) {
+          patches.push(options);
+          if (conflicting) throw new ApiError(412, 'precondition_failed', 'Changed');
+          return {} as T;
+        }
+        return {
+          items: [{ role: 'photo', file: { id: fileId, sha256, bytes: 5 } }],
+          next_cursor: null,
+        } as T;
+      },
+    });
+    const id = await saveOnPhone(
+      connection,
+      {
+        name: 'Bin review',
+        boxId: binId,
+        binEvidenceId,
+        locationId: newId(),
+        captureIntent: 'record',
+        skipServerSuggestions: true,
+        review: {
+          accepted: true,
+          entries: [
+            {
+              id: updateId,
+              tagRequestId: newId(),
+              name: 'Existing drill',
+              quantity: '',
+              include: true,
+              categories: [],
+              tags: [],
+              existing: {
+                id: existingId,
+                update: { key: patchKey, rowVersion: 7, name: 'Existing drill', note: null },
+              },
+            },
+            {
+              id: createdId,
+              tagRequestId: newId(),
+              name: 'Lights',
+              quantity: '',
+              include: true,
+              categories: [],
+              tags: [],
+            },
+          ],
+        },
+      },
+      [{ file: new File(['photo'], 'review.jpg', { type: 'image/jpeg' }), role: 'photo' }],
+      adapters,
+    );
+    expect(await syncOutbox(connection, adapters)).toBe(0);
+    const held = captures.get(id);
+    expect(held?.failure).toBe('precondition_failed');
+    expect(held && draftFields(held.capture).review?.verified).toEqual([createdId, binEvidenceId]);
+    expect(completionStates.has(id)).toBe(false);
+    expect(await syncOutbox(connection, adapters)).toBe(0);
+    conflicting = false;
+    expect(await retryCapture(connection, id, adapters)).toBe(true);
+    expect(calls).toEqual([[updateId, createdId, binEvidenceId], [updateId]]);
+    expect(patches).toEqual(
+      Array.from({ length: 2 }, () => ({
+        method: 'PATCH',
+        ifMatch: 7,
+        idempotencyKey: patchKey,
+        body: { name: 'Existing drill' },
+      })),
+    );
+    expect(completionStates.get(id)).toBe('synced');
   });
 
   it('holds a photo with local suggestions before uploading to a server that only supports v3', async () => {

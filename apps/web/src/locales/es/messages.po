@@ -32730,3 +32730,178 @@ msgstr "Entre las categorías existentes con nombres parecidos están {near}."
 
 msgid "Suggest categories"
 msgstr "Sugerir categorías"
+
+#. placeholder {0}: existing.name
+#: src/native/category-editor.tsx
+msgid "A category named {0} already exists."
+msgstr "Ya existe una categoría llamada {0}."
+
+#: src/native/record-history.tsx
+msgid "Added {count} entries from photo review"
+msgstr "Se añadieron {count} registros tras revisar las fotos"
+
+#. placeholder {0}: row.estimatedQuantity
+#: src/native/photo-review.tsx
+msgid "AI estimate: {0}"
+msgstr "Estimación de la IA: {0}"
+
+#: src/native/photo-review.tsx
+msgid "Attach photos only"
+msgstr "Adjuntar solo las fotos"
+
+#: src/native/category-editor.tsx
+msgid "Automotive"
+msgstr "Automoción"
+
+#: src/native/category-editor.tsx
+msgid "Books"
+msgstr "Libros"
+
+#: src/native/category-editor.tsx
+msgid "Camping and outdoors"
+msgstr "Camping y aire libre"
+
+#: src/native/capture-ai.tsx
+msgid "Cancel suggestions"
+msgstr "Cancelar sugerencias"
+
+#: src/native/category-picker.tsx
+msgid "Category"
+msgstr "Categoría"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives copies of the photos you ask it to analyze and uses your plan allowance."
+msgstr "ChatGPT recibe copias de las fotos que le pides analizar y consume parte del cupo de tu plan."
+
+#: src/native/category-editor.tsx
+msgid "Clothes"
+msgstr "Ropa"
+
+#: src/native/photo-review.tsx
+msgid "Combine selected"
+msgstr "Combinar la selección"
+
+#: src/native/category-editor.tsx
+msgid "Craft supplies"
+msgstr "Material de manualidades"
+
+#: src/native/photo-review.tsx
+msgid "Create a new entry"
+msgstr "Crear un registro"
+
+#: src/native/category-editor.tsx
+msgid "Decorations"
+msgstr "Decoración"
+
+#: src/native/photo-review.tsx
+msgid "Description (optional)"
+msgstr "Descripción (opcional)"
+
+#: src/native/category-editor.tsx
+msgid "Electrical"
+msgstr "Material eléctrico"
+
+#: src/native/category-editor.tsx
+msgid "Hardware"
+msgstr "Ferretería"
+
+#: src/native/category-editor.tsx
+msgid "Household supplies"
+msgstr "Artículos del hogar"
+
+#: src/native/browse.tsx
+msgid "Last recorded activity"
+msgstr "Última actividad registrada"
+
+#. placeholder {0}: new Date(row.lastSeenAt).toLocaleString()
+#: src/native/record.tsx
+msgid "Last recorded activity: {0}"
+msgstr "Última actividad registrada: {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open original photo {0}"
+msgstr "Abrir foto original {0}"
+
+#. placeholder {0}: index + 1
+#: src/native/photo-review.tsx
+msgid "Open supporting photo {0}"
+msgstr "Abrir foto de referencia {0}"
+
+#: src/native/record-history.tsx
+msgid "Photo added. No inventory or location changes recorded."
+msgstr "Se añadió una foto. No se registraron cambios en el inventario ni en la ubicación."
+
+#: src/native/category-editor.tsx
+msgid "Pictures and artwork"
+msgstr "Fotografías y arte"
+
+#: src/native/photo-review.tsx
+msgid "Possible matches in this destination"
+msgstr "Posibles coincidencias en este lugar"
+
+#: src/native/category-picker.tsx
+msgid "Recently used"
+msgstr "Usadas recientemente"
+
+#: src/native/record-history.tsx
+msgid "Recorded {count} entries from photo review"
+msgstr "Se registraron {count} artículos tras revisar las fotos"
+
+#: src/native/category-picker.tsx
+msgid "Remove category {name}"
+msgstr "Quitar categoría {name}"
+
+#: src/native/photo-review.tsx
+msgid "Remove proposal"
+msgstr "Quitar propuesta"
+
+#. placeholder {0}: row.name
+#: src/native/photo-review.tsx
+msgid "Remove proposal {0}"
+msgstr "Quitar propuesta {0}"
+
+#: src/native/photo-review.tsx
+msgid "Review update"
+msgstr "Revisar el cambio"
+
+#: src/native/photo-review.tsx
+msgid "Save review for later"
+msgstr "Guardar la revisión para más tarde"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded."
+msgstr "Al guardar se actualizará el nombre y la descripción que escribas y se añadirán las categorías elegidas. La cantidad y la ubicación registradas se conservarán."
+
+#: src/native/category-editor.tsx
+msgid "Seasonal items"
+msgstr "Artículos de temporada"
+
+#: src/native/photo-review.tsx
+msgid "Select each existing record only once."
+msgstr "Selecciona cada registro existente una sola vez."
+
+#: src/native/category-editor.tsx
+msgid "Shoes"
+msgstr "Calzado"
+
+#: src/native/category-picker.tsx
+msgid "Showing cached categories"
+msgstr "Categorías guardadas en el dispositivo"
+
+#: src/native/category-editor.tsx
+msgid "Spare parts"
+msgstr "Repuestos"
+
+#: src/native/category-editor.tsx
+msgid "Toys and games"
+msgstr "Juguetes y juegos"
+
+#. placeholder {0}: thing.name ?? t`Item`
+#: src/native/photo-review.tsx
+msgid "Update {0}?"
+msgstr "¿Actualizar {0}?"
+
+#: src/native/photo-review.tsx
+msgid "Update existing record"
+msgstr "Actualizar el registro existente"

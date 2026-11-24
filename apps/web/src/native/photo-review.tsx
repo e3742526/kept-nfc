@@ -1,8 +1,9 @@
 import { AMOUNT_STRING, DEVICE_PHOTO_PROPOSAL_LIMIT, newId, normalize } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useRef, useState } from 'react';
-import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { CreateRegistryResult, Page, Tag } from '@/api/inventory/types';
+import { Checkbox } from 'react-aria-components';
+import { inventoryPaths } from '@/api/inventory/paths';
+import type { ThingView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
@@ -11,6 +12,7 @@ import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection, PendingCapture } from './bridge';
+import { CategoryPicker } from './category-picker';
 import { type InventoryCache, inventoryPath } from './inventory';
 import { draftFields, type PhotoReviewDraft, type ReviewEntry } from './outbox';
 
@@ -35,12 +37,13 @@ export function PhotoReview({
   const confirm = useConfirm();
   const [fields] = useState(() => draftFields(entry.capture));
   const [draft, setDraft] = useState(fields.review);
+  const [intent, setIntent] = useState(fields.captureIntent ?? 'record');
   const current = useRef(draft);
   const writes = useRef(Promise.resolve());
+  const finishing = useRef(false);
   const [error, setError] = useState<unknown>();
   const [busy, setBusy] = useState(false);
   const [group, setGroup] = useState('');
-  const [createdTags, setCreatedTags] = useState<{ id: string; name: string }[]>([]);
   const location = cache?.locations.find((loc) => loc.id === fields.locationId);
   const account = location?.ownerAccountId;
   const destination =
@@ -50,12 +53,17 @@ export function PhotoReview({
     destination && cache
       ? [...inventoryPath(cache, destination), destination.name].filter(Boolean).join(' › ')
       : (location?.name ?? t`Destination`);
-  const availableTags = [
-    ...(cache?.tags?.filter((tag) => tag.accountId === account) ?? []),
-    ...createdTags,
-  ].filter((item, index, all) => all.findIndex((other) => item.id === other.id) === index);
+  const availableTags = cache?.tags?.filter((tag) => tag.accountId === account) ?? [];
+  const photos = entry.capture.files.filter(({ file }) => file.role === 'photo');
+  const contents =
+    cache?.things.filter(
+      (thing) =>
+        thing.reviewState === 'confirmed' &&
+        thing.locationId === fields.locationId &&
+        (fields.boxId ? thing.containerId === fields.boxId : thing.placeId === fields.placeId),
+    ) ?? [];
 
-  function persist(next: PhotoReviewDraft) {
+  function persist(next: PhotoReviewDraft, captureIntent = intent) {
     setError(undefined);
     current.current = next;
     setDraft(next);
@@ -63,19 +71,23 @@ export function PhotoReview({
       await platform.outbox.retarget(
         connection,
         entry.capture.id,
-        JSON.stringify({ ...fields, review: next }),
+        JSON.stringify({ ...fields, captureIntent, review: next }),
       );
     });
     writes.current = save.catch(setError);
     return save;
   }
+
   function update(entries: ReviewEntry[]) {
+    if (finishing.current) return;
     void persist({ accepted: false, entries }).catch(() => {});
   }
-  const replace = (id: string, patch: Partial<ReviewEntry>) => {
+
+  function replace(id: string, patch: Partial<ReviewEntry>) {
     if (current.current)
       update(current.current.entries.map((row) => (row.id === id ? { ...row, ...patch } : row)));
-  };
+  }
+
   const emptyEntry = (name = ''): ReviewEntry => ({
     id: newId(),
     tagRequestId: newId(),
@@ -85,80 +97,107 @@ export function PhotoReview({
     categories: [],
     tags: [],
   });
+
   function validEntry(row: ReviewEntry) {
     return (
-      row.name.trim() &&
-      (!row.quantity || (AMOUNT_STRING.test(row.quantity) && Number(row.quantity) > 0))
+      (row.existing && !row.existing.update) ||
+      (row.name.trim() &&
+        (row.existing?.update ||
+          !row.quantity ||
+          (AMOUNT_STRING.test(row.quantity) && Number(row.quantity) > 0)))
     );
   }
 
   if (!draft || draft.accepted)
     return <ScreenHeader title={<Trans>Photo review</Trans>} onBack={onBack} />;
   const included = draft.entries.filter((row) => row.include);
-  const savedPhoto = entry.capture.files.find(({ file }) => file.role === 'photo');
+  const targetIds = included.flatMap(({ existing }) => (existing ? [existing.id] : []));
+  const canAccept =
+    included.length > 0 &&
+    included.every(validEntry) &&
+    new Set(targetIds).size === targetIds.length;
 
-  async function accept() {
-    if (busy || !included.length || included.some((row) => !validEntry(row))) return;
-    const entries = draft?.entries ?? [];
+  function finish(work: () => Promise<void>) {
+    if (finishing.current) return;
+    finishing.current = true;
     setBusy(true);
-    try {
-      await persist({
-        accepted: true,
-        acceptedAt: new Date().toISOString(),
-        entries: entries.map((row) => ({ ...row, name: row.name.trim() })),
+    void work()
+      .catch(setError)
+      .finally(() => {
+        setBusy(false);
+        finishing.current = false;
       });
-      onSaved();
-    } catch {
-      const reopened = { accepted: false, entries };
-      current.current = reopened;
-      setDraft(reopened);
-    } finally {
-      setBusy(false);
-    }
   }
 
-  async function addCategory(row: ReviewEntry, name: string) {
-    if (!account || !online || busy) return;
-    const existing = availableTags.find((tag) => normalize(tag.name) === normalize(name));
-    if (existing) {
-      replace(row.id, { tags: [...new Set([...row.tags, existing.id])] });
-      return;
-    }
-    setBusy(true);
-    try {
-      const path = inventoryPaths.accountRegistry(account, 'tags');
-      const { items } = await platform.transport.request<Page<Tag>>(
-        connection,
-        path + qs({ q: name, limit: 5 }),
-      );
-      const exact = items.find((tag) => normalize(tag.name) === normalize(name));
-      if (exact) {
-        setCreatedTags((tags) => [...tags, exact]);
-        replace(row.id, { tags: [...new Set([...row.tags, exact.id])] });
-        return;
+  function accept() {
+    if (!canAccept) return;
+    const entries = draft?.entries ?? [];
+    finish(async () => {
+      try {
+        await persist({
+          accepted: true,
+          acceptedAt: new Date().toISOString(),
+          entries: entries.map((row) => {
+            const name = row.name.trim();
+            const note = row.note?.trim() || null;
+            return {
+              ...row,
+              name,
+              ...(row.existing?.update
+                ? {
+                    existing: { ...row.existing, update: { ...row.existing.update, name, note } },
+                  }
+                : {}),
+            };
+          }),
+        });
+        onSaved();
+      } catch (failed) {
+        const reopened = { accepted: false, entries };
+        current.current = reopened;
+        setDraft(reopened);
+        throw failed;
       }
-      setCreatedTags((tags) => [...tags, ...items]);
-      const near = items.map((tag) => tag.name).join(', ');
+    });
+  }
+
+  function openPhoto(index: number) {
+    const photo = photos[index];
+    if (photo)
+      void platform.media
+        .openPending(connection, { id: entry.capture.id, file: photo.file.id })
+        .catch(setError);
+  }
+
+  async function updateExisting(row: ReviewEntry, target: string) {
+    if (!online || busy) return;
+    setBusy(true);
+    setError(undefined);
+    try {
+      const thing = await platform.transport.request<ThingView>(
+        connection,
+        inventoryPaths.thing(target),
+      );
       if (
         !(await confirm({
-          title: t`Create category ${name}?`,
-          ...(near ? { body: t`Existing categories with similar names include ${near}.` } : {}),
-          confirmLabel: t`Create`,
+          title: t`Update ${thing.name ?? t`Item`}?`,
+          body: t`Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded.`,
+          confirmLabel: t`Review update`,
           cancelLabel: t`Cancel`,
         }))
       )
         return;
-      const result = await platform.transport.request<CreateRegistryResult<'tags'>>(
-        connection,
-        path,
-        {
-          method: 'POST',
-          idempotencyKey: newId(),
-          body: { name },
+      replace(row.id, {
+        existing: {
+          id: target,
+          update: {
+            key: newId(),
+            rowVersion: thing.rowVersion,
+            name: row.name,
+            note: row.note ?? null,
+          },
         },
-      );
-      setCreatedTags((tags) => [...tags, result.item]);
-      replace(row.id, { tags: [...new Set([...row.tags, result.item.id])] });
+      });
     } catch (failed) {
       setError(failed);
     } finally {
@@ -166,36 +205,46 @@ export function PhotoReview({
     }
   }
 
+  function saveForLater() {
+    const next = current.current;
+    if (!next) return;
+    finish(async () => {
+      await persist(next);
+      onBack();
+    });
+  }
+
   return (
     <section className="grid gap-3">
-      <ScreenHeader
-        title={<Trans>Photo review</Trans>}
-        backDisabled={busy}
-        onBack={() => {
-          if (current.current)
-            void persist(current.current)
-              .then(onBack)
-              .catch(() => {});
-        }}
-      />
+      <ScreenHeader title={<Trans>Photo review</Trans>} backDisabled={busy} onBack={saveForLater} />
       <p className="m-0 text-small">
         <Trans>Destination</Trans> <bdi>{path}</bdi>
       </p>
-      {savedPhoto && (
-        <Button
-          variant="secondary"
-          onPress={() => {
-            void platform.media
-              .openPending(connection, { id: entry.capture.id, file: savedPhoto.file.id })
-              .catch(setError);
-          }}
-        >
-          <Trans>Open original photo</Trans>
-        </Button>
+      {photos.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {photos.map(({ file }, index) => (
+            <Button key={file.id} variant="secondary" size="small" onPress={() => openPhoto(index)}>
+              {photos.length === 1 ? t`Open original photo` : t`Open original photo ${index + 1}`}
+            </Button>
+          ))}
+        </div>
       )}
-      <p className="m-0 text-small">
-        {fields.captureIntent === 'add' ? t`Add contents` : t`Record existing contents`}
-      </p>
+      <Select
+        label={t`Action`}
+        selectedKey={intent}
+        isDisabled={busy}
+        items={[
+          { id: 'record', label: t`Record existing contents` },
+          { id: 'add', label: t`Add contents` },
+        ]}
+        onSelectionChange={(key) => {
+          const next = key === 'add' ? 'add' : 'record';
+          setIntent(next);
+          if (current.current) void persist(current.current, next).catch(() => {});
+        }}
+      >
+        {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
+      </Select>
       <div className="flex flex-wrap gap-2">
         <Button
           variant="secondary"
@@ -212,73 +261,144 @@ export function PhotoReview({
           <Trans>Deselect all</Trans>
         </Button>
       </div>
-      {draft.entries.map((row) => (
-        <div key={row.id} className="kept-card">
-          <label className="flex min-h-10 items-center gap-2 text-small">
-            <input
-              type="checkbox"
-              checked={row.include}
-              disabled={busy}
-              onChange={(event) => replace(row.id, { include: event.target.checked })}
+      {draft.entries.map((row) => {
+        const name = normalize(row.name);
+        const matches = contents.filter(
+          (item) =>
+            item.id === row.existing?.id || (name && item.name && normalize(item.name) === name),
+        );
+        const association = row.existing && !row.existing.update;
+        return (
+          <div key={row.id} className="kept-card">
+            <div className="flex items-center justify-between gap-2">
+              <Checkbox
+                className="flex min-h-10 items-center gap-2 text-start"
+                isSelected={row.include}
+                isDisabled={busy}
+                onChange={(include) => replace(row.id, { include })}
+              >
+                {({ isSelected }) => (
+                  <>
+                    <span aria-hidden>{isSelected ? '✓' : '□'}</span>
+                    <Trans>Include</Trans> <bdi>{row.name}</bdi>
+                  </>
+                )}
+              </Checkbox>
+              <Button
+                variant="ghost"
+                size="small"
+                isDisabled={busy}
+                aria-label={row.name ? t`Remove proposal ${row.name}` : t`Remove proposal`}
+                onPress={() => update(draft.entries.filter(({ id }) => id !== row.id))}
+              >
+                <Trans>Remove</Trans>
+              </Button>
+            </div>
+            <TextField
+              label={t`Name`}
+              value={row.name}
+              isDisabled={busy || !!association}
+              inputProps={{ maxLength: 200 }}
+              onChange={(name) => replace(row.id, { name })}
             />
-            <Trans>Include</Trans> <bdi>{row.name}</bdi>
-          </label>
-          <TextField
-            label={t`Description`}
-            value={row.name}
-            isDisabled={busy}
-            inputProps={{ maxLength: 200 }}
-            onChange={(name) => replace(row.id, { name })}
-          />
-          <TextField
-            label={t`Quantity`}
-            value={row.quantity}
-            isDisabled={busy}
-            inputProps={{ inputMode: 'decimal', maxLength: 16 }}
-            onChange={(quantity) => replace(row.id, { quantity })}
-          />
-          {!!availableTags.length && (
-            <Select
-              label={t`Categories`}
-              selectionMode="multiple"
-              items={availableTags}
-              isDisabled={busy}
-              value={row.tags}
-              onChange={(keys) => replace(row.id, { tags: keys.map(String).slice(0, 8) })}
-            >
-              {(tag) => (
-                <SelectItem id={tag.id}>
-                  <bdi>{tag.name}</bdi>
-                </SelectItem>
-              )}
-            </Select>
-          )}
-          {row.categories.some(
-            (name) => !availableTags.some((tag) => normalize(tag.name) === normalize(name)),
-          ) && (
-            <div className="grid gap-1">
-              <span className="text-small">
-                <Trans>Suggested categories</Trans>
-              </span>
-              {row.categories
-                .filter(
-                  (name) => !availableTags.some((tag) => normalize(tag.name) === normalize(name)),
-                )
-                .map((name) => (
+            {matches.length > 0 && (
+              <details open={row.existing ? true : undefined}>
+                <summary className="min-h-10 text-small">
+                  <Trans>Possible matches in this destination</Trans>
+                </summary>
+                <div className="flex flex-wrap gap-2">
                   <Button
-                    key={name}
                     variant="secondary"
                     size="small"
-                    isDisabled={!online || !account || busy}
-                    onPress={() => void addCategory(row, name)}
+                    isDisabled={busy}
+                    aria-pressed={!row.existing}
+                    onPress={() => replace(row.id, { existing: undefined })}
                   >
-                    <Trans>Create</Trans> <bdi>{name}</bdi>
+                    <Trans>Create a new entry</Trans>
                   </Button>
-                ))}
-            </div>
-          )}
-        </div>
-      ))}
+                  {matches.map((item) => (
+                    <div className="grid gap-1" key={item.id}>
+                      <bdi>{item.name}</bdi>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        isDisabled={busy}
+                        aria-pressed={association && row.existing?.id === item.id}
+                        onPress={() => replace(row.id, { existing: { id: item.id } })}
+                      >
+                        <Trans>Attach photos only</Trans>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        isDisabled={busy || !online}
+                        aria-pressed={row.existing?.id === item.id && !!row.existing.update}
+                        onPress={() => void updateExisting(row, item.id)}
+                      >
+                        <Trans>Update existing record</Trans>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
+            {!association && account && (
+              <CategoryPicker
+                connection={connection}
+                accountId={account}
+                online={online}
+                canCreate={location.role !== 'viewer'}
+                options={availableTags}
+                selected={row.tags}
+                suggestions={row.categories}
+                disabled={busy}
+                onChange={(tags) => replace(row.id, { tags })}
+              />
+            )}
+            <details>
+              <summary className="min-h-10 text-small">
+                <Trans>Details</Trans>
+              </summary>
+              <div className="grid gap-2">
+                {!association && (
+                  <TextField
+                    label={t`Description (optional)`}
+                    value={row.note ?? fields.note ?? ''}
+                    isDisabled={busy}
+                    inputProps={{ maxLength: 500 }}
+                    onChange={(note) => replace(row.id, { note })}
+                  />
+                )}
+                {!row.existing && (
+                  <TextField
+                    label={t`Quantity (optional)`}
+                    value={row.quantity}
+                    description={
+                      row.estimatedQuantity ? t`AI estimate: ${row.estimatedQuantity}` : undefined
+                    }
+                    isDisabled={busy}
+                    inputProps={{ inputMode: 'decimal', maxLength: 17 }}
+                    onChange={(quantity) => replace(row.id, { quantity })}
+                  />
+                )}
+                {row.evidence?.map(
+                  (index) =>
+                    photos[index] && (
+                      <Button
+                        key={index}
+                        size="small"
+                        variant="secondary"
+                        onPress={() => openPhoto(index)}
+                      >
+                        {t`Open supporting photo ${index + 1}`}
+                      </Button>
+                    ),
+                )}
+              </div>
+            </details>
+          </div>
+        );
+      })}
       <Button
         variant="secondary"
         isDisabled={busy || draft.entries.length >= DEVICE_PHOTO_PROPOSAL_LIMIT}
@@ -286,8 +406,11 @@ export function PhotoReview({
       >
         <Trans>Add entry</Trans>
       </Button>
-      {included.length > 1 && (
-        <div className="kept-card">
+      {included.length > 1 && targetIds.length === 0 && (
+        <details className="kept-card">
+          <summary className="min-h-10 text-small">
+            <Trans>Combine into one entry</Trans>
+          </summary>
           <TextField
             label={t`Group description`}
             value={group}
@@ -298,23 +421,57 @@ export function PhotoReview({
             variant="secondary"
             isDisabled={busy || !group.trim()}
             onPress={() => {
-              update([emptyEntry(group.trim())]);
+              update([
+                ...draft.entries.filter((row) => !row.include),
+                {
+                  ...emptyEntry(group.trim()),
+                  tags: [...new Set(included.flatMap((row) => row.tags))].slice(0, 50),
+                  categories: [...new Set(included.flatMap((row) => row.categories))],
+                  evidence: [...new Set(included.flatMap((row) => row.evidence ?? []))],
+                },
+              ]);
               setGroup('');
             }}
           >
-            <Trans>Combine into one entry</Trans>
+            <Trans>Combine selected</Trans>
           </Button>
-        </div>
+        </details>
+      )}
+      {new Set(targetIds).size !== targetIds.length && (
+        <p role="alert">
+          <Trans>Select each existing record only once.</Trans>
+        </p>
       )}
       {error ? <p role="alert">{errorText(error)}</p> : null}
-      <Button
-        variant="primary"
-        isPending={busy}
-        isDisabled={!included.length || included.some((row) => !validEntry(row))}
-        onPress={() => void accept()}
-      >
+      <Button variant="primary" isPending={busy} isDisabled={!canAccept} onPress={accept}>
         <Trans>Save selected entries</Trans>
       </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" isDisabled={busy} onPress={saveForLater}>
+          <Trans>Save review for later</Trans>
+        </Button>
+        <Button
+          variant="ghost"
+          isDisabled={busy}
+          onPress={() =>
+            finish(async () => {
+              if (
+                !(await confirm({
+                  title: t`Discard this draft?`,
+                  confirmLabel: t`Discard draft`,
+                  destructive: true,
+                }))
+              )
+                return;
+              await writes.current;
+              await platform.outbox.discard(connection, entry.capture.id);
+              onSaved();
+            })
+          }
+        >
+          <Trans>Discard draft</Trans>
+        </Button>
+      </div>
     </section>
   );
 }

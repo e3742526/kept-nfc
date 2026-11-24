@@ -32,6 +32,7 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
+import { CategoryPicker } from './category-picker';
 import { CustomFieldEditor, nativeCustomPatch } from './custom-fields';
 import { type Destination, DestinationPicker } from './destination';
 import type { InventoryCache } from './inventory';
@@ -72,10 +73,12 @@ export function EditRecord({
   const conditions = useConditionLabels();
   const [base] = useState(() => thing && formValues(thing));
   const [values, setValues] = useState(base);
+  const [tags, setTags] = useState(() => thing?.tags.map(({ id }) => id) ?? []);
   const [customDraft, setCustomDraft] = useState<Record<string, unknown>>({});
   const fieldLabel = useFieldLabel();
   const [roomName, setRoomName] = useState(place?.name ?? '');
   const row = thing ?? place;
+  const account = cache.locations.find(({ id }) => id === thing?.locationId)?.ownerAccountId;
   const [rowVersion] = useState(row?.rowVersion);
   const [destination, setDestination] = useState<Destination>();
   const [busy, setBusy] = useState(false);
@@ -115,12 +118,20 @@ export function EditRecord({
     return run(async () => {
       if (thing && base && values) {
         const retyped = values.typeId !== base.typeId;
+        const { custom, invalid } = nativeCustomPatch(thing, customDraft);
+        const affectedFields = thing.fields.filter(
+          (field) =>
+            Object.hasOwn(custom, field.key) || invalid.some(({ key }) => key === field.key),
+        );
         if (
           retyped &&
-          Object.keys(customDraft).length &&
+          affectedFields.length > 0 &&
           !(await confirm({
             title: t`Change type?`,
-            body: t`Unsaved custom-field edits will be discarded. The new type's fields appear after saving.`,
+            body: [
+              t`Unsaved custom-field edits will be discarded. The new type's fields appear after saving.`,
+              ...affectedFields.map(fieldLabel),
+            ].join('\n'),
             confirmLabel: t`Save`,
             cancelLabel: t`Cancel`,
           }))
@@ -140,8 +151,10 @@ export function EditRecord({
           return;
         }
         const body = toPatch(base, values, thing.fields);
+        if (tags.length !== thing.tags.length || thing.tags.some(({ id }) => !tags.includes(id))) {
+          body.tagIds = tags;
+        }
         if (!retyped) {
-          const { custom, invalid } = nativeCustomPatch(thing, customDraft);
           const field = invalid[0];
           if (field) {
             const label = fieldLabel(field);
@@ -358,6 +371,21 @@ export function EditRecord({
               >
                 {(option) => <SelectItem id={option.id}>{option.name}</SelectItem>}
               </Select>
+              {thing && account && (
+                <CategoryPicker
+                  connection={connection}
+                  accountId={account}
+                  online
+                  canCreate
+                  options={[
+                    ...thing.tags,
+                    ...(cache.tags?.filter((tag) => tag.accountId === account) ?? []),
+                  ]}
+                  selected={tags}
+                  disabled={busy}
+                  onChange={setTags}
+                />
+              )}
               {thing && values.typeId === base?.typeId && (
                 <CustomFieldEditor
                   thing={thing}
