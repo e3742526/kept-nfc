@@ -504,10 +504,11 @@ export function CaptureScreen({
     setWaiting(c.waiting + c.uploading);
   }, [store]);
   useEffect(() => {
+    if (phase !== 'camera') return;
     void refreshCounts();
     const id = setInterval(() => void refreshCounts(), 2000);
     return () => clearInterval(id);
-  }, [refreshCounts]);
+  }, [phase, refreshCounts]);
 
   const loc = world?.locations.find((l) => l.id === target?.locationId);
   // A reading lands in its meter's location, whatever the place chip says.
@@ -1340,11 +1341,18 @@ function SummaryPhase({
 }) {
   const [pending, setPending] = useState<Set<string> | null>(null);
   const [undoing, setUndoing] = useState(false);
+  const shotKeys = useMemo(() => shots.map((shot) => shot.idempotencyKey), [shots]);
   useEffect(() => {
     let live = true;
     const read = async () => {
-      const keys = new Set((await store.pending()).map((e) => e.idempotencyKey));
-      if (live) setPending(keys);
+      const keys = await store.pendingKeys(shotKeys);
+      if (live) {
+        setPending((previous) =>
+          previous?.size === keys.size && [...keys].every((key) => previous.has(key))
+            ? previous
+            : keys,
+        );
+      }
     };
     void read();
     const id = setInterval(() => void read(), 2000);
@@ -1352,7 +1360,7 @@ function SummaryPhase({
       live = false;
       clearInterval(id);
     };
-  }, [store]);
+  }, [store, shotKeys]);
   const waiting = pending
     ? shots.filter((s) => pending.has(s.idempotencyKey)).length
     : shots.length;

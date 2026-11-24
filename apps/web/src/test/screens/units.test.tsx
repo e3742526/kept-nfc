@@ -101,7 +101,7 @@ describe('label stock sizes in either setting', () => {
     await renderApp(`/labels?loc=${IDS.home}&blank=24`, { state: scenario(units) });
     const a4Card = await screen.findByRole('radio', { name: /A4 sheet.*24 labels/ });
     expect(a4Card.closest('label')).toHaveTextContent(a4);
-    const letterCard = screen.getByRole('radio', { name: /Letter sheet/ });
+    const letterCard = screen.getByRole('radio', { name: /Letter sheet.*30 labels/ });
     expect(letterCard.closest('label')).toHaveTextContent(letter);
     const tape = screen.getByRole('radio', {
       name: units === 'metric' ? /12 mm tape/ : /0.47 in tape/,

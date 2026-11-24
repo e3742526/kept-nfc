@@ -355,24 +355,29 @@ function inside(poly: readonly Pt[], x: number, z: number): boolean {
 export function largestRect(poly: readonly Pt[]): Rect {
   const xs = [...new Set(poly.map((p) => p[0]))].sort((a, b) => a - b);
   const zs = [...new Set(poly.map((p) => p[1]))].sort((a, b) => a - b);
+  // A prefix count of outside cells lets each candidate check its whole area in constant time.
+  const stride = zs.length;
+  const outside = new Int32Array(xs.length * stride);
+  const at = (x: number, z: number) => outside[x * stride + z] as number;
+  for (let x = 1; x < xs.length; x++) {
+    const midX = ((xs[x - 1] as number) + (xs[x] as number)) / 2;
+    for (let z = 1; z < zs.length; z++) {
+      const midZ = ((zs[z - 1] as number) + (zs[z] as number)) / 2;
+      outside[x * stride + z] =
+        Number(!inside(poly, midX, midZ)) + at(x - 1, z) + at(x, z - 1) - at(x - 1, z - 1);
+    }
+  }
   let best: Rect = { x: 0, z: 0, w: 0, d: 0 };
   for (let a = 0; a < xs.length; a++)
     for (let b = a + 1; b < xs.length; b++)
       for (let c = 0; c < zs.length; c++)
         for (let e = c + 1; e < zs.length; e++) {
-          let ok = true;
-          for (let i = a; i < b && ok; i++)
-            for (let k = c; k < e && ok; k++)
-              ok = inside(
-                poly,
-                ((xs[i] as number) + (xs[i + 1] as number)) / 2,
-                ((zs[k] as number) + (zs[k + 1] as number)) / 2,
-              );
+          if (at(b, e) - at(a, e) - at(b, c) + at(a, c) !== 0) continue;
           const x0 = xs[a] as number;
           const z0 = zs[c] as number;
           const w = (xs[b] as number) - x0;
           const d = (zs[e] as number) - z0;
-          if (ok && w * d > best.w * best.d) best = { x: x0, z: z0, w, d };
+          if (w * d > best.w * best.d) best = { x: x0, z: z0, w, d };
         }
   return best;
 }
@@ -445,12 +450,14 @@ function separate(rooms: Live[]): void {
     !a.skip && !b.skip && a.floor === b.floor && a !== b && rectsOverlap(a, b);
   for (let guard = 0; guard < 400; guard++) {
     let pair: [Live, Live] | null = null;
-    outer: for (const a of rooms)
-      for (const b of rooms)
-        if (a !== b && rooms.indexOf(a) < rooms.indexOf(b) && hit(a, b)) {
+    outer: for (const [i, a] of rooms.entries())
+      for (let j = i + 1; j < rooms.length; j++) {
+        const b = rooms[j] as Live;
+        if (hit(a, b)) {
           pair = [a, b];
           break outer;
         }
+      }
     if (!pair) return;
     const [a, b] = pair;
     const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
@@ -711,10 +718,13 @@ export function matchFloors(
     return planFloors.map(() => ({ id: at.id, name: at.name, create: false }));
   }
   const used = new Set<string>();
+  const normalized = existing.map((floor) => ({ floor, name: normalize(floor.name) }));
   return planFloors.map((f) => {
-    const same = f.label
-      ? existing.find((e) => !used.has(e.id) && normalize(e.name) === normalize(f.label as string))
-      : undefined;
+    const name = f.label ? normalize(f.label) : null;
+    const same =
+      name === null
+        ? undefined
+        : normalized.find((entry) => !used.has(entry.floor.id) && entry.name === name)?.floor;
     if (same) {
       used.add(same.id);
       return { id: same.id, name: same.name, create: false };

@@ -13,7 +13,7 @@ import {
   depthOpacity,
   LAYER_GAP,
   paintOrder,
-  project,
+  projector,
   START,
   world3D,
 } from './layout3d';
@@ -258,8 +258,9 @@ describe('world3D and project', () => {
 
   it('projects deterministically and paints the farthest first', () => {
     const w = world3D(tree);
-    const P = new Map([...w.pos].map(([id, p]) => [id, project(p, cam)]));
-    expect(project(w.pos.get('garage') as never, cam)).toEqual(P.get('garage'));
+    const project = projector(cam);
+    const P = new Map([...w.pos].map(([id, p]) => [id, project(p)]));
+    expect(projector(cam)(w.pos.get('garage') as never)).toEqual(P.get('garage'));
     const order = paintOrder(P);
     const z = order.map((id) => P.get(id)?.z ?? 0);
     expect([...z].sort((a, b) => a - b)).toEqual(z);
@@ -272,8 +273,8 @@ describe('world3D and project', () => {
 
   it('turns: a quarter turn moves a node round the target', () => {
     const p = { x: 100, y: 0, z: 0 };
-    const a = project(p, { ...cam, yaw: 0, pitch: 0 });
-    const b = project(p, { ...cam, yaw: Math.PI / 2, pitch: 0 });
+    const a = projector({ ...cam, yaw: 0, pitch: 0 })(p);
+    const b = projector({ ...cam, yaw: Math.PI / 2, pitch: 0 })(p);
     expect(a.x).toBeCloseTo(500, 5);
     expect(b.x).toBeCloseTo(400, 5);
   });

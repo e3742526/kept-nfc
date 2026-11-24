@@ -13,7 +13,7 @@ import type { Mail } from '../mail/mailer.js';
 import { reportKey } from '../storage/blob-store.js';
 import { reportJobs } from './jobs.js';
 import { runReportSchedules } from './schedules.js';
-import { purgeExpiredReports, RATE_LIMIT } from './service.js';
+import { purgeExpiredReports, RATE_LIMIT, type ReportRunView } from './service.js';
 
 // The inventory report, end to end through the front door. Each report is rendered
 // for real (Typst in its child process) and read back with poppler's pdftotext/pdfinfo.
@@ -78,18 +78,8 @@ async function work(as: Person, runId: string): Promise<void> {
 
 const request = (as: Person, body: object) => call(t, '/api/v1/reports/inventory', { as, body });
 
-type RunView = {
-  id: string;
-  status: string;
-  progress: { done: number; total: number };
-  fileUrl?: string;
-  viewUrl?: string;
-  bytes?: number;
-  error?: string;
-  expiresAt: string;
-};
 const runOf = async (as: Person, id: string) =>
-  ok(await call(t, `/api/v1/reports/${id}`, { as })) as unknown as RunView;
+  ok(await call(t, `/api/v1/reports/${id}`, { as })) as unknown as ReportRunView;
 
 /** Requests a report, runs its job, and downloads the PDF through its signed URL. */
 async function report(as: Person, body: object): Promise<{ id: string; pdf: Buffer }> {
@@ -253,9 +243,6 @@ describe('POST /api/v1/reports/inventory', () => {
     const res = await request(ann, { scope: { locationId: home.id }, locale: 'en' });
     const body = ok(res, 202) as unknown as { id: string; status: string; expiresAt: string };
     expect(body.status).toBe('queued');
-    const hours = (Date.parse(body.expiresAt) - Date.now()) / 3_600_000;
-    expect(hours).toBeGreaterThan(23.9);
-    expect(hours).toBeLessThanOrEqual(24);
     expect(sent).toEqual([{ name: 'report', data: { runId: body.id } }]);
     const events = await own<{ action: string; actor_id: string; diff: Record<string, unknown> }>(
       db,
@@ -268,6 +255,8 @@ describe('POST /api/v1/reports/inventory', () => {
     expect(events[0]?.actor_id).toBe(ann.userId);
     const run = await runOf(ann, body.id);
     expect(run).toMatchObject({ status: 'queued', progress: { done: 0, total: 0 } });
+    expect(run.expiresAt).toBe(body.expiresAt);
+    expect(Date.parse(run.expiresAt) - Date.parse(run.createdAt)).toBe(24 * 60 * 60 * 1000);
     expect(run.fileUrl).toBeUndefined();
     expect(run.viewUrl).toBeUndefined();
   });

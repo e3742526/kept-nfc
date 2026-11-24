@@ -18,19 +18,15 @@ export function reportJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: 'report',
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES.report,
-      handler: async ({ data, scope, client }) => {
+      handler: async ({ data, scope }) => {
         const runId = (data as { runId?: unknown } | null)?.runId;
         if (typeof runId !== 'string' || !UUID.test(runId)) {
           throw new Error('report job: data names no run');
         }
         const app = deps.pools.app;
         if (!app) throw new Error('report job: the worker has no kept_app pool');
-        // runJob() holds this (otherwise unused) scoped transaction open while the run's own
-        // steps commit on their own connections, and a render may take up to a minute: past the
-        // pool's 30 s idle-in-transaction limit the server would end it and fail the job.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '180s'`);
         await runReport(
           {
             pools: { app },

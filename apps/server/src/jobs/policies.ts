@@ -13,6 +13,8 @@ export type JobPolicy = {
   retryBackoff: boolean;
   /** How long one attempt may run before pg-boss fails it (and retries, if any are left). */
   expireInSeconds: number;
+  /** Idle fetch interval for background queues whose scheduled start can wait. */
+  pollingIntervalSeconds?: number;
 };
 
 const MAINTENANCE: JobPolicy = {
@@ -21,13 +23,14 @@ const MAINTENANCE: JobPolicy = {
   retryBackoff: true,
   expireInSeconds: 300,
 };
+const SCHEDULED_CLEANUP: JobPolicy = { ...MAINTENANCE, pollingIntervalSeconds: 15 };
 const MAIL: JobPolicy = { retryLimit: 5, retryDelay: 30, retryBackoff: true, expireInSeconds: 60 };
 
 export const JOB_POLICIES = {
   'repair-orphans': MAINTENANCE,
   'expire-memberships': { ...MAINTENANCE, retryDelay: 30, expireInSeconds: 120 },
-  'audit-partitions': { ...MAINTENANCE, retryLimit: 3, expireInSeconds: 60 },
-  'prune-stale-rows': MAINTENANCE,
+  'audit-partitions': { ...SCHEDULED_CLEANUP, retryLimit: 3, expireInSeconds: 60 },
+  'prune-stale-rows': SCHEDULED_CLEANUP,
   // Runs every 15 minutes anyway: one retry, then the next run.
   'check-admin-alerts': {
     retryLimit: 1,
@@ -53,7 +56,7 @@ export const JOB_POLICIES = {
   // PDF text runs in a limited child process with a 20 s limit; one retry.
   'pdf-text': { retryLimit: 1, retryDelay: 30, retryBackoff: true, expireInSeconds: 60 },
   // Daily: llm_calls partitions ahead, old partitions rolled up and dropped, counters pruned.
-  'ai-maintenance': MAINTENANCE,
+  'ai-maintenance': SCHEDULED_CLEANUP,
   // Step 3 (D206): a cap crossed 80% or 100%, or the instance key was rejected; mail, so
   // retried like mail (5 attempts).
   'ai-notice': MAIL,
@@ -64,7 +67,7 @@ export const JOB_POLICIES = {
   // person's back: the run shows `failed` with its reason and they ask again.
   report: { retryLimit: 0, retryDelay: 0, retryBackoff: false, expireInSeconds: 180 },
   // Hourly: reports past their 24 hours, and their files.
-  'purge-reports': { ...MAINTENANCE, expireInSeconds: 600 },
+  'purge-reports': { ...SCHEDULED_CLEANUP, expireInSeconds: 600 },
   // 1.3 (D228): hourly, the scheduled reports due; each run is its own `report` job.
   'report-schedules': { ...MAINTENANCE, expireInSeconds: 600 },
   // Step 3, alpha safety: the nightly backup. One retry
@@ -88,7 +91,7 @@ export const JOB_POLICIES = {
   // shows `failed`); zipping the report and every file takes a while.
   'claim-pack': { retryLimit: 0, retryDelay: 0, retryBackoff: false, expireInSeconds: 1800 },
   // Hourly: export runs past their expiry, and their blobs.
-  'purge-exports': MAINTENANCE,
+  'purge-exports': SCHEDULED_CLEANUP,
   // A location export and
   // the two archive imports. Never retried behind the person's back: a failed run shows `failed`,
   // and an import is resumed by the person (its source ids make a re-run safe).
@@ -98,7 +101,7 @@ export const JOB_POLICIES = {
   // Alias enrichment after an import: model calls like extraction's, so its policy.
   'enrich-aliases': { retryLimit: 2, retryDelay: 20, retryBackoff: true, expireInSeconds: 150 },
   // Daily: abandoned import runs and their archives, after 7 days.
-  'prune-imports': MAINTENANCE,
+  'prune-imports': SCHEDULED_CLEANUP,
   // Step 6. An assistant turn: one retry, resuming after the last stored step so a
   // paid call is never repeated; 200 s covers the turn's 180 s bound (TURN_LIMITS).
   'assistant-turn': { retryLimit: 1, retryDelay: 5, retryBackoff: false, expireInSeconds: 200 },
@@ -112,7 +115,7 @@ export const JOB_POLICIES = {
   // One delivery, 10 attempts over about 24 hours, as step 4's channel webhook.
   'webhook-deliver': { retryLimit: 9, retryDelay: 113, retryBackoff: true, expireInSeconds: 60 },
   // Daily: expired threads and proposals (D23, D22; kept.prune_assistant).
-  'assistant-maintenance': MAINTENANCE,
+  'assistant-maintenance': SCHEDULED_CLEANUP,
   // D180: mails every active user about one configuration change. Never retried: a retry
   // would mail everyone already told a second time (one failed address is logged, not thrown).
   'transparency-notice': {

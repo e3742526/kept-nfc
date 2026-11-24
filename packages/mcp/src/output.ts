@@ -81,8 +81,11 @@ export function decodeOffsetCursor(cursor: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
 export function byteLength(value: unknown): number {
-  return new TextEncoder().encode(JSON.stringify(value)).length;
+  return encoder.encode(JSON.stringify(value)).length;
 }
 
 export type FitOptions = {
@@ -158,7 +161,8 @@ export function fit<T>(env: Envelope<T>, opts: FitOptions = {}): Envelope<T> {
   const trimmed: string[] = [...(current.trimmed ?? [])];
   const build = (): EnvelopeOk<T> => ({ ...current, data: data as T, trimmed: [...trimmed] });
   for (;;) {
-    if (byteLength(build()) <= limit) return build();
+    const output = build();
+    if (byteLength(output) <= limit) return output;
     const largest = largestRemovable(data, '');
     if (!largest) return toolError('output_too_large', 'Ask for fewer items or a narrower query.');
     delete (largest.parent as Record<string, unknown>)[largest.key];
@@ -230,16 +234,18 @@ function largestRemovable(node: unknown, path: string): Slot | null {
   } else if (node && typeof node === 'object') {
     for (const [key, value] of Object.entries(node)) {
       const p = path ? `${path}.${key}` : key;
-      if (!isProtected(key) && !holdsProtected(value))
+      if (!isProtected(key) && !holdsProtected(value)) {
         consider({ parent: node, key, path: p, size: byteLength(value) });
-      if (value && typeof value === 'object') consider(largestRemovable(value, p));
+      } else if (value && typeof value === 'object') {
+        consider(largestRemovable(value, p));
+      }
     }
   }
   return best;
 }
 
 function base64url(s: string): string {
-  const bytes = new TextEncoder().encode(s);
+  const bytes = encoder.encode(s);
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -249,7 +255,7 @@ function unbase64url(s: string): string | null {
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(s)) return null;
   try {
     const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
-    return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+    return decoder.decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
   } catch {
     return null;
   }

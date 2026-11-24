@@ -32,7 +32,6 @@ import {
   arrowStep,
   baseOf,
   canPutOn,
-  childrenOn,
   clampIn,
   drawnRect,
   dropOn,
@@ -1418,8 +1417,19 @@ export class MapEngine {
       }
       const close = this.view.zoom > 1.8 || !!focused;
       if (focused || planView) {
+        const levelByRoom = new Map(this.plan.rooms.map((room) => [room.id, room.levelKey]));
+        const namesByHost = new Map<string, string[]>();
+        if (planView && close) {
+          for (const item of this.plan.items) {
+            if (!item.on) continue;
+            const names = namesByHost.get(item.on);
+            if (names) names.push(item.name);
+            else namesByHost.set(item.on, [item.name]);
+          }
+        }
         for (const it of this.plan.items) {
-          if (this.itemLevel(it) !== levelKey || (focused && it.roomId !== focused)) continue;
+          if (levelByRoom.get(it.roomId) !== levelKey || (focused && it.roomId !== focused))
+            continue;
           const n = this.info.countIn(it);
           if (!planView && n === null) continue;
           if ((planView && it.on) || this.unseen(it)) continue;
@@ -1427,9 +1437,9 @@ export class MapEngine {
           if (!g) continue;
           let html: string;
           if (planView) {
-            const onIt = childrenOn(this.plan.items, it.id).map((c) => c.name);
+            const onIt = namesByHost.get(it.id);
             html = `<b>${esc(it.name)}</b>${n !== null ? `${esc(this.info.text.sep)}${n}` : ''}`;
-            if (close && onIt.length)
+            if (onIt?.length)
               html += `\n${esc(onIt.map((x) => this.info.text.onIt(x)).join('\n'))}`;
             const first = close ? this.info.preview(it) : [];
             if (first.length) {
@@ -1455,31 +1465,34 @@ export class MapEngine {
     const h = this.stage.clientHeight;
     // Place and measure every label, then keep those that fit (declutter.ts): nothing is cut off
     // and no text is written over other text or the map's controls.
-    const placed = want.map((l, i) => {
+    const prepared = want.map((l, i) => {
       let el = this.pool[i];
       if (!el) {
         el = document.createElement('div');
         this.labelsEl.append(el);
         this.pool[i] = el;
       }
-      const v = l.at.clone().project(this.camera);
-      el.className = l.cls;
+      if (el.className !== l.cls) el.className = l.cls;
       if (el._html !== l.html) {
         el.innerHTML = l.html;
         el._html = l.html;
       }
-      el.hidden = false;
+      if (el.hidden) el.hidden = false;
+      return { el, label: l, v: l.at.clone().project(this.camera) };
+    });
+    // Read label and obstacle geometry together after preparing the DOM for every label.
+    const placed = prepared.map(({ el, label, v }) => {
       const bw = el.offsetWidth;
       const bh = el.offsetHeight;
       // Never cut off at the edge: slide it in instead.
       const x = Math.min(Math.max(((v.x + 1) / 2) * w, bw / 2 + 6), w - bw / 2 - 6);
       const y = ((1 - v.y) / 2) * h;
-      const top = l.center ? y - bh / 2 : y - bh;
-      el.style.transform = `translate(${x}px, ${y}px) translate(-50%, ${l.center ? '-50%' : '-100%'})`;
+      const top = label.center ? y - bh / 2 : y - bh;
       return {
         el,
+        transform: `translate(${x}px, ${y}px) translate(-50%, ${label.center ? '-50%' : '-100%'})`,
         off: Math.abs(v.x) > 1.05 || Math.abs(v.y) > 1.05,
-        box: { x: x - bw / 2, y: top, w: bw, h: bh, priority: l.priority },
+        box: { x: x - bw / 2, y: top, w: bw, h: bh, priority: label.priority },
       };
     });
     const shown = declutter(
@@ -1488,6 +1501,7 @@ export class MapEngine {
       this.obstacles(),
     );
     placed.forEach((p, i) => {
+      p.el.style.transform = p.transform;
       p.el.hidden = p.off || !shown[i];
     });
     for (let i = want.length; i < this.pool.length; i++) {

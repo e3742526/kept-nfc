@@ -12,14 +12,14 @@ import {
   TURN_STATUSES,
 } from '@kept/shared';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
-import { type ApiError, isApiError } from '../client';
+import { ApiError, isApiError } from '../client';
 import { INV_IDS } from '../inventory/mock/fixtures';
 import { type MockState, memberScenario, ownerScenario } from '../mock/fixtures';
 import { createMockApi } from '../mock/server';
 import { assistantMockRoutes } from './mock';
 import { ASSISTANT_IDS as A } from './mock/state';
 import { ASSISTANT_METHODS, assistantPaths } from './paths';
-import { assistantApi as api } from './queries';
+import { assistantApi as api, assistantTurnPollInterval, TURN_POLL_MS } from './queries';
 import type { Proposal, ThreadDetail, ThreadMessage, ThreadSummary, TurnView } from './types';
 
 const use = (state: MockState = ownerScenario()) => {
@@ -59,6 +59,13 @@ function expectProposal(x: Proposal) {
   expect(x.argsHash).toMatch(/^[0-9a-f]{64}$/);
   expect(PROPOSAL_STATUS).toContain(x.status);
 }
+
+it('stops polling a missing turn but retries a transient failure', () => {
+  expect(assistantTurnPollInterval(undefined, new ApiError(404, 'not_found', 'Gone'))).toBe(false);
+  expect(assistantTurnPollInterval(undefined, new ApiError(503, 'internal', 'Retry'))).toBe(
+    TURN_POLL_MS,
+  );
+});
 
 describe('the assistant mock', () => {
   it('has a handler for every path and method the web calls', () => {

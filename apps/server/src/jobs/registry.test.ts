@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import pg from 'pg';
 import type { PgBoss } from 'pg-boss';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { TestApp } from '../../test/app.js';
@@ -10,6 +11,7 @@ import {
   createBoss,
   defineJob,
   registerJobs,
+  runJob,
   sendInTx,
   sendTenantJob,
   sendTenantJobs,
@@ -22,7 +24,7 @@ import {
   ensureAuditPartitions,
   pruneStaleRows,
 } from './maintenance.js';
-import { JOB_POLICIES } from './policies.js';
+import { JOB_POLICIES, queueOptions } from './policies.js';
 import { bossQueue, createRequestQueues, REQUEST_QUEUES, TENANT_REQUEST_QUEUES } from './queue.js';
 import { systemJobs } from './system.js';
 
@@ -91,6 +93,44 @@ describe('defineJob', () => {
 });
 
 describe('a tenant job', () => {
+  it('lets a job own its scoped transactions on a one-connection pool', async () => {
+    const a = await seedTenant(db, 'tenant-job-owned-a');
+    await seedTenant(db, 'tenant-job-owned-b');
+    const app = new pg.Pool({
+      connectionString: db.urls.app,
+      max: 1,
+      connectionTimeoutMillis: 500,
+    });
+    let checkouts = 0;
+    app.on('acquire', () => checkouts++);
+    const payload = { userId: a.userId, mfa: false, data: { label: 'fixture' } };
+    const metadata = { id: randomUUID(), retryCount: 1, retryLimit: 2 };
+    const job = defineJob({
+      name: 'tenant-owned-probe',
+      kind: 'tenant-scoped',
+      policy: NO_RETRY,
+      handler: async (ctx) => {
+        expect(ctx.job).toEqual(metadata);
+        expect(ctx.data).toEqual(payload.data);
+        expect(checkouts).toBe(0);
+        const ids = await withScope(app, ctx.scope, async (_tx, client) => {
+          const { rows } = await client.query<{ id: string }>('SELECT id FROM public.locations');
+          return rows.map((row) => row.id);
+        });
+        expect(ids).toEqual([a.locationId]);
+      },
+    });
+    try {
+      await expect(runJob(job, { ...payload, mfa: null }, { app })).rejects.toBeInstanceOf(
+        ScopeError,
+      );
+      await runJob(job, payload, { app }, metadata);
+      expect(checkouts).toBe(1);
+    } finally {
+      await app.end();
+    }
+  });
+
   it("re-assumes the sender's scope and sees only that user's rows", async () => {
     const a = await seedTenant(db, 'tenant-job-a');
     const b = await seedTenant(db, 'tenant-job-b');
@@ -353,7 +393,11 @@ describe('policies and schedules', () => {
   });
 
   it('gives the operations jobs their policies', () => {
-    expect(JOB_POLICIES['ops-watch']).toEqual(JOB_POLICIES['prune-stale-rows']);
+    expect(queueOptions(JOB_POLICIES['ops-watch'])).toEqual(
+      queueOptions(JOB_POLICIES['prune-stale-rows']),
+    );
+    expect(JOB_POLICIES['ops-watch'].pollingIntervalSeconds).toBeUndefined();
+    expect(JOB_POLICIES['prune-stale-rows'].pollingIntervalSeconds).toBe(15);
     // "backup: 2 attempts, 4 h".
     expect(JOB_POLICIES['backup-verify']).toEqual(JOB_POLICIES.backup);
     // A rate limit or a network failure waits for the next day.

@@ -45,11 +45,18 @@ function fold(text: string): string {
   return normalize(text.replace(FORMAT_CHARACTERS, ''));
 }
 
-/** `tag`'s name in `displayLanguage`, or null where Intl can't say. */
-function displayName(tag: string, displayLanguage: string): string | null {
+function displayNames(displayLanguage: string): Intl.DisplayNames | null {
   try {
-    const names = new Intl.DisplayNames([displayLanguage], { type: 'language', fallback: 'none' });
-    return names.of(tag) ?? null;
+    return new Intl.DisplayNames([displayLanguage], { type: 'language', fallback: 'none' });
+  } catch {
+    return null;
+  }
+}
+
+/** `tag`'s name, or null where Intl can't say. */
+function displayName(tag: string, names: Intl.DisplayNames | null): string | null {
+  try {
+    return names?.of(tag) ?? null;
   } catch {
     return null; // No Intl.DisplayNames, or a tag it refuses.
   }
@@ -60,11 +67,12 @@ export function languageSearch<T extends SearchableLanguage>(
   languages: readonly T[],
   interfaceLanguage: string,
 ): LanguageSearch<T> {
+  const english = displayNames('en');
+  const local = interfaceLanguage === 'en' ? english : displayNames(interfaceLanguage);
   return languages.map((language) => {
-    const translated = [
-      displayName(language.id, 'en'),
-      displayName(language.id, interfaceLanguage),
-    ].filter((name) => name !== null);
+    const translated = [displayName(language.id, english), displayName(language.id, local)].filter(
+      (name) => name !== null,
+    );
     const given = translated.length > 0 ? translated : [language.id];
     const folded = [language.name, ...given].map(fold);
     const stems = folded.map(stripPrefixes);

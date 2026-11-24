@@ -84,8 +84,9 @@ export function sendInTx(
 //   schema auth), never kept_app. Only a system job may be scheduled: a schedule has no user.
 // - `tenant`: work for one person, re-assuming the scope of the request that sent it. The
 //   payload carries `userId` (and `mfa`), taken from the sending transaction itself by
-//   sendTenantJob(), never from the caller; the handler runs inside withScope() on kept_app, so
-//   row-level security holds it to that person's rows exactly as it held the request.
+//   sendTenantJob(), never from the caller. This kind gets a withScope() transaction on kept_app.
+// - `tenant-scoped`: the same tenant payload, with the handler opening its own scoped transactions
+//   for work with several independent commits.
 // ---------------------------------------------------------------------------------------------
 
 type JobBase = { name: string; policy: JobPolicy };
@@ -99,16 +100,16 @@ export type SystemJob = JobBase & {
   handler: (data: unknown, meta?: JobMeta) => Promise<void>;
 };
 
-export type TenantJobContext = {
+type ScopedJobContext = {
   /** What the sender put in, beside the scope. */
   data: unknown;
   scope: Scope;
-  tx: Tx;
-  client: pg.PoolClient;
   /** pg-boss's own facts about this run (absent when a test calls runJob() without them): the
    * job id (a ledger row's request id) and how many retries are spent and allowed. */
   job?: JobMeta;
 };
+
+export type TenantJobContext = ScopedJobContext & { tx: Tx; client: pg.PoolClient };
 
 /** What a handler may know about the run itself. */
 export type JobMeta = { id: string; retryCount: number; retryLimit: number };
@@ -118,14 +119,19 @@ export type TenantJob = JobBase & {
   handler: (ctx: TenantJobContext) => Promise<void>;
 };
 
-export type JobDefinition = SystemJob | TenantJob;
+type ScopedTenantJob = JobBase & {
+  kind: 'tenant-scoped';
+  handler: (ctx: ScopedJobContext) => Promise<void>;
+};
+
+export type JobDefinition = SystemJob | TenantJob | ScopedTenantJob;
 
 const JOB_NAME = /^[a-z][a-z0-9-]{1,62}$/;
 
 /** Checks a job declaration once, where it is written. */
 export function defineJob<T extends JobDefinition>(job: T): T {
   if (!JOB_NAME.test(job.name)) throw new Error(`job name ${job.name}: lowercase and dashes`);
-  if (job.kind === 'tenant' && 'schedule' in job) {
+  if (job.kind !== 'system' && 'schedule' in job) {
     throw new Error(`job ${job.name}: a tenant job can't be scheduled (a schedule has no user)`);
   }
   const { retryLimit, retryDelay, expireInSeconds } = job.policy;
@@ -197,7 +203,7 @@ function tenantPayload(raw: unknown): TenantPayload {
 export type RegisterOptions = {
   /** kept_app, for tenant jobs. */
   pools: Pick<Pools, 'app'>;
-  /** How often an idle worker polls (pg-boss's default is 2 s). Tests poll faster. */
+  /** Overrides policy and pg-boss's 2 s default. Tests poll faster. */
   pollingIntervalSeconds?: number;
 };
 
@@ -214,9 +220,12 @@ export async function runJob(
   }
   const payload = tenantPayload(data);
   const scope: Scope = { userId: payload.userId, mfa: payload.mfa };
-  await withScope(pools.app, scope, (tx, client) =>
-    job.handler({ data: payload.data, scope, tx, client, ...(meta ? { job: meta } : {}) }),
-  );
+  const context: ScopedJobContext = { data: payload.data, scope, ...(meta ? { job: meta } : {}) };
+  if (job.kind === 'tenant-scoped') {
+    await job.handler(context);
+    return;
+  }
+  await withScope(pools.app, scope, (tx, client) => job.handler({ ...context, tx, client }));
 }
 
 /**
@@ -239,11 +248,10 @@ export async function registerJobs(
     if (job.kind === 'system' && job.schedule) {
       await boss.schedule(job.name, job.schedule, null, { tz: 'UTC' });
     }
+    const interval = opts.pollingIntervalSeconds ?? job.policy.pollingIntervalSeconds;
     const workOptions = {
       includeMetadata: true as const,
-      ...(opts.pollingIntervalSeconds === undefined
-        ? {}
-        : { pollingIntervalSeconds: opts.pollingIntervalSeconds }),
+      ...(interval === undefined ? {} : { pollingIntervalSeconds: interval }),
     };
     await boss.work(job.name, workOptions, async (batch) => {
       for (const one of batch) {

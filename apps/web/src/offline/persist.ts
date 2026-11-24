@@ -63,15 +63,3 @@ export async function requestPersistence(): Promise<boolean | null> {
     return null;
   }
 }
-
-/** How much the origin uses and may use, for the diagnostics page; null when unknown. */
-export async function storageEstimate(): Promise<{ usage: number; quota: number } | null> {
-  const s = storageManager();
-  if (!s?.estimate) return null;
-  try {
-    const { usage, quota } = await s.estimate();
-    return usage === undefined || quota === undefined ? null : { usage, quota };
-  } catch {
-    return null;
-  }
-}

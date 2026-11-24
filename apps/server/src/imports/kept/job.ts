@@ -602,9 +602,9 @@ export function keptImportJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: 'import-kept',
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES['import-kept'],
-      handler: async ({ data, scope, client }) => {
+      handler: async ({ data, scope }) => {
         const runId = (data as { runId?: unknown } | null)?.runId;
         if (typeof runId !== 'string' || !UUID.test(runId)) {
           throw new Error('import-kept job: data names no run');
@@ -612,9 +612,6 @@ export function keptImportJobs(deps: SystemJobDeps): JobDefinition[] {
         const app = deps.pools.app;
         if (!app) throw new Error('import-kept job: the worker has no kept_app pool');
         if (!deps.files) throw new Error('import-kept job: the worker has no file storage');
-        // runJob() holds this scoped transaction open while each chunk commits on its own
-        // connection, for up to the policy's 2 hours.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '7260s'`);
         const sendTenant = deps.sendTenant;
         await runKeptImport(
           {

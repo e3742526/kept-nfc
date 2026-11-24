@@ -421,21 +421,27 @@ async function requireBlankRoom(client: pg.ClientBase, locationId: string, count
 
 async function makeBlanks(client: pg.ClientBase, locationId: string, count: number) {
   await requireBlankRoom(client, locationId, count);
-  const codes: string[] = [];
-  for (let i = 0; i < count; i++) {
-    let code: string | undefined;
-    for (let tries = 0; tries < SHORT_ID_TRIES && !code; tries++) {
-      const res = await client.query<{ code: string }>(
-        `INSERT INTO public.short_ids (code, location_id, state, is_primary)
-         VALUES ($1, $2, 'blank', false)
-         ON CONFLICT (code) DO NOTHING RETURNING code::text AS code`,
-        [randomShortCode(), locationId],
-      );
-      code = res.rows[0]?.code;
+  const codes = Array<string>(count);
+  let pending = Array.from({ length: count }, (_unused, index) => index);
+  for (let tries = 0; tries < SHORT_ID_TRIES && pending.length > 0; tries++) {
+    const proposed = pending.map((index) => ({ index, code: randomShortCode() }));
+    const { rows } = await client.query<{ code: string }>(
+      `INSERT INTO public.short_ids (code, location_id, state, is_primary)
+       SELECT candidate, $1::uuid, 'blank', false
+         FROM unnest($2::text[]) WITH ORDINALITY AS candidates(candidate, ord)
+        ORDER BY ord
+       ON CONFLICT (code) DO NOTHING RETURNING code::text AS code`,
+      [locationId, proposed.map(({ code }) => code)],
+    );
+    const inserted = new Set(rows.map(({ code }) => code));
+    pending = [];
+    for (const { index, code } of proposed) {
+      // A repeated candidate can fill only its first slot. Retry other slots in their order.
+      if (inserted.delete(code)) codes[index] = code;
+      else pending.push(index);
     }
-    if (!code) throw new Error(`no free short code after ${SHORT_ID_TRIES} tries`);
-    codes.push(code);
   }
+  if (pending.length > 0) throw new Error(`no free short code after ${SHORT_ID_TRIES} tries`);
   return codes;
 }
 

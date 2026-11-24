@@ -5,7 +5,7 @@
  */
 import { isLiveTurn } from '@kept/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { api } from '../client';
+import { api, isApiError } from '../client';
 import { qs } from '../inventory/paths';
 import { nextCursor } from '../inventory/queries';
 import { assistantPaths as p } from './paths';
@@ -55,6 +55,16 @@ export const assistantApi = {
 /** How often a live turn is polled. */
 export const TURN_POLL_MS = 1000;
 
+export function assistantTurnUnavailable(error: unknown): boolean {
+  return isApiError(error) && [401, 403, 404, 410].includes(error.status);
+}
+
+export function assistantTurnPollInterval(data: TurnView | undefined, error: unknown) {
+  return assistantTurnUnavailable(error) || (data && !isLiveTurn(data.status))
+    ? false
+    : TURN_POLL_MS;
+}
+
 /** The caller's threads: `q` and the list standard's filters (./types.ts ThreadsParams). */
 export function useThreads(params: Omit<ThreadsParams, 'cursor'> = {}) {
   return useInfiniteQuery({
@@ -80,7 +90,6 @@ export function useTurn(id: string | null) {
     queryKey: assistantKeys.turn(id ?? ''),
     queryFn: () => assistantApi.turn(id as string),
     enabled: !!id,
-    refetchInterval: (query) =>
-      query.state.data && !isLiveTurn(query.state.data.status) ? false : TURN_POLL_MS,
+    refetchInterval: ({ state }) => assistantTurnPollInterval(state.data, state.error),
   });
 }

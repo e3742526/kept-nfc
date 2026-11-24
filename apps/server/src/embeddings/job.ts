@@ -193,16 +193,13 @@ export function embedThingJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: EMBED_THING_JOB,
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES[EMBED_THING_JOB],
-      handler: async ({ data, scope, client, job }) => {
+      handler: async ({ data, scope, job }) => {
         const parsed = Data.safeParse(data);
         if (!parsed.success) throw new Error('embed-thing: data names no thing');
         const app = deps.pools.app;
         if (!app) throw new Error('embed-thing: the worker has no kept_app pool');
-        // runJob() holds this scoped transaction open, unused, while each step commits on its own
-        // connection around a provider call of up to 80 s.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '100s'`);
         const send = deps.sendTenant;
         const outcome = await embedThing(
           {

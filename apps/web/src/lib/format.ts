@@ -82,14 +82,24 @@ const unbroken = (s: string) => s.replace(/ /g, '\u00a0');
 function isoDate(tag: string): (d: Date) => string {
   const f = new Intl.DateTimeFormat(tag, { year: 'numeric', month: '2-digit', day: '2-digit' });
   return (d) => {
+    const parts = f.formatToParts(d);
     const part = (type: Intl.DateTimeFormatPartTypes) =>
-      f.formatToParts(d).find((p) => p.type === type)?.value ?? '';
+      parts.find((p) => p.type === type)?.value ?? '';
     const out = `${part('year')}-${part('month')}-${part('day')}`;
     return tag.startsWith('ar') ? `\u2066${out}\u2069` : out;
   };
 }
 
+const formatters = new Map<string, Formatter>();
+const MAX_FORMATTERS = 16;
+
 export function makeFormatter(tag: string, dateFormat: DateFormatPref = 'auto'): Formatter {
+  // Date formatters capture the local time zone when they are created.
+  const zone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const key = `${tag}|${dateFormat}|${zone}`;
+  const cached = formatters.get(key);
+  if (cached) return cached;
+
   const nf = new Intl.NumberFormat(tag);
   const sameYear = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'short' });
   const otherYear = new Intl.DateTimeFormat(tag, {
@@ -148,7 +158,7 @@ export function makeFormatter(tag: string, dateFormat: DateFormatPref = 'auto'):
     // "Deleted Sep / 27" wrapped at 375 (the phone pass): the line breaks around a date.
     return unbroken((withYear ? otherYear : sameYear).format(d));
   };
-  return {
+  const formatter: Formatter = {
     sep: separatorFor(tag),
     num: (n) => nf.format(n),
     day: (value) => formatDay(toDate(value), false),
@@ -171,24 +181,28 @@ export function makeFormatter(tag: string, dateFormat: DateFormatPref = 'auto'):
       return rtf.format(Math.round(diff / DAY), 'day');
     },
   };
+  if (formatters.size >= MAX_FORMATTERS) {
+    const oldest = formatters.keys().next().value;
+    if (oldest !== undefined) formatters.delete(oldest);
+  }
+  formatters.set(key, formatter);
+  return formatter;
 }
 
 /** "412 KB" (or "316 B") in the reader's language and digits. */
 export function useBytes(): (n: number) => string {
   const { locale, digits } = usePrefs();
-  return (n) =>
-    n < 1024
-      ? new Intl.NumberFormat(formatLocale(locale, digits), {
-          style: 'unit',
-          unit: 'byte',
-          unitDisplay: 'short',
-        }).format(n)
-      : new Intl.NumberFormat(formatLocale(locale, digits), {
-          style: 'unit',
-          unit: 'kilobyte',
-          unitDisplay: 'short',
-          maximumFractionDigits: 0,
-        }).format(n / 1024);
+  return useMemo(() => {
+    const tag = formatLocale(locale, digits);
+    const bytes = new Intl.NumberFormat(tag, { style: 'unit', unit: 'byte', unitDisplay: 'short' });
+    const kilobytes = new Intl.NumberFormat(tag, {
+      style: 'unit',
+      unit: 'kilobyte',
+      unitDisplay: 'short',
+      maximumFractionDigits: 0,
+    });
+    return (n: number) => (n < 1024 ? bytes.format(n) : kilobytes.format(n / 1024));
+  }, [locale, digits]);
 }
 
 export function useFormat(): Formatter {

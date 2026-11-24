@@ -18,13 +18,16 @@ import type {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { captureApi } from '@/api/capture/queries';
 import { keys } from '@/api/queries';
 import type { Detected } from '@/camera/label-recogniser';
 import type { CameraEnv } from '@/camera/session';
 import { MemoryStore } from '@/offline/store';
 import { renderUI } from '@/test/render';
+import { newSession } from './model';
 import { memoryPersist, type SessionPersist } from './persist';
 import { SessionScreen, type SessionScreenProps } from './session-screen';
+import { SessionSummary } from './summary';
 
 const feed = vi.hoisted(() => ({ current: null as ((found: Detected[]) => void) | null }));
 vi.mock('@/camera/scanner', async (actual) => ({
@@ -160,6 +163,54 @@ beforeEach(() => {
 afterEach(() => {
   feed.current = null;
   vi.useRealTimers();
+});
+
+it('stops polling when a saved scan summary has its server result', async () => {
+  vi.useFakeTimers();
+  const now = '2026-10-20T10:00:00.000Z';
+  const session = newSession({
+    mode: 'count',
+    role: 'member',
+    target: { id: STUDY, kind: 'place', locationId: HOME, name: 'Study' },
+    expected: [],
+    now,
+  });
+  session.saving = { at: now, finishKey: 'saved-fixture' };
+  const store = new MemoryStore();
+  const pending = vi.spyOn(store, 'pending');
+  const server = vi.spyOn(captureApi, 'scanSession').mockResolvedValue({
+    id: session.id,
+    mode: 'count',
+    locationId: HOME,
+    startedAt: now,
+    finishedAt: now,
+    expected: 0,
+    seen: 0,
+    notHere: 0,
+    moved: 0,
+    skipped: 0,
+  });
+  try {
+    await renderUI(
+      <SessionSummary
+        phase="saved"
+        session={session}
+        online
+        store={store}
+        targetName={() => 'Study'}
+        whereOf={() => null}
+        roles={() => 'member'}
+        onBack={() => {}}
+        onSave={async () => {}}
+        onDone={async () => {}}
+      />,
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(15_000));
+    expect(pending).toHaveBeenCalledTimes(1);
+    expect(server).toHaveBeenCalledExactlyOnceWith(session.id);
+  } finally {
+    server.mockRestore();
+  }
 });
 
 async function render({

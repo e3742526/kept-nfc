@@ -304,14 +304,6 @@ export async function dropLocation(db: KeptDb, locationId: string): Promise<void
   });
 }
 
-/** Everything kept, every location (the app lock turned off). */
-export async function dropAll(db: KeptDb): Promise<void> {
-  const tables = EXTRAS_TABLES.map((table) => db[table]);
-  await db.transaction('rw', tables, async () => {
-    for (const table of tables) await table.clear();
-  });
-}
-
 /** A kept thing's money and documents, or null when its location isn't kept. */
 export async function extraOf(
   db: KeptDb,

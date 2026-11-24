@@ -58,6 +58,12 @@ function TurnLine({
   const providerName = useProviderName();
   const pausedUntil = usePausedUntil();
   const turn = conversation.turn;
+  if (conversation.unavailable)
+    return (
+      <p className="m-0 text-[14.5px] text-ink-2" role="status">
+        <Trans>The assistant couldn't finish this answer. Ask again.</Trans>
+      </p>
+    );
   if (!turn && !conversation.live) return null;
   const status = turn?.status ?? 'running';
   let line: ReactNode = null;

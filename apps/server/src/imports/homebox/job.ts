@@ -366,18 +366,15 @@ export function homeboxImportJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: 'import-homebox',
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES['import-homebox'],
-      handler: async ({ data, scope, client }) => {
+      handler: async ({ data, scope }) => {
         const runId = (data as { runId?: unknown } | null)?.runId;
         if (typeof runId !== 'string' || !UUID.test(runId)) {
           throw new Error('import-homebox job: data names no run');
         }
         const app = deps.pools.app;
         if (!app) throw new Error('import-homebox job: the worker has no kept_app pool');
-        // runJob() holds this scoped transaction open while each chunk commits on its own
-        // connection, up to the policy's two hours; it holds no lock and no transaction id.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '7260s'`);
         await runHomeboxImport(
           {
             pools: { app, system: deps.pools.system },

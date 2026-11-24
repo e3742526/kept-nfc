@@ -45,15 +45,12 @@ export function assistantJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: ASSISTANT_TURN_JOB,
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES[ASSISTANT_TURN_JOB],
-      handler: async ({ data, scope, client, job }) => {
+      handler: async ({ data, scope, job }) => {
         const turn = turnJobData(data);
         const app = deps.pools.app;
         if (!app) throw new Error('assistant-turn job: the worker has no kept_app pool');
-        // runJob() holds this scoped transaction open, unused, while each step commits on its own
-        // connection; a turn may take up to 180 s.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '210s'`);
         const send = deps.sendTenant;
         const outcome = await runTurn(
           {

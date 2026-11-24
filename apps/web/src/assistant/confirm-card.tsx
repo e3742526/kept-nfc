@@ -82,7 +82,14 @@ function useSecondsLeft(until: number | null): number | null {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (until === null) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    const current = Date.now();
+    setNow(current);
+    if (current >= until) return;
+    const id = setInterval(() => {
+      const tick = Date.now();
+      setNow(tick);
+      if (tick >= until) clearInterval(id);
+    }, 1000);
     return () => clearInterval(id);
   }, [until]);
   return until === null ? null : Math.max(0, Math.ceil((until - now) / 1000));
@@ -893,7 +900,8 @@ export function ConfirmCard({
       else if (!confirmed.length) setOutcome({ kind: 'failed' });
       if (res.results.some((r) => r.status === 'failed'))
         toast({ title: t`Some changes couldn't be saved. Ask again.`, tone: 'danger' });
-      await invalidate();
+      if (confirmed.length) await invalidate();
+      else await qc.invalidateQueries({ queryKey: assistantKeys.all });
     },
     onError: (e) => toast({ title: errorText(e), tone: 'danger' }),
   });

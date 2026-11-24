@@ -35,7 +35,6 @@ import { useUnits } from '@/components/schedules/labels';
 import { ModuleOff, useThingCtx } from '@/components/things/context';
 import { useLocationAccountId } from '@/components/things/pickers';
 import { useMoney } from '@/components/things/values';
-import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { toast } from '@/components/ui/toast';
 import { sep, useFormat } from '@/lib/format';
@@ -322,22 +321,5 @@ function PricePer({ price, unit }: { price: string; unit: string }) {
     <Trans>
       {price} per {unit}
     </Trans>
-  );
-}
-
-/** "Log fuel" on its own, for a page header or the action strip (the desktop frame's). */
-export function LogFuelButton() {
-  const { location, moduleOn } = useThingCtx();
-  const online = useOnline();
-  const [open, setOpen] = useState(false);
-  if (!moduleOn('fuel') || !accessOf(location).can('logs.add')) return null;
-  return (
-    <>
-      <Button variant="secondary" isDisabled={!online} onPress={() => setOpen(true)}>
-        <FuelIcon className="size-4" />
-        <Trans>Log fuel</Trans>
-      </Button>
-      <LogFuelSheet open={open} onClose={() => setOpen(false)} />
-    </>
   );
 }

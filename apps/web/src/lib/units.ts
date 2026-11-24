@@ -13,12 +13,10 @@
  */
 import { formatSpan, type UnitSystem } from '@kept/shared';
 import { QueryClientContext } from '@tanstack/react-query';
-import { useContext, useMemo, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
 import { keys } from '@/api/queries';
 import type { Me } from '@/api/types';
 import { formatLocale, type Locale, usePrefs } from './prefs';
-
-const noSubscription = () => () => undefined;
 
 /** The reader's unit system (Settings → Units, #385): kept on their profile, which the shell loads
  * first; metric until it has, and wherever there is no profile (the sign-in pages, a component
@@ -26,12 +24,18 @@ const noSubscription = () => () => undefined;
  * follow it; stored values never change. */
 export function useUnitSystem(): UnitSystem {
   const client = useContext(QueryClientContext);
-  const read = () => client?.getQueryData<Me>(keys.me)?.profile.units ?? 'metric';
-  return useSyncExternalStore(
-    client ? (onChange) => client.getQueryCache().subscribe(onChange) : noSubscription,
-    read,
-    read,
+  const read = useCallback(
+    () => client?.getQueryData<Me>(keys.me)?.profile.units ?? 'metric',
+    [client],
   );
+  const subscribe = useCallback(
+    (onChange: () => void) =>
+      client?.getQueryCache().subscribe(({ query }) => {
+        if (query.queryKey.length === 1 && query.queryKey[0] === keys.me[0]) onChange();
+      }) ?? (() => undefined),
+    [client],
+  );
+  return useSyncExternalStore(subscribe, read, read);
 }
 
 /**

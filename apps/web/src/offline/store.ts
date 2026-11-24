@@ -139,6 +139,8 @@ export interface OfflineStore {
   ): Promise<void>;
   /** Ops not yet answered (`pending`, `uploading`, `sent`, `blocked`), in queue order. */
   pending(): Promise<QueueEntry[]>;
+  /** Membership among the unanswered ops for these keys. */
+  pendingKeys(idempotencyKeys: readonly string[]): Promise<Set<string>>;
   counts(): Promise<{ waiting: number; uploading: number; needsAttention: number }>;
   /**
    * Takes back ops the server has never seen (capture's "Undo this batch"): those
@@ -368,6 +370,14 @@ export class MemoryStore implements OfflineStore {
   }
   async pending() {
     return this.queue.filter((e) => UNANSWERED.has(e.state)).sort((a, b) => a.seq - b.seq);
+  }
+  async pendingKeys(idempotencyKeys: readonly string[]) {
+    const keys = new Set(idempotencyKeys);
+    return new Set(
+      this.queue
+        .filter((entry) => keys.has(entry.idempotencyKey) && UNANSWERED.has(entry.state))
+        .map((entry) => entry.idempotencyKey),
+    );
   }
   async unqueue(idempotencyKeys: string[]) {
     const keys = new Set(idempotencyKeys);

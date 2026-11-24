@@ -52,13 +52,13 @@ RUN --mount=type=cache,id=kept-pnpm-store,target=/pnpm-store \
     --mount=type=cache,id=kept-pnpm-cache,target=/pnpm-cache \
     pnpm install --frozen-lockfile --store-dir /pnpm-store --config.cache-dir=/pnpm-cache
 COPY . .
+RUN pnpm --filter @kept/shared build \
+ && pnpm --filter @kept/mcp build \
+ && pnpm --filter @kept/server build
 # The web build reads KEPT_VERSION (vite.config.ts `define`), so a release's client says its real
 # version in the sidebar and in the sync protocol's clientVersion (D148), not 0.0.0-dev.
 ARG VERSION=0.0.0-dev
-RUN pnpm --filter @kept/shared build \
- && pnpm --filter @kept/mcp build \
- && pnpm --filter @kept/server build \
- && KEPT_VERSION="${VERSION}" pnpm --filter @kept/web build
+RUN KEPT_VERSION="${VERSION}" pnpm --filter @kept/web build
 # In the repo @kept/shared and @kept/mcp (the tool contracts) export their TypeScript
 # source (for tsx, vitest and vite); at runtime node needs the compiled files. Apply each one's
 # publishConfig the way a publish would. drizzle-kit's `meta/*_snapshot.json` are for generating

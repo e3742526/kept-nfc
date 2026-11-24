@@ -781,18 +781,15 @@ export function extractionJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: EXTRACT_JOB,
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES.extract,
-      handler: async ({ data, scope, client, job }) => {
+      handler: async ({ data, scope, job }) => {
         const extractionId = (data as { extractionId?: unknown } | null)?.extractionId;
         if (typeof extractionId !== 'string' || !UUID.test(extractionId)) {
           throw new Error('extract job: data names no extraction');
         }
         const app = deps.pools.app;
         if (!app) throw new Error('extract job: the worker has no kept_app pool');
-        // runJob() holds this scoped transaction open, unused, while each step commits on its
-        // own connection; the model call may take up to 80 s.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '180s'`);
         const send = deps.sendTenant;
         const outcome = await runExtraction(
           {

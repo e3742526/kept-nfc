@@ -421,9 +421,9 @@ export function enrichJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: ENRICH_JOB,
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES['enrich-aliases'],
-      handler: async ({ data, scope, client, job }) => {
+      handler: async ({ data, scope, job }) => {
         const d = (data ?? {}) as Partial<EnrichJobData>;
         if (typeof d.runId !== 'string' || !UUID.test(d.runId)) {
           throw new Error('enrich-aliases: data names no import run');
@@ -437,9 +437,6 @@ export function enrichJobs(deps: SystemJobDeps): JobDefinition[] {
         const app = deps.pools.app;
         if (!app) throw new Error('enrich-aliases: the worker has no kept_app pool');
         const send = deps.sendTenant;
-        // runJob() holds this scoped transaction open, unused, while each step commits on its
-        // own connection; the model call may take up to 80 s.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '180s'`);
         const outcome = await runEnrichBatch(
           {
             pools: { app, system: deps.pools.system },

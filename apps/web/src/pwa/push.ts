@@ -150,8 +150,3 @@ export async function disablePush(id: string): Promise<void> {
   await householdApi.deletePushSubscription(id);
   if (thisDeviceSubscriptionId() === id) remember(null);
 }
-
-/** After another device removed this one's row: forget it here too. */
-export function forgetThisDevice(): void {
-  remember(null);
-}

@@ -25,7 +25,7 @@ import {
 } from '@kept/shared';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { captureApi, captureKeys, useImportRun } from '@/api/capture/queries';
 import type { ImportChoices, ImportRun } from '@/api/capture/types';
 import { isApiError } from '@/api/client';
@@ -46,7 +46,7 @@ import { RunFinished, RunProgress } from './progress-step';
 import { ReportList, ReportSummary } from './report-step';
 import { StepFooter, StepHeader } from './step-chrome';
 import { dateFormatsFor, homeboxMapping, separatorFor, suggestMapping } from './suggest';
-import { isStale, UploadStep } from './upload-step';
+import { UploadStep } from './upload-step';
 
 type Draft = {
   fileName: string;
@@ -58,7 +58,6 @@ type Draft = {
 
 type Step = 'file' | 'map' | 'choices';
 const STEPS = 5;
-const POLL_MS = 1500;
 
 /** The page's words for an import request that failed. */
 export function useImportErrorText() {
@@ -374,7 +373,7 @@ function RunView({
   const qc = useQueryClient();
   const confirm = useConfirm();
   const errorText = useImportErrorText();
-  const query = useImportRun(runId);
+  const query = useImportRun(runId, true);
   const run = query.data;
   // The run's own location, wherever the person can import now (it may be a hidden Personal).
   const nameOfLocation = useLocationName();
@@ -389,14 +388,6 @@ function RunView({
     }));
     void qc.invalidateQueries({ queryKey: captureKeys.imports.list(next.locationId) });
   };
-
-  // While it runs, read it again every POLL_MS (a stopped one stays put until Resume).
-  const polling = run?.status === 'running' && !isStale(run);
-  useEffect(() => {
-    if (!polling) return;
-    const timer = setInterval(() => void query.refetch(), POLL_MS);
-    return () => clearInterval(timer);
-  }, [polling, query.refetch]);
 
   const dryRun = useMutation({
     mutationFn: () => captureApi.dryRun(runId),

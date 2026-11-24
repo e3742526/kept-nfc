@@ -248,8 +248,10 @@ public final class Outbox {
         }
         let capture = PendingCapture(id: id.lowercased(), context: context, payload: payload, takenAt: takenAt, files: originals)
         let manifest = stage.appendingPathComponent("capture.json")
+        let contents: Data
         do {
-            try JSONEncoder().encode(capture).write(to: manifest, options: .atomic)
+            contents = try JSONEncoder().encode(capture)
+            try contents.write(to: manifest, options: .atomic)
             let handle = try FileHandle(forUpdating: manifest)
             defer { try? handle.close() }
             try handle.synchronize()
@@ -257,7 +259,7 @@ public final class Outbox {
         } catch {
             throw mapStorageError(error)
         }
-        try insert(capture)
+        try insert(capture, manifest: contents)
         return capture
     }
 
@@ -321,15 +323,17 @@ public final class Outbox {
             files: existing.files
         )
         let manifest = final.appendingPathComponent("capture.json")
+        let contents: Data
         do {
-            try JSONEncoder().encode(updated).write(to: manifest, options: .atomic)
+            contents = try JSONEncoder().encode(updated)
+            try contents.write(to: manifest, options: .atomic)
             let handle = try FileHandle(forUpdating: manifest)
             defer { try? handle.close() }
             try handle.synchronize()
         } catch {
             throw mapStorageError(error)
         }
-        let encoded = String(decoding: try JSONEncoder().encode(updated), as: UTF8.self)
+        let encoded = String(decoding: contents, as: UTF8.self)
         try sql(
             "UPDATE captures SET manifest = ?, failure = NULL WHERE context = ? AND id = ? AND completed = 0",
             [encoded, context, normalizedId]
@@ -490,8 +494,9 @@ public final class Outbox {
         for (context, id) in completed { try cleanupCompleted(context: context, id: id) }
     }
 
-    private func insert(_ capture: PendingCapture) throws {
-        let encoded = String(decoding: try JSONEncoder().encode(capture), as: UTF8.self)
+    private func insert(_ capture: PendingCapture, manifest: Data? = nil) throws {
+        let contents = try manifest ?? JSONEncoder().encode(capture)
+        let encoded = String(decoding: contents, as: UTF8.self)
         try sql("INSERT OR IGNORE INTO captures (id, context, manifest) VALUES (?, ?, ?)",
                 [capture.id, capture.context, encoded])
     }

@@ -279,6 +279,7 @@ export async function buildReadableCopy(
   // 2. The originals and thumbnails the pages link to.
   const filesById = new Map<string, ReadableFile>();
   const thumbJobs: ThumbJob[] = [];
+  const thumbIds = new Set<string>();
   const asDisplay = (a: AttachmentRow) =>
     target.photos === 'display' && a.class === 'photo' && a.display_key !== null;
   const hrefOf = (a: AttachmentRow) =>
@@ -299,7 +300,8 @@ export async function buildReadableCopy(
       }
     }
     const photo = c.attachments.find((a) => a.role === 'photo' && a.thumb_key);
-    if (photo?.thumb_key && !thumbJobs.some((j) => j.fileId === photo.file_id)) {
+    if (photo?.thumb_key && !thumbIds.has(photo.file_id)) {
+      thumbIds.add(photo.file_id);
       thumbJobs.push({ fileId: photo.file_id, key: photo.thumb_key });
     }
   }
@@ -484,10 +486,11 @@ export async function buildReadableCopy(
     'things_here',
     'things_inside',
   ]);
+  const placeById = new Map(read.places.map((row) => [row.id, row]));
   try {
     for (const p of places) {
       if (!p.id) continue;
-      const row = read.places.find((r) => r.id === p.id);
+      const row = placeById.get(p.id);
       await placesCsv.line([
         p.id,
         p.name,

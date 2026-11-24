@@ -614,8 +614,10 @@ step_e2e() {
   case ${CI_E2E_SHARD:-} in
     '')
       pnpm --filter @kept/web exec playwright test
-      KEPT_E2E_UPDATE=1 KEPT_E2E_INSTANCES=capture \
-        pnpm --filter @kept/web exec playwright test step3-update.spec.ts --project phone
+      # A standalone e2e step covers the update. A run with the dedicated step covers it there.
+      if [[ " ${steps[*]} " != *" e2e-update "* ]]; then
+        run_e2e_update_spec
+      fi
       ;;
     audit)
       KEPT_E2E_INSTANCES=auditPhone,auditDesktop \
@@ -643,6 +645,10 @@ step_e2e-update() {
       pnpm --filter @kept/web exec playwright install chromium
     fi
   fi
+  run_e2e_update_spec
+}
+
+run_e2e_update_spec() {
   KEPT_E2E_UPDATE=1 KEPT_E2E_INSTANCES=capture \
     pnpm --filter @kept/web exec playwright test step3-update.spec.ts --project phone
 }

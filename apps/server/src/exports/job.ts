@@ -617,16 +617,13 @@ export function exportJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: 'export',
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES.export,
-      handler: async ({ data, scope, client }) => {
+      handler: async ({ data, scope }) => {
         const parsed = exportJobData(data);
         if (!parsed) throw new Error('export job: data names no run');
         const app = deps.pools.app;
         if (!app) throw new Error('export job: the worker has no kept_app pool');
-        // As the claim pack: runJob() holds this scoped transaction open while the export's own
-        // steps commit on their own connections.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '7200s'`);
         await buildExport(
           {
             pools: { app, system: deps.pools.system },

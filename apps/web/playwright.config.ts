@@ -110,13 +110,17 @@ const ALL: Record<string, Served> = {
   lanExtra: LAN_EXTRA_INSTANCE,
 };
 
-/** The instances to start: all, or those KEPT_E2E_INSTANCES names (e.g. `capture`). */
+/** The instances for the selected specs, or those KEPT_E2E_INSTANCES names explicitly. */
 function selected(): Served[] {
   const only = (process.env.KEPT_E2E_INSTANCES ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  if (only.length === 0) return Object.values(ALL);
+  if (only.length === 0) {
+    if (!ignored.includes('audit.spec.ts')) return Object.values(ALL);
+    const { auditPhone: _phone, auditDesktop: _desktop, ...ordinary } = ALL;
+    return Object.values(ordinary);
+  }
   const unknown = only.filter((k) => !(k in ALL));
   if (unknown.length > 0) throw new Error(`KEPT_E2E_INSTANCES: no instance ${unknown.join(', ')}`);
   return only.map((k) => ALL[k] as Served);

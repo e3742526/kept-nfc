@@ -1,6 +1,5 @@
 /** Better Auth calls (sign-in, second factor, passkeys), and SheepKeep's Sign-in and security
  * routes. Paths in ./paths.ts. */
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { assistantStore } from '@/assistant/store';
 import { TRY } from '@/try/flag';
 import { api } from './client';
@@ -165,8 +164,11 @@ export class PasskeyCancelled extends Error {
 
 /** The passkey ceremony, as Better Auth's own passkey client runs it. */
 export async function signInWithPasskey(): Promise<unknown> {
-  // biome-ignore lint/suspicious/noExplicitAny: the options JSON is passed through untouched
-  const optionsJSON = await api.get<any>(paths.auth.passkeyAuthenticateOptions);
+  const [{ startAuthentication }, optionsJSON] = await Promise.all([
+    import('@simplewebauthn/browser'),
+    // biome-ignore lint/suspicious/noExplicitAny: the options JSON is passed through untouched
+    api.get<any>(paths.auth.passkeyAuthenticateOptions),
+  ]);
   let response: Awaited<ReturnType<typeof startAuthentication>>;
   try {
     response = await startAuthentication({ optionsJSON });
@@ -191,8 +193,11 @@ export class PasskeyExists extends Error {
  * (403 `EMAIL_UNVERIFIED`). Throws PasskeyCancelled when the person closes the browser's dialog.
  */
 export async function addPasskey(name: string): Promise<PasskeyView> {
-  // biome-ignore lint/suspicious/noExplicitAny: the options JSON is passed through untouched
-  const optionsJSON = await api.get<any>(paths.auth.passkeyRegisterOptions);
+  const [{ startRegistration }, optionsJSON] = await Promise.all([
+    import('@simplewebauthn/browser'),
+    // biome-ignore lint/suspicious/noExplicitAny: the options JSON is passed through untouched
+    api.get<any>(paths.auth.passkeyRegisterOptions),
+  ]);
   let response: Awaited<ReturnType<typeof startRegistration>>;
   try {
     response = await startRegistration({ optionsJSON });

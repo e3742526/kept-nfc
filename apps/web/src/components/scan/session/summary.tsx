@@ -22,6 +22,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { captureApi } from '@/api/capture/queries';
 import type { ScanSessionView } from '@/api/capture/types';
+import { isApiError } from '@/api/client';
 import { CountStepper } from '@/components/boxcheck/count-stepper';
 import { undoEvents } from '@/components/history/undo';
 import { Button } from '@/components/ui/button';
@@ -99,36 +100,60 @@ export function SessionSummary({
   const [status, setStatus] = useState<Status | null>(null);
   const editable = !session.checkOnly;
   const isCount = session.mode === 'count';
+  const finishKey = session.saving?.finishKey;
+  const sessionId = session.id;
 
   // Once saved: where the save is, checked again every few seconds while it waits.
   useEffect(() => {
-    if (phase !== 'saved' || !session.saving || !store) return;
-    const key = session.saving.finishKey;
+    if (phase !== 'saved' || !finishKey || !store) return;
     let live = true;
+    let checking = false;
+    let waitingForResult = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const visible = () => document.visibilityState !== 'hidden';
     const check = async () => {
-      const waiting = (await store.pending()).some((e) => e.idempotencyKey === key);
+      const waiting = (await store.pending()).some((e) => e.idempotencyKey === finishKey);
       if (!live) return;
       if (waiting) {
-        setStatus({ state: 'waiting' });
-        return;
+        setStatus((previous) => (previous?.state === 'waiting' ? previous : { state: 'waiting' }));
+        return true;
       }
       const dropped = (await store.notices()).find(
-        (n) => n.kind === 'dropped' && n.idempotencyKey === key,
+        (n) => n.kind === 'dropped' && n.idempotencyKey === finishKey,
       );
+      if (!live) return;
       if (dropped) {
         setStatus({ state: 'refused', reason: String(dropped.result?.reason ?? '') });
         return;
       }
-      const view = online ? await captureApi.scanSession(session.id).catch(() => null) : null;
-      if (live) setStatus({ state: 'saved', view });
+      try {
+        const view = online ? await captureApi.scanSession(sessionId) : null;
+        if (live) setStatus({ state: 'saved', view });
+      } catch (error) {
+        if (live) setStatus({ state: 'saved', view: null });
+        // The queue can be clear before a live read succeeds. Retry transient errors.
+        return !isApiError(error) || ![401, 403, 404, 410].includes(error.status);
+      }
+      return false;
     };
-    void check();
-    const timer = setInterval(() => void check(), 3000);
+    const poll = async () => {
+      clearTimeout(timer);
+      if (!live || checking || !waitingForResult || !visible()) return;
+      checking = true;
+      waitingForResult = (await check().catch(() => true)) === true;
+      checking = false;
+      if (live && waitingForResult && visible()) {
+        timer = setTimeout(() => void poll(), 3000);
+      }
+    };
+    void poll();
+    document.addEventListener('visibilitychange', poll);
     return () => {
       live = false;
-      clearInterval(timer);
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', poll);
     };
-  }, [phase, session, store, online]);
+  }, [phase, finishKey, sessionId, store, online]);
 
   const match = (name: string | null | undefined) =>
     !q.trim() || (name ?? '').toLocaleLowerCase().includes(q.trim().toLocaleLowerCase());

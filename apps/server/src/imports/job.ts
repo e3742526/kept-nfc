@@ -393,19 +393,15 @@ export function importJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: 'import-csv',
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES['import-csv'],
-      handler: async ({ data, scope, client }) => {
+      handler: async ({ data, scope }) => {
         const runId = (data as { runId?: unknown } | null)?.runId;
         if (typeof runId !== 'string' || !UUID.test(runId)) {
           throw new Error('import-csv job: data names no run');
         }
         const app = deps.pools.app;
         if (!app) throw new Error('import-csv job: the worker has no kept_app pool');
-        // runJob() holds this scoped transaction open while each chunk commits on its own
-        // connection; a large import runs up to the policy's 2 hours, past the pool's 30 s
-        // idle-in-transaction limit. It holds no lock and no transaction id.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '7260s'`);
         await runImport({ pools: { app }, log: deps.log }, scope, runId.toLowerCase());
       },
     }),

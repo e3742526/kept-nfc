@@ -7,12 +7,12 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Link } from '@tanstack/react-router';
 import { ProgressBar } from 'react-aria-components';
+import { isImportRunStale } from '@/api/capture/queries';
 import type { ImportRun } from '@/api/capture/types';
 import { CheckCircleIcon } from '@/components/icons';
 import { Notice } from '@/components/page';
 import { Button, buttonClass } from '@/components/ui/button';
 import { useFormat } from '@/lib/format';
-import { isStale } from './upload-step';
 
 export function RunProgress({
   run,
@@ -30,7 +30,7 @@ export function RunProgress({
   const total = run.total ?? 0;
   const done = f.num(run.progress);
   const of = f.num(total);
-  const stopped = run.status === 'failed' || isStale(run);
+  const stopped = run.status === 'failed' || isImportRunStale(run);
   return (
     <div className="grid gap-4">
       <ProgressBar

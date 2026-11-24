@@ -202,8 +202,6 @@ export const messageOf = (r: MessageRow): ThreadMessage => ({
   step: r.step,
 });
 
-const MESSAGE_COLUMNS = 'id, role, parts, created_at, turn_id, step, cited_location_ids';
-
 /** A thread's messages in order (`turnId`: only that turn's). */
 export async function messagesOf(
   client: pg.ClientBase,
@@ -211,7 +209,13 @@ export async function messagesOf(
   turnId?: string,
 ): Promise<(ThreadMessage & { citedLocationIds: string[] })[]> {
   const { rows } = await client.query<MessageRow>(
-    `SELECT ${MESSAGE_COLUMNS} FROM public.assistant_messages
+    `SELECT id, role, created_at, turn_id, step, cited_location_ids,
+            CASE WHEN parts @> '[{"type":"photo"}]'::jsonb THEN (
+              SELECT jsonb_agg(CASE WHEN part->>'type' = 'photo' THEN '{"type":"photo"}'::jsonb
+                                    ELSE part END ORDER BY ord)
+                FROM jsonb_array_elements(parts) WITH ORDINALITY AS p(part, ord)
+            ) ELSE parts END AS parts
+       FROM public.assistant_messages
       WHERE thread_id = $1 ${turnId ? 'AND turn_id = $2' : ''}
       ORDER BY created_at, id`,
     turnId ? [threadId, turnId] : [threadId],

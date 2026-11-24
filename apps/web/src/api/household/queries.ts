@@ -507,20 +507,6 @@ export const useSubjectSchedules = (subject: { thingId: string } | { placeId: st
         ? householdApi.thingSchedules(subject.thingId)
         : householdApi.placeSchedules(subject.placeId),
   });
-export const useServiceRecords = (subject: { thingId: string } | { placeId: string }) =>
-  useInfiniteQuery({
-    queryKey:
-      'thingId' in subject
-        ? k.serviceRecords.thing(subject.thingId)
-        : k.serviceRecords.place(subject.placeId),
-    queryFn: ({ pageParam }) =>
-      'thingId' in subject
-        ? householdApi.thingServiceRecords(subject.thingId, pageParam)
-        : householdApi.placeServiceRecords(subject.placeId, pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: nextCursor,
-  });
-
 export const usePaperwork = (params: PaperworkParams = {}) =>
   useInfiniteQuery({
     queryKey: k.paperwork.list(params),
@@ -536,14 +522,6 @@ export const useDocuments = (params: DocumentsParams = {}) =>
       householdApi.documents({ ...params, ...(pageParam ? { cursor: pageParam } : {}) }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: nextCursor,
-  });
-
-/** One expiring document (Renew from a link, D172). */
-export const useDocument = (id: string) =>
-  useQuery({
-    queryKey: k.documents.one(id),
-    queryFn: () => householdApi.document(id),
-    enabled: !!id,
   });
 
 /** The agenda (Expiring, Home's rows' lists): `counts` ride on every page. */

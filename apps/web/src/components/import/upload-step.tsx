@@ -5,12 +5,12 @@
  * (csv-help.tsx). The location's recent imports are listed under it, so an import that stopped can
  * be opened and resumed.
  */
-import { type ArchiveSource, IMPORT_STALE_MINUTES } from '@kept/shared';
+import type { ArchiveSource } from '@kept/shared';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { DropZone, FileTrigger } from 'react-aria-components';
-import { useImportRuns } from '@/api/capture/queries';
+import { isImportRunStale, useImportRuns } from '@/api/capture/queries';
 import type { ImportRun } from '@/api/capture/types';
 import type { LocationSummary } from '@/api/types';
 import { ChevronEndIcon, DocumentIcon } from '@/components/icons';
@@ -34,11 +34,6 @@ export const CSV_TYPES = [
   '.csv',
   '.tsv',
 ];
-
-/** A running import that hasn't moved for IMPORT_STALE_MINUTES has lost its job (resumable). */
-export const isStale = (run: Pick<ImportRun, 'status' | 'updatedAt'>, now = Date.now()) =>
-  run.status === 'running' &&
-  now - new Date(run.updatedAt).getTime() > IMPORT_STALE_MINUTES * 60_000;
 
 export function UploadStep({
   locations,
@@ -145,7 +140,7 @@ export function UploadStep({
 export function useRunStatusLabel() {
   const { t } = useLingui();
   return (run: ImportRun): { label: string; tone: PillTone } => {
-    if (isStale(run)) return { label: t`Stopped`, tone: 'warn' };
+    if (isImportRunStale(run)) return { label: t`Stopped`, tone: 'warn' };
     switch (run.status) {
       case 'draft':
         return { label: t`Not checked`, tone: 'neutral' };

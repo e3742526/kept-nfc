@@ -8,7 +8,13 @@ import { isLiveTurn } from '@kept/shared';
 import { useLingui } from '@lingui/react/macro';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { assistantApi, assistantKeys, useThread, useTurn } from '@/api/assistant/queries';
+import {
+  assistantApi,
+  assistantKeys,
+  assistantTurnUnavailable,
+  useThread,
+  useTurn,
+} from '@/api/assistant/queries';
 import type { AskBody, Proposal, ThreadMessage, TurnView } from '@/api/assistant/types';
 import { assistantPhotoBase64 } from './inputs';
 import { showThread } from './store';
@@ -40,8 +46,10 @@ export function useConversation(threadId: string | null) {
 
   const activeTurnId = turnId ?? thread.data?.liveTurn?.id ?? null;
   const turn = useTurn(activeTurnId);
-  const status = turn.data?.status;
-  const live = status ? isLiveTurn(status) : !!thread.data?.liveTurn;
+  const unavailable = assistantTurnUnavailable(turn.error);
+  const turnData = unavailable ? undefined : turn.data;
+  const status = turnData?.status;
+  const live = !unavailable && (status ? isLiveTurn(status) : !!thread.data?.liveTurn);
 
   // The turn ended: read the thread again, and the list (its title and order changed).
   useEffect(() => {
@@ -83,12 +91,12 @@ export function useConversation(threadId: string | null) {
   });
 
   const messages: ThreadMessage[] = useMemo(
-    () => mergeById(thread.data?.messages ?? [], turn.data?.messages ?? []),
-    [thread.data?.messages, turn.data?.messages],
+    () => mergeById(thread.data?.messages ?? [], turnData?.messages ?? []),
+    [thread.data?.messages, turnData?.messages],
   );
   const proposals: Proposal[] = useMemo(
-    () => mergeById(thread.data?.proposals ?? [], turn.data?.proposals ?? []),
-    [thread.data?.proposals, turn.data?.proposals],
+    () => mergeById(thread.data?.proposals ?? [], turnData?.proposals ?? []),
+    [thread.data?.proposals, turnData?.proposals],
   );
 
   /** The question a turn asked, to ask it again (an expired or changed card). */
@@ -102,7 +110,8 @@ export function useConversation(threadId: string | null) {
     thread,
     messages,
     proposals,
-    turn: turn.data ? { id: activeTurnId as string, ...turn.data } : null,
+    turn: turnData ? { id: activeTurnId as string, ...turnData } : null,
+    unavailable,
     live,
     ask,
     cancel,

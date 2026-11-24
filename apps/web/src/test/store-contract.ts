@@ -561,6 +561,7 @@ export function storeContract(name: string, makeStore: () => OfflineStore | Prom
       expect(pending[0]?.payloadVersion).toBe(1);
       expect(pending[0]?.clientVersion).toBeTruthy();
       expect(pending.every((e) => e.state === 'pending')).toBe(true);
+      expect(await s.pendingKeys([`cap:${b}`, 'cap:missing'])).toEqual(new Set([`cap:${b}`]));
       expect(await s.counts()).toEqual({ waiting: 2, uploading: 0, needsAttention: 0 });
 
       const shelf = await s.contentsOf({ placeId: SHELF });
@@ -606,6 +607,7 @@ export function storeContract(name: string, makeStore: () => OfflineStore | Prom
       ]);
       await s.enqueue(capture(b), []);
       expect(await s.unqueue([`cap:${a}`, 'cap:unknown'])).toEqual([`cap:${a}`]);
+      expect(await s.pendingKeys([`cap:${a}`, `cap:${b}`])).toEqual(new Set([`cap:${b}`]));
       expect((await s.pending()).map((e) => e.clientId)).toEqual([b]);
       expect(await s.counts()).toEqual({ waiting: 1, uploading: 0, needsAttention: 0 });
       expect(await s.unqueue([`cap:${a}`])).toEqual([]);

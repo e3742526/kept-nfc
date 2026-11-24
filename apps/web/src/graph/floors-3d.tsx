@@ -34,7 +34,7 @@ import {
   FLOOR_RING,
   PITCH,
   type Projected,
-  project,
+  projector,
   START,
   type Vec3,
   world3D,
@@ -102,8 +102,19 @@ export function Floors3D({
   }, [reduced]);
   useEffect(() => {
     if (!spinning) return;
-    const id = setInterval(() => setYaw((y) => y + SPIN * 0.05), 50);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | undefined;
+    const followVisibility = () => {
+      clearInterval(id);
+      if (document.visibilityState !== 'hidden') {
+        id = setInterval(() => setYaw((y) => y + SPIN * 0.05), 50);
+      }
+    };
+    followVisibility();
+    document.addEventListener('visibilitychange', followVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', followVisibility);
+      clearInterval(id);
+    };
   }, [spinning]);
   // Going in (or up) frames that node.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reframe on a change of focus only
@@ -112,7 +123,6 @@ export function Floors3D({
   const world = useMemo(() => world3D(tree, tagsOn ? tree.tags : null), [tree, tagsOn]);
   const branch = selected ?? (focus.kind === 'location' ? null : focus);
   const nodes = useMemo(() => shownIn3D(tree, branch), [tree, branch]);
-  const shownIds = new Set(nodes.map((n) => n.id));
 
   const fit = w && h ? Math.min(w / 700, h / 636) : 1;
   const target: Vec3 =
@@ -120,43 +130,48 @@ export function Floors3D({
       ? { x: 0, y: 0, z: 0 }
       : (world.pos.get(focus.id) ?? { x: 0, y: 0, z: 0 });
   const cam: Camera = { yaw, pitch, target, scale: fit * zoom * 0.84, cx: w / 2, cy: h / 2 };
+  const project = projector(cam);
+  const pitchRise = Math.sin(pitch);
   const sizeK = Math.max(0.7, Math.min(1.4, fit * zoom));
 
   const P = new Map<string, Projected>();
   for (const n of nodes) {
     const wp = world.pos.get(n.id);
-    if (wp) P.set(n.id, project(wp, cam));
+    if (wp) P.set(n.id, project(wp));
   }
   const tagP = new Map<string, Projected>();
-  for (const g of world.tags) tagP.set(g.tag.id, project(g.pos, cam));
+  for (const g of world.tags) tagP.set(g.tag.id, project(g.pos));
 
   // What is brought forward: the picked branch (its way up and all it holds), or a tag's things.
-  const focusSet = new Set<string>();
   const anyFocus = !!selectedTag || (!!selected && selected.kind !== 'location');
-  if (selectedTag) {
-    for (const n of taggedIn(tree.root, selectedTag))
-      for (const c of chainOf(n)) focusSet.add(c.id);
-  } else if (selected && selected.kind !== 'location') {
-    for (const c of chainOf(selected)) focusSet.add(c.id);
-    const down = (n: GNode) => {
-      focusSet.add(n.id);
-      for (const k of n.children) down(k);
-    };
-    down(selected);
-  }
+  const focusSet = useMemo(() => {
+    const visible = new Set<string>();
+    if (selectedTag) {
+      for (const n of taggedIn(tree.root, selectedTag))
+        for (const c of chainOf(n)) visible.add(c.id);
+    } else if (selected && selected.kind !== 'location') {
+      for (const c of chainOf(selected)) visible.add(c.id);
+      const down = (n: GNode) => {
+        visible.add(n.id);
+        for (const child of n.children) down(child);
+      };
+      down(selected);
+    }
+    return visible;
+  }, [selected, selectedTag, tree.root]);
   const floorOf = (n: GNode) => n.floorId ?? NO_FLOOR;
   const offFloor = (n: GNode) => floor !== 'all' && n.kind !== 'location' && floorOf(n) !== floor;
   const dimmed = (n: GNode) => (anyFocus && !focusSet.has(n.id)) || offFloor(n);
 
   const layers = world.layers.map((l) => {
-    const c = project({ x: target.x * 0, y: l.y, z: 0 }, cam);
+    const c = project({ x: 0, y: l.y, z: 0 });
     const key = l.floor ? l.floor.id : NO_FLOOR;
     return {
       ...l,
       key,
       c,
       rw: FLOOR_RING * 2 * c.f * cam.scale,
-      rh: FLOOR_RING * 2 * c.f * cam.scale * Math.sin(pitch),
+      rh: FLOOR_RING * 2 * c.f * cam.scale * pitchRise,
     };
   });
   /** A floor's chip ends just before its ring, but never past the canvas's edge (phones). */
@@ -228,16 +243,20 @@ export function Floors3D({
     }
   const shownLabels = declutter(boxes, { w, h }, 2, obstacles);
 
-  const edges: { a: string; b: string; tag?: string; colour?: string | null }[] = [];
-  for (const n of nodes)
-    if (n.parent && shownIds.has(n.parent.id)) edges.push({ a: n.parent.id, b: n.id });
-  if (tagsOn)
-    for (const g of world.tags)
-      for (const id of g.ids)
-        if (shownIds.has(id))
-          edges.push({ a: g.tag.id, b: id, tag: g.tag.id, colour: g.tag.colour });
+  const edges = useMemo(() => {
+    const all: { a: string; b: string; tag?: string; colour?: string | null }[] = [];
+    const shownIds = new Set(nodes.map((n) => n.id));
+    for (const n of nodes)
+      if (n.parent && shownIds.has(n.parent.id)) all.push({ a: n.parent.id, b: n.id });
+    if (tagsOn)
+      for (const g of world.tags)
+        for (const id of g.ids)
+          if (shownIds.has(id))
+            all.push({ a: g.tag.id, b: id, tag: g.tag.id, colour: g.tag.colour });
+    return all;
+  }, [nodes, tagsOn, world.tags]);
 
-  const floorIndex = new Map(tree.floors.map((fl, i) => [fl.id, i]));
+  const floorIndex = useMemo(() => new Map(tree.floors.map((fl, i) => [fl.id, i])), [tree.floors]);
 
   const nodeStyle = (n: GNode, p: Projected, s: number): CSSProperties => ({
     width: s,

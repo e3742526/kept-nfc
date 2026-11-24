@@ -19,7 +19,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ProgressBar } from 'react-aria-components';
-import { captureApi, captureKeys, useImportRun } from '@/api/capture/queries';
+import { captureApi, captureKeys, isImportRunStale, useImportRun } from '@/api/capture/queries';
 import { isApiError } from '@/api/client';
 import { portabilityApi } from '@/api/portability/queries';
 import type {
@@ -54,9 +54,7 @@ import { ImportRepair } from './repair';
 import { StepFooter, StepHeader } from './step-chrome';
 import { initialTarget, type TargetDraft, TargetStep, targetBody } from './target-step';
 import { extraModules, initialTrack, type TrackDraft, TrackStep } from './track-step';
-import { isStale } from './upload-step';
 
-const POLL_MS = 1500;
 type Stage = 'inspect' | 'target' | 'choices' | 'report';
 type Go = (next: { location?: string; run?: string; source?: ArchiveSource }) => void;
 
@@ -94,7 +92,7 @@ export function ArchiveRunView({
   const locationName = useLocationName();
   const errorText = useArchiveErrorText();
   const refusal = useRefusalText();
-  const query = useImportRun(runId);
+  const query = useImportRun(runId, true);
   const run = query.data as unknown as ArchiveImportRun | undefined;
   const key = captureKeys.imports.run(runId);
   const [stage, setStage] = useState<Stage | null>(null);
@@ -112,14 +110,6 @@ export function ArchiveRunView({
     }));
     void qc.invalidateQueries({ queryKey: captureKeys.imports.all, refetchType: 'none' });
   };
-
-  // While it runs, read it again every POLL_MS (a stopped one stays put until Resume).
-  const polling = run?.status === 'running' && !isStale(run);
-  useEffect(() => {
-    if (!polling) return;
-    const timer = setInterval(() => void query.refetch(), POLL_MS);
-    return () => clearInterval(timer);
-  }, [polling, query.refetch]);
 
   // An uploaded archive is read once, as soon as the run is open.
   const inspect = useMutation({
@@ -446,7 +436,7 @@ export function ArchiveRunView({
 
   // ----- importing -----
   if (run.status === 'running' || run.status === 'failed') {
-    const stopped = run.status === 'failed' || isStale(run);
+    const stopped = run.status === 'failed' || isImportRunStale(run);
     const done = f.num(run.progress);
     const of = f.num(run.total ?? 0);
     return (

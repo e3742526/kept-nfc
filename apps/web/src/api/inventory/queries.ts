@@ -343,14 +343,6 @@ export const useSheet = (params: SheetParams, enabled = true) =>
   });
 export const useThing = (id: string) =>
   useQuery({ queryKey: k.things.detail(id), queryFn: () => inventoryApi.thing(id) });
-export const useThingHistory = (id: string) =>
-  useInfiniteQuery({
-    queryKey: k.things.history(id),
-    queryFn: ({ pageParam }) => inventoryApi.thingHistory(id, pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: nextCursor,
-  });
-
 export const useSearch = (params: SearchParams) =>
   useQuery({ queryKey: k.search(params), queryFn: () => inventoryApi.search(params) });
 export const useSavedViews = (surface: ListSurface, enabled = true) =>

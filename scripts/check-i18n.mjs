@@ -143,13 +143,11 @@ export function icuShape(s) {
   return { names: [...names].sort().join(','), plurals };
 }
 
-const placeholders = (s) => icuShape(s).names;
 const tags = (s) =>
   [...s.matchAll(/<\/?(\d+)\/?>/g)]
     .map((m) => m[0])
     .sort()
     .join(',');
-const plurals = (s) => icuShape(s).plurals;
 
 /**
  * Languages whose `one` isn't only 1: in Ukrainian it is also 21, 31, 101…, so a `one` branch
@@ -189,16 +187,23 @@ export function oneLosesNumber(s) {
  */
 export function shapeProblems(extracted, catalogues, sourceLocale = 'en') {
   const out = {};
+  const sources = new Map();
   for (const [locale, entries] of Object.entries(catalogues)) {
     if (locale === sourceLocale) continue;
     out[locale] = [];
     for (const [id, message] of extracted) {
       const t = entries[id];
       if (!t) continue;
-      const source = message?.message ?? id;
-      if (placeholders(t) !== placeholders(source)) out[locale].push({ id, why: 'placeholders' });
-      else if (tags(t) !== tags(source)) out[locale].push({ id, why: 'tags' });
-      else if (plurals(t) !== plurals(source)) out[locale].push({ id, why: 'plurals' });
+      let source = sources.get(id);
+      if (!source) {
+        const text = message?.message ?? id;
+        source = { ...icuShape(text), tags: tags(text) };
+        sources.set(id, source);
+      }
+      const translation = icuShape(t);
+      if (translation.names !== source.names) out[locale].push({ id, why: 'placeholders' });
+      else if (tags(t) !== source.tags) out[locale].push({ id, why: 'tags' });
+      else if (translation.plurals !== source.plurals) out[locale].push({ id, why: 'plurals' });
       else if (ONE_IS_NOT_ONLY_ONE.has(locale) && oneLosesNumber(t))
         out[locale].push({ id, why: 'one without #: use =1 for exactly one, and # in one' });
     }

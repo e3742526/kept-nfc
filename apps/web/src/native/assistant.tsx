@@ -10,6 +10,7 @@ import {
 import { MessageSquare } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { assistantPaths as paths } from '@/api/assistant/paths';
+import { assistantTurnPollInterval, assistantTurnUnavailable } from '@/api/assistant/queries';
 import type {
   AskResult,
   AssistantModel,
@@ -115,12 +116,14 @@ function AssistantConversation({
     queryFn: () => request<TurnView>(paths.turn(activeTurnId ?? '')),
     enabled: online && !!activeTurnId,
     refetchInterval: ({ state }) =>
-      online && (!state.data || isLiveTurn(state.data.status)) ? 1000 : false,
+      online ? assistantTurnPollInterval(state.data, state.error) : false,
   });
-  const live = !!activeTurnId && (!turn.data || isLiveTurn(turn.data.status));
+  const unavailable = assistantTurnUnavailable(turn.error);
+  const turnData = unavailable ? undefined : turn.data;
+  const live = !!activeTurnId && !unavailable && (!turnData || isLiveTurn(turnData.status));
   const refetchDetail = detail.refetch;
   const refetchThreads = threads.refetch;
-  const finished = !!turn.data && !isLiveTurn(turn.data.status);
+  const finished = !!turnData && !isLiveTurn(turnData.status);
   useEffect(() => {
     if (!activeTurnId || !finished) return;
     void refetchDetail();
@@ -222,10 +225,10 @@ function AssistantConversation({
   const messageIds = new Set(messages.map((message) => message.id));
   const proposalIds = new Set(proposals.map((proposal) => proposal.id));
   const items = threadItems(
-    [...messages, ...(turn.data?.messages.filter((message) => !messageIds.has(message.id)) ?? [])],
+    [...messages, ...(turnData?.messages.filter((message) => !messageIds.has(message.id)) ?? [])],
     [
       ...proposals,
-      ...(turn.data?.proposals.filter((proposal) => !proposalIds.has(proposal.id)) ?? []),
+      ...(turnData?.proposals.filter((proposal) => !proposalIds.has(proposal.id)) ?? []),
     ],
   );
   const recent = threads.data?.items.filter((thread) => thread.title) ?? [];

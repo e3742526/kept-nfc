@@ -347,6 +347,14 @@ export class DexieStore implements SyncStore {
     return rows.sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)).map(toEntry);
   }
 
+  async pendingKeys(idempotencyKeys: readonly string[]) {
+    if (idempotencyKeys.length === 0) return new Set<string>();
+    const rows = await this.db.queue.where('idempotencyKey').anyOf(idempotencyKeys).toArray();
+    return new Set(
+      rows.filter((row) => UNANSWERED.has(row.state)).map((row) => row.idempotencyKey),
+    );
+  }
+
   async unqueue(idempotencyKeys: string[]): Promise<string[]> {
     const db = this.db;
     // One transaction: an op the engine has already marked `uploading` or `sent` stays (the

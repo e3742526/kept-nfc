@@ -42,8 +42,6 @@ export const grantInstanceAdmin = (userId: string) =>
 /** The last instance admin answers 409. */
 export const revokeInstanceAdmin = (userId: string) => api.del(paths.admin.instanceAdmin(userId));
 
-export const getRecoveryKit = () =>
-  api.get<{ acknowledgedAt: string | null }>(paths.admin.recoveryKit);
 /** The first acknowledgement's time is kept; acknowledging again returns it. */
 export const acknowledgeRecoveryKit = () =>
   api.post<{ acknowledgedAt: string }>(paths.admin.recoveryKitAcknowledge);

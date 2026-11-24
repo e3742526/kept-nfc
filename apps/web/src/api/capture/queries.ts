@@ -9,6 +9,7 @@
  * seen are step 2's (`inventoryApi`, `inventoryPaths`).
  */
 import {
+  IMPORT_STALE_MINUTES,
   isErrorCode,
   type SnapshotPage,
   type SyncOpsRequest,
@@ -325,15 +326,6 @@ export const captureApi = {
 
 // ----- hooks -----------------------------------------------------------------------------------
 
-export const useCaptureBatches = (params: CaptureBatchParams = {}) =>
-  useInfiniteQuery({
-    queryKey: k.captures.batches(params),
-    queryFn: ({ pageParam }) =>
-      captureApi.batches({ ...params, ...(pageParam ? { cursor: pageParam } : {}) }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: nextCursor,
-  });
-
 export const useExtractions = (thingId: string) =>
   useQuery({
     queryKey: k.extractions(thingId),
@@ -396,22 +388,21 @@ export const useBarcode = (code: string | null) =>
     queryFn: () => captureApi.barcode(code ?? ''),
     enabled: !!code,
   });
-export const useBoxChecks = (containerId: string) =>
-  useInfiniteQuery({
-    queryKey: k.boxChecks(containerId),
-    queryFn: ({ pageParam }) => captureApi.boxChecks(containerId, pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: nextCursor,
-  });
-
 export const useImportRuns = (locationId?: string) =>
   useQuery({ queryKey: k.imports.list(locationId), queryFn: () => captureApi.imports(locationId) });
-export const useImportRun = (id: string, refetchInterval: number | false = false) =>
+
+/** A running import that hasn't moved in the allotted time can be resumed. */
+export const isImportRunStale = (run: Pick<ImportRun, 'status' | 'updatedAt'>, now = Date.now()) =>
+  run.status === 'running' &&
+  now - new Date(run.updatedAt).getTime() > IMPORT_STALE_MINUTES * 60_000;
+
+export const useImportRun = (id: string, poll = false) =>
   useQuery({
     queryKey: k.imports.run(id),
     queryFn: () => captureApi.importRun(id),
     enabled: !!id,
-    refetchInterval,
+    refetchInterval: ({ state: { data } }) =>
+      poll && data?.status === 'running' && !isImportRunStale(data) ? 1500 : false,
   });
 
 export const useTemplates = (locationId: string) =>
@@ -420,13 +411,6 @@ export const useTemplates = (locationId: string) =>
     queryFn: () => captureApi.templates(locationId),
     enabled: !!locationId,
   });
-export const useAccountTemplates = (accountId: string) =>
-  useQuery({
-    queryKey: k.templates.account(accountId),
-    queryFn: () => captureApi.accountTemplates(accountId),
-    enabled: !!accountId,
-  });
-
 export const useUndoable = (thingId: string) =>
   useQuery({
     queryKey: k.undoable(thingId),

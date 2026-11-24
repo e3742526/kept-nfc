@@ -147,10 +147,18 @@ async function payloadOf(client: pg.ClientBase, d: DeliveryRow): Promise<Webhook
 
 // At most perSecondPerLocation POSTs a second per location, in this process.
 const recent = new Map<string, number[]>();
+let lastSweep = 0;
 
 async function pace(locationId: string, now: () => number): Promise<void> {
   for (;;) {
     const t = now();
+    // Expire idle locations during normal traffic without starting another timer.
+    if (t < lastSweep || t - lastSweep >= 60_000) {
+      lastSweep = t;
+      for (const [id, timestamps] of recent) {
+        if (timestamps.every((timestamp) => t - timestamp >= 1000)) recent.delete(id);
+      }
+    }
     const list = (recent.get(locationId) ?? []).filter((x) => t - x < 1000);
     if (list.length < WEBHOOK_LIMITS.perSecondPerLocation) {
       list.push(t);

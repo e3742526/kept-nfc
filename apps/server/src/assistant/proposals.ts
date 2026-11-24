@@ -569,6 +569,7 @@ export async function confirmProposals(
     );
     if (rows.length !== ids.length) throw notFound();
     const argsOf = new Map<string, Record<string, unknown> | null>();
+    const rowsById = new Map(rows.map((row) => [row.id, row]));
     for (const r of rows) {
       if (wanted.get(r.id) !== r.args_hash) {
         throw new AppError('proposal_conflict', 409, 'review the new values and ask again');
@@ -579,7 +580,7 @@ export async function confirmProposals(
     }
     const out: Claimed[] = [];
     for (const id of ids) {
-      const r = rows.find((x) => x.id === id) as ProposalRow;
+      const r = rowsById.get(id) as ProposalRow;
       if (r.status !== 'open') {
         out.push({ kind: 'done', result: { id, status: asOutcome(r.status) } });
         continue;

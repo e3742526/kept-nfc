@@ -147,18 +147,22 @@ export type Projected = {
   f: number;
 };
 
-export function project(w: Vec3, cam: Camera): Projected {
-  const px = w.x - cam.target.x;
-  const py = w.y - cam.target.y;
-  const pz = w.z - cam.target.z;
-  const cos = Math.cos(cam.yaw);
-  const sin = Math.sin(cam.yaw);
-  const X = px * cos - pz * sin;
-  const Z = px * sin + pz * cos;
-  const Y2 = py * Math.cos(cam.pitch) - Z * Math.sin(cam.pitch);
-  const Z2 = py * Math.sin(cam.pitch) + Z * Math.cos(cam.pitch);
-  const f = EYE / Math.max(80, EYE - Z2);
-  return { x: cam.cx + X * f * cam.scale, y: cam.cy - Y2 * f * cam.scale, z: Z2, f };
+export function projector(cam: Camera): (point: Vec3) => Projected {
+  const cosYaw = Math.cos(cam.yaw);
+  const sinYaw = Math.sin(cam.yaw);
+  const cosPitch = Math.cos(cam.pitch);
+  const sinPitch = Math.sin(cam.pitch);
+  return (point) => {
+    const px = point.x - cam.target.x;
+    const py = point.y - cam.target.y;
+    const pz = point.z - cam.target.z;
+    const X = px * cosYaw - pz * sinYaw;
+    const Z = px * sinYaw + pz * cosYaw;
+    const Y2 = py * cosPitch - Z * sinPitch;
+    const Z2 = py * sinPitch + Z * cosPitch;
+    const f = EYE / Math.max(80, EYE - Z2);
+    return { x: cam.cx + X * f * cam.scale, y: cam.cy - Y2 * f * cam.scale, z: Z2, f };
+  };
 }
 
 /** Farther fades: nothing goes below a third. */

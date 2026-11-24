@@ -95,14 +95,11 @@ export function visualIndexJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: INDEX_JOB,
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES[INDEX_JOB],
-      handler: async ({ data, scope, client, job }) => {
+      handler: async ({ data, scope, job }) => {
         if (!provider || !deps.pools.app || !deps.files) return;
         const { attachmentId } = Data.parse(data);
-        // The tenant dispatcher holds its scope connection idle while the fresh authorization
-        // transactions and bounded model call run. It never holds a source lock during inference.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '100s'`);
         await indexVisualAttachment(
           deps.pools.app,
           scope,

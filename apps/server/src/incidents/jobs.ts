@@ -34,16 +34,13 @@ export function incidentJobs(deps: SystemJobDeps): JobDefinition[] {
   return [
     defineJob({
       name: 'claim-pack',
-      kind: 'tenant',
+      kind: 'tenant-scoped',
       policy: JOB_POLICIES['claim-pack'],
-      handler: async ({ data, scope, client }) => {
+      handler: async ({ data, scope }) => {
         const parsed = claimPackData(data);
         if (!parsed) throw new Error('claim-pack job: data names no run');
         const app = deps.pools.app;
         if (!app) throw new Error('claim-pack job: the worker has no kept_app pool');
-        // As the report job: runJob() holds this scoped transaction open while the pack's own
-        // steps commit on their own connections, past the pool's idle-in-transaction limit.
-        await client.query(`SET LOCAL idle_in_transaction_session_timeout = '1800s'`);
         await buildClaimPack(
           {
             pools: { app, system: deps.pools.system },

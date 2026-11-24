@@ -388,48 +388,60 @@ async function entriesOf(
     used.add(n.toLowerCase());
     return n;
   };
-  for (const t of things) {
-    const dir = `things/${safeName(t.name, 'thing')} (${t.shortCode ?? t.id.slice(0, 8)})`;
+  if (things.length > 0) {
+    const ids = things.map((thing) => thing.id);
     // The purchase's receipts and invoices (originals, members and above: the creator is an
     // owner or admin), and any receipt or invoice on the thing itself.
     const { rows: receipts } = await client.query<{
+      thing_id: string;
       file_id: string;
       storage_key: string;
       mime: string;
       bytes: string;
     }>(
-      `SELECT r.file_id, f.storage_key, f.mime, f.bytes::text AS bytes
-         FROM kept.thing_receipts($1) r
-         CROSS JOIN LATERAL kept.thing_receipt_file($1, r.file_id) f
+      `SELECT t.id AS thing_id, r.file_id, f.storage_key, f.mime, f.bytes::text AS bytes
+         FROM unnest($1::uuid[]) AS t(id)
+         CROSS JOIN LATERAL kept.thing_receipts(t.id) r
+         CROSS JOIN LATERAL kept.thing_receipt_file(t.id, r.file_id) f
        UNION
-       SELECT fl.id, fl.storage_key, fl.mime, fl.bytes::text
+       SELECT a.thing_id, fl.id, fl.storage_key, fl.mime, fl.bytes::text
          FROM public.attachments a JOIN public.files fl ON fl.id = a.file_id
-        WHERE a.thing_id = $1 AND a.role IN ('receipt', 'invoice')
-       ORDER BY 1`,
-      [t.id],
+        WHERE a.thing_id = ANY ($1::uuid[]) AND a.role IN ('receipt', 'invoice')
+       ORDER BY thing_id, file_id`,
+      [ids],
     );
-    receipts.forEach((r, i) => {
-      out.push({
-        name: unique(`${dir}/receipt-${i + 1}.${extOf(r.file_id, r.mime)}`),
-        key: r.storage_key,
-        bytes: Number(r.bytes),
-      });
-    });
     // Photos: the display rendition (GPS stripped, rotated), not the original.
-    const { rows: photos } = await client.query<{ storage_key: string; bytes: string }>(
-      `SELECT d.storage_key, d.bytes::text AS bytes FROM public.attachments a
+    const { rows: photos } = await client.query<{
+      thing_id: string;
+      storage_key: string;
+      bytes: string;
+    }>(
+      `SELECT a.thing_id, d.storage_key, d.bytes::text AS bytes
+         FROM public.attachments a
          JOIN public.file_derivatives d ON d.file_id = a.file_id AND d.variant = 'display'
-        WHERE a.thing_id = $1 AND a.role = 'photo'
-        ORDER BY a.sort, a.created_at, a.id`,
-      [t.id],
+        WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo'
+        ORDER BY a.thing_id, a.sort, a.created_at, a.id`,
+      [ids],
     );
-    photos.forEach((p, i) => {
-      out.push({
-        name: unique(`${dir}/photo-${i + 1}.jpg`),
-        key: p.storage_key,
-        bytes: Number(p.bytes),
+    const receiptsByThing = Map.groupBy(receipts, (row) => row.thing_id);
+    const photosByThing = Map.groupBy(photos, (row) => row.thing_id);
+    for (const thing of things) {
+      const dir = `things/${safeName(thing.name, 'thing')} (${thing.shortCode ?? thing.id.slice(0, 8)})`;
+      receiptsByThing.get(thing.id)?.forEach((row, i) => {
+        out.push({
+          name: unique(`${dir}/receipt-${i + 1}.${extOf(row.file_id, row.mime)}`),
+          key: row.storage_key,
+          bytes: Number(row.bytes),
+        });
       });
-    });
+      photosByThing.get(thing.id)?.forEach((row, i) => {
+        out.push({
+          name: unique(`${dir}/photo-${i + 1}.jpg`),
+          key: row.storage_key,
+          bytes: Number(row.bytes),
+        });
+      });
+    }
   }
   if (incidentId) {
     const { rows: docs } = await client.query<{

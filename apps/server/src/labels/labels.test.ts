@@ -237,6 +237,26 @@ describe('POST /api/v1/labels/batches', () => {
     const summary = await call(t, `/api/v1/labels/summary?locationId=${loc.id}`, { as: ibrahim });
     expect(summary.statusCode).toBe(404);
   });
+
+  it('retries occupied and repeated blank codes without changing their sheet slots', async () => {
+    const loc = await createLocation(t, db, ibrahim, 'household', 'Blank code collisions');
+    const random = vi.spyOn(await import('@kept/shared'), 'randomShortCode');
+    try {
+      random.mockReturnValueOnce('VQZ742');
+      ok(await batch(ibrahim, { locationId: loc.id, kind: 'blank', blankCount: 1 }), 201);
+      for (const code of ['VQZ742', 'VMQ462', 'VMQ462', 'VJV483', 'VXH394']) {
+        random.mockReturnValueOnce(code);
+      }
+      const out = ok(
+        await batch(ibrahim, { locationId: loc.id, kind: 'blank', blankCount: 3 }),
+        201,
+      ) as unknown as { batch: Batch };
+      expect(out.batch.labels.map((label) => label.code)).toEqual(['VJV483', 'VMQ462', 'VXH394']);
+      expect(random).toHaveBeenCalledTimes(6);
+    } finally {
+      random.mockRestore();
+    }
+  });
 });
 
 describe('a dry run (the preview)', () => {
