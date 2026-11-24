@@ -6,6 +6,7 @@ import {
   isV7,
   MIN_PAYLOAD_VERSION,
   NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   type OpKind,
   type OpPayload,
@@ -39,11 +40,15 @@ export const PAYLOAD_WINDOW: PayloadWindow = Object.freeze({
   upgraders: UPGRADERS,
 });
 
-/** Identifies the native v2 envelope. `parsedPayload` checks the required review flag. */
+/** Identifies a native capture envelope. `parsedPayload` checks its required flags. */
 export function usesNativeCaptureVersion(item: Pick<QueueItem, 'op' | 'payloadVersion'>): boolean {
   return (
     item.op === 'create_thing' &&
-    [NATIVE_CAPTURE_PAYLOAD_VERSION, NATIVE_INVENTORY_PAYLOAD_VERSION].includes(item.payloadVersion)
+    [
+      NATIVE_CAPTURE_PAYLOAD_VERSION,
+      NATIVE_INVENTORY_PAYLOAD_VERSION,
+      NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
+    ].includes(item.payloadVersion)
   );
 }
 
@@ -79,9 +84,11 @@ export function parsedPayload<K extends OpKind>(
 ): OpPayload<K> | null {
   if (usesNativeCaptureVersion({ op, payloadVersion })) {
     const parsed = CreateThingPayload.safeParse(payload);
-    const hasIntent = payloadVersion === NATIVE_INVENTORY_PAYLOAD_VERSION;
+    const hasIntent = payloadVersion !== NATIVE_CAPTURE_PAYLOAD_VERSION;
+    const skipsServer = payloadVersion === NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION;
     return parsed.success &&
       parsed.data.reviewSuggestions === true &&
+      (parsed.data.skipServerSuggestions === true) === skipsServer &&
       (hasIntent
         ? !!parsed.data.captureIntent &&
           !parsed.data.attachToThingId &&
@@ -100,7 +107,9 @@ export function parsedPayload<K extends OpKind>(
     throw err;
   }
   const parsed = parseOpPayload(op, current);
-  return parsed.success && (op !== 'create_thing' || !('captureIntent' in parsed.data))
+  return parsed.success &&
+    (op !== 'create_thing' ||
+      (!('captureIntent' in parsed.data) && !('skipServerSuggestions' in parsed.data)))
     ? (parsed.data as OpPayload<K>)
     : null;
 }

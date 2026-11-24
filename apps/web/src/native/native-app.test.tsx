@@ -260,7 +260,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           if (capabilitiesOverride) return capabilitiesOverride(_conn) as T;
           return {
             contractVersion: 1,
-            capturePayloadVersions: [2, 3],
+            capturePayloadVersions: [2, 3, 4],
             account: _conn.account,
             epoch: _conn.epoch,
           } as T;
@@ -863,6 +863,83 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('uses an authorized ChatGPT photo suggestion only when accepted, then skips server suggestions', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const ai = {
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => [{ id: 'fixture-vision', name: 'Fixture vision model' }]),
+      suggest: vi.fn(async () => ({ name: 'Assorted cables' })),
+    };
+    env.adapters.captureAI = ai;
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const user = userEvent.setup();
+    env.renderApp();
+
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+    );
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Expected a photo picker');
+    const photo = new File(['image bytes'], 'cables.jpg', { type: 'image/jpeg' });
+    await user.upload(picker, photo);
+    const description = screen.getByRole('textbox', { name: 'Description' });
+    await user.type(description, 'My draft');
+
+    await user.click(await screen.findByRole('button', { name: /AI provider/ }));
+    await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
+    await user.click(screen.getByRole('button', { name: 'Suggest description' }));
+    expect(ai.suggest).toHaveBeenLastCalledWith(expect.anything(), 'apple', photo, undefined);
+    expect(description).toHaveValue('My draft');
+
+    await user.click(screen.getByRole('button', { name: /AI provider/ }));
+    await user.click(await screen.findByRole('option', { name: 'ChatGPT plan' }));
+    await user.click(screen.getByRole('button', { name: 'Continue with ChatGPT' }));
+    await user.click(await screen.findByRole('button', { name: 'Suggest description' }));
+    expect(ai.connect).toHaveBeenCalledTimes(1);
+    expect(ai.suggest).toHaveBeenLastCalledWith(
+      expect.anything(),
+      'chatgpt',
+      photo,
+      'fixture-vision',
+    );
+    expect(description).toHaveValue('My draft');
+    await user.click(await screen.findByRole('button', { name: 'Use this description' }));
+    expect(description).toHaveValue('Assorted cables');
+
+    await user.click(screen.getByRole('button', { name: /^Save (capture|to box)$/ }));
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        expect.anything(),
+        capturePaths.syncOps,
+        expect.objectContaining({
+          body: expect.objectContaining({
+            ops: [
+              expect.objectContaining({
+                payloadVersion: 4,
+                payload: expect.objectContaining({
+                  name: 'Assorted cables',
+                  skipServerSuggestions: true,
+                }),
+              }),
+            ],
+          }),
+        }),
+      ),
+    );
+  });
+
   it('starts with the QR camera and switches between QR and NFC from Scan', async ({
     onTestFinished,
   }) => {

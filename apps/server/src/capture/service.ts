@@ -439,6 +439,9 @@ export async function capture(
   if (input.reviewSuggestions && (input.mode !== 'thing' || !name || input.attachToThingId)) {
     throw invalid('Review-only suggestions are for new, named thing captures.');
   }
+  if (input.skipServerSuggestions && (!opts.captureIntent || !input.reviewSuggestions)) {
+    throw invalid('Skipping server suggestions requires a native inventory capture.');
+  }
   if (input.codes && input.mode !== 'room') throw invalid('codes are for room captures.');
   if (input.mode === 'room') checkRoomInput(input, fileIds.length);
   await requireUsableFiles(client, locationId, allFileIds);
@@ -449,13 +452,17 @@ export async function capture(
       ? { placeId: await unplacedOf(client, locationId), containerId: null }
       : await targetOf(client, locationId, input.target);
 
-  const ai = fileIds.length > 0 ? await aiCaptureState(tx, client, locationId, role) : 'off';
+  const ai =
+    fileIds.length > 0 && !input.skipServerSuggestions
+      ? await aiCaptureState(tx, client, locationId, role)
+      : 'off';
   const base = {
     mode: input.mode,
     batch_id: batchId,
     file_ids: allFileIds,
     ...(opts.takenAt ? { captured_at: opts.takenAt.toISOString() } : {}),
     ...(opts.captureIntent ? { capture_intent: opts.captureIntent } : {}),
+    ...(input.skipServerSuggestions ? { server_suggestions_skipped: true } : {}),
   };
 
   switch (input.mode) {

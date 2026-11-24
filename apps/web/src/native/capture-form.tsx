@@ -11,7 +11,13 @@ import { TextField } from '@/components/ui/text-field';
 import { sep, useBytes } from '@/lib/format';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
-import { type CompletionState, type Connection, StorageFullError } from './bridge';
+import {
+  type CaptureAIProvider,
+  type CompletionState,
+  type Connection,
+  StorageFullError,
+} from './bridge';
+import { CaptureSuggestion } from './capture-ai';
 import { type Destination, DestinationPicker, defaultDestination } from './destination';
 import { createBox, type InventoryCache, inventoryPath } from './inventory';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
@@ -89,6 +95,8 @@ export function CaptureForm({
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState('');
   const [files, setFiles] = useState<ChosenFile[]>([]);
+  const [provider, setProvider] = useState<CaptureAIProvider>('server');
+  const firstPhoto = evidenceOnly ? undefined : files.find((item) => item.role === 'photo');
   const [batchEntryIds, setBatchEntryIds] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
@@ -182,6 +190,7 @@ export function CaptureForm({
               : { boxId: destination.id }),
           name: evidenceOnly ? destination.name : name.trim(),
           ...(!evidenceOnly ? { captureIntent: intent } : {}),
+          ...(firstPhoto && provider !== 'server' ? { skipServerSuggestions: true } : {}),
           ...(note.trim() ? { note: note.trim() } : {}),
           ...(quantity ? { quantity } : {}),
           batchId,
@@ -382,6 +391,17 @@ export function CaptureForm({
               </li>
             ))}
           </ul>
+        )}
+        {firstPhoto && (
+          <CaptureSuggestion
+            key={firstPhoto.key}
+            connection={connection}
+            file={firstPhoto.file}
+            provider={provider}
+            onProviderChange={setProvider}
+            onUse={setName}
+            disabled={busy}
+          />
         )}
         {cache && !box && (
           <div className="grid gap-2">

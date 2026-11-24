@@ -188,6 +188,12 @@ enum KeptHTTP {
         return (data, http)
     }
 
+    static func stream(_ request: URLRequest) async throws -> (URLSession.AsyncBytes, HTTPURLResponse) {
+        let (bytes, response) = try await session.bytes(for: request)
+        guard let http = response as? HTTPURLResponse else { throw KeptNativeError.invalidRequest }
+        return (bytes, http)
+    }
+
     static func downloadMedia(_ location: String, from origin: URL) async throws -> URL {
         guard let url = URL(string: location, relativeTo: origin)?.absoluteURL,
               url.user == nil, url.password == nil,
@@ -459,6 +465,11 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "connection", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "connect", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "disconnect", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "captureAIStatus", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "connectCaptureChatGPT", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "disconnectCaptureChatGPT", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "captureChatGPTModels", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "suggestCaptureName", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "request", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "outbox", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "uploadOriginal", returnType: CAPPluginReturnPromise),
@@ -478,6 +489,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "exportHeldCapture", returnType: CAPPluginReturnPromise)
     ]
     @MainActor private lazy var signIn = NativeSignIn()
+    @MainActor let chatGPT = ChatGPTPlan()
     @MainActor private var loggedAuthorizedRequest = false
     private let store = NativeOutbox()
     @MainActor private var nfc: KeptNFC?

@@ -1,6 +1,7 @@
 import {
   CreateThingPayload,
   KEPT_VERSION,
+  NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   newId,
   PAYLOAD_VERSION,
@@ -24,6 +25,7 @@ export type DraftFields = {
   placeId?: string;
   attachToThingId?: string;
   captureIntent?: 'record' | 'add';
+  skipServerSuggestions?: true;
   name: string;
   note?: string;
   quantity?: string;
@@ -246,9 +248,11 @@ export async function replayCapture(
 ): Promise<void> {
   // Contract v1: negotiate before uploading files or submitting capture mutations.
   const fields = draftFields(capture);
-  const required = fields.captureIntent
-    ? NATIVE_INVENTORY_PAYLOAD_VERSION
-    : NATIVE_CAPTURE_PAYLOAD_VERSION;
+  const required = fields.skipServerSuggestions
+    ? NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION
+    : fields.captureIntent
+      ? NATIVE_INVENTORY_PAYLOAD_VERSION
+      : NATIVE_CAPTURE_PAYLOAD_VERSION;
   await ensureCaptureCompatible(connection, adapters, required);
   const uploadedFiles: { fileId: string; role: 'photo' | 'document'; sha256: string }[] = [];
 
@@ -283,6 +287,7 @@ export async function replayCapture(
       : {
           reviewSuggestions: true,
           captureIntent: fields.captureIntent,
+          skipServerSuggestions: fields.skipServerSuggestions,
           name: fields.name,
           note: fields.note,
           quantity: fields.quantity,

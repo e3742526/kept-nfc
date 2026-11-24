@@ -4584,6 +4584,10 @@ msgstr "ШІ призупинено"
 msgid "AI paused until {when}"
 msgstr "ШІ призупинено до {when}"
 
+#: src/native/capture-ai.tsx
+msgid "AI provider"
+msgstr "Постачальник ШІ"
+
 #: src/components/notifications/notification-row.tsx
 msgid "AI reached this month's cap"
 msgstr "ШІ досяг місячного ліміту"
@@ -5027,6 +5031,14 @@ msgstr "API-токен"
 #: src/routes/_app/settings.device.tsx
 msgid "App lock"
 msgstr "Блокування застосунку"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence"
+msgstr "Apple Intelligence"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence is still getting ready."
+msgstr "Apple Intelligence ще готується до роботи."
 
 #: src/components/money/exchange-rates.tsx
 msgid "Applies from"
@@ -6798,6 +6810,14 @@ msgstr "Заряд"
 msgid "Chat ID"
 msgstr "ID чату"
 
+#: src/native/capture-ai.tsx
+msgid "ChatGPT plan"
+msgstr "План ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives a copy of this photo and uses your plan allowance."
+msgstr "ChatGPT отримує копію цього фото й використовує ліміт вашого плану."
+
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "Check"
 msgstr "Перевірити"
@@ -7917,6 +7937,10 @@ msgstr "Продовжити сканування"
 msgid "Continue the tour"
 msgstr "Продовжити ознайомлення"
 
+#: src/native/capture-ai.tsx
+msgid "Continue with ChatGPT"
+msgstr "Продовжити з ChatGPT"
+
 #: src/components/documents/labels.ts
 #: src/components/vehicles/words.tsx
 msgid "Contract"
@@ -8148,6 +8172,10 @@ msgstr "У цій локації витрати приховано"
 msgid "Costs:"
 msgstr "Вартість:"
 
+#: src/native/capture-ai.tsx
+msgid "Could not connect to ChatGPT. Try again."
+msgstr "Не вдалося під’єднатися до ChatGPT. Спробуйте ще раз."
+
 #: src/native/main.tsx
 msgid "Could not connect to SheepKeep. Check the server address and try again."
 msgstr "Не вдалося підключитися до SheepKeep. Перевірте адресу сервера та спробуйте ще раз."
@@ -8155,6 +8183,14 @@ msgstr "Не вдалося підключитися до SheepKeep. Перев�
 #: src/native/capture-form.tsx
 msgid "Could not create the box. Check your connection and selected location."
 msgstr "Не вдалося створити коробку. Перевірте з’єднання та вибране розташування."
+
+#: src/native/capture-ai.tsx
+msgid "Could not disconnect from ChatGPT. Try again."
+msgstr "Не вдалося від’єднати ChatGPT. Спробуйте ще раз."
+
+#: src/native/capture-ai.tsx
+msgid "Could not load ChatGPT models. Reconnect and try again."
+msgstr "Не вдалося завантажити моделі ChatGPT. Під’єднайтеся знову та повторіть спробу."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -8171,6 +8207,10 @@ msgstr "Не вдалося виконати пошук у SheepKeep. Спроб
 #: src/native/main.tsx
 msgid "Could not sign out."
 msgstr "Не вдалося вийти з облікового запису."
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest a description from this photo."
+msgstr "Не вдалося запропонувати опис для цього фото."
 
 #: src/native/main.tsx
 msgid "Could not sync this capture automatically. Retry or review it."
@@ -9623,6 +9663,10 @@ msgstr "Відключити Paperless?"
 #: src/components/connections/words.tsx
 msgid "Disconnected by the app"
 msgstr "Від’єднано застосунком"
+
+#: src/native/capture-ai.tsx
+msgid "Disconnected on this iPhone. End the session in ChatGPT settings."
+msgstr "З’єднання на цьому iPhone розірвано. Завершіть сеанс у налаштуваннях ChatGPT."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Disk"
@@ -16105,6 +16149,10 @@ msgstr "Керувати"
 msgid "Manage {who}"
 msgstr "Керування: {who}"
 
+#: src/native/capture-ai.tsx
+msgid "Manage API keys"
+msgstr "Керувати ключами API"
+
 #: src/routes/_app/admin.users.tsx
 #: src/routes/_app/settings.location.$id.members.tsx
 msgid "Managed account"
@@ -17709,6 +17757,10 @@ msgstr "Партій записів ще немає."
 #: src/components/connections/recent-changes.tsx
 msgid "No changes by connections"
 msgstr "Змін від з’єднань немає"
+
+#: src/native/capture-ai.tsx
+msgid "No ChatGPT models are available for this account."
+msgstr "Для цього облікового запису моделі ChatGPT недоступні."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
@@ -20824,6 +20876,10 @@ msgstr "Фото або файл"
 msgid "Photo search is unavailable."
 msgstr "Пошук за фото недоступний."
 
+#: src/native/capture-ai.tsx
+msgid "Photo suggestions need Apple Intelligence on iOS 27 or later."
+msgstr "Для підказок за фото потрібна Apple Intelligence в iOS 27 або новішій версії."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo unavailable"
 msgstr "Фото недоступне"
@@ -22332,6 +22388,14 @@ msgstr "Рекомендовано"
 #: src/components/ai/recommended.tsx
 msgid "Recommended: Groq"
 msgstr "Рекомендовано: Groq"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT"
+msgstr "Під’єднати ChatGPT знову"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT and try again."
+msgstr "Під’єднайте ChatGPT знову та повторіть спробу."
 
 #: src/components/incidents/incident-sheet.tsx
 msgid "Record"
@@ -24765,6 +24829,10 @@ msgstr "Сервер"
 msgid "Server address"
 msgstr "Адреса сервера"
 
+#: src/native/capture-ai.tsx
+msgid "Server API"
+msgstr "API сервера"
+
 #: src/map/labels.ts
 msgid "Server rack 24U"
 msgstr "Серверна стійка 24U"
@@ -26725,6 +26793,10 @@ msgstr "Структуровані відповіді: не надано"
 #: src/map/labels.ts
 msgid "Succulent"
 msgstr "Сукулент"
+
+#: src/native/capture-ai.tsx
+msgid "Suggest description"
+msgstr "Запропонувати опис"
 
 #: src/components/capture/place-chip.tsx
 msgid "Suggest where I am"
@@ -29724,6 +29796,10 @@ msgstr "Увімкнути {label} тут"
 msgid "Turn on an authenticator app to open it, or add a passkey and sign in with it."
 msgstr "Увімкніть застосунок-автентифікатор, щоб відкрити його, або додайте ключ доступу та увійдіть із ним."
 
+#: src/native/capture-ai.tsx
+msgid "Turn on Apple Intelligence in your iPhone settings."
+msgstr "Увімкніть Apple Intelligence в налаштуваннях iPhone."
+
 #: src/map/size.tsx
 msgid "Turn on its side"
 msgstr "Повернути на бік"
@@ -32298,6 +32374,10 @@ msgstr "Ваш браузер запитує Face ID, відбиток паль�
 #: src/components/notifications/settings/channels.tsx
 msgid "Your chat with the bot, a group's number, or a channel's @name. Send the bot a message first."
 msgstr "Ваш чат із ботом, номер групи або @назва каналу. Спочатку надішліть боту повідомлення."
+
+#: src/native/capture-ai.tsx
+msgid "Your ChatGPT plan reached a usage limit."
+msgstr "Ви досягли ліміту використання вашого плану ChatGPT."
 
 #: src/components/notifications/notification-row.tsx
 #: src/components/reports/claim-pack.tsx

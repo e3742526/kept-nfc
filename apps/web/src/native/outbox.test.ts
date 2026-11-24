@@ -587,6 +587,40 @@ describe('native outbox staging and replay', () => {
     expect(exported.files[0]?.sha256).toBe('e'.repeat(64));
   });
 
+  it('holds a photo with local suggestions before uploading to a server that only supports v3', async () => {
+    const uploadOriginal = vi.fn();
+    const request = vi.fn();
+    const { adapters, captures } = makeInMemoryAdapters({
+      request,
+      uploadOriginal,
+      capabilities: () => ({
+        contractVersion: 1,
+        capturePayloadVersions: [2, 3],
+        account: connection.account,
+        epoch: connection.epoch,
+      }),
+    });
+    const id = await saveOnPhone(
+      connection,
+      {
+        name: 'Assorted cables',
+        locationId: newId(),
+        captureIntent: 'record',
+        skipServerSuggestions: true,
+      },
+      [{ file: new File(['photo'], 'cables.jpg', { type: 'image/jpeg' }), role: 'photo' }],
+      adapters,
+    );
+
+    expect(await syncOutbox(connection, adapters)).toBe(0);
+    expect(uploadOriginal).not.toHaveBeenCalled();
+    expect(request).not.toHaveBeenCalled();
+    const held = captures.get(id);
+    expect(held).toMatchObject({ failure: 'compatibility_hold', capture: { id } });
+    if (!held) throw new Error('Expected the capture to stay in the outbox');
+    expect(draftFields(held.capture).skipServerSuggestions).toBe(true);
+  });
+
   it('probes /api/v1/me when capability negotiation returns 401 on pre-negotiation servers', async () => {
     const captureId = newId();
     const capture: Capture = {

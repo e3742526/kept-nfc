@@ -50,6 +50,7 @@ import {
   nativeErrorCode,
   type StorageStats,
 } from './bridge';
+import { CaptureAISettings } from './capture-ai';
 import { CaptureForm, NewBoxForm } from './capture-form';
 import type { Destination } from './destination';
 import {
@@ -1624,6 +1625,7 @@ export function Inventory({
             <ThemeSwitch />
             <PaletteSwitch />
           </section>
+          <CaptureAISettings connection={connection} />
           <div className="kept-tiles">
             <ActionTile
               label={t`Print label sheets`}

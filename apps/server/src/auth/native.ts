@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import {
   NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   NativeCaptureCapabilitiesSchema,
   newId,
@@ -467,7 +468,11 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
       reply.header('cache-control', 'no-store');
       return {
         contractVersion: 1 as const,
-        capturePayloadVersions: [NATIVE_CAPTURE_PAYLOAD_VERSION, NATIVE_INVENTORY_PAYLOAD_VERSION],
+        capturePayloadVersions: [
+          NATIVE_CAPTURE_PAYLOAD_VERSION,
+          NATIVE_INVENTORY_PAYLOAD_VERSION,
+          NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
+        ],
         ...context,
       };
     },

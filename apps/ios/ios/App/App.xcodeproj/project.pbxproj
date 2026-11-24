@@ -19,6 +19,8 @@
 		A90C6600012DF88000F00002 /* KeptBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90C6600012DF88000F00001 /* KeptBridge.swift */; };
 		A90C6600012DF88000F00005 /* KeptNativeStore in Frameworks */ = {isa = PBXBuildFile; productRef = A90C6600012DF88000F00004 /* KeptNativeStore */; };
 		A90C6600012DF88000F00007 /* KeptNFC.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90C6600012DF88000F00006 /* KeptNFC.swift */; };
+		A90C6600012DF88000F00009 /* KeptCaptureAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90C6600012DF88000F00008 /* KeptCaptureAI.swift */; };
+		A90C6600012DF88000F0000B /* ChatGPTPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A90C6600012DF88000F0000A /* ChatGPTPlan.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +37,8 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A90C6600012DF88000F00001 /* KeptBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeptBridge.swift; sourceTree = "<group>"; };
 		A90C6600012DF88000F00006 /* KeptNFC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeptNFC.swift; sourceTree = "<group>"; };
+		A90C6600012DF88000F00008 /* KeptCaptureAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeptCaptureAI.swift; sourceTree = "<group>"; };
+		A90C6600012DF88000F0000A /* ChatGPTPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatGPTPlan.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +77,8 @@
 				9582B6822FE993A50072D4E8 /* SceneDelegate.swift */,
 				A90C6600012DF88000F00001 /* KeptBridge.swift */,
 				A90C6600012DF88000F00006 /* KeptNFC.swift */,
+				A90C6600012DF88000F00008 /* KeptCaptureAI.swift */,
+				A90C6600012DF88000F0000A /* ChatGPTPlan.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -177,6 +183,8 @@
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				A90C6600012DF88000F00002 /* KeptBridge.swift in Sources */,
 				A90C6600012DF88000F00007 /* KeptNFC.swift in Sources */,
+				A90C6600012DF88000F00009 /* KeptCaptureAI.swift in Sources */,
+				A90C6600012DF88000F0000B /* ChatGPTPlan.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

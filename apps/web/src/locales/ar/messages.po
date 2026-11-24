@@ -4584,6 +4584,10 @@ msgstr "الذكاء الاصطناعي متوقف"
 msgid "AI paused until {when}"
 msgstr "الذكاء الاصطناعي متوقف حتى {when}"
 
+#: src/native/capture-ai.tsx
+msgid "AI provider"
+msgstr "مزود الذكاء الاصطناعي"
+
 #: src/components/notifications/notification-row.tsx
 msgid "AI reached this month's cap"
 msgstr "بلغ الذكاء الاصطناعي حد هذا الشهر"
@@ -5027,6 +5031,14 @@ msgstr "رمز API"
 #: src/routes/_app/settings.device.tsx
 msgid "App lock"
 msgstr "قفل التطبيق"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence"
+msgstr "Apple Intelligence"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence is still getting ready."
+msgstr "ما زالت Apple Intelligence قيد التجهيز."
 
 #: src/components/money/exchange-rates.tsx
 msgid "Applies from"
@@ -6798,6 +6810,14 @@ msgstr "الشحن"
 msgid "Chat ID"
 msgstr "معرّف المحادثة"
 
+#: src/native/capture-ai.tsx
+msgid "ChatGPT plan"
+msgstr "خطة ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives a copy of this photo and uses your plan allowance."
+msgstr "يتلقى ChatGPT نسخة من هذه الصورة ويستخدم الحصة المتاحة في خطتك."
+
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "Check"
 msgstr "تحقّق"
@@ -7917,6 +7937,10 @@ msgstr "متابعة المسح"
 msgid "Continue the tour"
 msgstr "تابِع الجولة"
 
+#: src/native/capture-ai.tsx
+msgid "Continue with ChatGPT"
+msgstr "المتابعة باستخدام ChatGPT"
+
 #: src/components/documents/labels.ts
 #: src/components/vehicles/words.tsx
 msgid "Contract"
@@ -8148,6 +8172,10 @@ msgstr "التكاليف مخفية في هذا الموقع"
 msgid "Costs:"
 msgstr "التكاليف:"
 
+#: src/native/capture-ai.tsx
+msgid "Could not connect to ChatGPT. Try again."
+msgstr "تعذر الاتصال بـ ChatGPT. حاول مجددًا."
+
 #: src/native/main.tsx
 msgid "Could not connect to SheepKeep. Check the server address and try again."
 msgstr "تعذّر الاتصال بخادم SheepKeep. تحقّق من عنوان الخادم وأعد المحاولة."
@@ -8155,6 +8183,14 @@ msgstr "تعذّر الاتصال بخادم SheepKeep. تحقّق من عنوا
 #: src/native/capture-form.tsx
 msgid "Could not create the box. Check your connection and selected location."
 msgstr "تعذّر إنشاء الصندوق. تحقّق من اتصالك والموقع المحدّد."
+
+#: src/native/capture-ai.tsx
+msgid "Could not disconnect from ChatGPT. Try again."
+msgstr "تعذر قطع الاتصال بـ ChatGPT. حاول مجددًا."
+
+#: src/native/capture-ai.tsx
+msgid "Could not load ChatGPT models. Reconnect and try again."
+msgstr "تعذر تحميل نماذج ChatGPT. أعد الاتصال وحاول مجددًا."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -8171,6 +8207,10 @@ msgstr "تعذّر البحث في SheepKeep. أعد المحاولة."
 #: src/native/main.tsx
 msgid "Could not sign out."
 msgstr "تعذّر تسجيل الخروج."
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest a description from this photo."
+msgstr "تعذر اقتراح وصف لهذه الصورة."
 
 #: src/native/main.tsx
 msgid "Could not sync this capture automatically. Retry or review it."
@@ -9623,6 +9663,10 @@ msgstr "فصل Paperless؟"
 #: src/components/connections/words.tsx
 msgid "Disconnected by the app"
 msgstr "قطعه التطبيق"
+
+#: src/native/capture-ai.tsx
+msgid "Disconnected on this iPhone. End the session in ChatGPT settings."
+msgstr "انقطع الاتصال على هذا الـ iPhone. أنهِ الجلسة في إعدادات ChatGPT."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Disk"
@@ -16105,6 +16149,10 @@ msgstr "إدارة"
 msgid "Manage {who}"
 msgstr "إدارة {who}"
 
+#: src/native/capture-ai.tsx
+msgid "Manage API keys"
+msgstr "إدارة مفاتيح API"
+
 #: src/routes/_app/admin.users.tsx
 #: src/routes/_app/settings.location.$id.members.tsx
 msgid "Managed account"
@@ -17709,6 +17757,10 @@ msgstr "لا توجد دفعات التقاط بعد."
 #: src/components/connections/recent-changes.tsx
 msgid "No changes by connections"
 msgstr "لا تغييرات من الاتصالات"
+
+#: src/native/capture-ai.tsx
+msgid "No ChatGPT models are available for this account."
+msgstr "لا تتوفر نماذج ChatGPT لهذا الحساب."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
@@ -20824,6 +20876,10 @@ msgstr "صورة أو ملف"
 msgid "Photo search is unavailable."
 msgstr "البحث في الصور غير متاح."
 
+#: src/native/capture-ai.tsx
+msgid "Photo suggestions need Apple Intelligence on iOS 27 or later."
+msgstr "تتطلب اقتراحات الصور Apple Intelligence على iOS ٢٧ أو إصدار أحدث."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo unavailable"
 msgstr "الصورة غير متاحة"
@@ -22332,6 +22388,14 @@ msgstr "موصى به"
 #: src/components/ai/recommended.tsx
 msgid "Recommended: Groq"
 msgstr "الموصى به: Groq"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT"
+msgstr "إعادة الاتصال بـ ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT and try again."
+msgstr "أعد الاتصال بـ ChatGPT وحاول مجددًا."
 
 #: src/components/incidents/incident-sheet.tsx
 msgid "Record"
@@ -24765,6 +24829,10 @@ msgstr "الخادم"
 msgid "Server address"
 msgstr "عنوان الخادم"
 
+#: src/native/capture-ai.tsx
+msgid "Server API"
+msgstr "واجهة API للخادم"
+
 #: src/map/labels.ts
 msgid "Server rack 24U"
 msgstr "خزانة سيرفر ٢٤ وحدة"
@@ -26725,6 +26793,10 @@ msgstr "إجابات منظّمة: لم تُقدَّم"
 #: src/map/labels.ts
 msgid "Succulent"
 msgstr "نبتة عصارية"
+
+#: src/native/capture-ai.tsx
+msgid "Suggest description"
+msgstr "اقتراح وصف"
 
 #: src/components/capture/place-chip.tsx
 msgid "Suggest where I am"
@@ -29724,6 +29796,10 @@ msgstr "تفعيل {label} هنا"
 msgid "Turn on an authenticator app to open it, or add a passkey and sign in with it."
 msgstr "فعّل تطبيق مصادقة لتفتحه، أو أضِف مفتاح مرور وسجّل الدخول به."
 
+#: src/native/capture-ai.tsx
+msgid "Turn on Apple Intelligence in your iPhone settings."
+msgstr "فعّل Apple Intelligence في إعدادات الـ iPhone."
+
 #: src/map/size.tsx
 msgid "Turn on its side"
 msgstr "اقلبه على جانبه"
@@ -32298,6 +32374,10 @@ msgstr "يطلب متصفحك بصمة الوجه أو بصمة الإصبع أ�
 #: src/components/notifications/settings/channels.tsx
 msgid "Your chat with the bot, a group's number, or a channel's @name. Send the bot a message first."
 msgstr "محادثتك مع البوت، أو رقم مجموعة، أو @اسم قناة. أرسل إلى البوت رسالة أولًا."
+
+#: src/native/capture-ai.tsx
+msgid "Your ChatGPT plan reached a usage limit."
+msgstr "بلغت خطتك في ChatGPT حد الاستخدام."
 
 #: src/components/notifications/notification-row.tsx
 #: src/components/reports/claim-pack.tsx

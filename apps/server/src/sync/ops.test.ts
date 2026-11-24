@@ -247,7 +247,7 @@ describe('POST /api/v1/sync/ops', () => {
     const item = captureOp(home.id, { unplaced: true });
     const res = await syncOps(t, louis, [
       captureOp(home.id, { unplaced: true }),
-      { ...item, payloadVersion: NATIVE_CAPTURE_PAYLOAD_VERSION + 2 },
+      { ...item, payloadVersion: 999 },
     ]);
     expect(res.statusCode).toBe(409);
     expect(res.json()).toMatchObject({ code: 'server_outdated' });

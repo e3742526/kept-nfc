@@ -4584,6 +4584,10 @@ msgstr "IA in pausa"
 msgid "AI paused until {when}"
 msgstr "IA in pausa fino al {when}"
 
+#: src/native/capture-ai.tsx
+msgid "AI provider"
+msgstr "Fornitore di IA"
+
 #: src/components/notifications/notification-row.tsx
 msgid "AI reached this month's cap"
 msgstr "L’IA ha raggiunto il tetto di questo mese"
@@ -5027,6 +5031,14 @@ msgstr "Token API"
 #: src/routes/_app/settings.device.tsx
 msgid "App lock"
 msgstr "Blocco dell’app"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence"
+msgstr "Apple Intelligence"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence is still getting ready."
+msgstr "Apple Intelligence è ancora in fase di preparazione."
 
 #: src/components/money/exchange-rates.tsx
 msgid "Applies from"
@@ -6798,6 +6810,14 @@ msgstr "Ricarica"
 msgid "Chat ID"
 msgstr "ID della chat"
 
+#: src/native/capture-ai.tsx
+msgid "ChatGPT plan"
+msgstr "Piano ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives a copy of this photo and uses your plan allowance."
+msgstr "ChatGPT riceve una copia di questa foto e usa la quota del tuo piano."
+
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "Check"
 msgstr "Verifica"
@@ -7917,6 +7937,10 @@ msgstr "Continua la scansione"
 msgid "Continue the tour"
 msgstr "Continua il tour"
 
+#: src/native/capture-ai.tsx
+msgid "Continue with ChatGPT"
+msgstr "Continua con ChatGPT"
+
 #: src/components/documents/labels.ts
 #: src/components/vehicles/words.tsx
 msgid "Contract"
@@ -8148,6 +8172,10 @@ msgstr "I costi sono nascosti in questo luogo"
 msgid "Costs:"
 msgstr "Costi:"
 
+#: src/native/capture-ai.tsx
+msgid "Could not connect to ChatGPT. Try again."
+msgstr "Impossibile connettersi a ChatGPT. Riprova."
+
 #: src/native/main.tsx
 msgid "Could not connect to SheepKeep. Check the server address and try again."
 msgstr "Impossibile connettersi a SheepKeep. Controlla l’indirizzo del server e riprova."
@@ -8155,6 +8183,14 @@ msgstr "Impossibile connettersi a SheepKeep. Controlla l’indirizzo del server 
 #: src/native/capture-form.tsx
 msgid "Could not create the box. Check your connection and selected location."
 msgstr "Impossibile creare la scatola. Controlla la connessione e il luogo selezionato."
+
+#: src/native/capture-ai.tsx
+msgid "Could not disconnect from ChatGPT. Try again."
+msgstr "Impossibile disconnettersi da ChatGPT. Riprova."
+
+#: src/native/capture-ai.tsx
+msgid "Could not load ChatGPT models. Reconnect and try again."
+msgstr "Impossibile caricare i modelli ChatGPT. Riconnettiti e riprova."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -8171,6 +8207,10 @@ msgstr "Impossibile cercare in SheepKeep. Riprova."
 #: src/native/main.tsx
 msgid "Could not sign out."
 msgstr "Impossibile uscire."
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest a description from this photo."
+msgstr "Non è stato possibile suggerire una descrizione per questa foto."
 
 #: src/native/main.tsx
 msgid "Could not sync this capture automatically. Retry or review it."
@@ -9623,6 +9663,10 @@ msgstr "Scollegare Paperless?"
 #: src/components/connections/words.tsx
 msgid "Disconnected by the app"
 msgstr "Scollegata dall’app"
+
+#: src/native/capture-ai.tsx
+msgid "Disconnected on this iPhone. End the session in ChatGPT settings."
+msgstr "Disconnesso su questo iPhone. Termina la sessione nelle impostazioni di ChatGPT."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Disk"
@@ -16105,6 +16149,10 @@ msgstr "Gestisci"
 msgid "Manage {who}"
 msgstr "Gestisci {who}"
 
+#: src/native/capture-ai.tsx
+msgid "Manage API keys"
+msgstr "Gestisci le chiavi API"
+
 #: src/routes/_app/admin.users.tsx
 #: src/routes/_app/settings.location.$id.members.tsx
 msgid "Managed account"
@@ -17709,6 +17757,10 @@ msgstr "Nessun lotto di acquisizione ancora."
 #: src/components/connections/recent-changes.tsx
 msgid "No changes by connections"
 msgstr "Nessuna modifica dalle connessioni"
+
+#: src/native/capture-ai.tsx
+msgid "No ChatGPT models are available for this account."
+msgstr "Non ci sono modelli ChatGPT disponibili per questo account."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
@@ -20824,6 +20876,10 @@ msgstr "Foto o file"
 msgid "Photo search is unavailable."
 msgstr "La ricerca nelle foto non è disponibile."
 
+#: src/native/capture-ai.tsx
+msgid "Photo suggestions need Apple Intelligence on iOS 27 or later."
+msgstr "I suggerimenti da foto richiedono Apple Intelligence su iOS 27 o versioni successive."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo unavailable"
 msgstr "Foto non disponibile"
@@ -22332,6 +22388,14 @@ msgstr "Consigliato"
 #: src/components/ai/recommended.tsx
 msgid "Recommended: Groq"
 msgstr "Consigliato: Groq"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT"
+msgstr "Riconnetti ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT and try again."
+msgstr "Riconnetti ChatGPT e riprova."
 
 #: src/components/incidents/incident-sheet.tsx
 msgid "Record"
@@ -24765,6 +24829,10 @@ msgstr "Server"
 msgid "Server address"
 msgstr "Indirizzo del server"
 
+#: src/native/capture-ai.tsx
+msgid "Server API"
+msgstr "API del server"
+
 #: src/map/labels.ts
 msgid "Server rack 24U"
 msgstr "Armadio rack 24U"
@@ -26725,6 +26793,10 @@ msgstr "Risposte strutturate: non fornite"
 #: src/map/labels.ts
 msgid "Succulent"
 msgstr "Pianta grassa"
+
+#: src/native/capture-ai.tsx
+msgid "Suggest description"
+msgstr "Suggerisci descrizione"
 
 #: src/components/capture/place-chip.tsx
 msgid "Suggest where I am"
@@ -29724,6 +29796,10 @@ msgstr "Attiva {label} qui"
 msgid "Turn on an authenticator app to open it, or add a passkey and sign in with it."
 msgstr "Attiva un’app di autenticazione per aprirlo, oppure aggiungi una passkey e accedi con quella."
 
+#: src/native/capture-ai.tsx
+msgid "Turn on Apple Intelligence in your iPhone settings."
+msgstr "Attiva Apple Intelligence nelle impostazioni del tuo iPhone."
+
 #: src/map/size.tsx
 msgid "Turn on its side"
 msgstr "Metti di lato"
@@ -32298,6 +32374,10 @@ msgstr "Il browser chiede Face ID, un’impronta o il blocco schermo. La passkey
 #: src/components/notifications/settings/channels.tsx
 msgid "Your chat with the bot, a group's number, or a channel's @name. Send the bot a message first."
 msgstr "La tua chat con il bot, il numero di un gruppo o il @nome di un canale. Prima invia un messaggio al bot."
+
+#: src/native/capture-ai.tsx
+msgid "Your ChatGPT plan reached a usage limit."
+msgstr "Il tuo piano ChatGPT ha raggiunto un limite di utilizzo."
 
 #: src/components/notifications/notification-row.tsx
 #: src/components/reports/claim-pack.tsx

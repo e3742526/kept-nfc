@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url';
 import {
   CreateThingPayload,
   NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   NativeCaptureCapabilitiesSchema,
   newId,
@@ -101,7 +102,80 @@ it('replays versioned recording intent once and keeps the device capture time in
   ]);
 });
 
-const oldCreateThing = CreateThingPayload.omit({ reviewSuggestions: true, captureIntent: true });
+it('keeps a device-suggested capture and its photo without queuing server extraction', async () => {
+  const headers = { ...(await nativeSession()), origin: t.publicUrl };
+  const { cookie, origin: _origin, ...context } = headers;
+  const image = await uniqueJpeg();
+  const fileId = newId();
+  const uploaded = await upload(t, { cookie }, home.id, image, {
+    id: fileId,
+    cls: 'evidence',
+    contentType: 'image/jpeg',
+    headers: context,
+  });
+  expect(uploaded.statusCode, uploaded.body).toBe(201);
+  const item = captureOp(
+    home.id,
+    { placeId: home.unplacedId },
+    {
+      name: 'Assorted cables',
+      reviewSuggestions: true,
+      captureIntent: 'record',
+      skipServerSuggestions: true,
+      files: [{ fileId, role: 'photo' }],
+    },
+    { payloadVersion: NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION },
+  );
+
+  const response = await t.app.inject({
+    method: 'POST',
+    url: syncUrl,
+    headers,
+    remoteAddress: freshIp(),
+    payload: { clientVersion: CLIENT_VERSION, ops: [item] },
+  });
+  expect(response.statusCode, response.body).toBe(200);
+  expect(response.json().results[0]).toMatchObject({
+    outcome: 'applied',
+    entity: { id: item.payload.id },
+  });
+  expect(
+    await own(db, 'SELECT id FROM public.extractions WHERE thing_id = $1', [item.payload.id]),
+  ).toEqual([]);
+  const history = await t.app.inject({ url: `/api/v1/things/${item.payload.id}/history`, headers });
+  expect(history.json().items[0]).toMatchObject({
+    diff: { server_suggestions_skipped: { after: true } },
+  });
+
+  const serverAI = captureOp(
+    home.id,
+    { placeId: home.unplacedId },
+    {
+      name: 'HDMI cable',
+      reviewSuggestions: true,
+      captureIntent: 'record',
+      files: [{ fileId, role: 'photo' }],
+    },
+    { payloadVersion: NATIVE_INVENTORY_PAYLOAD_VERSION },
+  );
+  const legacy = await t.app.inject({
+    method: 'POST',
+    url: syncUrl,
+    headers,
+    remoteAddress: freshIp(),
+    payload: { clientVersion: CLIENT_VERSION, ops: [serverAI] },
+  });
+  expect(legacy.json().results[0]).toMatchObject({ outcome: 'applied' });
+  expect(
+    await own(db, 'SELECT id FROM public.extractions WHERE thing_id = $1', [serverAI.payload.id]),
+  ).toHaveLength(1);
+});
+
+const oldCreateThing = CreateThingPayload.omit({
+  reviewSuggestions: true,
+  captureIntent: true,
+  skipServerSuggestions: true,
+});
 
 async function rollbackServer(): Promise<FastifyInstance> {
   const build = process.env.KEPT_TEST_ROLLBACK_SERVER;

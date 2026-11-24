@@ -2,6 +2,12 @@ import { type PluginListenerHandle, registerPlugin } from '@capacitor/core';
 import { ApiError, toApiError } from '@/api/client';
 
 export type Connection = { id: string; origin: string; account: string; epoch: string };
+export type CaptureAIStatus = {
+  apple: 'available' | 'disabled' | 'notReady' | 'unsupported';
+  chatGPT?: string;
+};
+export type CaptureAIProvider = 'server' | 'apple' | 'chatgpt';
+export type CaptureAIModel = { id: string; name: string };
 
 export type OriginalMeta = {
   id: string;
@@ -70,6 +76,16 @@ type NativeKept = {
   connection(): Promise<Connection | Record<string, never>>;
   connect(input: { address: string }): Promise<Connection>;
   disconnect(): Promise<{ revoked: boolean }>;
+  captureAIStatus(input: { context: string }): Promise<CaptureAIStatus>;
+  connectCaptureChatGPT(input: { context: string }): Promise<{ account: string }>;
+  disconnectCaptureChatGPT(input: { context: string }): Promise<{ revoked: boolean }>;
+  captureChatGPTModels(input: { context: string }): Promise<{ models: CaptureAIModel[] }>;
+  suggestCaptureName(input: {
+    context: string;
+    provider: Exclude<CaptureAIProvider, 'server'>;
+    model?: string;
+    jpeg: string;
+  }): Promise<{ name: string }>;
   request(input: {
     context: string;
     path: string;

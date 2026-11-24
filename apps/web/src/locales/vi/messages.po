@@ -4584,6 +4584,10 @@ msgstr "AI đã tạm dừng"
 msgid "AI paused until {when}"
 msgstr "AI tạm dừng đến {when}"
 
+#: src/native/capture-ai.tsx
+msgid "AI provider"
+msgstr "Nhà cung cấp AI"
+
 #: src/components/notifications/notification-row.tsx
 msgid "AI reached this month's cap"
 msgstr "AI đã chạm giới hạn tháng này"
@@ -5027,6 +5031,14 @@ msgstr "Token API"
 #: src/routes/_app/settings.device.tsx
 msgid "App lock"
 msgstr "Khóa ứng dụng"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence"
+msgstr "Apple Intelligence"
+
+#: src/native/capture-ai.tsx
+msgid "Apple Intelligence is still getting ready."
+msgstr "Apple Intelligence vẫn đang chuẩn bị."
 
 #: src/components/money/exchange-rates.tsx
 msgid "Applies from"
@@ -6798,6 +6810,14 @@ msgstr "Sạc điện"
 msgid "Chat ID"
 msgstr "ID trò chuyện"
 
+#: src/native/capture-ai.tsx
+msgid "ChatGPT plan"
+msgstr "Gói ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "ChatGPT receives a copy of this photo and uses your plan allowance."
+msgstr "ChatGPT nhận bản sao của ảnh này và sử dụng hạn mức trong gói của bạn."
+
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "Check"
 msgstr "Kiểm tra"
@@ -7917,6 +7937,10 @@ msgstr "Tiếp tục quét"
 msgid "Continue the tour"
 msgstr "Tiếp tục hướng dẫn"
 
+#: src/native/capture-ai.tsx
+msgid "Continue with ChatGPT"
+msgstr "Tiếp tục với ChatGPT"
+
 #: src/components/documents/labels.ts
 #: src/components/vehicles/words.tsx
 msgid "Contract"
@@ -8148,6 +8172,10 @@ msgstr "Chi phí bị ẩn trong địa điểm này"
 msgid "Costs:"
 msgstr "Chi phí:"
 
+#: src/native/capture-ai.tsx
+msgid "Could not connect to ChatGPT. Try again."
+msgstr "Không thể kết nối với ChatGPT. Hãy thử lại."
+
 #: src/native/main.tsx
 msgid "Could not connect to SheepKeep. Check the server address and try again."
 msgstr "Không thể kết nối với SheepKeep. Hãy kiểm tra địa chỉ máy chủ và thử lại."
@@ -8155,6 +8183,14 @@ msgstr "Không thể kết nối với SheepKeep. Hãy kiểm tra địa chỉ m
 #: src/native/capture-form.tsx
 msgid "Could not create the box. Check your connection and selected location."
 msgstr "Không thể tạo hộp. Hãy kiểm tra kết nối và vị trí đã chọn."
+
+#: src/native/capture-ai.tsx
+msgid "Could not disconnect from ChatGPT. Try again."
+msgstr "Không thể ngắt kết nối với ChatGPT. Hãy thử lại."
+
+#: src/native/capture-ai.tsx
+msgid "Could not load ChatGPT models. Reconnect and try again."
+msgstr "Không thể tải các mô hình ChatGPT. Hãy kết nối lại và thử lại."
 
 #: src/native/main.tsx
 msgid "Could not open this held original."
@@ -8171,6 +8207,10 @@ msgstr "Không thể tìm kiếm trong SheepKeep. Hãy thử lại."
 #: src/native/main.tsx
 msgid "Could not sign out."
 msgstr "Không thể đăng xuất."
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest a description from this photo."
+msgstr "Không thể đề xuất mô tả cho ảnh này."
 
 #: src/native/main.tsx
 msgid "Could not sync this capture automatically. Retry or review it."
@@ -9623,6 +9663,10 @@ msgstr "Ngắt kết nối Paperless?"
 #: src/components/connections/words.tsx
 msgid "Disconnected by the app"
 msgstr "Đã bị ứng dụng ngắt kết nối"
+
+#: src/native/capture-ai.tsx
+msgid "Disconnected on this iPhone. End the session in ChatGPT settings."
+msgstr "Đã ngắt kết nối trên iPhone này. Hãy kết thúc phiên trong phần cài đặt ChatGPT."
 
 #: src/components/ops/status-tiles.tsx
 msgid "Disk"
@@ -16105,6 +16149,10 @@ msgstr "Quản lý"
 msgid "Manage {who}"
 msgstr "Quản lý {who}"
 
+#: src/native/capture-ai.tsx
+msgid "Manage API keys"
+msgstr "Quản lý khóa API"
+
 #: src/routes/_app/admin.users.tsx
 #: src/routes/_app/settings.location.$id.members.tsx
 msgid "Managed account"
@@ -17709,6 +17757,10 @@ msgstr "Chưa có lô chụp nào."
 #: src/components/connections/recent-changes.tsx
 msgid "No changes by connections"
 msgstr "Không có thay đổi nào từ các kết nối"
+
+#: src/native/capture-ai.tsx
+msgid "No ChatGPT models are available for this account."
+msgstr "Không có mô hình ChatGPT nào cho tài khoản này."
 
 #: src/routes/_app/admin.alerts.tsx
 #: src/routes/_app/admin.status.tsx
@@ -20824,6 +20876,10 @@ msgstr "Ảnh hoặc tệp"
 msgid "Photo search is unavailable."
 msgstr "Tính năng tìm kiếm ảnh hiện không khả dụng."
 
+#: src/native/capture-ai.tsx
+msgid "Photo suggestions need Apple Intelligence on iOS 27 or later."
+msgstr "Đề xuất từ ảnh cần Apple Intelligence trên iOS 27 trở lên."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo unavailable"
 msgstr "Không có ảnh"
@@ -22332,6 +22388,14 @@ msgstr "Được đề xuất"
 #: src/components/ai/recommended.tsx
 msgid "Recommended: Groq"
 msgstr "Đề xuất: Groq"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT"
+msgstr "Kết nối lại với ChatGPT"
+
+#: src/native/capture-ai.tsx
+msgid "Reconnect ChatGPT and try again."
+msgstr "Hãy kết nối lại với ChatGPT rồi thử lại."
 
 #: src/components/incidents/incident-sheet.tsx
 msgid "Record"
@@ -24765,6 +24829,10 @@ msgstr "Máy chủ"
 msgid "Server address"
 msgstr "Địa chỉ máy chủ"
 
+#: src/native/capture-ai.tsx
+msgid "Server API"
+msgstr "API máy chủ"
+
 #: src/map/labels.ts
 msgid "Server rack 24U"
 msgstr "Tủ rack máy chủ 24U"
@@ -26725,6 +26793,10 @@ msgstr "Câu trả lời có cấu trúc: không có"
 #: src/map/labels.ts
 msgid "Succulent"
 msgstr "Cây mọng nước"
+
+#: src/native/capture-ai.tsx
+msgid "Suggest description"
+msgstr "Đề xuất mô tả"
 
 #: src/components/capture/place-chip.tsx
 msgid "Suggest where I am"
@@ -29724,6 +29796,10 @@ msgstr "Bật {label} tại đây"
 msgid "Turn on an authenticator app to open it, or add a passkey and sign in with it."
 msgstr "Bật ứng dụng xác thực để mở nó, hoặc thêm khóa truy cập rồi đăng nhập bằng khóa đó."
 
+#: src/native/capture-ai.tsx
+msgid "Turn on Apple Intelligence in your iPhone settings."
+msgstr "Bật Apple Intelligence trong phần cài đặt iPhone."
+
 #: src/map/size.tsx
 msgid "Turn on its side"
 msgstr "Xoay nằm nghiêng"
@@ -32298,6 +32374,10 @@ msgstr "Trình duyệt của bạn sẽ yêu cầu Face ID, vân tay hoặc khó
 #: src/components/notifications/settings/channels.tsx
 msgid "Your chat with the bot, a group's number, or a channel's @name. Send the bot a message first."
 msgstr "Cuộc trò chuyện của bạn với bot, số của một nhóm, hoặc @name của một kênh. Hãy gửi cho bot một tin nhắn trước."
+
+#: src/native/capture-ai.tsx
+msgid "Your ChatGPT plan reached a usage limit."
+msgstr "Gói ChatGPT của bạn đã chạm giới hạn sử dụng."
 
 #: src/components/notifications/notification-row.tsx
 #: src/components/reports/claim-pack.tsx
