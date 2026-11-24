@@ -394,6 +394,29 @@ describe('the shelf of reserved label codes', () => {
     const { adapters, kv } = shelfAdapters(() => 'offline');
     await shelveReservedCode(connection, locationId, 'FRE234', adapters);
     expect(await takeShelvedCode(connection, undefined, locationId, adapters)).toBeNull();
-    expect(JSON.parse(kv.get('reservedLabels') as string)).toEqual({ [locationId]: ['FRE234'] });
+    expect(JSON.parse(kv.get('reservedLabelsV2') as string)).toEqual({ [locationId]: ['FRE234'] });
+  });
+
+  it('leaves legacy reservations for physical scans', async () => {
+    const { adapters, kv } = shelfAdapters(() => 'blank');
+    const legacy = JSON.stringify({ [locationId]: ['FRE234'] });
+    kv.set('reservedLabels', legacy);
+    expect(await takeShelvedCode(connection, undefined, locationId, adapters)).toBeNull();
+    expect(kv.get('reservedLabels')).toBe(legacy);
+  });
+
+  it('preserves a late return while another capture checks out a reserved code', async () => {
+    const { adapters } = shelfAdapters(() => 'blank');
+    await shelveReservedCode(connection, locationId, 'FRE234', adapters);
+    const [first] = await Promise.all([
+      takeShelvedCode(connection, undefined, locationId, adapters),
+      shelveReservedCode(connection, locationId, 'RSV234', adapters),
+    ]);
+    expect(first?.code).toBe('FRE234');
+    const checkouts = await Promise.all([
+      takeShelvedCode(connection, undefined, locationId, adapters),
+      takeShelvedCode(connection, undefined, locationId, adapters),
+    ]);
+    expect(checkouts.map((label) => label?.code)).toEqual(['RSV234', undefined]);
   });
 });

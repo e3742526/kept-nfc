@@ -472,6 +472,76 @@ describe('a question with a tool step and an answer', () => {
     }
   });
 
+  it.each([
+    { mode: 'selected text model', photo: false, first: 'gpt-chat', next: 'gpt-instance-chat' },
+    {
+      mode: 'automatic photo model',
+      photo: true,
+      first: 'gpt-vision',
+      next: 'gpt-instance-vision',
+    },
+  ])('continues a $mode turn when the lookup changes who pays', async ({ photo, first, next }) => {
+    await join(db, family.id, louis.userId, 'member');
+    try {
+      await own(db, 'UPDATE public.ai_providers SET models = $2 WHERE id = $1', [
+        instanceProvider,
+        JSON.stringify({ chat: 'gpt-instance-chat', vision: 'gpt-instance-vision' }),
+      ]);
+      const context = { kind: 'location', id: home.id };
+      const thread = ok(
+        await call(t, '/api/v1/assistant/threads', { as: louis, body: { context } }),
+        201,
+      );
+      ok(
+        await call(t, `/api/v1/assistant/threads/${thread.id}/turns`, {
+          as: louis,
+          body: {
+            text: 'Where are my cables?',
+            locale: 'en',
+            ...(photo ? { photo: (await uniqueJpeg()).toString('base64') } : { model: first }),
+          },
+        }),
+        202,
+      );
+      script.push(
+        calls({
+          id: 'other',
+          name: 'search_things',
+          input: { query: 'cable', location_id: family.id },
+        }),
+        answer('Nothing else.'),
+      );
+      expect(await runTurn(loop, scopeOf(louis), turnJobData(sent.at(-1)?.data))).toEqual({
+        status: 'done',
+      });
+      expect(
+        (await ledger()).map(({ provider_id, j }) => [provider_id, JSON.parse(j).model]),
+      ).toEqual([
+        [homeProvider, first],
+        [instanceProvider, next],
+      ]);
+      if (photo) {
+        expect(prompts[1]?.prompt).toContainEqual(
+          expect.objectContaining({
+            role: 'user',
+            content: expect.arrayContaining([
+              expect.objectContaining({ type: 'file', mediaType: 'image/jpeg' }),
+            ]),
+          }),
+        );
+      }
+    } finally {
+      await own(db, 'UPDATE public.ai_providers SET models = $2 WHERE id = $1', [
+        instanceProvider,
+        JSON.stringify({ chat: 'gpt-chat', vision: 'gpt-vision' }),
+      ]);
+      await own(db, 'DELETE FROM public.memberships WHERE location_id = $1 AND user_id = $2', [
+        family.id,
+        louis.userId,
+      ]);
+    }
+  });
+
   it('a retried job resumes after the last stored step and never repeats it', async () => {
     const { turnId } = await ask(louis, 'Where is the HDMI cable?', {
       kind: 'location',

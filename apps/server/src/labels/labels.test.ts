@@ -1,6 +1,6 @@
 import { newId, randomShortCode } from '@kept/shared';
 import type { LightMyRequestResponse } from 'fastify';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { TestApp } from '../../test/app.js';
 import { type TestDb, testDb } from '../../test/db.js';
 import { call, freshIp, join, type Person, peopleApp, person } from '../../test/people.js';
@@ -751,6 +751,40 @@ describe('POST /api/v1/labels/reserve', () => {
       201,
     ) as unknown as { batch: Batch };
     expect(sheet.batch.labels).toHaveLength(3);
+  });
+
+  it('admits only one concurrent reservation when one slot remains', async () => {
+    const shed = await createLocation(t, db, ibrahim, 'household', 'Potting shed');
+    await blanks(shed, 49);
+    const locker = await db.pools.app.connect();
+    await locker.query('BEGIN');
+    // Hold the same lock as the blank insert trigger until both requests reach it.
+    await locker.query(`SELECT pg_advisory_xact_lock(hashtext('kept.blank'), hashtext($1))`, [
+      shed.id,
+    ]);
+    const responses = Promise.all([
+      reserve(ibrahim, { locationId: shed.id }, newId()),
+      reserve(ibrahim, { locationId: shed.id }, newId()),
+    ]);
+    try {
+      await vi.waitFor(async () => {
+        const { rows } = await locker.query<{ waiting: number }>(
+          `SELECT count(*)::int AS waiting FROM pg_locks
+            WHERE locktype = 'advisory' AND NOT granted
+              AND pg_backend_pid() = ANY (pg_blocking_pids(pid))`,
+        );
+        expect(rows[0]?.waiting).toBe(2);
+      });
+    } finally {
+      await locker.query('ROLLBACK');
+      locker.release();
+    }
+    const results = await responses;
+    expect(results.map((result) => result.statusCode).sort()).toEqual([201, 409]);
+    expect(results.find((result) => result.statusCode === 409)?.json()).toMatchObject({
+      code: 'reservation_limit',
+    });
+    expect(await auditActions(shed.id, 'label.reserve')).toHaveLength(1);
   });
 
   it('stops at the blank-label cap', async () => {

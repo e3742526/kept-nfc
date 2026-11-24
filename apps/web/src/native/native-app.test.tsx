@@ -2837,6 +2837,87 @@ describe('KeptPhone mobile workflows', () => {
     expect(env.events.reservedLabelKeys).toHaveLength(1);
   });
 
+  it('recovers an unverified write by scanning its tag and keeps its code out of the reuse pool', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Ring');
+    await user.click(screen.getByText('QR or NFC label'));
+    env.pushScan(
+      {
+        status: 'inspected',
+        fingerprint: 'tag-contents',
+        writable: true,
+        capacity: 137,
+        required: 36,
+      },
+      { status: 'write_unverified' },
+    );
+    await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
+    await user.click(await screen.findByRole('button', { name: 'Write and verify' }));
+    await screen.findByText(/Writing was interrupted/);
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
+
+    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Ring');
+    await user.click(screen.getByText('QR or NFC label'));
+    env.pushScan({ status: 'read', url: `${origin}/l/RSV234` });
+    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
+    await screen.findByText(/Scanned label\. It opens this item once the item syncs/);
+    expect(
+      JSON.parse((await env.adapters.outbox.getValue(connection, 'reservedLabelsV2')) ?? '{}'),
+    ).toEqual({});
+  });
+
+  it('shelves a late reservation for the next capture without opening the NFC reader', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = env.adapters.transport.request;
+    const gate = Promise.withResolvers<void>();
+    vi.spyOn(env.adapters.transport, 'request').mockImplementation(
+      async (connection, path, options) => {
+        const response = await request(connection, path, options);
+        if (path === capturePaths.labelReserve) await gate.promise;
+        return response;
+      },
+    );
+    const scan = vi.spyOn(env.adapters.nfc, 'scanTag');
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(screen.getByText('QR or NFC label'));
+    await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
+    await waitFor(() => expect(env.events.reservedLabelKeys).toHaveLength(1));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await screen.findByRole('button', { name: 'Add to this box' });
+    await act(async () => gate.resolve());
+    expect(scan).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await user.click(screen.getByText('QR or NFC label'));
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText('RSV234')).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+  });
+
   it('asks before a label is left behind by a review of several items, and keeps it for the next item', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({

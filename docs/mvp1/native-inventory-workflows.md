@@ -20,6 +20,8 @@ Use **Delete this thread** and confirm to permanently remove the conversation. T
 
 **Model** selects a model for the next message. Automatic uses the configured chat model for text and an available vision model for a picture. Choices come from the provider for the authorized context. A provider manager can also pick from that provider's stored text model list. The server checks the selection and provider again during the turn. Model changes use the existing payer and budget rules.
 
+When a lookup changes who pays, the turn keeps the requested model if the new payer's provider offers it. Otherwise it uses that provider's default eligible model. Photo turns still require a model that accepts images.
+
 ## Photo review
 
 **Add** and **Add to this bin** show the recorded destination and action. Manual capture can save a broad description with optional categories, notes, quantity and photographs. **Suggest description** proposes a single description. **Suggest categories** keeps the entered description. **Suggest items** opens review with up to 12 entries. **Review multiple items** opens the same review without inference.

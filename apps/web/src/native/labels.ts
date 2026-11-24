@@ -59,13 +59,27 @@ export function labelUrl(origin: string, code: string): string {
   return `${origin}/l/${encodeURIComponent(code)}`;
 }
 
-const POOL_KEY = 'reservedLabels';
+// Older entries may already be on a tag whose readback failed. Leave them for a physical scan.
+const POOL_KEY = 'reservedLabelsV2';
 
 type Pool = Record<string, string[]>;
+const poolOperations = new Map<string, Promise<unknown>>();
+
+/** A departing picker may return a code while the next picker is checking one out. */
+async function withReservedPool<T>(connection: Connection, run: () => Promise<T>): Promise<T> {
+  const previous = poolOperations.get(connection.id) ?? Promise.resolve();
+  const operation = previous.then(run, run);
+  poolOperations.set(connection.id, operation);
+  try {
+    return await operation;
+  } finally {
+    if (poolOperations.get(connection.id) === operation) poolOperations.delete(connection.id);
+  }
+}
 
 async function readPool(connection: Connection, adapters: PlatformAdapters): Promise<Pool> {
+  const raw = await adapters.outbox.getValue(connection, POOL_KEY);
   try {
-    const raw = await adapters.outbox.getValue(connection, POOL_KEY);
     const parsed: unknown = raw ? JSON.parse(raw) : {};
     return parsed && typeof parsed === 'object' ? (parsed as Pool) : {};
   } catch {
@@ -74,7 +88,7 @@ async function readPool(connection: Connection, adapters: PlatformAdapters): Pro
 }
 
 async function writePool(connection: Connection, pool: Pool, adapters: PlatformAdapters) {
-  await adapters.outbox.setValue(connection, POOL_KEY, JSON.stringify(pool)).catch(() => {});
+  await adapters.outbox.setValue(connection, POOL_KEY, JSON.stringify(pool));
 }
 
 /** Keeps a reserved code that was never written or shown, so the next new label reuses it. */
@@ -84,10 +98,13 @@ export async function shelveReservedCode(
   code: string,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<void> {
-  const pool = await readPool(connection, adapters);
-  const held = pool[locationId] ?? [];
-  if (!held.includes(code)) pool[locationId] = [...held, code].slice(-20);
-  await writePool(connection, pool, adapters);
+  await withReservedPool(connection, async () => {
+    const pool = await readPool(connection, adapters);
+    const held = pool[locationId] ?? [];
+    if (held.includes(code)) return;
+    pool[locationId] = [...held, code].slice(-20);
+    await writePool(connection, pool, adapters);
+  }).catch(() => {});
 }
 
 /** A shelved code that is still an unclaimed blank of the location, or null. */
@@ -97,27 +114,31 @@ export async function takeShelvedCode(
   locationId: string,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<ReservedLabel | null> {
-  const pool = await readPool(connection, adapters);
-  const held = [...(pool[locationId] ?? [])];
-  let found: ReservedLabel | null = null;
-  while (!found && held.length) {
-    const code = held.shift() as string;
-    try {
-      const url = labelUrl(connection.origin, code);
-      const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
-      if (result.status === 'unassigned' && result.claim?.locationId === locationId) {
-        found = { code, url, locationId };
+  return withReservedPool(connection, async () => {
+    const pool = await readPool(connection, adapters);
+    const held = [...(pool[locationId] ?? [])];
+    if (held.length === 0) return null;
+    let found: ReservedLabel | null = null;
+    while (!found && held.length) {
+      const code = held.shift() as string;
+      try {
+        const url = labelUrl(connection.origin, code);
+        const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
+        if (result.status === 'unassigned' && result.claim?.locationId === locationId) {
+          found = { code, url, locationId };
+        }
+      } catch {
+        // Cannot check it now: leave the rest on the shelf and make a new one.
+        held.unshift(code);
+        break;
       }
-    } catch {
-      // Cannot check it now: leave the rest on the shelf and make a new one.
-      held.unshift(code);
-      break;
     }
-  }
-  if (held.length) pool[locationId] = held;
-  else delete pool[locationId];
-  await writePool(connection, pool, adapters);
-  return found;
+    if (held.length) pool[locationId] = held;
+    else delete pool[locationId];
+    // Hand out the code only once its removal is durable.
+    await writePool(connection, pool, adapters);
+    return found;
+  }).catch(() => null);
 }
 
 /**

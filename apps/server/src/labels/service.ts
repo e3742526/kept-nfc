@@ -471,6 +471,11 @@ export async function reserveLabel(
   const { client, tx, scope } = ctx;
   const locationId = body.locationId.toLowerCase();
   await requireRole(client, locationId, 'labels.use');
+  // Take the blank insert trigger's location lock before counting, so another reservation
+  // cannot use the same remaining slot while this transaction is still inserting it.
+  await client.query(`SELECT pg_advisory_xact_lock(hashtext('kept.blank'), hashtext($1))`, [
+    locationId,
+  ]);
   await requireBlankRoom(client, locationId, 1);
   // A reservation never used (a tag not written, an item discarded) stays a blank. Bound them, so
   // abandoned ones can't eat the location's blank cap: the phone offers its own back first.

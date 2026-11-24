@@ -356,11 +356,18 @@ async function steps(
       const models = await withScope(deps.pools.app, scope, (_tx, client) =>
         modelsFor(client, prepared.payer),
       );
-      const choice = chooseModel(models, data.model?.id, !!photo);
+      const differentProvider = data.model && data.model.providerId !== resolved.provider.id;
+      // A tool step can move billing to another payer. Keep the choice if its model is
+      // available there, or use that payer's default eligible model. A change before any
+      // tool step still invalidates the original selection.
+      const payerHandoff =
+        differentProvider && step > 0 && prepared.payer !== (context.locationId ?? null);
+      const preferred = chooseModel(models, data.model?.id, !!photo);
+      const choice = preferred ?? (payerHandoff ? chooseModel(models, undefined, !!photo) : null);
       if (
         !choice ||
         choice.providerId !== resolved.provider.id ||
-        (data.model && data.model.providerId !== choice.providerId)
+        (differentProvider && !payerHandoff)
       ) {
         return finish(deps, scope, turn.id, 'failed', { reason: 'model_unavailable' });
       }

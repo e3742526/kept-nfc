@@ -1,7 +1,7 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Nfc, QrCode as QrCodeIcon, Share, Tag, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import type { ReservedLabel } from '@/api/capture/types';
 import { appDetect } from '@/camera/scanner';
@@ -39,6 +39,17 @@ export type ItemLabel = {
   locationId: string;
   source: 'scanned' | 'nfc' | 'qr';
 };
+
+// These native results are only emitted before the write starts. Session invalidation and
+// failed readback can occur after the tag already holds the new code.
+const NFC_WRITE_NOT_STARTED = new Set([
+  'unavailable',
+  'unsupported',
+  'changed',
+  'read_only',
+  'too_small',
+  'malformed',
+]);
 
 export function ItemLabelPicker({
   connection,
@@ -94,7 +105,7 @@ export function ItemLabelPicker({
     retry: t`Hold steady against the tag and try again.`,
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     live.current = true;
     return () => {
       live.current = false;
@@ -128,21 +139,24 @@ export function ItemLabelPicker({
     }
   }
 
-  async function reserve(): Promise<ReservedLabel> {
+  async function reserve(): Promise<ReservedLabel | undefined> {
     const held = reserved.current;
     if (held && held.locationId === locationId) return held;
-    const shelved = await takeShelvedCode(connection, cache, locationId, adapters);
-    if (shelved) {
-      reserved.current = shelved;
-      return shelved;
+    let next = await takeShelvedCode(connection, cache, locationId, adapters);
+    if (!next) {
+      if (!live.current) return;
+      if (reserving.current?.locationId !== locationId) {
+        reserving.current = { key: newId(), locationId };
+      }
+      const out = await reserveLabel(connection, locationId, reserving.current.key, adapters);
+      reserving.current = undefined;
+      // The phone's own origin is what its NFC check and the system camera accept.
+      next = { ...out, url: labelUrl(connection.origin, out.code) };
     }
-    if (reserving.current?.locationId !== locationId) {
-      reserving.current = { key: newId(), locationId };
+    if (!live.current) {
+      await shelveReservedCode(connection, next.locationId, next.code, adapters);
+      return;
     }
-    const out = await reserveLabel(connection, locationId, reserving.current.key, adapters);
-    reserving.current = undefined;
-    // The phone's own origin is what its NFC check and the system camera accept.
-    const next = { ...out, url: labelUrl(connection.origin, out.code) };
     reserved.current = next;
     return next;
   }
@@ -233,7 +247,9 @@ export function ItemLabelPicker({
     setInspection(undefined);
     setExistingOwner(null);
     return run(async () => {
-      const { url } = await reserve();
+      const label = await reserve();
+      if (!label || !live.current) return;
+      const { url } = label;
       const reading = await adapters.nfc.scanTag(connection, { mode: 'inspect', url, messages });
       if (!live.current) return;
       if (reading.status !== 'inspected') {
@@ -281,15 +297,24 @@ export function ItemLabelPicker({
     const pending = inspection;
     if (!pending?.reading.fingerprint) return;
     return run(async () => {
+      const held = reserved.current;
+      // Keep potentially written codes out of both the shelf and a retry on a different tag.
+      reserved.current = undefined;
+      setInspection(undefined);
+      setExistingOwner(null);
       const result = await adapters.nfc.scanTag(connection, {
         mode: 'write',
         url: pending.url,
         fingerprint: pending.reading.fingerprint,
         messages,
       });
+      if (held && NFC_WRITE_NOT_STARTED.has(result.status)) {
+        if (live.current) reserved.current = held;
+        else if (!inUse.current.has(held.code) && !shared.current.has(held.code)) {
+          await shelveReservedCode(connection, held.locationId, held.code, adapters);
+        }
+      }
       if (!live.current) return;
-      setInspection(undefined);
-      setExistingOwner(null);
       if (result.status === 'written') {
         pick({ code: codeOf(pending.url), locationId, source: 'nfc' });
         setStatus(t`SheepKeep tag verified.`);
@@ -303,9 +328,9 @@ export function ItemLabelPicker({
     setCamera(false);
     setInspection(undefined);
     return run(async () => {
-      const { code } = await reserve();
-      if (!live.current) return;
-      pick({ code, locationId, source: 'qr' });
+      const label = await reserve();
+      if (!label || !live.current) return;
+      pick({ code: label.code, locationId, source: 'qr' });
     });
   }
 
