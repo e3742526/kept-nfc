@@ -19,6 +19,10 @@ msgstr " و"
 msgid ", "
 msgstr "، "
 
+#: src/native/main.tsx
+msgid "Add “{0}”"
+msgstr "إضافة “{0}”"
+
 #: src/components/things/links.tsx
 msgid "…this one"
 msgstr "…الشيء الآخر"

@@ -4,7 +4,7 @@ import {
   ChevronRight,
   FileText,
   History,
-  Home,
+  type Home,
   Inbox,
   LogOut,
   MapPin,
@@ -16,6 +16,7 @@ import {
   QrCode,
   Radar,
   RefreshCw,
+  Search,
   Settings,
   Sun,
   Tags,
@@ -93,7 +94,13 @@ type Screen =
   | { kind: 'unplaced' }
   | { kind: 'labelSheets' }
   | { kind: 'trash' }
-  | { kind: 'capture'; destination?: Destination; location?: string; back?: Target }
+  | {
+      kind: 'capture';
+      destination?: Destination;
+      location?: string;
+      back?: Target;
+      name?: string;
+    }
   | { kind: 'identify' }
   | { kind: 'find' | 'enroll'; box: LabelBox }
   | { kind: 'batches' }
@@ -118,7 +125,11 @@ function tabFor(screen: Screen): TabKey {
   }
 }
 
-/** Fixed bottom tab bar: the four main phone destinations, icon-first. */
+/**
+ * Fixed bottom tab bar: the four main phone destinations, icon-first. Search and Add are the
+ * two jobs people open the app for, so Search is the landing tab and Add is the emphasized one.
+ * The unsynced-capture badge sits on Search, where the pending list lives.
+ */
 function TabBar({
   tab,
   pendingCount = 0,
@@ -130,8 +141,8 @@ function TabBar({
 }) {
   const { t } = useLingui();
   const tabs = [
-    { key: 'home', label: t`Home`, Icon: Home },
-    { key: 'capture', label: t`Capture`, Icon: Plus },
+    { key: 'home', label: t`Search`, Icon: Search },
+    { key: 'capture', label: t`Add`, Icon: Plus },
     { key: 'scan', label: t`Scan`, Icon: QrCode },
     { key: 'more', label: t`More`, Icon: Settings },
   ] as const;
@@ -141,13 +152,13 @@ function TabBar({
         <Button
           key={key}
           variant="ghost"
-          className="kept-tabbar-button"
+          className={`kept-tabbar-button${key === 'capture' ? ' kept-tabbar-add' : ''}`}
           aria-current={tab === key ? 'page' : undefined}
           onPress={() => onTab(key)}
         >
           <Icon size={22} aria-hidden />
           <span className="kept-tabbar-label">{label}</span>
-          {key === 'capture' && pendingCount > 0 && (
+          {key === 'home' && pendingCount > 0 && (
             <span className="kept-tabbar-badge" aria-hidden>
               {pendingCount > 99 ? '99+' : pendingCount}
             </span>
@@ -467,6 +478,7 @@ export function Inventory({
   const running = useRef<Promise<void> | null>(null);
   const mounted = useRef(true);
   const canLeaveCapture = useRef<() => Promise<boolean>>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
   const pushScreen = (next: Screen) => {
     backStack.current = [...backStack.current.slice(-9), screen];
     setScreen(next);
@@ -480,6 +492,12 @@ export function Inventory({
     setScreen({ kind: 'home' });
   };
   const goTab = async (tab: TabKey) => {
+    if (tab === 'home' && screen.kind === 'home') {
+      // Re-tapping the active Search tab jumps straight into the search field.
+      window.scrollTo?.({ top: 0 });
+      searchRef.current?.querySelector('input')?.focus();
+      return;
+    }
     if (screen.kind === 'capture') {
       if (tab === 'capture' || !(await canLeaveCapture.current?.())) return;
     }
@@ -861,6 +879,17 @@ export function Inventory({
   const editableBoxes = currentBoxes.filter((box) =>
     cache?.locations.some((loc) => loc.id === box.locationId && loc.role !== 'viewer'),
   );
+  const canWrite = cache?.locations.some((location) => location.role !== 'viewer') ?? false;
+  // The box used most recently is the likeliest place for the next item.
+  const suggestedBox = recentBoxes
+    .map((id) => editableBoxes.find((box) => box.id === id))
+    .find((box) => box !== undefined);
+  const suggestedDestination: Destination | undefined = suggestedBox && {
+    id: suggestedBox.id,
+    locationId: suggestedBox.locationId,
+    name: suggestedBox.name ?? t`Untitled`,
+    kind: 'box',
+  };
   const filterableRooms =
     cache?.places.filter(
       (place) => !place.isUnplaced && (!locationFilter || place.locationId === locationFilter),
@@ -891,6 +920,255 @@ export function Inventory({
         ...thing,
         path: cache ? inventoryPath(cache, thing).join(' › ') : '',
       }));
+
+  // Unsynced and held captures: above the content everywhere except the add form, where they
+  // sit below it so the description field stays the first thing on screen.
+  const queuePanels = (
+    <>
+      {pending.length > 0 && (
+        <section
+          className="grid gap-3 rounded-lg border border-line bg-surface p-3"
+          aria-label={t`Pending captures`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-semibold">
+              {stats
+                ? t`Pending captures: ${pending.length} (${formatBytes(stats.pendingBytes)})`
+                : t`Pending captures: ${pending.length}`}
+            </p>
+            <Button
+              variant="secondary"
+              size="small"
+              isPending={working}
+              onPress={() => void refresh(true)}
+            >
+              <Trans>Retry sync</Trans>
+            </Button>
+          </div>
+          <ul className="grid gap-2">
+            {pending.map((entry) => {
+              const fields = draftFields(entry.capture);
+              const boxName =
+                cache?.things.find((item) => item.id === (fields.attachToThingId ?? fields.boxId))
+                  ?.name ??
+                cache?.places.find((item) => item.id === fields.placeId)?.name ??
+                t`Destination`;
+              return (
+                <li
+                  key={entry.capture.id}
+                  className="grid gap-2 rounded-lg bg-sunken p-3 text-small"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold">
+                      <bdi>{fields.name}</bdi>
+                    </span>
+                    <span
+                      className={
+                        entry.failure
+                          ? 'kept-badge kept-badge-danger'
+                          : 'kept-badge kept-badge-warn'
+                      }
+                    >
+                      {entry.failure ? t`Failed` : working ? t`Syncing…` : t`Saved on device`}
+                    </span>
+                  </div>
+                  <p className="text-ink-2">
+                    <bdi>{boxName}</bdi>
+                    {entry.capture.files.length > 0 && (
+                      <>
+                        {sep()}
+                        {t`Files: ${entry.capture.files.length}`}
+                      </>
+                    )}
+                  </p>
+                  {entry.failure && (
+                    <p className="text-danger">{failureText(entry.failure, fields)}</p>
+                  )}
+                  {entry.capture.files.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {entry.capture.files.map(({ file }) => {
+                        const key = `${entry.capture.id}:${file.id}`;
+                        return (
+                          <Button
+                            key={file.id}
+                            size="small"
+                            variant="secondary"
+                            className="max-w-full [overflow-wrap:anywhere]"
+                            isPending={openingPendingMedia === key}
+                            isDisabled={
+                              openingPendingMedia !== undefined && openingPendingMedia !== key
+                            }
+                            onPress={() => void openPendingOriginal(entry.capture.id, file.id)}
+                          >
+                            {t`Preview ${isolate(file.name)}`}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {retargetingId === entry.capture.id ? (
+                    <div className="grid gap-2">
+                      <Select
+                        label={t`Destination box`}
+                        items={editableBoxes}
+                        selectedKey={retargetBoxId}
+                        onSelectionChange={(key) =>
+                          setRetargetBoxId(key === null ? null : String(key))
+                        }
+                      >
+                        {(box) => (
+                          <SelectItem id={box.id} textValue={box.name ?? t`Untitled`}>
+                            <bdi>{box.name ?? t`Untitled`}</bdi>
+                          </SelectItem>
+                        )}
+                      </Select>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="small"
+                          isDisabled={!retargetBoxId || working}
+                          onPress={() => void moveAndRetry(entry)}
+                        >
+                          <Trans>Move and retry</Trans>
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="ghost"
+                          onPress={() => {
+                            setRetargetingId(undefined);
+                            setRetargetBoxId(null);
+                          }}
+                        >
+                          <Trans>Cancel</Trans>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="small"
+                        variant="secondary"
+                        isDisabled={working}
+                        onPress={() => void retryOne(entry.capture.id)}
+                      >
+                        <Trans>Retry</Trans>
+                      </Button>
+                      {canRetarget(entry) && editableBoxes.length > 0 && (
+                        <Button
+                          size="small"
+                          variant="secondary"
+                          isDisabled={working}
+                          onPress={() => {
+                            setRetargetingId(entry.capture.id);
+                            setRetargetBoxId(editableBoxes[0]?.id ?? null);
+                          }}
+                        >
+                          <Trans>Change box</Trans>
+                        </Button>
+                      )}
+                      <Button
+                        size="small"
+                        variant="ghost"
+                        isDisabled={working}
+                        onPress={() => void confirmDiscard(entry)}
+                      >
+                        <Trans>Discard</Trans>
+                      </Button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+      {held.length > 0 && (
+        <section
+          className="grid gap-3 rounded-lg border border-line bg-surface p-3"
+          aria-label={t`Held captures from before a restore`}
+        >
+          <p className="font-semibold">{t`Held captures: ${held.length}`}</p>
+          <p className="text-small text-ink-2">
+            <Trans>
+              These captures were saved before this SheepKeep server was restored, so automatic
+              replay is paused to avoid creating duplicates. They stay on this iPhone until you
+              export or discard them. Saved on device does not mean backed up.
+            </Trans>
+          </p>
+          <ul className="grid gap-2">
+            {held.map((entry) => {
+              const fields = draftFields(entry.capture);
+              const destinationId = fields.attachToThingId ?? fields.boxId ?? fields.placeId;
+              const boxName =
+                cache?.things.find((item) => item.id === destinationId)?.name ??
+                cache?.places.find((item) => item.id === destinationId)?.name ??
+                destinationId;
+              return (
+                <li
+                  key={`${entry.capture.context ?? ''}:${entry.capture.id}`}
+                  className="grid gap-2 rounded-lg bg-sunken p-3 text-small"
+                >
+                  <span className="font-semibold">
+                    <bdi>{fields.name}</bdi>
+                  </span>
+                  <p className="text-ink-2">
+                    <bdi>{boxName}</bdi>
+                    {fields.note && (
+                      <>
+                        {sep()}
+                        <bdi>{fields.note}</bdi>
+                      </>
+                    )}
+                    {entry.capture.files.length > 0 && (
+                      <>
+                        {sep()}
+                        {t`Files: ${entry.capture.files.length}`}
+                      </>
+                    )}
+                  </p>
+                  {entry.capture.files.map(({ file, sha256 }) => (
+                    <p key={file.id} className="break-all text-ink-2">
+                      <bdi>{file.name}</bdi> ({formatBytes(file.bytes)}){sep()}SHA-256{' '}
+                      <bdi className="ltr">{sha256}</bdi>
+                    </p>
+                  ))}
+                  <div className="flex flex-wrap gap-2">
+                    {entry.capture.files.map(({ file }) => (
+                      <Button
+                        key={file.id}
+                        size="small"
+                        variant="secondary"
+                        onPress={() =>
+                          void adapters.media
+                            .openHeld(connection, {
+                              heldContext: entry.capture.context ?? '',
+                              id: entry.capture.id,
+                              file: file.id,
+                            })
+                            .catch(() => setStatus(t`Could not open this held original.`))
+                        }
+                      >
+                        {t`Preview ${isolate(file.name)}`}
+                      </Button>
+                    ))}
+                    <Button size="small" variant="secondary" onPress={() => void exportHeld(entry)}>
+                      <Trans>Export details</Trans>
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="ghost"
+                      onPress={() => void confirmDiscardHeld(entry)}
+                    >
+                      <Trans>Discard</Trans>
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+    </>
+  );
 
   return (
     <>
@@ -923,6 +1201,23 @@ export function Inventory({
           )}
         </Button>
       </header>
+      {screen.kind === 'home' && (
+        <div className="kept-search" ref={searchRef}>
+          <TextField
+            aria-label={t`Search inventory`}
+            placeholder={t`Search inventory`}
+            value={query}
+            onChange={setQuery}
+            inputProps={{
+              type: 'search',
+              maxLength: 200,
+              enterKeyHint: 'search',
+              autoCapitalize: 'none',
+              autoCorrect: 'off',
+            }}
+          />
+        </div>
+      )}
       <div className="mb-4 grid gap-2">
         {status && (
           <p className="rounded-xl bg-sunken p-3 text-ink-2" role="status">
@@ -969,292 +1264,50 @@ export function Inventory({
             </div>
           </section>
         )}
-        {pending.length > 0 && (
-          <section
-            className="grid gap-3 rounded-lg border border-line bg-surface p-3"
-            aria-label={t`Pending captures`}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold">
-                {stats
-                  ? t`Pending captures: ${pending.length} (${formatBytes(stats.pendingBytes)})`
-                  : t`Pending captures: ${pending.length}`}
-              </p>
-              <Button
-                variant="secondary"
-                size="small"
-                isPending={working}
-                onPress={() => void refresh(true)}
-              >
-                <Trans>Retry sync</Trans>
-              </Button>
-            </div>
-            <ul className="grid gap-2">
-              {pending.map((entry) => {
-                const fields = draftFields(entry.capture);
-                const boxName =
-                  cache?.things.find((item) => item.id === (fields.attachToThingId ?? fields.boxId))
-                    ?.name ??
-                  cache?.places.find((item) => item.id === fields.placeId)?.name ??
-                  t`Destination`;
-                return (
-                  <li
-                    key={entry.capture.id}
-                    className="grid gap-2 rounded-lg bg-sunken p-3 text-small"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-semibold">
-                        <bdi>{fields.name}</bdi>
-                      </span>
-                      <span
-                        className={
-                          entry.failure
-                            ? 'kept-badge kept-badge-danger'
-                            : 'kept-badge kept-badge-warn'
-                        }
-                      >
-                        {entry.failure ? t`Failed` : working ? t`Syncing…` : t`Saved on device`}
-                      </span>
-                    </div>
-                    <p className="text-ink-2">
-                      <bdi>{boxName}</bdi>
-                      {entry.capture.files.length > 0 && (
-                        <>
-                          {sep()}
-                          {t`Files: ${entry.capture.files.length}`}
-                        </>
-                      )}
-                    </p>
-                    {entry.failure && (
-                      <p className="text-danger">{failureText(entry.failure, fields)}</p>
-                    )}
-                    {entry.capture.files.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {entry.capture.files.map(({ file }) => {
-                          const key = `${entry.capture.id}:${file.id}`;
-                          return (
-                            <Button
-                              key={file.id}
-                              size="small"
-                              variant="secondary"
-                              className="max-w-full [overflow-wrap:anywhere]"
-                              isPending={openingPendingMedia === key}
-                              isDisabled={
-                                openingPendingMedia !== undefined && openingPendingMedia !== key
-                              }
-                              onPress={() => void openPendingOriginal(entry.capture.id, file.id)}
-                            >
-                              {t`Preview ${isolate(file.name)}`}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {retargetingId === entry.capture.id ? (
-                      <div className="grid gap-2">
-                        <Select
-                          label={t`Destination box`}
-                          items={editableBoxes}
-                          selectedKey={retargetBoxId}
-                          onSelectionChange={(key) =>
-                            setRetargetBoxId(key === null ? null : String(key))
-                          }
-                        >
-                          {(box) => (
-                            <SelectItem id={box.id} textValue={box.name ?? t`Untitled`}>
-                              <bdi>{box.name ?? t`Untitled`}</bdi>
-                            </SelectItem>
-                          )}
-                        </Select>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            size="small"
-                            isDisabled={!retargetBoxId || working}
-                            onPress={() => void moveAndRetry(entry)}
-                          >
-                            <Trans>Move and retry</Trans>
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="ghost"
-                            onPress={() => {
-                              setRetargetingId(undefined);
-                              setRetargetBoxId(null);
-                            }}
-                          >
-                            <Trans>Cancel</Trans>
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          size="small"
-                          variant="secondary"
-                          isDisabled={working}
-                          onPress={() => void retryOne(entry.capture.id)}
-                        >
-                          <Trans>Retry</Trans>
-                        </Button>
-                        {canRetarget(entry) && editableBoxes.length > 0 && (
-                          <Button
-                            size="small"
-                            variant="secondary"
-                            isDisabled={working}
-                            onPress={() => {
-                              setRetargetingId(entry.capture.id);
-                              setRetargetBoxId(editableBoxes[0]?.id ?? null);
-                            }}
-                          >
-                            <Trans>Change box</Trans>
-                          </Button>
-                        )}
-                        <Button
-                          size="small"
-                          variant="ghost"
-                          isDisabled={working}
-                          onPress={() => void confirmDiscard(entry)}
-                        >
-                          <Trans>Discard</Trans>
-                        </Button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-        {held.length > 0 && (
-          <section
-            className="grid gap-3 rounded-lg border border-line bg-surface p-3"
-            aria-label={t`Held captures from before a restore`}
-          >
-            <p className="font-semibold">{t`Held captures: ${held.length}`}</p>
-            <p className="text-small text-ink-2">
-              <Trans>
-                These captures were saved before this SheepKeep server was restored, so automatic
-                replay is paused to avoid creating duplicates. They stay on this iPhone until you
-                export or discard them. Saved on device does not mean backed up.
-              </Trans>
-            </p>
-            <ul className="grid gap-2">
-              {held.map((entry) => {
-                const fields = draftFields(entry.capture);
-                const destinationId = fields.attachToThingId ?? fields.boxId ?? fields.placeId;
-                const boxName =
-                  cache?.things.find((item) => item.id === destinationId)?.name ??
-                  cache?.places.find((item) => item.id === destinationId)?.name ??
-                  destinationId;
-                return (
-                  <li
-                    key={`${entry.capture.context ?? ''}:${entry.capture.id}`}
-                    className="grid gap-2 rounded-lg bg-sunken p-3 text-small"
-                  >
-                    <span className="font-semibold">
-                      <bdi>{fields.name}</bdi>
-                    </span>
-                    <p className="text-ink-2">
-                      <bdi>{boxName}</bdi>
-                      {fields.note && (
-                        <>
-                          {sep()}
-                          <bdi>{fields.note}</bdi>
-                        </>
-                      )}
-                      {entry.capture.files.length > 0 && (
-                        <>
-                          {sep()}
-                          {t`Files: ${entry.capture.files.length}`}
-                        </>
-                      )}
-                    </p>
-                    {entry.capture.files.map(({ file, sha256 }) => (
-                      <p key={file.id} className="break-all text-ink-2">
-                        <bdi>{file.name}</bdi> ({formatBytes(file.bytes)}){sep()}SHA-256{' '}
-                        <bdi className="ltr">{sha256}</bdi>
-                      </p>
-                    ))}
-                    <div className="flex flex-wrap gap-2">
-                      {entry.capture.files.map(({ file }) => (
-                        <Button
-                          key={file.id}
-                          size="small"
-                          variant="secondary"
-                          onPress={() =>
-                            void adapters.media
-                              .openHeld(connection, {
-                                heldContext: entry.capture.context ?? '',
-                                id: entry.capture.id,
-                                file: file.id,
-                              })
-                              .catch(() => setStatus(t`Could not open this held original.`))
-                          }
-                        >
-                          {t`Preview ${isolate(file.name)}`}
-                        </Button>
-                      ))}
-                      <Button
-                        size="small"
-                        variant="secondary"
-                        onPress={() => void exportHeld(entry)}
-                      >
-                        <Trans>Export details</Trans>
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="ghost"
-                        onPress={() => void confirmDiscardHeld(entry)}
-                      >
-                        <Trans>Discard</Trans>
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
+        {screen.kind !== 'capture' && queuePanels}
       </div>
       {screen.kind === 'home' && (
         <section className="grid gap-4">
-          <div className="kept-tiles">
-            <ActionTile
-              label={t`Capture inventory`}
-              Icon={Plus}
-              tone="amber"
-              isDisabled={!cache?.locations.some((location) => location.role !== 'viewer')}
-              onPress={() => pushScreen({ kind: 'capture' })}
-            />
-            <ActionTile
-              label={t`Scan QR or NFC`}
-              Icon={QrCode}
-              tone="info"
-              onPress={() => pushScreen({ kind: 'identify' })}
-            />
-            <ActionTile
-              label={t`Rooms`}
-              Icon={MapPin}
-              tone="ok"
-              isDisabled={!cache}
-              onPress={() => pushScreen({ kind: 'rooms' })}
-            />
-            <ActionTile
-              label={t`Create box`}
-              Icon={Package}
-              tone="violet"
-              isDisabled={
-                !online || !cache?.locations.some((location) => location.role !== 'viewer')
-              }
-              onPress={() => pushScreen({ kind: 'new' })}
-            />
-          </div>
-          <TextField
-            label={t`Search inventory`}
-            value={query}
-            onChange={setQuery}
-            inputProps={{ type: 'search', maxLength: 200 }}
-          />
+          {query.trim() ? (
+            canWrite && (
+              <Button
+                variant="secondary"
+                className="kept-phone-row kept-add-row"
+                onPress={() => pushScreen({ kind: 'capture', name: query.trim() })}
+              >
+                <span className="kept-row-lead kept-row-lead-accent" aria-hidden>
+                  <Plus size={18} />
+                </span>
+                <span className="kept-row-body">
+                  <bdi className="font-semibold">{t`Add “${isolate(query.trim())}”`}</bdi>
+                </span>
+                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
+              </Button>
+            )
+          ) : (
+            <div className="kept-quick">
+              <Button
+                variant="secondary"
+                size="small"
+                className="kept-quick-button"
+                isDisabled={!cache}
+                onPress={() => pushScreen({ kind: 'rooms' })}
+              >
+                <MapPin size={16} aria-hidden />
+                <Trans>Rooms</Trans>
+              </Button>
+              <Button
+                variant="secondary"
+                size="small"
+                className="kept-quick-button"
+                isDisabled={!online || !canWrite}
+                onPress={() => pushScreen({ kind: 'new' })}
+              >
+                <Package size={16} aria-hidden />
+                <Trans>Create box</Trans>
+              </Button>
+            </div>
+          )}
           {!query.trim() && ((cache?.locations.length ?? 0) > 1 || filterableRooms.length > 1) && (
             <div className="kept-filters">
               {(cache?.locations.length ?? 0) > 1 && (
@@ -1392,15 +1445,6 @@ export function Inventory({
                 <Trans>No matching inventory.</Trans>
               </p>
             )}
-          <Button
-            variant="ghost"
-            size="small"
-            className="justify-self-start"
-            onPress={() => void handleSignOut()}
-          >
-            <LogOut size={16} aria-hidden />
-            <Trans>Sign out</Trans>
-          </Button>
         </section>
       )}
       {screen.kind === 'record' && (
@@ -1459,6 +1503,8 @@ export function Inventory({
           box={screen.destination}
           cache={cache}
           location={screen.location}
+          initialName={screen.name}
+          suggested={suggestedDestination}
           pending={pending}
           completions={completions}
           syncing={working}
@@ -1467,6 +1513,7 @@ export function Inventory({
           onSave={savedLocally}
         />
       )}
+      {screen.kind === 'capture' && <div className="mt-4 grid gap-2">{queuePanels}</div>}
       {screen.kind === 'identify' && (
         <LabelPanel
           connection={connection}
@@ -1579,12 +1626,6 @@ export function Inventory({
           </section>
           <div className="kept-tiles">
             <ActionTile
-              label={t`Scan QR or NFC`}
-              Icon={QrCode}
-              tone="info"
-              onPress={() => pushScreen({ kind: 'identify' })}
-            />
-            <ActionTile
               label={t`Print label sheets`}
               Icon={Tags}
               tone="amber"
@@ -1597,13 +1638,6 @@ export function Inventory({
               tone="violet"
               isDisabled={!online}
               onPress={() => pushScreen({ kind: 'batches' })}
-            />
-            <ActionTile
-              label={t`Rooms`}
-              Icon={MapPin}
-              tone="ok"
-              isDisabled={!cache}
-              onPress={() => pushScreen({ kind: 'rooms' })}
             />
             <ActionTile
               label={t`Unplaced`}

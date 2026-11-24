@@ -882,7 +882,8 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    await user.click(screen.getByRole('button', { name: 'Capture inventory' }));
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await user.click(screen.getByRole('button', { name: 'Change' }));
     await user.click(screen.getByRole('button', { name: /Room or box/ }));
     await user.click(await screen.findByRole('option', { name: 'Attic' }));
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Winter gloves');
@@ -1313,11 +1314,15 @@ describe('KeptPhone mobile workflows', () => {
       await screen.findByText(/The destination box is missing or in Trash/),
     ).toBeInTheDocument();
 
-    // Safe sign-out confirmation warns when pending captures exist.
+    // Safe sign-out confirmation warns when pending captures exist (sign-out lives in More).
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'More' }));
     await user.click(screen.getByRole('button', { name: 'Sign out' }));
     expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Stay signed in' }));
     expect(env.events.disconnected).toBe(0);
+    await user.click(
+      within(screen.getByRole('navigation')).getByRole('button', { name: 'Search' }),
+    );
 
     // Move failed capture to Spare Box and retry cleanly.
     env.setForceDrop(null);
@@ -1789,7 +1794,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.upload(fileInput, original);
 
     const tabbar = screen.getByRole('navigation');
-    await user.click(within(tabbar).getByRole('button', { name: 'Capture' }));
+    await user.click(within(tabbar).getByRole('button', { name: 'Add' }));
     expect(screen.getByText('Adding to box')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
@@ -1840,13 +1845,13 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
 
-    // The tab bar is the main navigation: Home, Capture, Scan, More.
+    // The tab bar is the main navigation: Search, Add, Scan, More.
     const tabbar = await screen.findByRole('navigation');
-    expect(within(tabbar).getByRole('button', { name: 'Home' })).toHaveAttribute(
+    expect(within(tabbar).getByRole('button', { name: 'Search' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    expect(within(tabbar).getByRole('button', { name: 'Capture' })).toBeInTheDocument();
+    expect(within(tabbar).getByRole('button', { name: 'Add' })).toBeInTheDocument();
     expect(within(tabbar).getByRole('button', { name: 'Scan' })).toBeInTheDocument();
     expect(within(tabbar).getByRole('button', { name: 'More' })).toBeInTheDocument();
 
@@ -1859,7 +1864,7 @@ describe('KeptPhone mobile workflows', () => {
     );
 
     // The Capture tab opens the capture form with a back button.
-    await user.click(within(tabbar).getByRole('button', { name: 'Capture' }));
+    await user.click(within(tabbar).getByRole('button', { name: 'Add' }));
     expect(await screen.findByLabelText('Description')).toBeInTheDocument();
 
     // The More tab compartments settings, appearance, and secondary workflows.
@@ -1886,17 +1891,66 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Default' }));
     expect(document.documentElement.getAttribute('data-palette')).toBeNull();
 
-    // Overlap destinations stay reachable from More and Back returns to More.
-    await user.click(screen.getByRole('button', { name: 'Scan QR or NFC' }));
-    expect(await screen.findByRole('button', { name: 'Back' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(await screen.findByRole('heading', { name: 'More' })).toBeInTheDocument();
+    // Scan and Add already have tabs, so More does not repeat them; secondary workflows stay.
+    expect(screen.queryByRole('button', { name: 'Scan QR or NFC' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Print label sheets' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Trash' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
 
-    // Home keeps its icon tiles, sign-out, and logical CSS.
-    await user.click(within(tabbar).getByRole('button', { name: 'Home' }));
-    expect(await screen.findByRole('button', { name: 'Capture inventory' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+    // Search is the landing screen: the search field comes first, Rooms stays one tap away,
+    // and sign-out lives only in More.
+    await user.click(within(tabbar).getByRole('button', { name: 'Search' }));
+    const search = await screen.findByRole('searchbox', { name: 'Search inventory' });
+    expect(screen.getByRole('button', { name: 'Rooms' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Capture inventory' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument();
+
+    // Re-tapping the active Search tab focuses the search field.
+    await user.click(within(tabbar).getByRole('button', { name: 'Search' }));
+    expect(search).toHaveFocus();
     expectLogicalOnly();
+  });
+
+  it('turns a search with no match into an add, prefilled and focused on the next item', async () => {
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: 'https://kept.example.com|ibrahim|epoch-1',
+        origin: 'https://kept.example.com',
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await screen.findByRole('button', { name: /Winter Box/i });
+    await user.type(screen.getByRole('searchbox', { name: 'Search inventory' }), 'Snow shovel');
+    await user.click(await screen.findByRole('button', { name: /Add .*Snow shovel/ }));
+    expect(screen.getByLabelText('Description')).toHaveValue('Snow shovel');
+    // The destination is a one-line summary; the full picker opens only on Change.
+    expect(screen.getByRole('button', { name: 'Change' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Room or box/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Description')).toHaveValue('');
+  });
+
+  it('suggests the box opened last as the next destination', async () => {
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: 'https://kept.example.com|ibrahim|epoch-1',
+        origin: 'https://kept.example.com',
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Back' }));
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    expect(await screen.findByText(/Winter Box/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Description'), 'Scarf');
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
   });
 });
