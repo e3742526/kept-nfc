@@ -78,6 +78,9 @@ export type ThingRow = {
   path: PathStep[];
   containerThumbUrl: string | null;
   thumbUrl: string | null;
+  thumbnailAttachmentId?: string;
+  thumbnailRotation?: number;
+  containerThumbnailRotation?: number;
   lastSeenAt: string | null;
   isContainer: boolean;
   /** Its tags, A to Z (things/tag-sql.ts). */
@@ -221,6 +224,11 @@ async function rowOf(
     path: pathOf(h.path),
     containerThumbUrl: await thumbUrlOf(files, keys, h.container_thumb_file_id),
     thumbUrl: await thumbUrlOf(files, keys, h.thumb_file_id),
+    ...(h.thumbnail_attachment_id ? { thumbnailAttachmentId: h.thumbnail_attachment_id } : {}),
+    ...(h.thumbnail_rotation ? { thumbnailRotation: h.thumbnail_rotation } : {}),
+    ...(h.container_thumbnail_rotation
+      ? { containerThumbnailRotation: h.container_thumbnail_rotation }
+      : {}),
     lastSeenAt: h.last_seen_at ? new Date(h.last_seen_at).toISOString() : null,
     isContainer: h.is_container,
     tags: tagsOfRow(h.tags),

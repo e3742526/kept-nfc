@@ -7,7 +7,7 @@ import type { AskBody, ConfirmBody, Proposal } from '@/api/assistant/types';
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
-import type { Tag } from '@/api/inventory/types';
+import type { AttachmentView, Tag, ThingView, UpdateAttachmentBody } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import * as cameraSession from '@/camera/session';
 import { ConfirmProvider } from '@/components/ui/confirm';
@@ -1351,7 +1351,7 @@ describe('KeptPhone mobile workflows', () => {
     };
     const env = createFakeEnvironment({ initialConnection: connection });
     env.adapters.captureAI = {
-      status: vi.fn(async () => ({ apple: 'available' as const })),
+      status: vi.fn(async () => ({ apple: 'available' as const, chatGPT: 'ibrahim@kept.test' })),
       connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
       disconnect: vi.fn(async () => ({ revoked: true })),
       models: vi.fn(async () => []),
@@ -1364,14 +1364,32 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: /Default location/ }));
     await user.click(await screen.findByRole('option', { name: 'Home' }));
     await user.click(await screen.findByRole('button', { name: /Default photo AI/ }));
-    await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
+    await user.click(await screen.findByRole('option', { name: 'ChatGPT plan' }));
+    expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBeUndefined();
+    const save = screen.getByRole('button', { name: /^Save$/ });
+    vi.spyOn(env.adapters.outbox, 'setValue').mockRejectedValueOnce(new Error('No storage'));
+    await user.click(save);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Could not save the photo AI default.',
+    );
+    await user.click(save);
+    expect(await screen.findByText('Photo AI default saved.')).toBeInTheDocument();
     await waitFor(async () => {
       expect(await env.adapters.outbox.getValue(connection, 'defaultLocation')).toBe(
         env.rooms[0]?.locationId,
       );
-      expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBe('apple');
+      expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBe('chatgpt');
     });
     first.unmount();
+    let finishReading = () => {};
+    const reading = new Promise<void>((resolve) => {
+      finishReading = resolve;
+    });
+    const readValue = env.adapters.outbox.getValue.bind(env.adapters.outbox);
+    vi.spyOn(env.adapters.outbox, 'getValue').mockImplementation(async (conn, key) => {
+      if (key === 'defaultPhotoAI') await reading;
+      return readValue(conn, key);
+    });
     env.renderApp();
     await openSettings(user);
     expect(await screen.findByRole('button', { name: /Default location/ })).toHaveTextContent(
@@ -1383,9 +1401,11 @@ describe('KeptPhone mobile workflows', () => {
     );
     if (!picker) throw new Error('Photo picker is missing');
     await user.upload(picker, new File(['photo'], 'default.jpg', { type: 'image/jpeg' }));
-    expect(await screen.findByRole('button', { name: /AI provider/ })).toHaveTextContent(
-      'Apple Intelligence',
-    );
+    const provider = await screen.findByRole('button', { name: /AI provider/ });
+    expect(provider).toBeDisabled();
+    await act(async () => finishReading());
+    expect(provider).toBeEnabled();
+    expect(provider).toHaveTextContent('ChatGPT plan');
   });
 
   it('uses an authorized ChatGPT photo suggestion only when accepted, then skips server suggestions', async () => {
@@ -1612,6 +1632,109 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'QR and NFC label' }));
     await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));
     expect(env.events.sharedLabelPdfs).toEqual([{ url: `${origin}/l/7KQ4MZ`, name: 'Winter Box' }]);
+  });
+
+  it('rotates an item photo, uses it as thumbnail, and restores it from the archive', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    let photo: AttachmentView = {
+      id: 'photo-controls-fixture',
+      role: 'photo',
+      sort: 0,
+      name: 'Shelf label',
+      url: null,
+      subject: { thingId: env.boxId },
+      rowVersion: 1,
+      createdBy: { displayName: 'Ibrahim' },
+      file: {
+        id: 'fixture-file',
+        mime: 'image/jpeg',
+        class: 'photo',
+        bytes: 50,
+        sha256: 'a'.repeat(64),
+        hasGps: false,
+        width: 8,
+        height: 4,
+        derivativeState: 'ready',
+        thumbUrl: '/f/label-thumb.jpg',
+        displayUrl: '/f/label-preview.jpg',
+      },
+    };
+    let selected = false;
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    env.adapters.transport.request = async <T,>(
+      conn: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path.startsWith(inventoryPaths.thingAttachments(env.boxId))) {
+        const archive = new URL(path, origin).searchParams.has('archivedPhotos');
+        return {
+          items: Boolean(photo.photoArchivedAt) === archive ? [photo] : [],
+          next_cursor: null,
+        } as T;
+      }
+      if (path === inventoryPaths.attachment(photo.id)) {
+        expect(options?.ifMatch).toBe(photo.rowVersion);
+        const patch = options?.body as UpdateAttachmentBody;
+        photo = { ...photo, rowVersion: photo.rowVersion + 1 };
+        if (patch.photoRotation !== undefined) photo.photoRotation = patch.photoRotation;
+        if (patch.selectThumbnail) selected = true;
+        if (patch.photoArchived === true) {
+          photo.photoArchivedAt = '2026-11-24T20:00:00Z';
+          selected = false;
+        }
+        if (patch.photoArchived === false) delete photo.photoArchivedAt;
+        return photo as T;
+      }
+      if (path === inventoryPaths.thing(env.boxId) && !options?.method) {
+        const thing = await request<ThingView>(conn, path);
+        return {
+          ...thing,
+          ...(selected
+            ? {
+                thumbUrl: photo.file?.thumbUrl,
+                thumbnailRotation: photo.photoRotation,
+                thumbnailAttachmentId: photo.id,
+              }
+            : {}),
+        } as T;
+      }
+      return request<T>(conn, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Photo options' }));
+    const dialog = within(await screen.findByRole('dialog'));
+    await user.click(dialog.getByRole('button', { name: 'Rotate clockwise' }));
+    await waitFor(() =>
+      expect(dialog.getByRole('img', { name: 'Shelf label' })).toHaveStyle({ rotate: '90deg' }),
+    );
+    await user.click(dialog.getByRole('button', { name: 'Use as thumbnail' }));
+    expect(await dialog.findByRole('button', { name: 'Current thumbnail' })).toBeDisabled();
+    await user.click(dialog.getByRole('button', { name: 'Archive photo' }));
+    expect(await screen.findByText('Photo archived.')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Cover photo' })).not.toBeInTheDocument(),
+    );
+    await user.click(screen.getByRole('button', { name: 'Archived photos' }));
+    await user.click(await screen.findByRole('button', { name: 'Shelf label' }));
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Restore photo' }),
+    );
+    expect(await screen.findByText('Photo restored.')).toBeInTheDocument();
+    expect(await screen.findByText('No archived photos.')).toBeInTheDocument();
+    expect(
+      (await screen.findByRole('button', { name: 'Shelf label' })).querySelector('img'),
+    ).toHaveStyle({ rotate: '90deg' });
   });
 
   it('queues a location photo offline and shows it separately after sync', async () => {

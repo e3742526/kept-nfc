@@ -5083,6 +5083,10 @@ msgstr "Archive {0}"
 msgid "Archive or delete this home."
 msgstr "Archive or delete this home."
 
+#: src/native/record.tsx
+msgid "Archive photo"
+msgstr "Archive photo"
+
 #: src/components/filters/registry.tsx
 #: src/components/history/labels.ts
 #: src/components/import/choices-step.tsx
@@ -5117,6 +5121,10 @@ msgstr "Archived items"
 #: src/components/import/choices-step.tsx
 msgid "Archived items aren't imported, sold ones included."
 msgstr "Archived items aren't imported, sold ones included."
+
+#: src/native/record.tsx
+msgid "Archived photos"
+msgstr "Archived photos"
 
 #: src/map/labels.ts
 msgid "Area"
@@ -8216,6 +8224,10 @@ msgstr "Could not open this held original."
 msgid "Could not open this pending original."
 msgstr "Could not open this pending original."
 
+#: src/native/capture-ai.tsx
+msgid "Could not save the photo AI default. Try again."
+msgstr "Could not save the photo AI default. Try again."
+
 #: src/native/main.tsx
 msgid "Could not search SheepKeep. Try again."
 msgstr "Could not search SheepKeep. Try again."
@@ -8798,6 +8810,10 @@ msgstr "Counts saved before SheepKeep 1.14 didn't record what was missing or els
 msgid "Cover ended"
 msgstr "Cover ended"
 
+#: src/native/record.tsx
+msgid "Cover photo"
+msgstr "Cover photo"
+
 #: src/components/history/labels.ts
 msgid "Covered"
 msgstr "Covered"
@@ -9000,6 +9016,10 @@ msgstr "Currency"
 #: src/components/money/value-section.tsx
 msgid "current"
 msgstr "current"
+
+#: src/native/record.tsx
+msgid "Current thumbnail"
+msgstr "Current thumbnail"
 
 #: src/components/device/kept-extras.tsx
 msgid "Current value"
@@ -12721,6 +12741,10 @@ msgstr "Hide"
 msgid "Hide <0>{personal}</0>"
 msgstr "Hide <0>{personal}</0>"
 
+#: src/native/record.tsx
+msgid "Hide archived photos"
+msgstr "Hide archived photos"
+
 #: src/components/home/checklist.tsx
 msgid "Hide Get started for good"
 msgstr "Hide Get started for good"
@@ -15414,6 +15438,10 @@ msgstr "Loading"
 msgid "Loading {label}"
 msgstr "Loading {label}"
 
+#: src/native/record.tsx
+msgid "Loading archived photos…"
+msgstr "Loading archived photos…"
+
 #: src/routes/_app/admin.backups.tsx
 msgid "Loading backups"
 msgstr "Loading backups"
@@ -17751,6 +17779,10 @@ msgstr "No AI runs in this demo"
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
 msgstr "no amount of fuel"
+
+#: src/native/record.tsx
+msgid "No archived photos."
+msgstr "No archived photos."
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
@@ -20902,6 +20934,14 @@ msgstr "Photo added to the record. Inventory unchanged."
 msgid "Photo added. It joins the odometer proof strip."
 msgstr "Photo added. It joins the odometer proof strip."
 
+#: src/native/capture-ai.tsx
+msgid "Photo AI default saved."
+msgstr "Photo AI default saved."
+
+#: src/native/record.tsx
+msgid "Photo archived."
+msgstr "Photo archived."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo indexing is incomplete."
 msgstr "Photo indexing is incomplete."
@@ -20915,9 +20955,17 @@ msgstr "Photo of the meter"
 msgid "Photo of the odometer"
 msgstr "Photo of the odometer"
 
+#: src/native/record.tsx
+msgid "Photo options"
+msgstr "Photo options"
+
 #: src/components/services/log-service-sheet.tsx
 msgid "Photo or file"
 msgstr "Photo or file"
+
+#: src/native/record.tsx
+msgid "Photo restored."
+msgstr "Photo restored."
 
 #: src/components/search/visual-search.tsx
 msgid "Photo search is unavailable."
@@ -23238,6 +23286,10 @@ msgstr "Restore {name}"
 msgid "Restore drill"
 msgstr "Restore drill"
 
+#: src/native/record.tsx
+msgid "Restore photo"
+msgstr "Restore photo"
+
 #: src/components/history/labels.ts
 #: src/routes/_app/trash.tsx
 msgid "Restored {name}"
@@ -23568,6 +23620,10 @@ msgstr "Rooms of {fromName}"
 #: src/graph/floors-3d.tsx
 msgid "Rooms on no floor"
 msgstr "Rooms on no floor"
+
+#: src/native/record.tsx
+msgid "Rotate clockwise"
+msgstr "Rotate clockwise"
 
 #: src/map/labels.ts
 msgid "Router"
@@ -30781,6 +30837,10 @@ msgstr "Use another label"
 #: src/native/record.tsx
 msgid "Use as cover"
 msgstr "Use as cover"
+
+#: src/native/record.tsx
+msgid "Use as thumbnail"
+msgstr "Use as thumbnail"
 
 #: src/components/ai/prices.tsx
 msgid "Use Groq's listed price"

@@ -37,6 +37,7 @@ import { BuildingIcon, ChevronEndIcon, PersonIcon, SearchIcon } from '@/componen
 import { LabelTape } from '@/components/id-chip';
 import { ListSurface } from '@/components/list-surface';
 import { EmptyState, List, Section } from '@/components/page';
+import { PhotoImage } from '@/components/photo-image';
 import { placeIcon, usePlaceName } from '@/components/places/labels';
 import { rowLink, Tile, TypeText } from '@/components/places/rows';
 import { StatusPill } from '@/components/status-pill';
@@ -373,7 +374,11 @@ export function ThingResult({
     <Link to="/t/$id" params={{ id: addressOf(thing) }} onClick={onOpen} className={rowLink}>
       <Tile>
         {thing.thumbUrl ? (
-          <img src={thing.thumbUrl} alt="" className="size-full object-cover" />
+          <PhotoImage
+            src={thing.thumbUrl}
+            rotation={thing.thumbnailRotation}
+            className="size-full"
+          />
         ) : (
           <TypeIcon icon={thing.type?.icon} />
         )}
@@ -412,12 +417,13 @@ export function ThingResult({
           {/* #321: what it is, first on the line that says where. */}
           <TypeText thing={thing} before />
           {thing.containerThumbUrl ? (
-            <img
-              src={thing.containerThumbUrl}
-              alt=""
-              data-container-photo=""
-              className="size-7 shrink-0 rounded-md border border-line object-cover"
-            />
+            <span data-container-photo="">
+              <PhotoImage
+                src={thing.containerThumbUrl}
+                rotation={thing.containerThumbnailRotation}
+                className="size-7 rounded-md border border-line"
+              />
+            </span>
           ) : null}
           <FullPath location={locationName} steps={thing.path} />
         </span>

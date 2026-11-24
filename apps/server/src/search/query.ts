@@ -9,6 +9,7 @@ import {
 } from '@kept/shared';
 import type pg from 'pg';
 import { z } from 'zod';
+import { photoThumbnailJoin } from '../files/photo-thumbnail.js';
 import { PAGE_MAX } from '../http/conventions.js';
 import { type Many, manyOf, matchOf, notOf } from '../http/list-filters.js';
 import { legacyCodeOf } from '../imports/csv.js';
@@ -215,19 +216,15 @@ export type ThingHit = {
   type_builtin_key: string | null;
   thumb_file_id: string | null;
   container_thumb_file_id: string | null;
+  thumbnail_attachment_id: string | null;
+  thumbnail_rotation: number | null;
+  container_thumbnail_rotation: number | null;
   is_container: boolean;
   /** tag-sql.ts tagsSql(). */
   tags: unknown;
   /** The sort key the cursor resumes from. */
   s: number | string;
 };
-
-/** The first photo of `thing` that has a thumbnail (D195). */
-const firstThumb = (thing: string) => `(
-  SELECT a.file_id FROM public.attachments a
-    JOIN public.file_derivatives d ON d.file_id = a.file_id AND d.variant = 'thumb'
-   WHERE a.thing_id = ${thing} AND a.role = 'photo'
-   ORDER BY a.sort, a.created_at, a.id LIMIT 1)`;
 
 /** A breadcrumb from kept.path_of(), each place step marked when it is the Unplaced area, and
  * each step with its primary short ID (null before one is assigned), so a breadcrumb links by
@@ -442,9 +439,9 @@ export async function searchThings(
            ${labelPrintedSql('thing_id', 't.id')} AS label_printed,
            ty.id AS type_id, ty.icon AS type_icon, ty.name AS type_name,
            ${typeKeySql('ty')} AS type_builtin_key,
-           ${firstThumb('t.id')} AS thumb_file_id,
-           CASE WHEN t.container_id IS NULL THEN NULL ELSE ${firstThumb('t.container_id')} END
-             AS container_thumb_file_id,
+           thumbnail.file_id AS thumb_file_id, thumbnail.id AS thumbnail_attachment_id,
+       thumbnail.photo_rotation AS thumbnail_rotation, container_thumbnail.file_id AS container_thumb_file_id,
+       container_thumbnail.photo_rotation AS container_thumbnail_rotation,
            ${isContainerSql('t.id', 't.type_id')} AS is_container,
            ${tagsSql('t.id')} AS tags,
            ${householdStateSql('t')},
@@ -452,6 +449,8 @@ export async function searchThings(
       FROM page m
       JOIN public.things t ON t.id = m.id
       LEFT JOIN public.types ty ON ty.id = t.type_id
+       ${photoThumbnailJoin('t.id', 'thumbnail')}
+       ${photoThumbnailJoin('t.container_id', 'container_thumbnail')}
      ORDER BY ${order}`;
   const { rows } = await client.query<ThingHit>(text, p.values);
   return rows;

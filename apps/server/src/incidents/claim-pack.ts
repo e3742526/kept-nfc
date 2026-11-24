@@ -419,7 +419,7 @@ async function entriesOf(
       `SELECT a.thing_id, d.storage_key, d.bytes::text AS bytes
          FROM public.attachments a
          JOIN public.file_derivatives d ON d.file_id = a.file_id AND d.variant = 'display'
-        WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo'
+        WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo' AND a.photo_archived_at IS NULL
         ORDER BY a.thing_id, a.sort, a.created_at, a.id`,
       [ids],
     );

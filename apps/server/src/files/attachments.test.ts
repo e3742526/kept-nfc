@@ -300,6 +300,102 @@ describe('PATCH and DELETE /api/v1/attachments/:id', () => {
     });
   });
 
+  it('rotates a photo, selects it as thumbnail, and archives and restores it without losing the file', async () => {
+    const item = await seedThing(db, home, 'Photo controls test');
+    const createPhoto = async (sort: number) => {
+      const fileId = await uploaded(bob, home);
+      const res = await attach(bob, {
+        locationId: home,
+        fileId,
+        subject: { thingId: item },
+        role: 'photo',
+        sort,
+      });
+      expect(res.statusCode, res.body).toBe(201);
+      return res.json() as AttachmentView;
+    };
+    const first = await createPhoto(0);
+    const second = await createPhoto(1);
+    const updatePhoto = async (photo: AttachmentView, body: unknown) => {
+      const res = await patch(bob, photo, body, photo.rowVersion);
+      expect(res.statusCode, res.body).toBe(200);
+      return res.json() as AttachmentView;
+    };
+    const detail = async () => {
+      const res = await call(t, `/api/v1/things/${item}`, { as: vic });
+      expect(res.statusCode, res.body).toBe(200);
+      return res.json();
+    };
+    const listing = async (archived = false) => {
+      const query = archived ? '?archivedPhotos=true' : '';
+      const res = await call(t, `/api/v1/things/${item}/attachments${query}`, { as: bob });
+      expect(res.statusCode, res.body).toBe(200);
+      return (res.json() as { items: AttachmentView[] }).items;
+    };
+    expect(await detail()).toMatchObject({ thumbnailAttachmentId: first.id });
+    expect((await patch(vic, second, { photoRotation: 90 }, second.rowVersion)).statusCode).toBe(
+      403,
+    );
+    expect((await patch(bob, second, { photoRotation: 45 }, second.rowVersion)).statusCode).toBe(
+      400,
+    );
+    const rotated = await updatePhoto(second, { photoRotation: 90, selectThumbnail: true });
+    expect(rotated).toMatchObject({ photoRotation: 90, file: { id: second.file?.id } });
+    expect(await detail()).toMatchObject({
+      thumbnailAttachmentId: second.id,
+      thumbnailRotation: 90,
+      photos: [expect.objectContaining({ id: second.id, photoRotation: 90 }), expect.anything()],
+    });
+    const searched = await call(
+      t,
+      `/api/v1/search?q=${encodeURIComponent('Photo controls test')}`,
+      { as: vic },
+    );
+    expect(searched.statusCode, searched.body).toBe(200);
+    expect(searched.json()).toMatchObject({
+      things: {
+        items: [
+          expect.objectContaining({
+            id: item,
+            thumbnailAttachmentId: second.id,
+            thumbnailRotation: 90,
+          }),
+        ],
+      },
+    });
+    expect((await patch(bob, second, { photoArchived: true }, second.rowVersion)).statusCode).toBe(
+      412,
+    );
+    const archived = await updatePhoto(rotated, { photoArchived: true });
+    expect(archived).toMatchObject({ photoArchivedAt: expect.any(String) });
+    expect(await listing()).toMatchObject([{ id: first.id }]);
+    expect(await listing(true)).toMatchObject([
+      { id: second.id, photoRotation: 90, file: { id: second.file?.id } },
+    ]);
+    expect(await detail()).toMatchObject({ thumbnailAttachmentId: first.id, attachmentsCount: 1 });
+    expect(
+      (await patch(bob, archived, { selectThumbnail: true }, archived.rowVersion)).statusCode,
+    ).toBe(400);
+    await updatePhoto(archived, { photoArchived: false });
+    expect(await listing(true)).toEqual([]);
+    expect(await listing()).toMatchObject([{ id: first.id }, { id: second.id, photoRotation: 90 }]);
+    expect(await detail()).toMatchObject({ thumbnailAttachmentId: first.id, attachmentsCount: 2 });
+    const events = await own<{ diff: unknown }>(
+      `SELECT diff FROM public.audit_events
+        WHERE location_id = $1 AND action = 'attachment.update' AND entity_id = $2
+        ORDER BY at, id`,
+      [home, second.id],
+    );
+    expect(events.map(({ diff }) => diff)).toMatchObject([
+      {
+        photo_rotation: { before: 0, after: 90 },
+        thumbnail_selected_at: { after: expect.any(String) },
+      },
+      { photo_archived_at: { after: expect.any(String) } },
+      { photo_archived_at: { after: null } },
+    ]);
+  });
+
   it('takes a name when the file is attached (#183)', async () => {
     const res = await attach(bob, {
       locationId: home,

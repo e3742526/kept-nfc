@@ -10,6 +10,7 @@ import {
 import type pg from 'pg';
 import { z } from 'zod';
 import type { Scope, Tx } from '../db/scope.js';
+import { photoThumbnailJoin } from '../files/photo-thumbnail.js';
 import { ATTACHMENT_SELECT, type AttachmentRow, attachmentViews } from '../files/views.js';
 import { decodeCursor, encodeCursor } from '../http/conventions.js';
 import { invalid, notFound } from '../http/errors.js';
@@ -142,6 +143,9 @@ const AttachmentViewSchema = z.object({
   /** What people named it (#183); null shows its role. */
   name: z.string().nullable().optional(),
   createdBy: z.object({ displayName: z.string() }),
+  createdAt: z.iso.datetime().optional(),
+  locationPhotoTakenAt: z.iso.datetime().optional(),
+  photoRotation: z.number().optional(),
   rowVersion: z.number().int(),
 });
 type AttachmentView = z.infer<typeof AttachmentViewSchema>;
@@ -193,6 +197,7 @@ export const ThingRowSchema = z.object({
   path: z.array(PathStepSchema),
   containerThumbUrl: z.string().nullable(),
   thumbUrl: z.string().nullable(),
+  thumbnailRotation: z.number().optional(),
   lastSeenAt: z.string().nullable(),
   isContainer: z.boolean(),
   tags: z.array(ThingTagSchema),
@@ -552,7 +557,7 @@ async function attachmentsOf(
   placeId: string,
 ): Promise<AttachmentView[]> {
   const { rows } = await client.query<AttachmentRow>(
-    `${ATTACHMENT_SELECT} WHERE a.place_id = $1 ORDER BY a.sort, a.created_at, a.id`,
+    `${ATTACHMENT_SELECT} WHERE a.place_id = $1 AND a.photo_archived_at IS NULL ORDER BY a.sort, a.created_at, a.id`,
     [placeId],
   );
   return (await attachmentViews(client, files, rows)).map((a) => ({
@@ -655,6 +660,7 @@ type RawThing = {
   type_name: string | null;
   type_builtin_key: string | null;
   thumb_file_id: string | null;
+  thumbnail_rotation: number | null;
   is_container: boolean;
   /** things/tag-sql.ts tagsSql(). */
   tags: unknown;
@@ -766,16 +772,14 @@ export async function placeContents(
             ${labelPrintedSql('thing_id', 't.id')} AS label_printed,
             ty.id AS type_id, ty.icon AS type_icon, ty.name AS type_name,
             ${typeKeySql('ty')} AS type_builtin_key,
-            (SELECT a.file_id FROM public.attachments a
-               JOIN public.file_derivatives d ON d.file_id = a.file_id AND d.variant = 'thumb'
-              WHERE a.thing_id = t.id AND a.role = 'photo'
-              ORDER BY a.sort, a.created_at, a.id LIMIT 1) AS thumb_file_id,
+            thumbnail.file_id AS thumb_file_id, thumbnail.photo_rotation AS thumbnail_rotation,
             ${isContainerSql('t.id', 't.type_id')} AS is_container,
             ${tagsSql('t.id')} AS tags,
             ${householdStateSql('t')},
             ${g} AS g, ${s} AS s
        FROM public.things t
        LEFT JOIN public.types ty ON ty.id = t.type_id
+       ${photoThumbnailJoin('t.id', 'thumbnail')}
       WHERE ${where.join('\n AND ')} ${after}
       ORDER BY ${order}
       LIMIT ${p.add(query.limit + 1)}`,
@@ -812,6 +816,7 @@ export async function placeContents(
       path,
       containerThumbUrl: null,
       thumbUrl: await thumbUrlOf(files, keys, r.thumb_file_id),
+      ...(r.thumbnail_rotation ? { thumbnailRotation: r.thumbnail_rotation } : {}),
       lastSeenAt: r.last_seen_at ? new Date(r.last_seen_at).toISOString() : null,
       isContainer: r.is_container,
       tags: tagsOfRow(r.tags),

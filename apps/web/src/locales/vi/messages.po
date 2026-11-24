@@ -5083,6 +5083,10 @@ msgstr "Lưu trữ {0}"
 msgid "Archive or delete this home."
 msgstr "Lưu trữ hoặc xóa nhà này."
 
+#: src/native/record.tsx
+msgid "Archive photo"
+msgstr "Lưu trữ ảnh"
+
 #: src/components/filters/registry.tsx
 #: src/components/history/labels.ts
 #: src/components/import/choices-step.tsx
@@ -5117,6 +5121,10 @@ msgstr "Các mục đã lưu trữ"
 #: src/components/import/choices-step.tsx
 msgid "Archived items aren't imported, sold ones included."
 msgstr "Các mục đã lưu trữ không được nhập, kể cả các mục đã bán."
+
+#: src/native/record.tsx
+msgid "Archived photos"
+msgstr "Ảnh đã lưu trữ"
 
 #: src/map/labels.ts
 msgid "Area"
@@ -8216,6 +8224,10 @@ msgstr "Không thể mở bản gốc đang giữ này."
 msgid "Could not open this pending original."
 msgstr "Không thể mở tệp gốc đang chờ đồng bộ này."
 
+#: src/native/capture-ai.tsx
+msgid "Could not save the photo AI default. Try again."
+msgstr "Không thể lưu AI mặc định cho ảnh. Hãy thử lại."
+
 #: src/native/main.tsx
 msgid "Could not search SheepKeep. Try again."
 msgstr "Không thể tìm kiếm trong SheepKeep. Hãy thử lại."
@@ -8798,6 +8810,10 @@ msgstr "Các lần kiểm kê đã lưu trước SheepKeep 1.14 không ghi lại
 msgid "Cover ended"
 msgstr "Đã hết bảo hành"
 
+#: src/native/record.tsx
+msgid "Cover photo"
+msgstr "Ảnh bìa"
+
 #: src/components/history/labels.ts
 msgid "Covered"
 msgstr "Được bảo hành"
@@ -9000,6 +9016,10 @@ msgstr "Tiền tệ"
 #: src/components/money/value-section.tsx
 msgid "current"
 msgstr "hiện tại"
+
+#: src/native/record.tsx
+msgid "Current thumbnail"
+msgstr "Ảnh thu nhỏ hiện tại"
 
 #: src/components/device/kept-extras.tsx
 msgid "Current value"
@@ -12721,6 +12741,10 @@ msgstr "Ẩn"
 msgid "Hide <0>{personal}</0>"
 msgstr "Ẩn <0>{personal}</0>"
 
+#: src/native/record.tsx
+msgid "Hide archived photos"
+msgstr "Ẩn ảnh đã lưu trữ"
+
 #: src/components/home/checklist.tsx
 msgid "Hide Get started for good"
 msgstr "Ẩn Bắt đầu vĩnh viễn"
@@ -15414,6 +15438,10 @@ msgstr "Đang tải"
 msgid "Loading {label}"
 msgstr "Đang tải {label}"
 
+#: src/native/record.tsx
+msgid "Loading archived photos…"
+msgstr "Đang tải ảnh đã lưu trữ…"
+
 #: src/routes/_app/admin.backups.tsx
 msgid "Loading backups"
 msgstr "Đang tải bản sao lưu"
@@ -17751,6 +17779,10 @@ msgstr "Không có AI nào chạy trong bản demo này"
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
 msgstr "không có lượng nhiên liệu"
+
+#: src/native/record.tsx
+msgid "No archived photos."
+msgstr "Không có ảnh đã lưu trữ."
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
@@ -20902,6 +20934,14 @@ msgstr "Đã thêm ảnh vào hồ sơ. Kho đồ không thay đổi."
 msgid "Photo added. It joins the odometer proof strip."
 msgstr "Đã thêm ảnh. Ảnh được thêm vào dải ảnh bằng chứng của công-tơ-mét."
 
+#: src/native/capture-ai.tsx
+msgid "Photo AI default saved."
+msgstr "Đã lưu AI mặc định cho ảnh."
+
+#: src/native/record.tsx
+msgid "Photo archived."
+msgstr "Đã lưu trữ ảnh."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo indexing is incomplete."
 msgstr "Ảnh chưa được lập chỉ mục đầy đủ."
@@ -20915,9 +20955,17 @@ msgstr "Ảnh chụp đồng hồ"
 msgid "Photo of the odometer"
 msgstr "Ảnh công-tơ-mét"
 
+#: src/native/record.tsx
+msgid "Photo options"
+msgstr "Tùy chọn ảnh"
+
 #: src/components/services/log-service-sheet.tsx
 msgid "Photo or file"
 msgstr "Ảnh hoặc tệp"
+
+#: src/native/record.tsx
+msgid "Photo restored."
+msgstr "Đã khôi phục ảnh."
 
 #: src/components/search/visual-search.tsx
 msgid "Photo search is unavailable."
@@ -23238,6 +23286,10 @@ msgstr "Khôi phục {name}"
 msgid "Restore drill"
 msgstr "Diễn tập khôi phục"
 
+#: src/native/record.tsx
+msgid "Restore photo"
+msgstr "Khôi phục ảnh"
+
 #: src/components/history/labels.ts
 #: src/routes/_app/trash.tsx
 msgid "Restored {name}"
@@ -23568,6 +23620,10 @@ msgstr "Các phòng của {fromName}"
 #: src/graph/floors-3d.tsx
 msgid "Rooms on no floor"
 msgstr "Phòng không thuộc tầng nào"
+
+#: src/native/record.tsx
+msgid "Rotate clockwise"
+msgstr "Xoay theo chiều kim đồng hồ"
 
 #: src/map/labels.ts
 msgid "Router"
@@ -30781,6 +30837,10 @@ msgstr "Dùng nhãn khác"
 #: src/native/record.tsx
 msgid "Use as cover"
 msgstr "Dùng làm ảnh bìa"
+
+#: src/native/record.tsx
+msgid "Use as thumbnail"
+msgstr "Dùng làm ảnh thu nhỏ"
 
 #: src/components/ai/prices.tsx
 msgid "Use Groq's listed price"

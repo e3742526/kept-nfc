@@ -61,6 +61,7 @@ export function CaptureForm({
   syncing = false,
   online = true,
   preferredProvider = 'server',
+  photoPreferenceLoaded = true,
   leaveRef,
   onClose,
   onSave,
@@ -80,6 +81,7 @@ export function CaptureForm({
   syncing?: boolean;
   online?: boolean;
   preferredProvider?: CaptureAIProvider;
+  photoPreferenceLoaded?: boolean;
   leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
@@ -108,7 +110,8 @@ export function CaptureForm({
   const [label, setLabel] = useState<ItemLabel>();
   // Bumped after each save, so the next item starts with a fresh label picker.
   const [labelSession, setLabelSession] = useState(0);
-  const [provider, setProvider] = useState<CaptureAIProvider>(preferredProvider);
+  const [providerOverride, setProvider] = useState<CaptureAIProvider>();
+  const provider = providerOverride ?? preferredProvider;
   const photos = evidenceOnly ? [] : files.filter((item) => item.role === 'photo');
   const firstPhoto = photos[0];
   const captureLocation = cache?.locations.find(({ id }) => id === destination?.locationId);
@@ -578,7 +581,7 @@ export function CaptureForm({
                 : undefined
             }
             online={online}
-            disabled={busy}
+            disabled={busy || !photoPreferenceLoaded}
           />
         )}
         {firstPhoto && onReview && (

@@ -99,7 +99,7 @@ async function targetOf(
             (SELECT e.mode FROM public.extractions e WHERE e.attachment_id = a.id
               ORDER BY e.attempt DESC LIMIT 1) AS last_mode
        FROM public.attachments a
-      WHERE a.thing_id = $1 AND a.role IN ('photo', 'proof')
+      WHERE a.thing_id = $1 AND a.role IN ('photo', 'proof') AND a.photo_archived_at IS NULL
       ORDER BY (SELECT max(e.created_at) FROM public.extractions e WHERE e.attachment_id = a.id)
                DESC NULLS LAST, a.sort, a.created_at`,
     [thingId],

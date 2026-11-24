@@ -151,6 +151,9 @@ export const attachments = pgTable(
     role: attachmentRole.col().notNull(),
     /** When a dedicated location photo was logged. Ordinary attachments leave this null. */
     locationPhotoTakenAt: tstz('location_photo_taken_at'),
+    photoRotation: integer('photo_rotation').notNull().default(0),
+    photoArchivedAt: tstz('photo_archived_at'),
+    thumbnailSelectedAt: tstz('thumbnail_selected_at'),
     /** 1.14.4 (#183): what the file is, as people name it ("Insurance 2026"); null shows its role. */
     name: text('name'),
     sort: integer('sort').notNull().default(0),
@@ -169,6 +172,16 @@ export const attachments = pgTable(
       'attachments_location_photo_chk',
       sql`location_photo_taken_at IS NULL OR
           (role = 'document' AND file_id IS NOT NULL AND num_nonnulls(thing_id, place_id) = 1)`,
+    ),
+    check(
+      'attachments_photo_management_chk',
+      sql`photo_rotation IN (0, 90, 180, 270) AND
+          (photo_rotation = 0 OR
+            (file_id IS NOT NULL AND num_nonnulls(thing_id, place_id) = 1
+              AND (role = 'photo' OR location_photo_taken_at IS NOT NULL))) AND
+          ((photo_archived_at IS NULL AND thumbnail_selected_at IS NULL) OR
+            (role = 'photo' AND file_id IS NOT NULL AND num_nonnulls(thing_id, place_id) = 1
+              AND (photo_archived_at IS NULL OR thumbnail_selected_at IS NULL)))`,
     ),
     check('attachments_file_or_url_chk', sql`num_nonnulls(file_id, url) = 1`),
     check(

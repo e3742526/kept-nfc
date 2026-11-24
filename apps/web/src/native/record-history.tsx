@@ -286,7 +286,7 @@ export function RecordHistory({
       {!page ? (
         <Button
           variant="secondary"
-          className="justify-self-start"
+          className="justify-self-center"
           isPending={busy}
           onPress={() => void load()}
         >

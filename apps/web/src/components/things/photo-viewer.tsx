@@ -17,6 +17,7 @@ import {
 } from 'react-aria-components';
 import type { AttachmentView } from '@/api/inventory/types';
 import { XIcon } from '@/components/icons';
+import { PhotoImage } from '@/components/photo-image';
 import { CloseOnBack } from '@/components/ui/close-on-back';
 import { useFormat } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -61,7 +62,8 @@ export default function PhotoViewer({
     el.scrollTop = (el.scrollHeight - el.clientHeight) / 2;
     el.focus({ preventScroll: true });
   }, [zoomed, rtl]);
-  const src = photoSrc(photos[index] as AttachmentView);
+  const photo = photos[index] as AttachmentView;
+  const src = photoSrc(photo);
   const label = t`Photo ${fmt.num(index + 1)} of ${fmt.num(photos.length)}`;
   const control =
     'grid size-11 cursor-pointer place-items-center rounded-full bg-black/45 text-white outline-none focus-visible:outline-2 focus-visible:outline-info data-focus-visible:outline-2 data-focus-visible:outline-info';
@@ -97,17 +99,23 @@ export default function PhotoViewer({
             )}
           >
             {src ? (
-              <img
-                src={src}
-                alt={label}
-                // Fitted, the photo takes the stage's own box: as a grid item its height grew with
-                // a tall photo's width, and only its top showed (#183).
-                className={
-                  zoomed
-                    ? 'm-auto max-w-none shrink-0'
-                    : 'absolute inset-0 size-full object-contain'
-                }
-              />
+              zoomed ? (
+                <img
+                  src={src}
+                  alt={label}
+                  className="m-auto max-w-none shrink-0"
+                  style={photo.photoRotation ? { rotate: `${photo.photoRotation}deg` } : undefined}
+                />
+              ) : (
+                <PhotoImage
+                  src={src}
+                  alt={label}
+                  rotation={photo.photoRotation}
+                  className="absolute inset-0 size-full"
+                  contain
+                  loading="eager"
+                />
+              )
             ) : (
               <div className="rounded-xl bg-surface p-4">
                 <Unavailable />

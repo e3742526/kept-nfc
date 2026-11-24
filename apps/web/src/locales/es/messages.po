@@ -5083,6 +5083,10 @@ msgstr "Archivar {0}"
 msgid "Archive or delete this home."
 msgstr "Archiva o elimina este hogar."
 
+#: src/native/record.tsx
+msgid "Archive photo"
+msgstr "Archivar foto"
+
 #: src/components/filters/registry.tsx
 #: src/components/history/labels.ts
 #: src/components/import/choices-step.tsx
@@ -5117,6 +5121,10 @@ msgstr "Artículos archivados"
 #: src/components/import/choices-step.tsx
 msgid "Archived items aren't imported, sold ones included."
 msgstr "Los objetos archivados no se importan, pero los vendidos sí se incluyen."
+
+#: src/native/record.tsx
+msgid "Archived photos"
+msgstr "Fotos archivadas"
 
 #: src/map/labels.ts
 msgid "Area"
@@ -8216,6 +8224,10 @@ msgstr "No se pudo abrir este original retenido."
 msgid "Could not open this pending original."
 msgstr "No se pudo abrir este archivo original pendiente."
 
+#: src/native/capture-ai.tsx
+msgid "Could not save the photo AI default. Try again."
+msgstr "No se pudo guardar la IA predeterminada para fotos. Inténtalo de nuevo."
+
 #: src/native/main.tsx
 msgid "Could not search SheepKeep. Try again."
 msgstr "No se pudo buscar en SheepKeep. Inténtalo de nuevo."
@@ -8798,6 +8810,10 @@ msgstr "Los conteos guardados antes de SheepKeep 1.14 no registraron lo que falt
 msgid "Cover ended"
 msgstr "Cobertura terminada"
 
+#: src/native/record.tsx
+msgid "Cover photo"
+msgstr "Foto de portada"
+
 #: src/components/history/labels.ts
 msgid "Covered"
 msgstr "Cubierto"
@@ -9000,6 +9016,10 @@ msgstr "Moneda"
 #: src/components/money/value-section.tsx
 msgid "current"
 msgstr "actual"
+
+#: src/native/record.tsx
+msgid "Current thumbnail"
+msgstr "Miniatura actual"
 
 #: src/components/device/kept-extras.tsx
 msgid "Current value"
@@ -12721,6 +12741,10 @@ msgstr "Oculta"
 msgid "Hide <0>{personal}</0>"
 msgstr "Ocultar <0>{personal}</0>"
 
+#: src/native/record.tsx
+msgid "Hide archived photos"
+msgstr "Ocultar fotos archivadas"
+
 #: src/components/home/checklist.tsx
 msgid "Hide Get started for good"
 msgstr "Ocultar Comenzar para siempre"
@@ -15414,6 +15438,10 @@ msgstr "Cargando"
 msgid "Loading {label}"
 msgstr "Cargando {label}"
 
+#: src/native/record.tsx
+msgid "Loading archived photos…"
+msgstr "Cargando fotos archivadas…"
+
 #: src/routes/_app/admin.backups.tsx
 msgid "Loading backups"
 msgstr "Cargando copias de seguridad"
@@ -17751,6 +17779,10 @@ msgstr "No se ejecuta IA en esta demostración."
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
 msgstr "sin cantidad de combustible"
+
+#: src/native/record.tsx
+msgid "No archived photos."
+msgstr "No hay fotos archivadas."
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
@@ -20902,6 +20934,14 @@ msgstr "Se añadió una foto al registro. El inventario no cambió."
 msgid "Photo added. It joins the odometer proof strip."
 msgstr "Foto añadida. Se une a la tira de prueba del odómetro."
 
+#: src/native/capture-ai.tsx
+msgid "Photo AI default saved."
+msgstr "Se guardó la IA predeterminada para fotos."
+
+#: src/native/record.tsx
+msgid "Photo archived."
+msgstr "Foto archivada."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo indexing is incomplete."
 msgstr "La indexación de fotos está incompleta."
@@ -20915,9 +20955,17 @@ msgstr "Foto del medidor"
 msgid "Photo of the odometer"
 msgstr "Foto del odómetro"
 
+#: src/native/record.tsx
+msgid "Photo options"
+msgstr "Opciones de la foto"
+
 #: src/components/services/log-service-sheet.tsx
 msgid "Photo or file"
 msgstr "Foto o archivo"
+
+#: src/native/record.tsx
+msgid "Photo restored."
+msgstr "Foto restaurada."
 
 #: src/components/search/visual-search.tsx
 msgid "Photo search is unavailable."
@@ -23238,6 +23286,10 @@ msgstr "Restaurar {name}"
 msgid "Restore drill"
 msgstr "Ejercicio de restauración"
 
+#: src/native/record.tsx
+msgid "Restore photo"
+msgstr "Restaurar foto"
+
 #: src/components/history/labels.ts
 #: src/routes/_app/trash.tsx
 msgid "Restored {name}"
@@ -23568,6 +23620,10 @@ msgstr "Habitaciones de {fromName}"
 #: src/graph/floors-3d.tsx
 msgid "Rooms on no floor"
 msgstr "Habitaciones sin piso"
+
+#: src/native/record.tsx
+msgid "Rotate clockwise"
+msgstr "Girar en sentido horario"
 
 #: src/map/labels.ts
 msgid "Router"
@@ -30781,6 +30837,10 @@ msgstr "Usa otra etiqueta"
 #: src/native/record.tsx
 msgid "Use as cover"
 msgstr "Usar como portada"
+
+#: src/native/record.tsx
+msgid "Use as thumbnail"
+msgstr "Usar como miniatura"
 
 #: src/components/ai/prices.tsx
 msgid "Use Groq's listed price"

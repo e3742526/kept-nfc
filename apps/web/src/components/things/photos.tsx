@@ -9,6 +9,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { lazy, Suspense, type TouchEvent, useRef, useState } from 'react';
 import type { AttachmentView } from '@/api/inventory/types';
 import { ChevronEndIcon, ChevronStartIcon } from '@/components/icons';
+import { PhotoImage } from '@/components/photo-image';
 import { TypeIcon } from '@/components/type-icon';
 import { useFormat } from '@/lib/format';
 import { usePrefs } from '@/lib/prefs';
@@ -174,7 +175,7 @@ function Slide({
       onClick={onOpen}
       className="size-full cursor-zoom-in outline-none focus-visible:outline-2 focus-visible:outline-info"
     >
-      <img src={src} alt={label} className="size-full object-cover" />
+      <PhotoImage src={src} alt={label} rotation={photo.photoRotation} className="size-full" />
     </button>
   );
 }

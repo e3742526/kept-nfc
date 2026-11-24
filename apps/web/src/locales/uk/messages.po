@@ -5083,6 +5083,10 @@ msgstr "Архівувати {0}"
 msgid "Archive or delete this home."
 msgstr "Архівуйте або видаліть цей дім."
 
+#: src/native/record.tsx
+msgid "Archive photo"
+msgstr "Архівувати фото"
+
 #: src/components/filters/registry.tsx
 #: src/components/history/labels.ts
 #: src/components/import/choices-step.tsx
@@ -5117,6 +5121,10 @@ msgstr "Архівовані елементи"
 #: src/components/import/choices-step.tsx
 msgid "Archived items aren't imported, sold ones included."
 msgstr "Архівовані позиції не імпортуються, зокрема продані."
+
+#: src/native/record.tsx
+msgid "Archived photos"
+msgstr "Архівовані фото"
 
 #: src/map/labels.ts
 msgid "Area"
@@ -8216,6 +8224,10 @@ msgstr "Не вдалося відкрити цей утримуваний ор�
 msgid "Could not open this pending original."
 msgstr "Не вдалося відкрити цей оригінал, що очікує синхронізації."
 
+#: src/native/capture-ai.tsx
+msgid "Could not save the photo AI default. Try again."
+msgstr "Не вдалося зберегти типовий ШІ для фото. Спробуйте ще раз."
+
 #: src/native/main.tsx
 msgid "Could not search SheepKeep. Try again."
 msgstr "Не вдалося виконати пошук у SheepKeep. Спробуйте ще раз."
@@ -8798,6 +8810,10 @@ msgstr "Підрахунки, збережені до SheepKeep 1.14, не фі�
 msgid "Cover ended"
 msgstr "Покриття закінчилося"
 
+#: src/native/record.tsx
+msgid "Cover photo"
+msgstr "Фото обкладинки"
+
 #: src/components/history/labels.ts
 msgid "Covered"
 msgstr "Покрито"
@@ -9000,6 +9016,10 @@ msgstr "Валюта"
 #: src/components/money/value-section.tsx
 msgid "current"
 msgstr "поточний"
+
+#: src/native/record.tsx
+msgid "Current thumbnail"
+msgstr "Поточна мініатюра"
 
 #: src/components/device/kept-extras.tsx
 msgid "Current value"
@@ -12721,6 +12741,10 @@ msgstr "Приховати"
 msgid "Hide <0>{personal}</0>"
 msgstr "Приховати <0>{personal}</0>"
 
+#: src/native/record.tsx
+msgid "Hide archived photos"
+msgstr "Приховати архівовані фото"
+
 #: src/components/home/checklist.tsx
 msgid "Hide Get started for good"
 msgstr "Назавжди приховати «Початок роботи»"
@@ -15414,6 +15438,10 @@ msgstr "Завантаження"
 msgid "Loading {label}"
 msgstr "Завантаження {label}"
 
+#: src/native/record.tsx
+msgid "Loading archived photos…"
+msgstr "Завантаження архівованих фото…"
+
 #: src/routes/_app/admin.backups.tsx
 msgid "Loading backups"
 msgstr "Завантажую резервні копії"
@@ -17751,6 +17779,10 @@ msgstr "У цій демонстрації ШІ не працює"
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
 msgstr "немає кількості палива"
+
+#: src/native/record.tsx
+msgid "No archived photos."
+msgstr "Архівованих фото немає."
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
@@ -20902,6 +20934,14 @@ msgstr "Фото додано до запису. Інвентар не змін�
 msgid "Photo added. It joins the odometer proof strip."
 msgstr "Фото додано. Воно долучається до стрічки доказів одометра."
 
+#: src/native/capture-ai.tsx
+msgid "Photo AI default saved."
+msgstr "Типовий ШІ для фото збережено."
+
+#: src/native/record.tsx
+msgid "Photo archived."
+msgstr "Фото архівовано."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo indexing is incomplete."
 msgstr "Індексування фото ще не завершено."
@@ -20915,9 +20955,17 @@ msgstr "Фото лічильника"
 msgid "Photo of the odometer"
 msgstr "Фото одометра"
 
+#: src/native/record.tsx
+msgid "Photo options"
+msgstr "Параметри фото"
+
 #: src/components/services/log-service-sheet.tsx
 msgid "Photo or file"
 msgstr "Фото або файл"
+
+#: src/native/record.tsx
+msgid "Photo restored."
+msgstr "Фото відновлено."
 
 #: src/components/search/visual-search.tsx
 msgid "Photo search is unavailable."
@@ -23238,6 +23286,10 @@ msgstr "Відновити {name}"
 msgid "Restore drill"
 msgstr "Тренування відновлення"
 
+#: src/native/record.tsx
+msgid "Restore photo"
+msgstr "Відновити фото"
+
 #: src/components/history/labels.ts
 #: src/routes/_app/trash.tsx
 msgid "Restored {name}"
@@ -23568,6 +23620,10 @@ msgstr "Кімнати {fromName}"
 #: src/graph/floors-3d.tsx
 msgid "Rooms on no floor"
 msgstr "Кімнати без поверху"
+
+#: src/native/record.tsx
+msgid "Rotate clockwise"
+msgstr "Повернути за годинниковою стрілкою"
 
 #: src/map/labels.ts
 msgid "Router"
@@ -30781,6 +30837,10 @@ msgstr "Скористатися іншою етикеткою"
 #: src/native/record.tsx
 msgid "Use as cover"
 msgstr "Зробити обкладинкою"
+
+#: src/native/record.tsx
+msgid "Use as thumbnail"
+msgstr "Використати як мініатюру"
 
 #: src/components/ai/prices.tsx
 msgid "Use Groq's listed price"

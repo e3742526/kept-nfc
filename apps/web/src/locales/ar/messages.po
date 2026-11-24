@@ -5083,6 +5083,10 @@ msgstr "أرشفة «{0}»"
 msgid "Archive or delete this home."
 msgstr "أرشِف هذا المنزل أو احذفه."
 
+#: src/native/record.tsx
+msgid "Archive photo"
+msgstr "أرشفة الصورة"
+
 #: src/components/filters/registry.tsx
 #: src/components/history/labels.ts
 #: src/components/import/choices-step.tsx
@@ -5117,6 +5121,10 @@ msgstr "العناصر المؤرشفة"
 #: src/components/import/choices-step.tsx
 msgid "Archived items aren't imported, sold ones included."
 msgstr "لا تُستورد العناصر المؤرشفة، ومنها المَبيعة."
+
+#: src/native/record.tsx
+msgid "Archived photos"
+msgstr "الصور المؤرشفة"
 
 #: src/map/labels.ts
 msgid "Area"
@@ -8216,6 +8224,10 @@ msgstr "تعذر فتح هذا الأصل المحتجَز."
 msgid "Could not open this pending original."
 msgstr "تعذّر فتح هذا الملف الأصلي من الالتقاط المعلّق."
 
+#: src/native/capture-ai.tsx
+msgid "Could not save the photo AI default. Try again."
+msgstr "تعذّر حفظ إعداد الذكاء الاصطناعي الافتراضي للصور. حاول مرة أخرى."
+
 #: src/native/main.tsx
 msgid "Could not search SheepKeep. Try again."
 msgstr "تعذّر البحث في SheepKeep. أعد المحاولة."
@@ -8798,6 +8810,10 @@ msgstr "عمليات العدّ المحفوظة قبل SheepKeep ١٫١٤ لم 
 msgid "Cover ended"
 msgstr "انتهى الضمان"
 
+#: src/native/record.tsx
+msgid "Cover photo"
+msgstr "صورة الغلاف"
+
 #: src/components/history/labels.ts
 msgid "Covered"
 msgstr "المبلغ المغطّى"
@@ -9000,6 +9016,10 @@ msgstr "العملة"
 #: src/components/money/value-section.tsx
 msgid "current"
 msgstr "الحالية"
+
+#: src/native/record.tsx
+msgid "Current thumbnail"
+msgstr "الصورة المصغّرة الحالية"
 
 #: src/components/device/kept-extras.tsx
 msgid "Current value"
@@ -12721,6 +12741,10 @@ msgstr "أخفِ"
 msgid "Hide <0>{personal}</0>"
 msgstr "إخفاء <0>{personal}</0>"
 
+#: src/native/record.tsx
+msgid "Hide archived photos"
+msgstr "إخفاء الصور المؤرشفة"
+
 #: src/components/home/checklist.tsx
 msgid "Hide Get started for good"
 msgstr "إخفاء خطوات البدء نهائيًا"
@@ -15414,6 +15438,10 @@ msgstr "جارٍ التحميل"
 msgid "Loading {label}"
 msgstr "جارٍ تحميل {label}"
 
+#: src/native/record.tsx
+msgid "Loading archived photos…"
+msgstr "جارٍ تحميل الصور المؤرشفة…"
+
 #: src/routes/_app/admin.backups.tsx
 msgid "Loading backups"
 msgstr "جارٍ تحميل النسخ الاحتياطي"
@@ -17751,6 +17779,10 @@ msgstr "لا يعمل الذكاء الاصطناعي في هذا العرض ا�
 #: src/components/vehicles/lubelogger-import.tsx
 msgid "no amount of fuel"
 msgstr "لا كمية وقود"
+
+#: src/native/record.tsx
+msgid "No archived photos."
+msgstr "لا توجد صور مؤرشفة."
 
 #: src/components/ops/status-tiles.tsx
 #: src/routes/_app/admin.backups.tsx
@@ -20902,6 +20934,14 @@ msgstr "أُضيفت صورة إلى السجل. لم يتغير الجرد."
 msgid "Photo added. It joins the odometer proof strip."
 msgstr "أُضيفت الصورة. تنضم إلى شريط إثبات العدّاد."
 
+#: src/native/capture-ai.tsx
+msgid "Photo AI default saved."
+msgstr "تم حفظ إعداد الذكاء الاصطناعي الافتراضي للصور."
+
+#: src/native/record.tsx
+msgid "Photo archived."
+msgstr "تمت أرشفة الصورة."
+
 #: src/components/search/visual-search.tsx
 msgid "Photo indexing is incomplete."
 msgstr "لم تكتمل فهرسة الصور."
@@ -20915,9 +20955,17 @@ msgstr "صورة العدّاد"
 msgid "Photo of the odometer"
 msgstr "صورة العدّاد"
 
+#: src/native/record.tsx
+msgid "Photo options"
+msgstr "خيارات الصورة"
+
 #: src/components/services/log-service-sheet.tsx
 msgid "Photo or file"
 msgstr "صورة أو ملف"
+
+#: src/native/record.tsx
+msgid "Photo restored."
+msgstr "تمت استعادة الصورة."
 
 #: src/components/search/visual-search.tsx
 msgid "Photo search is unavailable."
@@ -23238,6 +23286,10 @@ msgstr "استعادة «{name}»"
 msgid "Restore drill"
 msgstr "تمرين الاستعادة"
 
+#: src/native/record.tsx
+msgid "Restore photo"
+msgstr "استعادة الصورة"
+
 #: src/components/history/labels.ts
 #: src/routes/_app/trash.tsx
 msgid "Restored {name}"
@@ -23568,6 +23620,10 @@ msgstr "غرف {fromName}"
 #: src/graph/floors-3d.tsx
 msgid "Rooms on no floor"
 msgstr "غرف بلا طابق"
+
+#: src/native/record.tsx
+msgid "Rotate clockwise"
+msgstr "تدوير باتجاه عقارب الساعة"
 
 #: src/map/labels.ts
 msgid "Router"
@@ -30781,6 +30837,10 @@ msgstr "استخدم ملصقًا آخر"
 #: src/native/record.tsx
 msgid "Use as cover"
 msgstr "استخدام كصورة غلاف"
+
+#: src/native/record.tsx
+msgid "Use as thumbnail"
+msgstr "استخدام كصورة مصغّرة"
 
 #: src/components/ai/prices.tsx
 msgid "Use Groq's listed price"

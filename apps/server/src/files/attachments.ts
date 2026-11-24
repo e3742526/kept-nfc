@@ -232,6 +232,24 @@ export async function createAttachment(
   return view as AttachmentView;
 }
 
+type AttachmentPatch = {
+  role?: string | undefined;
+  sort?: number | undefined;
+  name?: string | null | undefined;
+  photoRotation?: number | undefined;
+  photoArchived?: boolean | undefined;
+  selectThumbnail?: true | undefined;
+};
+
+const photoAuditImage = (row: AttachmentRow) => ({
+  role: row.role,
+  sort: row.sort,
+  name: row.name,
+  photoRotation: row.photo_rotation,
+  photoArchivedAt: row.photo_archived_at?.toISOString() ?? null,
+  thumbnailSelectedAt: row.thumbnail_selected_at?.toISOString() ?? null,
+});
+
 export async function updateAttachment(
   tx: Tx,
   client: pg.ClientBase,
@@ -240,12 +258,19 @@ export async function updateAttachment(
   userId: string,
   id: string,
   expected: number,
-  patch: { role?: string | undefined; sort?: number | undefined; name?: string | null | undefined },
+  patch: AttachmentPatch,
   requestId: string,
 ): Promise<AttachmentView> {
   const seen = await readAttachment(client, id);
   const me = await requireMembership(client, seen.location_id);
   requireOwnOrAny(me.role, seen, userId);
+  if (seen.thing_id && (patch.selectThumbnail || patch.photoArchived !== undefined)) {
+    // Different photo rows can change the same cover. Serialize those edits on the item
+    // before locking an attachment, in the same order as an inventory move.
+    await client.query('SELECT 1 FROM public.things WHERE id = $1 FOR NO KEY UPDATE', [
+      seen.thing_id,
+    ]);
+  }
   // Then locked (a FOR UPDATE a viewer's policies would answer as a 404, hence the read above)
   // while it is checked and changed: two PATCHes from one version can't both pass the If-Match
   // check and the second overwrite the first (security review #13).
@@ -267,21 +292,59 @@ export async function updateAttachment(
       by ? { displayName: by } : null,
     );
   }
+  if (
+    patch.photoRotation !== undefined ||
+    patch.photoArchived !== undefined ||
+    patch.selectThumbnail
+  ) {
+    const ordinary = before.role === 'photo' && (patch.role ?? before.role) === 'photo';
+    if ((!ordinary && !before.location_photo_taken_at) || (!before.thing_id && !before.place_id)) {
+      throw invalid('Only inventory photos support photo edits.');
+    }
+    if (!ordinary && patch.photoArchived !== undefined) {
+      throw invalid('Only ordinary inventory photos can be archived.');
+    }
+    const archived = patch.photoArchived ?? Boolean(before.photo_archived_at);
+    if (patch.selectThumbnail && (!ordinary || !before.thing_id || archived)) {
+      throw invalid('Only active item photos can be selected as thumbnails.');
+    }
+    const { rowCount } = await client.query(
+      "SELECT 1 FROM public.files WHERE id = $1 AND mime LIKE 'image/%'",
+      [before.file_id],
+    );
+    if (!rowCount) throw invalid('Only uploaded images support photo edits.');
+  }
+  const clearPhoto = patch.role !== undefined && before.role === 'photo' && patch.role !== 'photo';
   // A name is set or cleared (null) only when the PATCH names it (#183).
-  await client.query(
-    `UPDATE public.attachments SET role = coalesce($2, role), sort = coalesce($3, sort),
-            name = CASE WHEN $4 THEN $5 ELSE name END
-      WHERE id = $1`,
-    [id, patch.role ?? null, patch.sort ?? null, patch.name !== undefined, patch.name ?? null],
-  );
+  const values: unknown[] = [id];
+  const bind = (value: unknown) => `$${values.push(value)}`;
+  const sets: string[] = [];
+  if (patch.role !== undefined) sets.push(`role = ${bind(patch.role)}`);
+  if (patch.sort !== undefined) sets.push(`sort = ${bind(patch.sort)}`);
+  if (patch.name !== undefined) sets.push(`name = ${bind(patch.name)}`);
+  if (clearPhoto || patch.photoRotation !== undefined) {
+    sets.push(`photo_rotation = ${bind(clearPhoto ? 0 : patch.photoRotation)}`);
+  }
+  if (clearPhoto || patch.photoArchived !== undefined) {
+    sets.push(
+      patch.photoArchived === true
+        ? 'photo_archived_at = coalesce(photo_archived_at, statement_timestamp())'
+        : 'photo_archived_at = NULL',
+    );
+  }
+  if (clearPhoto || patch.photoArchived === true) sets.push('thumbnail_selected_at = NULL');
+  if (patch.selectThumbnail) sets.push('thumbnail_selected_at = clock_timestamp()');
+  if (sets.length)
+    await client.query(`UPDATE public.attachments SET ${sets.join(', ')} WHERE id = $1`, values);
+  else await client.query('UPDATE public.attachments SET sort = sort WHERE id = $1', [id]);
   const after = await readAttachment(client, id);
   await audited(tx, {
     locationId: after.location_id,
     actor: { type: 'user', id: userId },
     action: 'attachment.update',
     entity: { type: 'attachment', id },
-    before: { role: before.role, sort: before.sort, name: before.name },
-    after: { role: after.role, sort: after.sort, name: after.name },
+    before: photoAuditImage(before),
+    after: photoAuditImage(after),
     subjects: thingSubjects(after),
     rootThingId: after.thing_id,
     requestId,
@@ -355,6 +418,7 @@ export async function listAttachments(
     limit: number;
     after: ListKey | null;
     includeLocationPhotos?: boolean;
+    archivedPhotos?: boolean;
   },
 ): Promise<{
   items: AttachmentView[];
@@ -375,13 +439,25 @@ export async function listAttachments(
         AND ($3::int IS NULL OR (a.sort, a.id) > ($3::int, $4::uuid))
         AND a.role <> ALL ($6::text[])
         AND a.location_photo_taken_at IS NULL
+        AND (a.photo_archived_at IS NOT NULL) = $7
       ORDER BY a.sort, a.id
       LIMIT $5`,
-    [id, opts.role ?? null, after?.[0] ?? null, after?.[1] ?? null, opts.limit + 1, hidden],
+    [
+      id,
+      opts.role ?? null,
+      after?.[0] ?? null,
+      after?.[1] ?? null,
+      opts.limit + 1,
+      hidden,
+      opts.archivedPhotos === true,
+    ],
   );
   const page = pageOf(rows, opts.limit, (r): ListKey => [r.sort, r.id]);
   const locationPhotos =
-    opts.includeLocationPhotos && !opts.after && (owner === 'thing' || owner === 'place')
+    opts.includeLocationPhotos &&
+    !opts.archivedPhotos &&
+    !opts.after &&
+    (owner === 'thing' || owner === 'place')
       ? (
           await client.query<AttachmentRow>(
             `${ATTACHMENT_SELECT}

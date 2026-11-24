@@ -10,6 +10,7 @@ import {
 import type pg from 'pg';
 import { z } from 'zod';
 import type { Scope, Tx } from '../db/scope.js';
+import { photoThumbnailJoin } from '../files/photo-thumbnail.js';
 import {
   ATTACHMENT_SELECT,
   type AttachmentRow,
@@ -79,18 +80,14 @@ export type ThingRow = {
   path: PathStep[];
   containerThumbUrl: string | null;
   thumbUrl: string | null;
+  thumbnailAttachmentId?: string;
+  thumbnailRotation?: number;
+  containerThumbnailRotation?: number;
   lastSeenAt: string | null;
   isContainer: boolean;
   /** Its tags, A to Z (tag-sql.ts): the chips a row shows. */
   tags: ThingTag[];
 };
-
-/** The first photo of `thing` that has a thumbnail (D195). */
-const firstThumb = (thing: string) => `(
-  SELECT a.file_id FROM public.attachments a
-    JOIN public.file_derivatives d ON d.file_id = a.file_id AND d.variant = 'thumb'
-   WHERE a.thing_id = ${thing} AND a.role = 'photo'
-   ORDER BY a.sort, a.created_at, a.id LIMIT 1)`;
 
 /** The columns of a row, over `public.things t LEFT JOIN public.types ty`. */
 export const ROW_COLUMNS = `t.id, t.location_id, t.name, t.quantity::text AS quantity, t.lifecycle,
@@ -100,9 +97,9 @@ export const ROW_COLUMNS = `t.id, t.location_id, t.name, t.quantity::text AS qua
        ${labelPrintedSql('thing_id', 't.id')} AS label_printed,
        ty.id AS type_id, ty.icon AS type_icon, ty.name AS type_name,
        ${typeKeySql('ty')} AS type_builtin_key,
-       ${firstThumb('t.id')} AS thumb_file_id,
-       CASE WHEN t.container_id IS NULL THEN NULL ELSE ${firstThumb('t.container_id')} END
-         AS container_thumb_file_id,
+       thumbnail.file_id AS thumb_file_id, thumbnail.id AS thumbnail_attachment_id,
+       thumbnail.photo_rotation AS thumbnail_rotation, container_thumbnail.file_id AS container_thumb_file_id,
+       container_thumbnail.photo_rotation AS container_thumbnail_rotation,
        ${isContainerSql('t.id', 't.type_id')} AS is_container,
        ${tagsSql('t.id')} AS tags,
        ${householdStateSql('t')}`;
@@ -131,6 +128,9 @@ export type RowRecord = {
   type_builtin_key: string | null;
   thumb_file_id: string | null;
   container_thumb_file_id: string | null;
+  thumbnail_attachment_id: string | null;
+  thumbnail_rotation: number | null;
+  container_thumbnail_rotation: number | null;
   is_container: boolean;
   /** Step 4 (search/query.ts householdStateSql): a claim is in repair. */
   in_repair: boolean;
@@ -175,6 +175,11 @@ export async function rowOf(
     })),
     containerThumbUrl: await thumbUrlOf(files, keys, r.container_thumb_file_id),
     thumbUrl: await thumbUrlOf(files, keys, r.thumb_file_id),
+    ...(r.thumbnail_attachment_id ? { thumbnailAttachmentId: r.thumbnail_attachment_id } : {}),
+    ...(r.thumbnail_rotation ? { thumbnailRotation: r.thumbnail_rotation } : {}),
+    ...(r.container_thumbnail_rotation
+      ? { containerThumbnailRotation: r.container_thumbnail_rotation }
+      : {}),
     lastSeenAt: iso(r.last_seen_at),
     isContainer: r.is_container,
     tags: tagsOfRow(r.tags),
@@ -204,6 +209,8 @@ export async function rowsOf(
   const { rows } = await client.query<RowRecord>(
     `SELECT ${ROW_COLUMNS}
        FROM public.things t LEFT JOIN public.types ty ON ty.id = t.type_id
+       ${photoThumbnailJoin('t.id', 'thumbnail')}
+       ${photoThumbnailJoin('t.container_id', 'container_thumbnail')}
       WHERE t.id = ANY ($1::uuid[]) AND t.deleted_at IS NULL`,
     [ids],
   );
@@ -377,13 +384,16 @@ export async function viewOf(
             t.row_version, t.created_at, t.updated_at,
             (SELECT count(*)::int FROM public.things c
               WHERE c.container_id = t.id AND c.deleted_at IS NULL) AS contents_count,
-            (SELECT count(*)::int FROM public.attachments a WHERE a.thing_id = t.id)
+            (SELECT count(*)::int FROM public.attachments a
+              WHERE a.thing_id = t.id AND a.photo_archived_at IS NULL)
               AS attachments_count,
             (SELECT count(*)::int FROM public.attachments a
               WHERE a.thing_id = t.id AND a.role IN ('receipt', 'invoice'))
               AS money_attachments_count
        FROM public.things t
        LEFT JOIN public.types ty ON ty.id = t.type_id
+       ${photoThumbnailJoin('t.id', 'thumbnail')}
+       ${photoThumbnailJoin('t.container_id', 'container_thumbnail')}
        LEFT JOIN public.brands b ON b.id = t.brand_id
        LEFT JOIN public.people p ON p.id = t.belongs_to_person_id
       WHERE t.id = $1 AND t.deleted_at IS NULL`,
@@ -804,8 +814,8 @@ async function photosOf(
   thingId: string,
 ): Promise<AttachmentView[]> {
   const { rows } = await client.query<AttachmentRow>(
-    `${ATTACHMENT_SELECT} WHERE a.thing_id = $1 AND a.role = 'photo'
-      ORDER BY a.sort, a.created_at, a.id LIMIT 50`,
+    `${ATTACHMENT_SELECT} WHERE a.thing_id = $1 AND a.role = 'photo' AND a.photo_archived_at IS NULL
+      ORDER BY a.thumbnail_selected_at DESC NULLS LAST, a.sort, a.created_at, a.id LIMIT 50`,
     [thingId],
   );
   return attachmentViews(client, files, rows);
@@ -934,6 +944,9 @@ export const ThingRowSchema = z.object({
   path: z.array(PathStepSchema),
   containerThumbUrl: z.string().nullable(),
   thumbUrl: z.string().nullable(),
+  thumbnailAttachmentId: z.uuid().optional(),
+  thumbnailRotation: z.number().optional(),
+  containerThumbnailRotation: z.number().optional(),
   lastSeenAt: Iso.nullable(),
   isContainer: z.boolean(),
   tags: z.array(ThingTagSchema),
@@ -963,6 +976,7 @@ const AttachmentSchema = z.object({
   /** A purchase's receipt that is also the thing's own file (#348). */
   alsoInPaperwork: z.literal(true).optional(),
   createdBy: z.object({ displayName: z.string() }),
+  photoRotation: z.number().optional(),
   rowVersion: z.number(),
 });
 const ResolvedFieldSchema = z.object({

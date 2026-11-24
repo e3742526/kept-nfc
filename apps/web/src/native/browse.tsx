@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Brand, Page, ThingRow } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
+import { PhotoImage } from '@/components/photo-image';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
@@ -277,6 +278,7 @@ export function Browse({
         shortCode: thing.shortCode,
         path: inventoryPath(cache, thing).join(' › '),
         thumb: undefined,
+        thumbnailRotation: undefined,
         tags: tagOptions.filter(({ id }) => thing.tagIds?.includes(id)),
         ancestors: ancestry(cache, thing).bins.map(({ id }) => id),
       }))
@@ -292,6 +294,7 @@ export function Browse({
           .filter(Boolean)
           .join(' › '),
         thumb: previewUrl(thing.thumbUrl, connection.origin),
+        thumbnailRotation: thing.thumbnailRotation,
         tags: thing.tags,
         ancestors: thing.path.map(({ id }) => id),
       })) ?? []);
@@ -586,14 +589,10 @@ export function Browse({
                 onPress={() => onOpen({ id: row.id, locationId: row.locationId, kind: 'thing' })}
               >
                 {row.thumb ? (
-                  <img
-                    alt=""
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
+                  <PhotoImage
                     src={row.thumb}
-                    className={
-                      f.grid ? 'aspect-square w-full rounded-lg object-cover' : 'kept-thumb'
-                    }
+                    rotation={row.thumbnailRotation}
+                    className={f.grid ? 'aspect-square w-full rounded-lg' : 'kept-thumb'}
                   />
                 ) : (
                   <Package size={20} aria-hidden />

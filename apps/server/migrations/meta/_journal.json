@@ -1331,6 +1331,13 @@
       "when": 1795548379131,
       "tag": "0189_trim_location_photos",
       "breakpoints": true
+    },
+    {
+      "idx": 190,
+      "version": "7",
+      "when": 1795552159032,
+      "tag": "0190_attachment_photo_management",
+      "breakpoints": true
     }
   ]
 }

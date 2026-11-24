@@ -93,6 +93,8 @@ const AttachmentViewSchema = z.object({
   createdBy: z.object({ displayName: z.string() }),
   createdAt: z.iso.datetime().optional(),
   locationPhotoTakenAt: z.iso.datetime().optional(),
+  photoRotation: z.number().optional(),
+  photoArchivedAt: z.iso.datetime().optional(),
   rowVersion: z.number(),
 });
 
@@ -130,11 +132,15 @@ const UpdateAttachmentBody = z.strictObject({
   role: z.enum(ATTACHMENT_ROLES).optional(),
   sort: Sort.optional(),
   name: AttachmentName.optional(),
+  photoRotation: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]).optional(),
+  photoArchived: z.boolean().optional(),
+  selectThumbnail: z.literal(true).optional(),
 });
 
 const ListQuery = paginationQuery.extend({
   role: z.enum(ATTACHMENT_ROLES).optional(),
   includeLocationPhotos: z.literal('true').optional(),
+  archivedPhotos: z.literal('true').optional(),
 });
 
 const ListResponse = z.object({
@@ -398,6 +404,7 @@ export async function fileRoutes(app: KeptApp, deps: InventoryDeps): Promise<voi
             {
               role: req.query.role,
               includeLocationPhotos: req.query.includeLocationPhotos === 'true',
+              archivedPhotos: req.query.archivedPhotos === 'true',
               limit: page.limit,
               after,
             },

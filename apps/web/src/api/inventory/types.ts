@@ -732,6 +732,9 @@ export type ThingRow = {
   /** The container's first photo, beside the path (D195). */
   containerThumbUrl: string | null;
   thumbUrl: string | null;
+  thumbnailAttachmentId?: string;
+  thumbnailRotation?: number;
+  containerThumbnailRotation?: number;
   lastSeenAt: string | null;
   /** Search only: the alias the query matched ("matched: display cable"). */
   matchedAlias?: string;
@@ -1261,6 +1264,8 @@ export type AttachmentView = {
   createdBy: ActorRef;
   createdAt?: string;
   locationPhotoTakenAt?: string;
+  photoRotation?: number;
+  photoArchivedAt?: string;
   /** For PATCH /api/v1/attachments/:id (If-Match). */
   rowVersion: number;
 };
@@ -1278,7 +1283,14 @@ export type CreateAttachmentBody = {
   name?: string;
 };
 /** PATCH /api/v1/attachments/:id (If-Match). `name`: trimmed, at most 200; "" or null clears it. */
-export type UpdateAttachmentBody = { role?: AttachmentRole; sort?: number; name?: string | null };
+export type UpdateAttachmentBody = {
+  role?: AttachmentRole;
+  sort?: number;
+  name?: string | null;
+  photoRotation?: number;
+  photoArchived?: boolean;
+  selectThumbnail?: true;
+};
 
 // ----- secrets ---------------------------------------------------------------------------------
 

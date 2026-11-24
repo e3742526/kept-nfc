@@ -122,7 +122,7 @@ export async function roomViews(
   );
   const { rows: covers } = await client.query<{ thing_id: string; file_id: string }>(
     `SELECT DISTINCT ON (a.thing_id) a.thing_id, a.file_id FROM public.attachments a
-      WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo' AND a.file_id IS NOT NULL
+      WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo' AND a.photo_archived_at IS NULL AND a.file_id IS NOT NULL
       ORDER BY a.thing_id, a.sort, a.created_at, a.id`,
     [alreadyIds],
   );

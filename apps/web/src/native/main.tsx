@@ -34,6 +34,7 @@ import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Page, SearchResponse } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import { AppMark, BrandLockup } from '@/components/brand';
+import { PhotoImage } from '@/components/photo-image';
 import { ProjectNotice } from '@/components/project-notice';
 import { Button } from '@/components/ui/button';
 import { ConfirmProvider, useConfirm } from '@/components/ui/confirm';
@@ -293,6 +294,7 @@ function ThingList({
     locationId: string;
     path: string;
     thumbUrl?: string | null;
+    thumbnailRotation?: number;
   }[];
   origin?: string;
   onOpen: (target: Target) => void;
@@ -310,13 +312,7 @@ function ThingList({
               onPress={() => onOpen({ id: thing.id, kind: 'thing', locationId: thing.locationId })}
             >
               {image ? (
-                <img
-                  alt=""
-                  src={image}
-                  referrerPolicy="no-referrer"
-                  loading="lazy"
-                  className="kept-thumb"
-                />
+                <PhotoImage src={image} rotation={thing.thumbnailRotation} className="kept-thumb" />
               ) : (
                 <span className="kept-row-lead" aria-hidden>
                   <Package size={18} />
@@ -475,36 +471,50 @@ export function Inventory({
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
   const [assistantThreadId, setAssistantThreadId] = useState<string>();
   const [preferredLocationId, setPreferredLocationId] = useState<string>();
-  const [preferredAI, setPreferredAI] = useState<CaptureAIProvider>('server');
+  const [preferredAI, setPreferredAI] = useState<CaptureAIProvider>();
+  const [photoPreferenceLoaded, setPhotoPreferenceLoaded] = useState(false);
   const [preferenceError, setPreferenceError] = useState(false);
 
   useEffect(() => {
     let active = true;
-    void Promise.all([
-      adapters.outbox.getValue(connection, 'defaultLocation'),
-      adapters.outbox.getValue(connection, 'defaultPhotoAI'),
-    ])
-      .then(([location, ai]) => {
-        if (!active) return;
-        setPreferredLocationId(location || undefined);
-        if (ai === 'server' || ai === 'apple' || ai === 'chatgpt') setPreferredAI(ai);
+    void adapters.outbox
+      .getValue(connection, 'defaultLocation')
+      .then((location) => {
+        if (active) setPreferredLocationId(location || undefined);
       })
       .catch(() => {});
+    void adapters.outbox
+      .getValue(connection, 'defaultPhotoAI')
+      .then((provider) => {
+        if (!active) return;
+        setPreferredAI(provider === 'apple' || provider === 'chatgpt' ? provider : 'server');
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setPhotoPreferenceLoaded(true);
+      });
     return () => {
       active = false;
     };
   }, [adapters, connection]);
 
-  async function saveDefault(key: 'defaultLocation' | 'defaultPhotoAI', value: string) {
+  async function saveDefaultLocation(value: string) {
     setPreferenceError(false);
     try {
-      await adapters.outbox.setValue(connection, key, value);
-      if (key === 'defaultLocation') setPreferredLocationId(value || undefined);
-      else if (value === 'server' || value === 'apple' || value === 'chatgpt')
-        setPreferredAI(value);
+      await adapters.outbox.setValue(connection, 'defaultLocation', value);
+      setPreferredLocationId(value || undefined);
     } catch {
       setPreferenceError(true);
     }
+  }
+
+  async function savePhotoDefault(provider: CaptureAIProvider) {
+    const key = 'defaultPhotoAI';
+    await adapters.outbox.setValue(connection, key, provider);
+    if ((await adapters.outbox.getValue(connection, key)) !== provider) {
+      throw new Error('The device did not retain the photo AI preference');
+    }
+    setPreferredAI(provider);
   }
 
   const [browseFilters, setBrowseFilters] = useState(browseDefaults);
@@ -1654,6 +1664,7 @@ export function Inventory({
           syncing={working}
           online={online}
           preferredProvider={preferredAI}
+          photoPreferenceLoaded={photoPreferenceLoaded}
           leaveRef={canLeaveCapture}
           onClose={goBack}
           onSave={savedLocally}
@@ -1899,8 +1910,7 @@ export function Inventory({
                 items={[{ id: 'automatic', name: t`Automatic` }, ...availableDefaultLocations]}
                 selectedKey={defaultLocationId ?? 'automatic'}
                 onSelectionChange={(key) => {
-                  if (key)
-                    void saveDefault('defaultLocation', key === 'automatic' ? '' : String(key));
+                  if (key) void saveDefaultLocation(key === 'automatic' ? '' : String(key));
                 }}
               >
                 {(item) => (
@@ -1914,7 +1924,8 @@ export function Inventory({
           <CaptureAISettings
             connection={connection}
             preferred={preferredAI}
-            onPreferred={(provider) => void saveDefault('defaultPhotoAI', provider)}
+            preferenceLoaded={photoPreferenceLoaded}
+            onPreferred={savePhotoDefault}
           />
           {preferenceError && (
             <p role="alert">

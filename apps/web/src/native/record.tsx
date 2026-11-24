@@ -1,6 +1,7 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
+  Archive,
   ArrowRightLeft,
   Camera,
   CheckCheck,
@@ -18,6 +19,7 @@ import {
   Plus,
   QrCode,
   Radar,
+  RotateCw,
   Sparkles,
   Trash2,
 } from 'lucide-react';
@@ -32,10 +34,19 @@ import type {
 } from '@/api/capture/types';
 import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { AttachmentView, Page, PlaceView, ThingRow, ThingView } from '@/api/inventory/types';
+import type {
+  AttachmentView,
+  Page,
+  PlaceView,
+  ThingRow,
+  ThingView,
+  UpdateAttachmentBody,
+} from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
+import { PhotoImage } from '@/components/photo-image';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
+import { Dialog, Modal } from '@/components/ui/dialog';
 import { TextField } from '@/components/ui/text-field';
 import { useFormat } from '@/lib/format';
 import { usePlatform } from './adapters';
@@ -266,6 +277,11 @@ export function RecordScreen({
   const [editor, setEditor] = useState<'edit' | 'move' | 'correct' | 'actions'>();
   const [section, setSection] = useState<'all' | 'contents' | 'media' | 'history'>('all');
   const [editingFiles, setEditingFiles] = useState(false);
+  const [photoDialog, setPhotoDialog] = useState<AttachmentView>();
+  const [photoNotice, setPhotoNotice] = useState('');
+  const [archivedPhotos, setArchivedPhotos] = useState<Page<AttachmentView>>();
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState(false);
   const [changing, setChanging] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
   const [checkId, setCheckId] = useState(newId);
@@ -478,36 +494,57 @@ export function RecordScreen({
     });
   }
 
-  function editAttachment(attachment: AttachmentView, cover: boolean) {
+  function removeAttachment(attachment: AttachmentView) {
     return update(async () => {
-      if (cover) {
-        const sort =
-          Math.min(
-            0,
-            ...(detail?.attachments ?? [])
-              .filter(({ role }) => role === 'photo')
-              .map((item) => item.sort),
-          ) - 1;
-        await adapters.transport.request(connection, inventoryPaths.attachment(attachment.id), {
-          method: 'PATCH',
-          ifMatch: attachment.rowVersion,
-          body: { sort },
-        });
+      if (
+        !(await confirm({
+          title: t`Remove this attachment?`,
+          confirmLabel: t`Remove`,
+          cancelLabel: t`Cancel`,
+          destructive: true,
+        }))
+      )
+        return;
+      await adapters.transport.request(connection, inventoryPaths.attachment(attachment.id), {
+        method: 'DELETE',
+      });
+      changed();
+    });
+  }
+
+  async function loadArchive(cursor?: string) {
+    setArchiveLoading(true);
+    if (!cursor) setArchivedPhotos(undefined);
+    try {
+      const endpoint =
+        target.kind === 'thing' ? inventoryPaths.thingAttachments : inventoryPaths.placeAttachments;
+      const page = await adapters.transport.request<Page<AttachmentView>>(
+        connection,
+        endpoint(target.id) + qs({ archivedPhotos: true, limit: 50, cursor }),
+      );
+      setArchivedPhotos((previous) =>
+        cursor && previous ? { ...page, items: [...previous.items, ...page.items] } : page,
+      );
+    } finally {
+      setArchiveLoading(false);
+    }
+  }
+
+  function changePhoto(attachment: AttachmentView, body: UpdateAttachmentBody) {
+    return update(async () => {
+      const saved = await adapters.transport.request<AttachmentView>(
+        connection,
+        inventoryPaths.attachment(attachment.id),
+        { method: 'PATCH', ifMatch: attachment.rowVersion, body },
+      );
+      if (body.photoArchived === undefined) {
+        setPhotoDialog((current) => (current?.id === saved.id ? saved : current));
       } else {
-        if (
-          !(await confirm({
-            title: t`Remove this attachment?`,
-            confirmLabel: t`Remove`,
-            cancelLabel: t`Cancel`,
-            destructive: true,
-          }))
-        )
-          return;
-        await adapters.transport.request(connection, inventoryPaths.attachment(attachment.id), {
-          method: 'DELETE',
-        });
+        setPhotoDialog(undefined);
+        setPhotoNotice(body.photoArchived ? t`Photo archived.` : t`Photo restored.`);
       }
       changed();
+      if (archiveOpen && body.photoArchived !== undefined) await loadArchive();
     });
   }
 
@@ -555,6 +592,14 @@ export function RecordScreen({
 
   const unknown = thing?.locationUncertain && thing.path.some((step) => step.isUnplaced);
   const cover = online && previewUrl(thing?.thumbUrl, connection.origin);
+  const coverPhoto =
+    remoteAttachments?.find(({ id }) => id === thing?.thumbnailAttachmentId) ??
+    thing?.photos?.find(({ id }) => id === thing.thumbnailAttachmentId);
+  const photoDialogSrc = previewUrl(
+    photoDialog?.file?.displayUrl ?? photoDialog?.file?.thumbUrl,
+    connection.origin,
+  );
+  const photoDialogLabel = photoDialog?.name ?? t`Photograph`;
   const showContents = section === 'all' || section === 'contents';
   const showMedia = section === 'all' || section === 'media';
   const showHistory = section === 'all' || section === 'history';
@@ -580,14 +625,32 @@ export function RecordScreen({
       ) : (
         <>
           <header className="kept-card">
-            {cover && (
-              <img
-                alt=""
-                src={cover}
-                referrerPolicy="no-referrer"
-                className="max-h-48 w-full rounded-lg object-cover"
-              />
-            )}
+            {cover &&
+              (coverPhoto ? (
+                <Button
+                  variant="ghost"
+                  aria-label={t`Cover photo`}
+                  className="w-full border-0 p-0"
+                  onPress={() => {
+                    setStatus('');
+                    setPhotoDialog(coverPhoto);
+                  }}
+                >
+                  <PhotoImage
+                    src={cover}
+                    rotation={thing?.thumbnailRotation}
+                    className="aspect-video max-h-48 w-full rounded-lg"
+                    loading="eager"
+                  />
+                </Button>
+              ) : (
+                <PhotoImage
+                  src={cover}
+                  rotation={thing?.thumbnailRotation}
+                  className="aspect-video max-h-48 w-full rounded-lg"
+                  loading="eager"
+                />
+              ))}
             <h2 className="text-display font-semibold">
               <bdi>{name}</bdi>
             </h2>
@@ -1034,18 +1097,24 @@ export function RecordScreen({
                               isPending={openingMedia === mediaKey}
                               isDisabled={openingMedia !== undefined && openingMedia !== mediaKey}
                               aria-describedby={stampId}
-                              onPress={() => void openRemoteFile(original, variant)}
+                              onPress={() => {
+                                if (isPhoto && original.photoRotation) {
+                                  setStatus('');
+                                  setPhotoDialog(original);
+                                } else {
+                                  void openRemoteFile(original, variant);
+                                }
+                              }}
                             >
                               {thumbnail && (
-                                <img
-                                  alt=""
+                                <PhotoImage
                                   src={thumbnail}
-                                  loading="lazy"
-                                  referrerPolicy="no-referrer"
+                                  rotation={original.photoRotation}
+                                  contain={locationGroup}
                                   className={
                                     locationGroup
-                                      ? 'aspect-[4/3] w-full rounded-lg bg-sunken object-contain'
-                                      : 'aspect-square w-full rounded-lg object-cover'
+                                      ? 'aspect-[4/3] w-full rounded-lg bg-sunken'
+                                      : 'aspect-square w-full rounded-lg'
                                   }
                                 />
                               )}
@@ -1088,23 +1157,30 @@ export function RecordScreen({
                                 : new Date(takenAt).toLocaleString()}
                             </time>
                           )}
+                          {online &&
+                            canEdit &&
+                            isPhoto &&
+                            original?.file?.mime.startsWith('image/') && (
+                              <Button
+                                variant="ghost"
+                                size="small"
+                                aria-describedby={labelId}
+                                onPress={() => {
+                                  setStatus('');
+                                  setPhotoDialog(original);
+                                }}
+                              >
+                                <Ellipsis size={15} aria-hidden />
+                                <Trans>Photo options</Trans>
+                              </Button>
+                            )}
                           {!locationGroup && original && editingFiles && canEdit && online && (
                             <div className="mt-1 flex flex-wrap gap-1">
-                              {thing && original.role === 'photo' && original.file && (
-                                <Button
-                                  variant="ghost"
-                                  size="small"
-                                  isDisabled={changing}
-                                  onPress={() => void editAttachment(original, true)}
-                                >
-                                  <Trans>Use as cover</Trans>
-                                </Button>
-                              )}
                               <Button
                                 variant="ghost"
                                 size="small"
                                 isDisabled={changing}
-                                onPress={() => void editAttachment(original, false)}
+                                onPress={() => void removeAttachment(original)}
                               >
                                 <Trash2 size={14} aria-hidden />
                                 <Trans>Remove</Trans>
@@ -1118,6 +1194,79 @@ export function RecordScreen({
                 </section>
               );
             })}
+          {showMedia && online && canEdit && (thing || place) && (
+            <section className={archiveOpen ? 'kept-card' : undefined}>
+              <Button
+                variant="ghost"
+                size="small"
+                aria-expanded={archiveOpen}
+                className="justify-self-start"
+                onPress={() => {
+                  setArchiveOpen(!archiveOpen);
+                  if (!archiveOpen) void update(loadArchive);
+                }}
+              >
+                <Archive size={16} aria-hidden />
+                {archiveOpen ? <Trans>Hide archived photos</Trans> : <Trans>Archived photos</Trans>}
+              </Button>
+              {archiveOpen && (
+                <>
+                  {archiveLoading && (
+                    <p role="status">
+                      <Trans>Loading archived photos…</Trans>
+                    </p>
+                  )}
+                  {archivedPhotos &&
+                    (archivedPhotos.items.length ? (
+                      <ul className="grid grid-cols-2 gap-2">
+                        {archivedPhotos.items.map((photo) => {
+                          const src = previewUrl(photo.file?.thumbUrl, connection.origin);
+                          return (
+                            <li key={photo.id} className="min-w-0">
+                              <Button
+                                variant="secondary"
+                                className="grid w-full min-w-0 justify-items-start gap-2 rounded-xl p-2 text-start"
+                                onPress={() => {
+                                  setStatus('');
+                                  setPhotoDialog(photo);
+                                }}
+                              >
+                                {src && (
+                                  <PhotoImage
+                                    src={src}
+                                    rotation={photo.photoRotation}
+                                    className="aspect-square w-full rounded-lg"
+                                  />
+                                )}
+                                <bdi className="min-w-0 break-all">
+                                  {photo.name ?? t`Photograph`}
+                                </bdi>
+                              </Button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      <p className="text-small text-ink-2">
+                        <Trans>No archived photos.</Trans>
+                      </p>
+                    ))}
+                  {archivedPhotos?.next_cursor && (
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      isPending={archiveLoading}
+                      onPress={() =>
+                        void update(() => loadArchive(archivedPhotos.next_cursor ?? undefined))
+                      }
+                    >
+                      <Trans>Show more</Trans>
+                    </Button>
+                  )}
+                </>
+              )}
+            </section>
+          )}
           {showContents && (box || target.kind === 'place') && (
             <section className="kept-card">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1166,67 +1315,46 @@ export function RecordScreen({
                       </Button>
                     </li>
                   ))}
-                  {children.map((child) => (
-                    <li key={child.id}>
-                      <Button
-                        variant="secondary"
-                        className="kept-phone-row"
-                        onPress={() =>
-                          onOpen({ id: child.id, kind: 'thing', locationId: child.locationId })
-                        }
-                      >
-                        {online &&
-                        (() => {
-                          const image = previewUrl(
-                            childRows.find((hit) => hit.id === child.id)?.thumbUrl,
-                            connection.origin,
-                          );
-                          return image ? (
-                            <img
-                              alt=""
+                  {children.map((child) => {
+                    const childRow = childRows.find((hit) => hit.id === child.id);
+                    const image = online && previewUrl(childRow?.thumbUrl, connection.origin);
+                    return (
+                      <li key={child.id}>
+                        <Button
+                          variant="secondary"
+                          className="kept-phone-row"
+                          onPress={() =>
+                            onOpen({ id: child.id, kind: 'thing', locationId: child.locationId })
+                          }
+                        >
+                          {image ? (
+                            <PhotoImage
                               src={image}
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
+                              rotation={childRow?.thumbnailRotation}
                               className="kept-thumb"
                             />
-                          ) : null;
-                        })() ? (
-                          (() => {
-                            const image = previewUrl(
-                              childRows.find((hit) => hit.id === child.id)?.thumbUrl,
-                              connection.origin,
-                            );
-                            return image ? (
-                              <img
-                                alt=""
-                                src={image}
-                                loading="lazy"
-                                referrerPolicy="no-referrer"
-                                className="kept-thumb"
-                              />
-                            ) : null;
-                          })()
-                        ) : (
-                          <span className="kept-row-lead" aria-hidden>
-                            <Package size={18} />
-                          </span>
-                        )}
-                        <span className="kept-row-body">
-                          <bdi className="font-semibold">{child.name ?? t`Untitled`}</bdi>
-                          {Number(child.quantity) > 1 && (
-                            <span className="text-small font-normal text-ink-2">
-                              {t`Quantity: ${child.quantity}`}
+                          ) : (
+                            <span className="kept-row-lead" aria-hidden>
+                              <Package size={18} />
                             </span>
                           )}
-                        </span>
-                        <ChevronRight
-                          size={18}
-                          className="kept-row-chevron rtl:rotate-180"
-                          aria-hidden
-                        />
-                      </Button>
-                    </li>
-                  ))}
+                          <span className="kept-row-body">
+                            <bdi className="font-semibold">{child.name ?? t`Untitled`}</bdi>
+                            {Number(child.quantity) > 1 && (
+                              <span className="text-small font-normal text-ink-2">
+                                {t`Quantity: ${child.quantity}`}
+                              </span>
+                            )}
+                          </span>
+                          <ChevronRight
+                            size={18}
+                            className="kept-row-chevron rtl:rotate-180"
+                            aria-hidden
+                          />
+                        </Button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </section>
@@ -1242,7 +1370,8 @@ export function RecordScreen({
               attachments={detail?.attachments ?? place?.attachments ?? []}
               onOpen={onOpen}
               onOpenPhoto={(attachment) => {
-                if (attachment.file?.displayUrl) void openRemoteFile(attachment, 'display');
+                if (attachment.photoRotation) setPhotoDialog(attachment);
+                else if (attachment.file?.displayUrl) void openRemoteFile(attachment, 'display');
                 else if (canEdit) void openRemoteFile(attachment, 'original');
               }}
               onChanged={() => {
@@ -1263,7 +1392,100 @@ export function RecordScreen({
                 onAuthError={onAuthError}
               />
             )}
-          {status && (
+          {photoDialog && (
+            <Modal
+              isOpen
+              onOpenChange={(open) => {
+                if (!open) setPhotoDialog(undefined);
+              }}
+            >
+              <Dialog title={<bdi>{photoDialogLabel}</bdi>}>
+                {photoDialogSrc && (
+                  <PhotoImage
+                    src={photoDialogSrc}
+                    alt={photoDialogLabel}
+                    rotation={photoDialog.photoRotation}
+                    contain
+                    loading="eager"
+                    className="h-[min(50dvh,24rem)] w-full rounded-lg bg-sunken"
+                  />
+                )}
+                {online && canEdit && (
+                  <div className="flex flex-wrap gap-2">
+                    {photoDialog.photoArchivedAt ? (
+                      <Button
+                        isDisabled={changing}
+                        onPress={() => void changePhoto(photoDialog, { photoArchived: false })}
+                      >
+                        <Trans>Restore photo</Trans>
+                      </Button>
+                    ) : (
+                      <>
+                        <Button
+                          variant="secondary"
+                          size="small"
+                          isDisabled={changing}
+                          onPress={() =>
+                            void changePhoto(photoDialog, {
+                              photoRotation: ((photoDialog.photoRotation ?? 0) + 90) % 360,
+                            })
+                          }
+                        >
+                          <RotateCw size={16} aria-hidden />
+                          <Trans>Rotate clockwise</Trans>
+                        </Button>
+                        {thing && photoDialog.role === 'photo' && photoDialog.file?.thumbUrl && (
+                          <Button
+                            variant="secondary"
+                            size="small"
+                            isDisabled={changing || thing.thumbnailAttachmentId === photoDialog.id}
+                            onPress={() => void changePhoto(photoDialog, { selectThumbnail: true })}
+                          >
+                            <Image size={16} aria-hidden />
+                            {thing.thumbnailAttachmentId === photoDialog.id ? (
+                              <Trans>Current thumbnail</Trans>
+                            ) : (
+                              <Trans>Use as thumbnail</Trans>
+                            )}
+                          </Button>
+                        )}
+                        {!photoDialog.locationPhotoTakenAt && photoDialog.role === 'photo' && (
+                          <Button
+                            variant="secondary"
+                            size="small"
+                            isDisabled={changing}
+                            onPress={() => void changePhoto(photoDialog, { photoArchived: true })}
+                          >
+                            <Archive size={16} aria-hidden />
+                            <Trans>Archive photo</Trans>
+                          </Button>
+                        )}
+                      </>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="small"
+                      isPending={openingMedia === `${photoDialog.id}:original`}
+                      onPress={() => void openRemoteFile(photoDialog, 'original')}
+                    >
+                      <Trans>Open original photo</Trans>
+                    </Button>
+                  </div>
+                )}
+                {status && (
+                  <p role="status" className="text-small text-ink-2">
+                    {status}
+                  </p>
+                )}
+              </Dialog>
+            </Modal>
+          )}
+          {photoNotice && (
+            <p role="status" className="text-small text-ink-2">
+              {photoNotice}
+            </p>
+          )}
+          {status && !photoDialog && (
             <p className="rounded-xl bg-sunken p-3 text-ink-2" role="status">
               {status}
             </p>

@@ -194,7 +194,7 @@ async function readThings(
   const thumb = options.include.photos
     ? `(SELECT d.storage_key FROM public.attachments a
           JOIN public.file_derivatives d ON d.file_id = a.file_id AND d.variant = 'thumb'
-         WHERE a.thing_id = t.id AND a.role = 'photo'
+         WHERE a.thing_id = t.id AND a.role = 'photo' AND a.photo_archived_at IS NULL
          ORDER BY a.sort, a.created_at, a.id LIMIT 1)`
     : 'NULL::text';
   const moneyLocs = p.add(moneyLocationIds);

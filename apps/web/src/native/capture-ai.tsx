@@ -168,22 +168,43 @@ function ChatGPTConnection({
 export function CaptureAISettings({
   connection,
   preferred,
+  preferenceLoaded,
   onPreferred,
 }: {
   connection: Connection;
-  preferred: CaptureAIProvider;
-  onPreferred: (provider: CaptureAIProvider) => void;
+  preferred: CaptureAIProvider | undefined;
+  preferenceLoaded: boolean;
+  onPreferred: (provider: CaptureAIProvider) => Promise<void>;
 }) {
   const { t } = useLingui();
   const { captureAI } = usePlatform();
   const { status, setAccount } = useCaptureAI(connection);
+  const [draft, setDraft] = useState<CaptureAIProvider>();
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<'saved' | 'failed'>();
+  const selected = draft ?? preferred;
+
+  async function save() {
+    if (!selected || saving) return;
+    setSaving(true);
+    setSaveMessage(undefined);
+    try {
+      await onPreferred(selected);
+      setDraft(undefined);
+      setSaveMessage('saved');
+    } catch {
+      setSaveMessage('failed');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const choices: { id: CaptureAIProvider; name: string }[] = [
     ...(captureAI?.serverProposals ? [{ id: 'server' as const, name: t`Server API` }] : []),
-    ...(status?.apple === 'available'
+    ...(status?.apple === 'available' || selected === 'apple'
       ? [{ id: 'apple' as const, name: t`Apple Intelligence` }]
       : []),
-    ...(status?.chatGPT ? [{ id: 'chatgpt' as const, name: t`ChatGPT plan` }] : []),
+    ...(captureAI ? [{ id: 'chatgpt' as const, name: t`ChatGPT plan` }] : []),
   ];
 
   return (
@@ -191,18 +212,42 @@ export function CaptureAISettings({
       <h3 className="kept-card-title text-small text-ink-2">
         <Trans>AI settings</Trans>
       </h3>
-      {choices.length > 1 && (
-        <Select
-          label={t`Default photo AI`}
-          items={choices}
-          selectedKey={choices.some(({ id }) => id === preferred) ? preferred : null}
-          onSelectionChange={(key) => {
-            const choice = choices.find(({ id }) => id === key);
-            if (choice) onPreferred(choice.id);
-          }}
-        >
-          {(choice) => <SelectItem id={choice.id}>{choice.name}</SelectItem>}
-        </Select>
+      {choices.length > 0 && (
+        <>
+          <Select
+            label={t`Default photo AI`}
+            items={choices}
+            isDisabled={saving || !preferenceLoaded}
+            selectedKey={choices.some(({ id }) => id === selected) ? selected : null}
+            onSelectionChange={(key) => {
+              const choice = choices.find(({ id }) => id === key);
+              if (!choice) return;
+              setDraft(choice.id);
+              setSaveMessage(undefined);
+            }}
+          >
+            {(choice) => <SelectItem id={choice.id}>{choice.name}</SelectItem>}
+          </Select>
+          <Button
+            size="small"
+            className="justify-self-start"
+            isPending={saving}
+            isDisabled={!preferenceLoaded || !draft || draft === preferred}
+            onPress={() => void save()}
+          >
+            <Trans>Save</Trans>
+          </Button>
+          {saveMessage === 'saved' && (
+            <p role="status" className="text-small text-ink-2">
+              <Trans>Photo AI default saved.</Trans>
+            </p>
+          )}
+          {saveMessage === 'failed' && (
+            <p role="alert" className="text-small text-danger">
+              <Trans>Could not save the photo AI default. Try again.</Trans>
+            </p>
+          )}
+        </>
       )}
       {status && (
         <ChatGPTConnection

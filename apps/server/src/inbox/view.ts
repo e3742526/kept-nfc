@@ -533,7 +533,7 @@ export async function itemsOf(
     for (const r of ex) extras.set(r.id, r);
     const { rows: ph } = await client.query<{ thing_id: string; file_id: string }>(
       `SELECT a.thing_id, a.file_id FROM public.attachments a
-        WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo' AND a.file_id IS NOT NULL
+        WHERE a.thing_id = ANY ($1::uuid[]) AND a.role = 'photo' AND a.photo_archived_at IS NULL AND a.file_id IS NOT NULL
         ORDER BY a.thing_id, a.sort, a.created_at, a.id`,
       [thingIds],
     );

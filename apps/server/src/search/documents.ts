@@ -176,6 +176,7 @@ export async function searchDocuments(
   const cte = termsCte(p, terms);
   const where = [
     `a.file_id = ANY (${p.add(ids)}::uuid[])`,
+    'a.photo_archived_at IS NULL',
     `NOT (a.role = ANY (${p.add([...MONEY_ROLES])}::text[])
           AND a.location_id = ANY (${p.add(money.hidden)}::uuid[]))`,
     '(t.id IS NULL OR t.deleted_at IS NULL)',
