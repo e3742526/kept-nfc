@@ -100,6 +100,32 @@ export function RecordHistory({
     )
       return t`Photo added to the record. Inventory unchanged.`;
     const name = isolate(event.summaryParams.name ?? t`Item`);
+    if (event.action === 'thing.trash') return t`Record for ${name} moved to Trash`;
+    if (event.action === 'thing.restore') return t`Record for ${name} restored`;
+    if (event.action === 'thing.update') {
+      const tags = event.diff?.tag_ids;
+      if (tags && 'before' in tags) {
+        const before = Array.isArray(tags.before) ? tags.before : [];
+        const after = Array.isArray(tags.after) ? tags.after : [];
+        const words = (source: unknown[], other: unknown[]) =>
+          source
+            .filter((id) => !other.includes(id))
+            .flatMap((id) => {
+              const tag = cache?.tags?.find((candidate) => candidate.id === id);
+              return tag ? [isolate(tag.name)] : [];
+            })
+            .join(', ');
+        const added = words(after, before);
+        const removed = words(before, after);
+        return (
+          [added && t`Assigned category ${added}`, removed && t`Removed category ${removed}`]
+            .filter(Boolean)
+            .join(' · ') || t`Updated categories for ${name}`
+        );
+      }
+      if (Object.keys(event.diff ?? {}).some((key) => key.startsWith('custom.')))
+        return t`Updated custom fields for ${name}`;
+    }
     if (
       event.summaryKey === 'thing.move.removed' ||
       event.summaryKey === 'thing.move.corrected' ||
@@ -107,29 +133,30 @@ export function RecordHistory({
       event.summaryKey === 'undo'
     )
       return formatSummary(event);
-    if (event.summaryKey === 'thing.capture.recorded') return t`Recorded ${name}`;
+    if (
+      event.summaryKey === 'thing.capture.recorded' ||
+      event.summaryKey === 'thing.capture.named'
+    ) {
+      const parent = event.diff?.container_id;
+      const path = recordedPath(event, 'after');
+      const where =
+        container && parent && 'after' in parent && parent.after === target.id
+          ? (cache?.things.find((item) => item.id === target.id)?.name ?? path)
+          : path;
+      if (where) {
+        const destination = isolate(where);
+        return event.summaryKey === 'thing.capture.recorded'
+          ? t`Recorded ${name} in ${destination}`
+          : t`Added ${name} to ${destination}`;
+      }
+      return formatSummary(event);
+    }
     if (container && event.entity.id !== target.id) {
       const parent = event.diff?.container_id;
       if (parent && 'before' in parent && event.action === 'thing.move') {
         if (parent.before === target.id) return t`${name} moved out of this box`;
         if (parent.after === target.id) return t`${name} moved into this box`;
       }
-      const removed = event.diff?.removed_from_container_id;
-      if (
-        event.action === 'thing.trash' &&
-        removed &&
-        'after' in removed &&
-        removed.after === target.id
-      )
-        return t`${name} removed from this box`;
-      const restored = event.diff?.restored_to_container_id;
-      if (
-        event.action === 'thing.restore' &&
-        restored &&
-        'after' in restored &&
-        restored.after === target.id
-      )
-        return t`${name} restored to this box`;
       if (
         (event.action === 'thing.create' || event.action === 'thing.capture') &&
         parent &&
@@ -199,10 +226,8 @@ export function RecordHistory({
                   event.entity.id !== target.id && event.entity.type === 'thing'
                     ? cache?.things.find((item) => item.id === event.entity.id)
                     : undefined;
-                const at =
-                  captured && 'after' in captured && typeof captured.after === 'string'
-                    ? captured.after
-                    : event.at;
+                const savedOnDevice = eventTime(captured);
+                const observed = eventTime(event.diff?.last_seen_at);
                 return (
                   <li
                     key={event.id}
@@ -219,7 +244,8 @@ export function RecordHistory({
                       </p>
                     )}
                     <p className="text-small text-ink-2">
-                      <time dateTime={at}>{new Date(at).toLocaleString()}</time>
+                      <Trans>Recorded at</Trans>{' '}
+                      <time dateTime={event.at}>{new Date(event.at).toLocaleString()}</time>
                       {event.actor.displayName && (
                         <>
                           {sep()}
@@ -227,6 +253,20 @@ export function RecordHistory({
                         </>
                       )}
                     </p>
+                    {savedOnDevice && (
+                      <p className="text-small text-ink-2">
+                        <Trans>Saved on device</Trans>{' '}
+                        <time dateTime={savedOnDevice}>
+                          {new Date(savedOnDevice).toLocaleString()}
+                        </time>
+                      </p>
+                    )}
+                    {observed && (
+                      <p className="text-small text-ink-2">
+                        <Trans>Observed at</Trans>{' '}
+                        <time dateTime={observed}>{new Date(observed).toLocaleString()}</time>
+                      </p>
+                    )}
                     {photos.map((photo) => (
                       <Button
                         key={photo.id}
@@ -297,4 +337,13 @@ export function RecordHistory({
       {status && <p role="alert">{status}</p>}
     </section>
   );
+}
+
+function eventTime(change: NonNullable<HistoryEvent['diff']>[string] | undefined) {
+  return change &&
+    'after' in change &&
+    typeof change.after === 'string' &&
+    Number.isFinite(Date.parse(change.after))
+    ? change.after
+    : null;
 }

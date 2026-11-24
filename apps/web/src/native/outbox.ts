@@ -19,6 +19,21 @@ export type { Capture, OriginalMeta, PendingCapture, StorageStats };
 
 export type SelectedOriginal = { file: File; role: 'photo' | 'document' };
 
+export type ReviewEntry = {
+  id: string;
+  tagRequestId: string;
+  name: string;
+  quantity: string;
+  include: boolean;
+  categories: string[];
+  tags: string[];
+};
+export type PhotoReviewDraft = {
+  accepted: boolean;
+  acceptedAt?: string;
+  entries: ReviewEntry[];
+  verified?: string[];
+};
 export type DraftFields = {
   locationId: string;
   boxId?: string;
@@ -30,6 +45,7 @@ export type DraftFields = {
   note?: string;
   quantity?: string;
   batchId?: string;
+  review?: PhotoReviewDraft;
 };
 type StoredFields = DraftFields & {
   version: number;
@@ -173,6 +189,7 @@ export function draftFields(capture: Capture): StoredFields {
 }
 
 export function canRetarget(entry: PendingCapture): boolean {
+  if (draftFields(entry.capture).review) return false;
   return (
     (entry.failure === 'target_trashed' || entry.failure === 'target_missing') &&
     !draftFields(entry.capture).attachToThingId
@@ -248,6 +265,9 @@ export async function replayCapture(
 ): Promise<void> {
   // Contract v1: negotiate before uploading files or submitting capture mutations.
   const fields = draftFields(capture);
+  if (fields.review && !fields.review.accepted) return;
+  const reviewed = fields.review?.entries.filter((entry) => entry.include);
+  if (reviewed && !reviewed.length) throw new ReplayError('validation');
   const required = fields.skipServerSuggestions
     ? NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION
     : fields.captureIntent
@@ -272,83 +292,99 @@ export async function replayCapture(
     }
   }
 
-  const subject = fields.attachToThingId ?? capture.id;
-  const payload = CreateThingPayload.parse({
-    id: capture.id,
-    batchId: fields.batchId,
-    target: fields.boxId
-      ? { containerId: fields.boxId }
-      : fields.placeId
-        ? { placeId: fields.placeId }
-        : { unplaced: true },
-    mode: 'thing',
-    ...(fields.attachToThingId
-      ? { attachToThingId: fields.attachToThingId }
-      : {
-          reviewSuggestions: true,
-          captureIntent: fields.captureIntent,
-          skipServerSuggestions: fields.skipServerSuggestions,
-          name: fields.name,
-          note: fields.note,
-          quantity: fields.quantity,
-        }),
-    files: uploadedFiles,
-  });
-
+  const entries = reviewed ?? [{ id: capture.id, name: fields.name, quantity: fields.quantity }];
+  const ops = entries.map((entry) => ({
+    clientVersion: KEPT_VERSION,
+    payloadVersion: fields.attachToThingId ? PAYLOAD_VERSION : required,
+    clientId: entry.id,
+    idempotencyKey: reviewed ? entry.id : (fields.attemptId ?? entry.id),
+    op: 'create_thing' as const,
+    takenAt: fields.review?.acceptedAt ?? capture.takenAt,
+    locationId: fields.locationId,
+    payload: CreateThingPayload.parse({
+      id: entry.id,
+      batchId: fields.batchId,
+      target: fields.boxId
+        ? { containerId: fields.boxId }
+        : fields.placeId
+          ? { placeId: fields.placeId }
+          : { unplaced: true },
+      mode: 'thing',
+      ...(fields.attachToThingId
+        ? { attachToThingId: fields.attachToThingId }
+        : {
+            reviewSuggestions: true,
+            captureIntent: fields.captureIntent,
+            skipServerSuggestions: fields.skipServerSuggestions,
+            name: entry.name,
+            note: fields.note,
+            quantity: entry.quantity || undefined,
+          }),
+      files: uploadedFiles,
+    }),
+  }));
   const response = await adapters.transport.request<SyncOpsResponse>(
     connection,
     capturePaths.syncOps,
-    {
-      method: 'POST',
-      body: {
-        clientVersion: KEPT_VERSION,
-        ops: [
-          {
-            clientVersion: KEPT_VERSION,
-            // Contract v1: native review captures are payload v2; a stored v1 draft
-            // sends the same body and identifiers as v2 (server handles exact replays).
-            payloadVersion: fields.attachToThingId ? PAYLOAD_VERSION : required,
-            clientId: capture.id,
-            idempotencyKey: fields.attemptId ?? capture.id,
-            op: 'create_thing',
-            takenAt: capture.takenAt,
-            locationId: fields.locationId,
-            payload,
-          },
-        ],
-      },
-    },
+    { method: 'POST', body: { clientVersion: KEPT_VERSION, ops } },
   );
-  const result = response.results[0];
-  const expectedKey = fields.attemptId ?? capture.id;
-  if (
-    result?.outcome !== 'applied' ||
-    result.clientId !== capture.id ||
-    result.idempotencyKey !== expectedKey ||
-    result.entity?.type !== 'thing' ||
-    result.entity?.id !== subject
-  ) {
-    throw new ReplayError(result?.reason ?? 'needs_review');
-  }
-
-  if (capture.files.length) {
-    const remaining = new Set(
-      capture.files.map(({ file, sha256 }) => `${file.role}:${file.bytes}:${sha256}`),
-    );
-    let cursor: string | undefined;
-    do {
-      const page: Page<AttachmentView> = await adapters.transport.request(
-        connection,
-        `${inventoryPaths.thingAttachments(subject)}${qs({ limit: 100, cursor })}`,
+  const verified = new Set(fields.review?.verified);
+  let failed: string | undefined;
+  for (const op of ops) {
+    const subject = fields.attachToThingId ?? op.clientId;
+    const result = response.results.find((entry) => entry.clientId === op.clientId);
+    if (
+      result?.outcome !== 'applied' ||
+      result.idempotencyKey !== op.idempotencyKey ||
+      result.entity?.type !== 'thing' ||
+      result.entity?.id !== subject
+    ) {
+      failed ??= result?.reason ?? 'needs_review';
+      continue;
+    }
+    if (verified.has(op.clientId)) continue;
+    const entry = reviewed?.find(({ id }) => id === op.clientId);
+    if (entry?.tags.length) {
+      await adapters.transport.request(connection, inventoryPaths.thingsTags, {
+        method: 'POST',
+        idempotencyKey: entry.tagRequestId,
+        body: { thingIds: [subject], add: entry.tags },
+      });
+    }
+    if (capture.files.length) {
+      const remaining = new Set(
+        capture.files.map(({ file, sha256 }) => `${file.role}:${file.bytes}:${sha256}`),
       );
-      for (const { role, file } of page.items) {
-        if (file) remaining.delete(`${role}:${file.bytes}:${file.sha256}`);
+      let cursor: string | undefined;
+      do {
+        const page: Page<AttachmentView> = await adapters.transport.request(
+          connection,
+          `${inventoryPaths.thingAttachments(subject)}${qs({ limit: 100, cursor })}`,
+        );
+        for (const { role, file } of page.items) {
+          if (file) remaining.delete(`${role}:${file.bytes}:${file.sha256}`);
+        }
+        if (page.next_cursor === cursor) break;
+        cursor = page.next_cursor ?? undefined;
+      } while (cursor && remaining.size);
+      if (remaining.size) {
+        failed ??= 'attachments_unconfirmed';
+        continue;
       }
-      if (page.next_cursor === cursor) break;
-      cursor = page.next_cursor ?? undefined;
-    } while (cursor && remaining.size);
-    if (remaining.size) throw new ReplayError('attachments_unconfirmed');
+    }
+    verified.add(op.clientId);
+    if (fields.review) {
+      await adapters.outbox.retarget(
+        connection,
+        capture.id,
+        JSON.stringify({
+          ...fields,
+          review: { ...fields.review, verified: [...verified] },
+        }),
+      );
+    }
   }
+  if (failed) throw new ReplayError(failed);
 
   await adapters.outbox.complete(connection, capture.id);
 }
@@ -368,6 +404,8 @@ export async function syncOutbox(
   const queue = await adapters.outbox.list(connection);
   let count = 0;
   for (const entry of queue) {
+    const review = draftFields(entry.capture).review;
+    if (review && !review.accepted) continue;
     if (!options.includeFailed && entry.failure && ACTION_REQUIRED_FAILURES.has(entry.failure)) {
       continue;
     }
@@ -395,6 +433,8 @@ export async function retryCapture(
   const queue = await adapters.outbox.list(connection);
   const entry = queue.find((item) => item.capture.id === id);
   if (!entry) return false;
+  const review = draftFields(entry.capture).review;
+  if (review && !review.accepted) return false;
   try {
     await adapters.outbox.clearFailure(connection, id);
     await replayCapture(connection, entry.capture, adapters);

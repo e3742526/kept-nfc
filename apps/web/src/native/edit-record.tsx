@@ -24,6 +24,7 @@ import type {
 import { useErrorText } from '@/components/page';
 import { formValues, isEmptyPatch, toPatch, validate } from '@/components/things/form-model';
 import { useConditionLabels } from '@/components/things/labels';
+import { useFieldLabel } from '@/components/things/names';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { inputClass } from '@/components/ui/field';
@@ -31,6 +32,7 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
+import { CustomFieldEditor, nativeCustomPatch } from './custom-fields';
 import { type Destination, DestinationPicker } from './destination';
 import type { InventoryCache } from './inventory';
 import {
@@ -70,6 +72,8 @@ export function EditRecord({
   const conditions = useConditionLabels();
   const [base] = useState(() => thing && formValues(thing));
   const [values, setValues] = useState(base);
+  const [customDraft, setCustomDraft] = useState<Record<string, unknown>>({});
+  const fieldLabel = useFieldLabel();
   const [roomName, setRoomName] = useState(place?.name ?? '');
   const row = thing ?? place;
   const [rowVersion] = useState(row?.rowVersion);
@@ -110,6 +114,18 @@ export function EditRecord({
   function edit() {
     return run(async () => {
       if (thing && base && values) {
+        const retyped = values.typeId !== base.typeId;
+        if (
+          retyped &&
+          Object.keys(customDraft).length &&
+          !(await confirm({
+            title: t`Change type?`,
+            body: t`Unsaved custom-field edits will be discarded. The new type's fields appear after saving.`,
+            confirmLabel: t`Save`,
+            cancelLabel: t`Cancel`,
+          }))
+        )
+          return;
         const errors = validate(base, values, thing.fields, {
           nameRequired: t`This needs a value.`,
           tooLong: (max) => t`At most ${max} characters.`,
@@ -124,6 +140,16 @@ export function EditRecord({
           return;
         }
         const body = toPatch(base, values, thing.fields);
+        if (!retyped) {
+          const { custom, invalid } = nativeCustomPatch(thing, customDraft);
+          const field = invalid[0];
+          if (field) {
+            const label = fieldLabel(field);
+            setStatus(t`Check the value for ${label}.`);
+            return;
+          }
+          if (Object.keys(custom).length) body.custom = custom;
+        }
         if (!isEmptyPatch(body)) {
           await adapters.transport.request(connection, inventoryPaths.thing(thing.id), {
             method: 'PATCH',
@@ -332,6 +358,20 @@ export function EditRecord({
               >
                 {(option) => <SelectItem id={option.id}>{option.name}</SelectItem>}
               </Select>
+              {thing && values.typeId === base?.typeId && (
+                <CustomFieldEditor
+                  thing={thing}
+                  drafts={customDraft}
+                  onChange={(key, value) =>
+                    setCustomDraft((current) => ({ ...current, [key]: value }))
+                  }
+                />
+              )}
+              {thing && values.typeId !== base?.typeId && (
+                <p className="m-0 text-small text-ink-2">
+                  <Trans>The new type's own fields show after you save.</Trans>
+                </p>
+              )}
             </>
           ) : (
             <TextField

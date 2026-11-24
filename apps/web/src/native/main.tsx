@@ -52,6 +52,7 @@ import {
   nativeErrorCode,
   type StorageStats,
 } from './bridge';
+import { Browse, browseDefaults } from './browse';
 import { CaptureAISettings } from './capture-ai';
 import { CaptureForm, NewBoxForm } from './capture-form';
 import type { Destination } from './destination';
@@ -84,6 +85,7 @@ import {
   syncOutbox,
 } from './outbox';
 import { applyPalette, type PaletteId, setPalette, usePalette } from './palette';
+import { PhotoReview } from './photo-review';
 import { RecordScreen } from './record';
 import { Rooms } from './rooms';
 import { Trash } from './trash';
@@ -91,7 +93,7 @@ import './native.css';
 
 type Screen =
   | { kind: 'home' }
-  | { kind: 'record'; target: Target; backToRooms?: boolean }
+  | { kind: 'record'; target: Target; backToRooms?: boolean; backToBrowse?: boolean }
   | { kind: 'new'; place?: Target }
   | { kind: 'rooms' }
   | { kind: 'unplaced' }
@@ -108,6 +110,8 @@ type Screen =
   | { kind: 'find' | 'enroll'; box: LabelBox }
   | { kind: 'batches' }
   | { kind: 'assistant' }
+  | { kind: 'browse' }
+  | { kind: 'photoReview'; id: string }
   | { kind: 'more' };
 
 type TabKey = 'home' | 'capture' | 'scan' | 'more';
@@ -115,6 +119,8 @@ type TabKey = 'home' | 'capture' | 'scan' | 'more';
 function tabFor(screen: Screen): TabKey {
   switch (screen.kind) {
     case 'capture':
+      return 'capture';
+    case 'photoReview':
       return 'capture';
     case 'identify':
       return 'scan';
@@ -458,6 +464,35 @@ export function Inventory({
   const confirm = useConfirm();
   const formatBytes = useBytes();
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
+  const [browseFilters, setBrowseFilters] = useState(browseDefaults);
+  useEffect(() => {
+    let active = true;
+    void adapters.outbox
+      .getValue(connection, 'browseLayout')
+      .then((raw) => {
+        if (!raw || !active) return;
+        const prefs: unknown = JSON.parse(raw);
+        if (!prefs || typeof prefs !== 'object') return;
+        const { grid, sort } = prefs as Partial<typeof browseDefaults>;
+        setBrowseFilters((prior) => ({
+          ...prior,
+          grid: grid === true,
+          sort:
+            sort === 'name' ||
+            sort === 'recorded' ||
+            sort === 'updated' ||
+            sort === 'lastSeen' ||
+            sort === 'location'
+              ? sort
+              : prior.sort,
+        }));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [adapters, connection]);
+
   const backStack = useRef<Screen[]>([]);
   const [cache, setCache] = useState<InventoryCache>();
   const cacheRef = useRef<InventoryCache | undefined>(undefined);
@@ -974,7 +1009,13 @@ export function Inventory({
                           : 'kept-badge kept-badge-warn'
                       }
                     >
-                      {entry.failure ? t`Failed` : working ? t`Syncing…` : t`Saved on device`}
+                      {fields.review && !fields.review.accepted
+                        ? t`Photo review`
+                        : entry.failure
+                          ? t`Failed`
+                          : working
+                            ? t`Syncing…`
+                            : t`Saved on device`}
                     </span>
                   </div>
                   <p className="text-ink-2">
@@ -986,6 +1027,12 @@ export function Inventory({
                       </>
                     )}
                   </p>
+                  {fields.review?.accepted && (
+                    <p className="m-0 text-small">
+                      <Trans>Synced</Trans> {fields.review.verified?.length ?? 0}/
+                      {fields.review.entries.filter((row) => row.include).length}
+                    </p>
+                  )}
                   {entry.failure && (
                     <p className="text-danger">{failureText(entry.failure, fields)}</p>
                   )}
@@ -1053,9 +1100,13 @@ export function Inventory({
                         size="small"
                         variant="secondary"
                         isDisabled={working}
-                        onPress={() => void retryOne(entry.capture.id)}
+                        onPress={() => {
+                          if (fields.review && !fields.review.accepted)
+                            pushScreen({ kind: 'photoReview', id: entry.capture.id });
+                          else void retryOne(entry.capture.id);
+                        }}
                       >
-                        <Trans>Retry</Trans>
+                        {fields.review && !fields.review.accepted ? t`Review` : t`Retry`}
                       </Button>
                       {canRetarget(entry) && editableBoxes.length > 0 && (
                         <Button
@@ -1294,6 +1345,14 @@ export function Inventory({
               <Button
                 variant="secondary"
                 size="small"
+                isDisabled={!cache}
+                onPress={() => pushScreen({ kind: 'browse' })}
+              >
+                <Trans>Browse</Trans>
+              </Button>
+              <Button
+                variant="secondary"
+                size="small"
                 className="kept-quick-button"
                 isDisabled={!cache}
                 onPress={() => pushScreen({ kind: 'rooms' })}
@@ -1461,7 +1520,13 @@ export function Inventory({
           pending={pending}
           syncing={working}
           online={online}
-          onClose={screen.backToRooms ? () => setScreen({ kind: 'rooms' }) : goHome}
+          onClose={
+            screen.backToBrowse
+              ? goBack
+              : screen.backToRooms
+                ? () => setScreen({ kind: 'rooms' })
+                : goHome
+          }
           onOpen={open}
           onCache={cacheDetail}
           onCreateBox={() => setScreen({ kind: 'new', place: screen.target })}
@@ -1516,9 +1581,24 @@ export function Inventory({
           leaveRef={canLeaveCapture}
           onClose={() => (screen.back ? open(screen.back) : goBack())}
           onSave={savedLocally}
+          onReview={(id) => pushScreen({ kind: 'photoReview', id })}
         />
       )}
       {screen.kind === 'capture' && <div className="mt-4 grid gap-2">{queuePanels}</div>}
+      {screen.kind === 'photoReview' && pending.find((item) => item.capture.id === screen.id) && (
+        <PhotoReview
+          key={screen.id}
+          entry={pending.find((item) => item.capture.id === screen.id) as PendingCapture}
+          cache={cache}
+          connection={connection}
+          online={online}
+          onBack={goBack}
+          onSaved={() => {
+            goBack();
+            savedLocally();
+          }}
+        />
+      )}
       {screen.kind === 'identify' && (
         <LabelPanel
           connection={connection}
@@ -1614,6 +1694,33 @@ export function Inventory({
       )}
       {screen.kind === 'batches' && (
         <Batches connection={connection} onClose={goBack} onOpen={open} onAuthError={onSignOut} />
+      )}
+      {screen.kind === 'browse' && cache && (
+        <Browse
+          connection={connection}
+          online={online}
+          cache={cache}
+          filters={browseFilters}
+          onFilters={(next) => {
+            if (next.grid !== browseFilters.grid || next.sort !== browseFilters.sort) {
+              void adapters.outbox
+                .setValue(
+                  connection,
+                  'browseLayout',
+                  JSON.stringify({ grid: next.grid, sort: next.sort }),
+                )
+                .catch(() => {});
+            }
+            setBrowseFilters(next);
+          }}
+          onBack={goBack}
+          onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onRooms={() => pushScreen({ kind: 'rooms' })}
+          onInventoryChanged={() => {
+            void refresh();
+          }}
+          onAuthError={onSignOut}
+        />
       )}
       {screen.kind === 'assistant' && (
         <AssistantScreen

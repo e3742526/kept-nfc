@@ -193,7 +193,7 @@ public final class Outbox {
     public func commit(
         context: String, id: String, payload: String, takenAt: String, files: [StagedOriginal]
     ) throws -> PendingCapture {
-        guard !payload.isEmpty, payload.utf8.count <= 12_000, files.count <= 20,
+        guard !payload.isEmpty, payload.utf8.count <= 64 * 1024, files.count <= 20,
               Set(files.map { $0.id.lowercased() }).count == files.count
         else { throw OutboxError.invalid }
         let stage = try captureFolder(context: context, id: id, staged: true)
@@ -302,7 +302,7 @@ public final class Outbox {
     }
 
     public func retarget(context: String, id: String, payload: String) throws -> PendingCapture {
-        guard !payload.isEmpty, payload.utf8.count <= 12_000, UUID(uuidString: id) != nil
+        guard !payload.isEmpty, payload.utf8.count <= 64 * 1024, UUID(uuidString: id) != nil
         else { throw OutboxError.invalid }
         let normalizedId = id.lowercased()
         let existing = try query(

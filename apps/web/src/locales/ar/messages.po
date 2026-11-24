@@ -32574,3 +32574,159 @@ msgstr "تكبير"
 #: src/map/map-view.tsx
 msgid "Zoom out"
 msgstr "تصغير"
+
+msgid "Browse"
+msgstr "تصفح"
+
+msgid "All inventory"
+msgstr "كل المخزون"
+
+msgid "Categories"
+msgstr "الفئات"
+
+msgid "Bins"
+msgstr "الصناديق"
+
+msgid "Recorded at"
+msgstr "وقت التسجيل"
+
+msgid "Last modified"
+msgstr "آخر تعديل"
+
+msgid "Last directly confirmed"
+msgstr "آخر تأكيد مباشر"
+
+msgid "Include nested contents"
+msgstr "تضمين المحتويات المتداخلة"
+
+msgid "Include contents of matching bins"
+msgstr "تضمين محتويات الصناديق المطابقة"
+
+msgid "Uncategorized"
+msgstr "بلا فئة"
+
+msgid "Require all selected categories"
+msgstr "مطابقة كل الفئات المحددة"
+
+msgid "Match any filter group"
+msgstr "مطابقة أي مجموعة فلاتر"
+
+msgid "Match every filter group"
+msgstr "مطابقة كل مجموعات الفلاتر"
+
+msgid "Match any selected category"
+msgstr "مطابقة أي فئة محددة"
+
+msgid "Showing cached inventory"
+msgstr "عرض المخزون المحفوظ على الجهاز"
+
+msgid "No matching items"
+msgstr "لا توجد عناصر مطابقة"
+
+msgid "Inside a matching bin"
+msgstr "داخل صندوق مطابق"
+
+msgid "Could not suggest items from this photo."
+msgstr "تعذر اقتراح عناصر من هذه الصورة."
+
+msgid "Suggest items"
+msgstr "اقترح عناصر"
+
+msgid "Photo review"
+msgstr "مراجعة الصورة"
+
+msgid "Review multiple items"
+msgstr "راجع عدة عناصر"
+
+msgid "Search categories"
+msgstr "ابحث في الفئات"
+
+msgid "New category"
+msgstr "فئة جديدة"
+
+msgid "No categories found."
+msgstr "لم يتم العثور على فئات."
+
+msgid "Assign"
+msgstr "عيّن"
+
+msgid "Delete category?"
+msgstr "هل تريد حذف الفئة؟"
+
+msgid "Inventory entries will stay in SheepKeep."
+msgstr "ستبقى سجلات المخزون في SheepKeep."
+
+msgid "Add another"
+msgstr "أضف آخر"
+
+msgid "Linked record"
+msgstr "سجل مرتبط"
+
+msgid "Change type?"
+msgstr "هل تريد تغيير النوع؟"
+
+msgid "Unsaved custom-field edits will be discarded. The new type's fields appear after saving."
+msgstr "ستُهمل تعديلات الحقول المخصصة غير المحفوظة. تظهر حقول النوع الجديد بعد الحفظ."
+
+msgid "Check the value for {label}."
+msgstr "تحقق من قيمة {label}."
+
+msgid "Create category {name}?"
+msgstr "هل تريد إنشاء الفئة {name}؟"
+
+msgid "Open original photo"
+msgstr "افتح الصورة الأصلية"
+
+msgid "Deselect all"
+msgstr "ألغ تحديد الكل"
+
+msgid "Suggested categories"
+msgstr "الفئات المقترحة"
+
+msgid "Add entry"
+msgstr "أضف سجلاً"
+
+msgid "Group description"
+msgstr "وصف المجموعة"
+
+msgid "Combine into one entry"
+msgstr "ادمج في سجل واحد"
+
+msgid "Save selected entries"
+msgstr "احفظ السجلات المحددة"
+
+msgid "Record for {name} moved to Trash"
+msgstr "نُقل سجل {name} إلى سلة المهملات"
+
+msgid "Record for {name} restored"
+msgstr "استُعيد سجل {name}"
+
+msgid "Recorded {name} in {destination}"
+msgstr "سُجل {name} في {destination}"
+
+msgid "Added {name} to {destination}"
+msgstr "أُضيف {name} إلى {destination}"
+
+msgid "Observed at"
+msgstr "وقت الملاحظة"
+
+msgid "Starter categories"
+msgstr "فئات مقترحة"
+
+msgid "Assigned category {added}"
+msgstr "عُينت الفئة {added}"
+
+msgid "Removed category {removed}"
+msgstr "أُزيلت الفئة {removed}"
+
+msgid "Updated categories for {name}"
+msgstr "حُدثت فئات {name}"
+
+msgid "Updated custom fields for {name}"
+msgstr "حُدثت الحقول المخصصة لـ {name}"
+
+msgid "Existing categories with similar names include {near}."
+msgstr "تتضمن الفئات الحالية ذات الأسماء المشابهة {near}."
+
+msgid "Suggest categories"
+msgstr "اقترح فئات"

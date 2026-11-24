@@ -32574,3 +32574,159 @@ msgstr "Zoom in"
 #: src/map/map-view.tsx
 msgid "Zoom out"
 msgstr "Zoom out"
+
+msgid "Browse"
+msgstr "Browse"
+
+msgid "All inventory"
+msgstr "All inventory"
+
+msgid "Categories"
+msgstr "Categories"
+
+msgid "Bins"
+msgstr "Bins"
+
+msgid "Recorded at"
+msgstr "Recorded at"
+
+msgid "Last modified"
+msgstr "Last modified"
+
+msgid "Last directly confirmed"
+msgstr "Last directly confirmed"
+
+msgid "Include nested contents"
+msgstr "Include nested contents"
+
+msgid "Include contents of matching bins"
+msgstr "Include contents of matching bins"
+
+msgid "Uncategorized"
+msgstr "Uncategorized"
+
+msgid "Require all selected categories"
+msgstr "Require all selected categories"
+
+msgid "Match any filter group"
+msgstr "Match any filter group"
+
+msgid "Match every filter group"
+msgstr "Match every filter group"
+
+msgid "Match any selected category"
+msgstr "Match any selected category"
+
+msgid "Showing cached inventory"
+msgstr "Showing cached inventory"
+
+msgid "No matching items"
+msgstr "No matching items"
+
+msgid "Inside a matching bin"
+msgstr "Inside a matching bin"
+
+msgid "Could not suggest items from this photo."
+msgstr "Could not suggest items from this photo."
+
+msgid "Suggest items"
+msgstr "Suggest items"
+
+msgid "Photo review"
+msgstr "Photo review"
+
+msgid "Review multiple items"
+msgstr "Review multiple items"
+
+msgid "Search categories"
+msgstr "Search categories"
+
+msgid "New category"
+msgstr "New category"
+
+msgid "No categories found."
+msgstr "No categories found."
+
+msgid "Assign"
+msgstr "Assign"
+
+msgid "Delete category?"
+msgstr "Delete category?"
+
+msgid "Inventory entries will stay in SheepKeep."
+msgstr "Inventory entries will stay in SheepKeep."
+
+msgid "Add another"
+msgstr "Add another"
+
+msgid "Linked record"
+msgstr "Linked record"
+
+msgid "Change type?"
+msgstr "Change type?"
+
+msgid "Unsaved custom-field edits will be discarded. The new type's fields appear after saving."
+msgstr "Unsaved custom-field edits will be discarded. The new type's fields appear after saving."
+
+msgid "Check the value for {label}."
+msgstr "Check the value for {label}."
+
+msgid "Create category {name}?"
+msgstr "Create category {name}?"
+
+msgid "Open original photo"
+msgstr "Open original photo"
+
+msgid "Deselect all"
+msgstr "Deselect all"
+
+msgid "Suggested categories"
+msgstr "Suggested categories"
+
+msgid "Add entry"
+msgstr "Add entry"
+
+msgid "Group description"
+msgstr "Group description"
+
+msgid "Combine into one entry"
+msgstr "Combine into one entry"
+
+msgid "Save selected entries"
+msgstr "Save selected entries"
+
+msgid "Record for {name} moved to Trash"
+msgstr "Record for {name} moved to Trash"
+
+msgid "Record for {name} restored"
+msgstr "Record for {name} restored"
+
+msgid "Recorded {name} in {destination}"
+msgstr "Recorded {name} in {destination}"
+
+msgid "Added {name} to {destination}"
+msgstr "Added {name} to {destination}"
+
+msgid "Observed at"
+msgstr "Observed at"
+
+msgid "Starter categories"
+msgstr "Starter categories"
+
+msgid "Assigned category {added}"
+msgstr "Assigned category {added}"
+
+msgid "Removed category {removed}"
+msgstr "Removed category {removed}"
+
+msgid "Updated categories for {name}"
+msgstr "Updated categories for {name}"
+
+msgid "Updated custom fields for {name}"
+msgstr "Updated custom fields for {name}"
+
+msgid "Existing categories with similar names include {near}."
+msgstr "Existing categories with similar names include {near}."
+
+msgid "Suggest categories"
+msgstr "Suggest categories"

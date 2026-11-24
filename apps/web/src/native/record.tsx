@@ -40,6 +40,8 @@ import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
+import { CategoryEditor } from './category-editor';
+import { CustomFieldDetails } from './custom-fields';
 import type { Destination } from './destination';
 import { EditRecord } from './edit-record';
 import {
@@ -264,6 +266,7 @@ export function RecordScreen({
   const [section, setSection] = useState<'all' | 'contents' | 'media' | 'history'>('all');
   const [editingFiles, setEditingFiles] = useState(false);
   const [changing, setChanging] = useState(false);
+  const [categorizing, setCategorizing] = useState(false);
   const [checkId, setCheckId] = useState(newId);
   const [childRows, setChildRows] = useState<ThingRow[]>([]);
   const describe = useRef(errorText);
@@ -343,7 +346,8 @@ export function RecordScreen({
   const thing = detail?.thing;
   const row = thing ?? place ?? cached;
   const name = row?.name ?? t`Untitled`;
-  const locationName = cache?.locations.find((location) => location.id === target.locationId)?.name;
+  const currentLocation = cache?.locations.find((location) => location.id === target.locationId);
+  const locationName = currentLocation?.name;
   const path =
     row && 'path' in row
       ? [locationName, ...row.path.map((step) => step.name)].filter(Boolean).join(' › ')
@@ -708,6 +712,47 @@ export function RecordScreen({
               }}
               onAuthError={onAuthError}
             />
+          )}
+          {thing && section === 'all' && (
+            <>
+              <CustomFieldDetails
+                thing={thing}
+                connection={connection}
+                attachments={detail?.attachments ?? []}
+                online={online}
+              />
+              {thing.tags.length > 0 && (
+                <ul aria-label={t`Categories`} className="flex flex-wrap gap-2">
+                  {thing.tags.map((tag) => (
+                    <li className="rounded-lg bg-sunken px-2 py-1" key={tag.id}>
+                      <bdi>{tag.name}</bdi>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {canEdit && currentLocation?.ownerAccountId && (
+                <>
+                  <Button
+                    variant="secondary"
+                    aria-expanded={categorizing}
+                    onPress={() => setCategorizing((current) => !current)}
+                  >
+                    <Trans>Categories</Trans>
+                  </Button>
+                  {categorizing && (
+                    <CategoryEditor
+                      connection={connection}
+                      accountId={currentLocation.ownerAccountId}
+                      online={online}
+                      manage={false}
+                      things={[thing.id]}
+                      assigned={thing.tags}
+                      onChange={changed}
+                    />
+                  )}
+                </>
+              )}
+            </>
           )}
           {hasSections && (
             <fieldset className="kept-pill-bar m-0 border-0 p-0" aria-label={t`Filter`}>

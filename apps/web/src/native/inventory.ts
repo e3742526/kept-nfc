@@ -5,6 +5,7 @@ import {
   type SnapLocation,
   type SnapPlace,
   type SnapshotPage,
+  type SnapTag,
   type SnapThing,
   type SnapType,
 } from '@kept/shared';
@@ -29,6 +30,7 @@ export type InventoryCache = {
   truncated: boolean;
   locations: SnapLocation[];
   types: SnapType[];
+  tags?: SnapTag[];
   places: SnapPlace[];
   things: SnapThing[];
   codes: SnapCode[];
@@ -49,7 +51,11 @@ export function previewUrl(url: string | null | undefined, origin: string): stri
 
 const searchTerms = (value: string | null | undefined) => queryWords(value ?? '');
 
-export function localInventorySearch(cache: InventoryCache, query: string): SnapThing[] {
+export function localInventorySearch(
+  cache: InventoryCache,
+  query: string,
+  limit = 50,
+): SnapThing[] {
   const words = queryWords(query);
   if (!words.length) return [];
   const byThing = legacyCodesByThing(cache.legacyCodes);
@@ -73,7 +79,7 @@ export function localInventorySearch(cache: InventoryCache, query: string): Snap
         words,
       );
     })
-    .slice(0, 50);
+    .slice(0, limit);
 }
 
 export function inventoryPath(cache: InventoryCache, record: SnapThing | SnapPlace): string[] {
@@ -164,6 +170,7 @@ export async function loadInventory(
         truncated: page.truncated === true,
         locations: page.locations,
         types: page.types.items ?? old?.types ?? [],
+        tags: page.tags?.items ?? old?.tags ?? [],
         places: inScope(places.values()),
         things: inScope(things.values()),
         codes: inScope(codes.values()),

@@ -1,7 +1,7 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ChevronRight, Clock, MapPin, Package, Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { inventoryPaths } from '@/api/inventory/paths';
 import type { CreatePlaceBody, PlaceView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
@@ -12,7 +12,7 @@ import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import { LocationPicker, writableLocations } from './destination';
-import { type InventoryCache, inventoryPath } from './inventory';
+import { type InventoryCache, inventoryPath, previewUrl } from './inventory';
 import type { Target } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
 
@@ -189,6 +189,11 @@ export function Rooms({
           </ul>
         </section>
       )}
+      {(!online || cache.truncated) && (
+        <p className="text-small text-ink-2">
+          <Trans>Showing cached inventory</Trans>
+        </p>
+      )}
       {rooms.length ? (
         <ul className="grid gap-2">
           {rooms.map((room) => (
@@ -199,12 +204,19 @@ export function Rooms({
                 onPress={() => onOpen({ kind: 'place', id: room.id, locationId: room.locationId })}
               >
                 <span className="kept-row-lead" aria-hidden>
-                  <MapPin size={18} />
+                  <RoomCover connection={connection} id={room.id} online={online} />
                 </span>
                 <span className="kept-row-body">
                   <bdi className="text-body font-semibold">{room.name}</bdi>
                   <span className="text-small font-normal text-ink-2">
                     <bdi>{inventoryPath(cache, room).join(' › ')}</bdi>
+                    {' · '}
+                    <Trans>Contents</Trans>{' '}
+                    {
+                      cache.things.filter(
+                        (item) => item.placeId === room.id && item.reviewState === 'confirmed',
+                      ).length
+                    }
                   </span>
                 </span>
                 <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
@@ -218,5 +230,57 @@ export function Rooms({
         </p>
       )}
     </section>
+  );
+}
+
+function RoomCover({
+  connection,
+  id,
+  online,
+}: {
+  connection: Connection;
+  id: string;
+  online: boolean;
+}) {
+  const { transport } = usePlatform();
+  const marker = useRef<HTMLSpanElement>(null);
+  const [thumb, setThumb] = useState<string>();
+  useEffect(() => {
+    if (!online || !marker.current || typeof IntersectionObserver === 'undefined') return;
+    let active = true;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      observer.disconnect();
+      void transport
+        .request<PlaceView>(connection, inventoryPaths.place(id))
+        .then((place) => {
+          if (!active) return;
+          const photo = place.attachments.find(
+            (item) => item.role === 'photo' && item.file?.thumbUrl,
+          );
+          setThumb(previewUrl(photo?.file?.thumbUrl, connection.origin));
+        })
+        .catch(() => {});
+    });
+    observer.observe(marker.current);
+    return () => {
+      active = false;
+      observer.disconnect();
+    };
+  }, [connection, id, online, transport]);
+  return (
+    <span ref={marker}>
+      {online && thumb ? (
+        <img
+          src={thumb}
+          alt=""
+          className="kept-thumb"
+          loading="lazy"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <MapPin size={18} />
+      )}
+    </span>
   );
 }

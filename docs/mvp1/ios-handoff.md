@@ -92,4 +92,13 @@ Enable Sign in with Apple for `info.keptinventory.nfc`, refresh the signing prof
 
 - Held-work reconciliation/adoption into a restored server is intentionally unimplemented (bounded review, preview, metadata+originals Share Sheet export, and explicit discard only).
 - End-to-end tests against a real rolled-back/upgraded HTTP server live in the server suite (`apps/server/src/sync/native-compat.test.ts`); phone UI rolled-back/401-probe flows were verified with fake transport doubles.
-- Existing-record editing remains follow-on work. Browser visual search and the remaining held-out qualification are tracked in the [visual retrieval plan](visual-retrieval-plan.md).
+- Browser visual search and the remaining held-out qualification are tracked in the [visual retrieval plan](visual-retrieval-plan.md).
+
+## Multi-item photo review and Browse
+
+1. Open **Add** or **Add to this bin**, choose the destination, and take or select one photo. Choose a provider and tap **Suggest items**. To keep a broad description, enter it and tap **Suggest categories**. Open **Review multiple items** to enter descriptions manually.
+2. In review, open the original, edit names, and exclude any unwanted proposals. Assign existing categories or explicitly create a new one. Leave the app and reopen **Review** from the pending capture list to check recovery.
+3. Save the selected entries. Disconnect and reconnect while syncing to check progress and retry with the same identities. Confirm that each entry opens the same original and that its remaining copies survive when one record goes to Trash.
+4. Open **Browse** from Search. Compare a room and category intersection, a category union, an all-categories comparison, and a cross-group union. Check the bin-contents option and confirm that inherited results have no new direct assignment.
+5. Edit an item or bin with defined custom fields. Check zero, false, clearing an optional value, and a repeatable field. Switch types and confirm the new definitions appear after saving.
+6. Check History for server-recorded and device-save times, a correction, a photo-only event and a Trash event. Check Apple Intelligence and ChatGPT plan inference separately on the physical 17P.

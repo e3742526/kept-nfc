@@ -85,6 +85,7 @@ type NativeKept = {
     provider: Exclude<CaptureAIProvider, 'server'>;
     model?: string;
     jpeg: string;
+    multiple?: boolean;
   }): Promise<{ name: string }>;
   request(input: {
     context: string;

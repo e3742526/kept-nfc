@@ -1,5 +1,6 @@
+import { type DevicePhotoProposal, DevicePhotoProposals, normalize } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -162,16 +163,22 @@ export function CaptureAISettings({ connection }: { connection: Connection }) {
 export function CaptureSuggestion({
   connection,
   file,
+  locationId,
   provider,
   onProviderChange,
   onUse,
+  onProposals,
+  onCategories,
   disabled,
 }: {
   connection: Connection;
   file: File;
+  locationId?: string;
   provider: CaptureAIProvider;
   onProviderChange: (provider: CaptureAIProvider) => void;
   onUse: (name: string) => void;
+  onProposals?: (items: DevicePhotoProposal[]) => Promise<void>;
+  onCategories?: (items: DevicePhotoProposal[]) => Promise<void>;
   disabled: boolean;
 }) {
   const { t } = useLingui();
@@ -182,6 +189,17 @@ export function CaptureSuggestion({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [suggestion, setSuggestion] = useState('');
+  const active = useRef(true);
+  const reviewCallbacks = useRef({ items: onProposals, categories: onCategories });
+  useLayoutEffect(() => {
+    reviewCallbacks.current = { items: onProposals, categories: onCategories };
+  }, [onProposals, onCategories]);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const providers: { id: CaptureAIProvider; name: string }[] = [
     { id: 'server', name: t`Server API` },
     { id: 'apple', name: t`Apple Intelligence` },
@@ -210,30 +228,56 @@ export function CaptureSuggestion({
     };
   }, [captureAI, connection, provider, status, t]);
 
-  async function suggest() {
-    if (!captureAI || provider === 'server' || busy) return;
+  async function suggest(review?: 'items' | 'categories') {
+    if (!captureAI || busy) return;
     setBusy(true);
     setSuggestion('');
     setMessage('');
     try {
-      const { name } = await captureAI.suggest(
-        connection,
-        provider,
-        file,
-        provider === 'chatgpt' ? model : undefined,
-      );
-      setSuggestion(name);
+      const modelId = provider === 'chatgpt' ? model : undefined;
+      if (review) {
+        let value: unknown;
+        if (provider === 'server') {
+          if (!locationId || !captureAI.serverProposals) return;
+          value = await captureAI.serverProposals(connection, locationId, file);
+        } else {
+          const { name } = await captureAI.suggest(connection, provider, file, modelId, true);
+          const raw = name.replace(/^\s*\x60{3}(?:json)?\s*|\s*\x60{3}\s*$/gi, '');
+          value = JSON.parse(raw);
+        }
+        const { items } = DevicePhotoProposals.parse(value);
+        if (!active.current) return;
+        const seen = new Set<string>();
+        await reviewCallbacks.current[review]?.(
+          items.filter((item) => {
+            const key = normalize(item.name);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          }),
+        );
+      } else if (provider !== 'server') {
+        const { name } = await captureAI.suggest(connection, provider, file, modelId);
+        if (active.current) setSuggestion(name);
+      }
     } catch (error) {
       const code = nativeErrorCode(error);
+      if (!active.current) return;
       setMessage(
         code === 'quota'
           ? t`Your ChatGPT plan reached a usage limit.`
-          : code === 'reconnect'
-            ? t`Reconnect ChatGPT and try again.`
-            : t`Could not suggest a description from this photo.`,
+          : code === 'ai_unavailable'
+            ? t`AI isn't set up here`
+            : code === 'ai_paused'
+              ? t`AI paused`
+              : code === 'reconnect'
+                ? t`Reconnect ChatGPT and try again.`
+                : review
+                  ? t`Could not suggest items from this photo.`
+                  : t`Could not suggest a description from this photo.`,
       );
     } finally {
-      setBusy(false);
+      if (active.current) setBusy(false);
     }
   }
 
@@ -251,6 +295,8 @@ export function CaptureSuggestion({
     provider === 'apple'
       ? status.apple === 'available'
       : provider === 'chatgpt' && models.some(({ id }) => id === model);
+  const canReview =
+    canSuggest || (provider === 'server' && !!locationId && !!captureAI.serverProposals);
 
   return (
     <div className="kept-card">
@@ -321,6 +367,26 @@ export function CaptureSuggestion({
           onPress={() => void suggest()}
         >
           <Trans>Suggest description</Trans>
+        </Button>
+      )}
+      {canReview && onProposals && (
+        <Button
+          variant="secondary"
+          isPending={busy}
+          isDisabled={disabled}
+          onPress={() => void suggest('items')}
+        >
+          <Trans>Suggest items</Trans>
+        </Button>
+      )}
+      {canReview && onCategories && (
+        <Button
+          variant="secondary"
+          isPending={busy}
+          isDisabled={disabled}
+          onPress={() => void suggest('categories')}
+        >
+          <Trans>Suggest categories</Trans>
         </Button>
       )}
       {suggestion && (

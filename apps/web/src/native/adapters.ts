@@ -1,4 +1,5 @@
 import { createContext, createElement, type ReactNode, useContext } from 'react';
+import { capturePaths } from '@/api/capture/paths';
 import type { FileView } from '@/api/inventory/types';
 import { fromFile } from '@/camera/image';
 import {
@@ -128,6 +129,7 @@ export type PlatformAdapters = {
   lifecycle: PlatformLifecycle;
   visualSearch?: VisualSearchAdapter;
   captureAI?: {
+    serverProposals?: (connection: Connection, locationId: string, file: File) => Promise<unknown>;
     status(connection: Connection): Promise<CaptureAIStatus>;
     connect(connection: Connection): Promise<{ account: string }>;
     disconnect(connection: Connection): Promise<{ revoked: boolean }>;
@@ -137,6 +139,7 @@ export type PlatformAdapters = {
       provider: Exclude<CaptureAIProvider, 'server'>,
       file: File,
       model?: string,
+      multiple?: boolean,
     ): Promise<{ name: string }>;
   };
 };
@@ -147,29 +150,39 @@ const callOutbox = (
   fields: Record<string, string | number> = {},
 ) => native.outbox({ context: connection.id, action, ...fields }).catch(networkError);
 
+async function photoJpeg(file: File): Promise<string> {
+  const { original, previewUnavailable } = await fromFile(file, 'thing');
+  if (previewUnavailable || original.type !== 'image/jpeg') throw new Error('Invalid photo');
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const prefix = 'data:image/jpeg;base64,';
+      if (typeof reader.result === 'string' && reader.result.startsWith(prefix))
+        resolve(reader.result.slice(prefix.length));
+      else reject(new Error('Invalid photo'));
+    };
+    reader.readAsDataURL(original);
+  });
+}
+
 export const capacitorAdapters: PlatformAdapters = {
   captureAI: {
+    async serverProposals(connection, locationId, file) {
+      return nativeRequest(connection, capturePaths.nativePhotoProposals, {
+        method: 'POST',
+        body: { locationId, jpeg: await photoJpeg(file) },
+      });
+    },
     status: ({ id }) => native.captureAIStatus({ context: id }),
     connect: ({ id }) => native.connectCaptureChatGPT({ context: id }),
     disconnect: ({ id }) => native.disconnectCaptureChatGPT({ context: id }),
     async models({ id }) {
       return (await native.captureChatGPTModels({ context: id })).models;
     },
-    async suggest({ id }, provider, file, model) {
-      const { original, previewUnavailable } = await fromFile(file, 'thing');
-      if (previewUnavailable || original.type !== 'image/jpeg') throw new Error('Invalid photo');
-      const jpeg = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = () => reject(reader.error);
-        reader.onload = () => {
-          const prefix = 'data:image/jpeg;base64,';
-          if (typeof reader.result === 'string' && reader.result.startsWith(prefix))
-            resolve(reader.result.slice(prefix.length));
-          else reject(new Error('Invalid photo'));
-        };
-        reader.readAsDataURL(original);
-      });
-      return native.suggestCaptureName({ context: id, provider, model, jpeg });
+    async suggest({ id }, provider, file, model, multiple) {
+      const jpeg = await photoJpeg(file);
+      return native.suggestCaptureName({ context: id, provider, model, jpeg, multiple });
     },
   },
   credentials: {

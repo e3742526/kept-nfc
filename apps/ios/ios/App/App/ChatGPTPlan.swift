@@ -142,7 +142,7 @@ final class ChatGPTPlan {
         }
     }
 
-    func describe(context: String, model: String, jpeg: String) async throws -> String {
+    func describe(context: String, model: String, jpeg: String, multiple: Bool = false) async throws -> String {
         try await perform {
             var request = try await apiRequest("/responses", context: context)
             request.httpMethod = "POST"
@@ -150,11 +150,11 @@ final class ChatGPTPlan {
             request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
             request.httpBody = try JSONSerialization.data(withJSONObject: [
                 "model": model, "store": false, "stream": true,
-                "instructions": inventoryPhotoInstructions,
+                "instructions": multiple ? inventoryItemsInstructions : inventoryPhotoInstructions,
                 "input": [[
                     "role": "user",
                     "content": [
-                        ["type": "input_text", "text": "Describe the main item in this inventory photo."],
+                        ["type": "input_text", "text": multiple ? "List the visible inventory items." : "Describe the main item in this inventory photo."],
                         ["type": "input_image", "image_url": "data:image/jpeg;base64,\(jpeg)", "detail": "auto"]
                     ]
                 ]]

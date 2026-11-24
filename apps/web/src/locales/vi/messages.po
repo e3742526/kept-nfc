@@ -32574,3 +32574,159 @@ msgstr "Phóng to"
 #: src/map/map-view.tsx
 msgid "Zoom out"
 msgstr "Thu nhỏ"
+
+msgid "Browse"
+msgstr "Duyệt"
+
+msgid "All inventory"
+msgstr "Toàn bộ kho đồ"
+
+msgid "Categories"
+msgstr "Danh mục"
+
+msgid "Bins"
+msgstr "Thùng"
+
+msgid "Recorded at"
+msgstr "Thời điểm ghi nhận"
+
+msgid "Last modified"
+msgstr "Lần sửa cuối"
+
+msgid "Last directly confirmed"
+msgstr "Lần xác nhận trực tiếp cuối"
+
+msgid "Include nested contents"
+msgstr "Bao gồm nội dung lồng nhau"
+
+msgid "Include contents of matching bins"
+msgstr "Bao gồm đồ trong các thùng phù hợp"
+
+msgid "Uncategorized"
+msgstr "Chưa phân loại"
+
+msgid "Require all selected categories"
+msgstr "Yêu cầu mọi danh mục đã chọn"
+
+msgid "Match any filter group"
+msgstr "Khớp với bất kỳ nhóm bộ lọc nào"
+
+msgid "Match every filter group"
+msgstr "Khớp với mọi nhóm bộ lọc"
+
+msgid "Match any selected category"
+msgstr "Khớp với bất kỳ danh mục đã chọn nào"
+
+msgid "Showing cached inventory"
+msgstr "Đang hiển thị kho đồ lưu trên thiết bị"
+
+msgid "No matching items"
+msgstr "Không có mục phù hợp"
+
+msgid "Inside a matching bin"
+msgstr "Trong một thùng phù hợp"
+
+msgid "Could not suggest items from this photo."
+msgstr "Không thể đề xuất đồ vật từ ảnh này."
+
+msgid "Suggest items"
+msgstr "Đề xuất đồ vật"
+
+msgid "Photo review"
+msgstr "Xem lại ảnh"
+
+msgid "Review multiple items"
+msgstr "Xem lại nhiều mục"
+
+msgid "Search categories"
+msgstr "Tìm danh mục"
+
+msgid "New category"
+msgstr "Danh mục mới"
+
+msgid "No categories found."
+msgstr "Không tìm thấy danh mục."
+
+msgid "Assign"
+msgstr "Gán"
+
+msgid "Delete category?"
+msgstr "Xóa danh mục?"
+
+msgid "Inventory entries will stay in SheepKeep."
+msgstr "Các mục kho đồ sẽ được giữ trong SheepKeep."
+
+msgid "Add another"
+msgstr "Thêm giá trị khác"
+
+msgid "Linked record"
+msgstr "Bản ghi được liên kết"
+
+msgid "Change type?"
+msgstr "Đổi loại?"
+
+msgid "Unsaved custom-field edits will be discarded. The new type's fields appear after saving."
+msgstr "Các chỉnh sửa trường tùy chỉnh chưa lưu sẽ bị hủy. Các trường của loại mới sẽ xuất hiện sau khi lưu."
+
+msgid "Check the value for {label}."
+msgstr "Kiểm tra giá trị của {label}."
+
+msgid "Create category {name}?"
+msgstr "Tạo danh mục {name}?"
+
+msgid "Open original photo"
+msgstr "Mở ảnh gốc"
+
+msgid "Deselect all"
+msgstr "Bỏ chọn tất cả"
+
+msgid "Suggested categories"
+msgstr "Danh mục đề xuất"
+
+msgid "Add entry"
+msgstr "Thêm mục"
+
+msgid "Group description"
+msgstr "Mô tả nhóm"
+
+msgid "Combine into one entry"
+msgstr "Gộp thành một mục"
+
+msgid "Save selected entries"
+msgstr "Lưu các mục đã chọn"
+
+msgid "Record for {name} moved to Trash"
+msgstr "Bản ghi của {name} đã được chuyển vào Thùng rác"
+
+msgid "Record for {name} restored"
+msgstr "Đã khôi phục bản ghi của {name}"
+
+msgid "Recorded {name} in {destination}"
+msgstr "Đã ghi nhận {name} tại {destination}"
+
+msgid "Added {name} to {destination}"
+msgstr "Đã thêm {name} vào {destination}"
+
+msgid "Observed at"
+msgstr "Thời điểm quan sát"
+
+msgid "Starter categories"
+msgstr "Danh mục khởi đầu"
+
+msgid "Assigned category {added}"
+msgstr "Đã gán danh mục {added}"
+
+msgid "Removed category {removed}"
+msgstr "Đã bỏ danh mục {removed}"
+
+msgid "Updated categories for {name}"
+msgstr "Đã cập nhật danh mục của {name}"
+
+msgid "Updated custom fields for {name}"
+msgstr "Đã cập nhật trường tùy chỉnh của {name}"
+
+msgid "Existing categories with similar names include {near}."
+msgstr "Các danh mục hiện có với tên tương tự gồm {near}."
+
+msgid "Suggest categories"
+msgstr "Đề xuất danh mục"

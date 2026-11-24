@@ -32574,3 +32574,159 @@ msgstr "Zoom avant"
 #: src/map/map-view.tsx
 msgid "Zoom out"
 msgstr "Zoom arrière"
+
+msgid "Browse"
+msgstr "Explorer"
+
+msgid "All inventory"
+msgstr "Tout l’inventaire"
+
+msgid "Categories"
+msgstr "Catégories"
+
+msgid "Bins"
+msgstr "Bacs"
+
+msgid "Recorded at"
+msgstr "Enregistré le"
+
+msgid "Last modified"
+msgstr "Dernière modification"
+
+msgid "Last directly confirmed"
+msgstr "Dernière confirmation directe"
+
+msgid "Include nested contents"
+msgstr "Inclure le contenu imbriqué"
+
+msgid "Include contents of matching bins"
+msgstr "Inclure le contenu des bacs correspondants"
+
+msgid "Uncategorized"
+msgstr "Sans catégorie"
+
+msgid "Require all selected categories"
+msgstr "Exiger toutes les catégories sélectionnées"
+
+msgid "Match any filter group"
+msgstr "Correspondre à un groupe de filtres quelconque"
+
+msgid "Match every filter group"
+msgstr "Correspondre à tous les groupes de filtres"
+
+msgid "Match any selected category"
+msgstr "Correspondre à une catégorie sélectionnée quelconque"
+
+msgid "Showing cached inventory"
+msgstr "Affichage de l’inventaire enregistré sur l’appareil"
+
+msgid "No matching items"
+msgstr "Aucun objet correspondant"
+
+msgid "Inside a matching bin"
+msgstr "Dans un bac correspondant"
+
+msgid "Could not suggest items from this photo."
+msgstr "Impossible de proposer des objets à partir de cette photo."
+
+msgid "Suggest items"
+msgstr "Proposer des objets"
+
+msgid "Photo review"
+msgstr "Vérification de la photo"
+
+msgid "Review multiple items"
+msgstr "Vérifier plusieurs objets"
+
+msgid "Search categories"
+msgstr "Rechercher des catégories"
+
+msgid "New category"
+msgstr "Nouvelle catégorie"
+
+msgid "No categories found."
+msgstr "Aucune catégorie trouvée."
+
+msgid "Assign"
+msgstr "Attribuer"
+
+msgid "Delete category?"
+msgstr "Supprimer la catégorie ?"
+
+msgid "Inventory entries will stay in SheepKeep."
+msgstr "Les entrées d’inventaire resteront dans SheepKeep."
+
+msgid "Add another"
+msgstr "Ajouter une autre valeur"
+
+msgid "Linked record"
+msgstr "Entrée liée"
+
+msgid "Change type?"
+msgstr "Changer le type ?"
+
+msgid "Unsaved custom-field edits will be discarded. The new type's fields appear after saving."
+msgstr "Les modifications non enregistrées des champs personnalisés seront perdues. Les champs du nouveau type s’affichent après l’enregistrement."
+
+msgid "Check the value for {label}."
+msgstr "Vérifiez la valeur de {label}."
+
+msgid "Create category {name}?"
+msgstr "Créer la catégorie {name} ?"
+
+msgid "Open original photo"
+msgstr "Ouvrir la photo d’origine"
+
+msgid "Deselect all"
+msgstr "Tout désélectionner"
+
+msgid "Suggested categories"
+msgstr "Catégories suggérées"
+
+msgid "Add entry"
+msgstr "Ajouter une entrée"
+
+msgid "Group description"
+msgstr "Description du groupe"
+
+msgid "Combine into one entry"
+msgstr "Regrouper en une seule entrée"
+
+msgid "Save selected entries"
+msgstr "Enregistrer les entrées sélectionnées"
+
+msgid "Record for {name} moved to Trash"
+msgstr "L’entrée de {name} a été mise à la corbeille"
+
+msgid "Record for {name} restored"
+msgstr "L’entrée de {name} a été restaurée"
+
+msgid "Recorded {name} in {destination}"
+msgstr "{name} enregistré dans {destination}"
+
+msgid "Added {name} to {destination}"
+msgstr "{name} ajouté à {destination}"
+
+msgid "Observed at"
+msgstr "Observé le"
+
+msgid "Starter categories"
+msgstr "Catégories de départ"
+
+msgid "Assigned category {added}"
+msgstr "Catégorie {added} attribuée"
+
+msgid "Removed category {removed}"
+msgstr "Catégorie {removed} retirée"
+
+msgid "Updated categories for {name}"
+msgstr "Catégories de {name} mises à jour"
+
+msgid "Updated custom fields for {name}"
+msgstr "Champs personnalisés de {name} mis à jour"
+
+msgid "Existing categories with similar names include {near}."
+msgstr "Les catégories existantes aux noms similaires incluent {near}."
+
+msgid "Suggest categories"
+msgstr "Suggérer des catégories"

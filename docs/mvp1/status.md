@@ -21,3 +21,7 @@ Use the [physical-device checklist](../runbooks/nfc-mvp.md#physical-device-accep
 Xcode 27.2 built an arm64 Release app with an Apple development profile for `info.keptinventory.nfc` carrying the NDEF entitlement. Signature validation, CoreDevice installation readback and foreground launch passed. The detached build used the same team and bundle ID for both device builds.
 
 The disposable fixture used PostgreSQL, local blob storage and a private HTTPS origin. Browser password and TOTP verification returned 200 on the phone. The consent form returned the expected 303. At this checkpoint the server had received no native exchange request and issued no native session. Local diagnostic and installation logs are under the ignored `.tmp/mvp1-g1/` directory.
+
+## Native inventory workflows · 2026-11-23
+
+The native workflow branch adds reviewed photo batches, tag-backed categories and Browse, accurate history timestamps, and editing for existing item and bin custom fields. The capture proposal endpoint and list filters are additive. Existing native capture capabilities and database migrations are sufficient. See [native inventory workflows](native-inventory-workflows.md) and the [physical-device procedure](ios-handoff.md#multi-item-photo-review-and-browse).

@@ -524,7 +524,20 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 action: 'thing.capture',
                 summaryKey: 'thing.capture.attach',
                 summaryParams: {},
-                diff: { mode: { after: 'thing', before: null, class: 'plain' } },
+                diff: {
+                  mode: { after: 'thing', before: null, class: 'plain' },
+                  captured_at: { after: '2026-11-22T19:30:00Z', before: null, class: 'plain' },
+                },
+              },
+              {
+                id: 'history-trash',
+                at: '2026-11-22T19:58:00Z',
+                entity: { type: 'thing', id: spareBoxId },
+                actor: { displayName: 'Ibrahim' },
+                action: 'thing.trash',
+                summaryKey: 'thing.trash',
+                summaryParams: { name: 'Spare Box' },
+                diff: { removed_from_container_id: { after: boxId, before: null, class: 'plain' } },
               },
             ],
             next_cursor: null,
@@ -865,6 +878,124 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('resumes a saved photo review and syncs only selected entries with one original', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({
+        name: JSON.stringify({
+          items: [
+            { name: 'Drill', quantity: 2, categories: ['Tools'] },
+            { name: 'Tape measure' },
+            { name: 'False positive' },
+          ],
+        }),
+      })),
+    };
+    const user = userEvent.setup();
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const upload = vi.spyOn(env.adapters.transport, 'uploadOriginal');
+    const mounted = env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+    );
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Photo input is missing');
+    await user.upload(
+      picker,
+      new File([new Uint8Array([1, 2, 3])], 'review.jpg', { type: 'image/jpeg' }),
+    );
+    await user.click(await screen.findByRole('button', { name: /AI provider/ }));
+    await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
+    await user.click(screen.getByRole('button', { name: 'Suggest items' }));
+    const drill = (await screen.findAllByRole('textbox', { name: 'Description' }))[0];
+    if (!drill) throw new Error('Missing suggestion');
+    await user.clear(drill);
+    await user.type(drill, 'Cordless drill');
+    await user.click(screen.getByRole('checkbox', { name: /False positive/ }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await screen.findByRole('button', { name: /^Review$/ });
+    expect(request.mock.calls.filter(([, path]) => path === capturePaths.syncOps)).toEqual([]);
+    expect(upload).not.toHaveBeenCalled();
+    mounted.unmount();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /^Review$/ }));
+    expect(await screen.findByDisplayValue('Cordless drill')).toBeVisible();
+    expect(screen.getByRole('checkbox', { name: /False positive/ })).not.toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Save selected entries' }));
+    await waitFor(() =>
+      expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(true),
+    );
+    expect(upload).toHaveBeenCalledTimes(1);
+    const sent = request.mock.calls.find(([, path]) => path === capturePaths.syncOps)?.[2]?.body;
+    expect(sent).toMatchObject({
+      ops: [
+        {
+          payloadVersion: 4,
+          payload: { name: 'Cordless drill', quantity: '2', skipServerSuggestions: true },
+        },
+        { payloadVersion: 4, payload: { name: 'Tape measure', skipServerSuggestions: true } },
+      ],
+    });
+  });
+
+  it('offers optional categories for one broad description without replacing it', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({ name: '' })),
+      serverProposals: vi.fn(async () => ({
+        items: [
+          { name: 'Christmas lights', categories: ['Electrical', 'Decorations'] },
+          { name: 'Tinsel', categories: ['Decorations'] },
+        ],
+      })),
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+    );
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Holiday supplies');
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Photo input is missing');
+    await user.upload(
+      picker,
+      new File([new Uint8Array([1, 2, 3])], 'review.jpg', { type: 'image/jpeg' }),
+    );
+    await user.click(await screen.findByRole('button', { name: 'Suggest categories' }));
+    expect(await screen.findByDisplayValue('Holiday supplies')).toBeVisible();
+    expect(screen.getAllByRole('textbox', { name: 'Description' })).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'Create Electrical' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Create Decorations' })).toBeVisible();
+  });
+
   it('adds and modifies inventory in Assistant only after reviewing the proposal', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
@@ -1213,6 +1344,14 @@ describe('KeptPhone mobile workflows', () => {
     expect(
       await screen.findByText('Photo added to the record. Inventory unchanged.'),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Record for .*Spare Box.* moved to Trash/)).toBeInTheDocument();
+    const photoEvent = screen
+      .getByText('Photo added to the record. Inventory unchanged.')
+      .closest('li');
+    expect(photoEvent?.querySelector('time')?.dateTime).toBe('2026-11-22T20:00:00Z');
+    expect(photoEvent?.querySelectorAll('time')[1]?.dateTime).toBe('2026-11-22T19:30:00Z');
+    expect(photoEvent).toHaveTextContent('Recorded at');
+    expect(photoEvent).toHaveTextContent('Saved on device');
   });
 
   it('keeps the address and allows retry after the browser sign-in sheet is cancelled', async () => {

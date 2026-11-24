@@ -1,4 +1,4 @@
-import { AMOUNT_STRING, newId } from '@kept/shared';
+import { AMOUNT_STRING, type DevicePhotoProposal, newId, normalize } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
 import { type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -60,6 +60,7 @@ export function CaptureForm({
   leaveRef,
   onClose,
   onSave,
+  onReview,
 }: {
   connection: Connection;
   box?: Destination;
@@ -76,6 +77,7 @@ export function CaptureForm({
   leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
+  onReview?: (id: string) => void;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
@@ -172,6 +174,73 @@ export function CaptureForm({
       }
       return current.filter((item) => item.key !== key);
     });
+  }
+
+  async function reviewPhoto(items: DevicePhotoProposal[] = [], single = false) {
+    if (busy || !firstPhoto || !destination || evidenceOnly || files.length !== 1 || !onReview)
+      return;
+    setBusy(true);
+    setStatus('');
+    try {
+      const account = cache?.locations.find(
+        ({ id }) => id === destination.locationId,
+      )?.ownerAccountId;
+      const matches = cache?.tags?.filter((tag) => tag.accountId === account) ?? [];
+      const proposals: DevicePhotoProposal[] =
+        items.length && !single ? items : [{ name: name.trim() }];
+      const categories = new Map(
+        items.flatMap((item) => item.categories ?? []).map((tag) => [normalize(tag), tag]),
+      );
+      const id = await saveOnPhone(
+        connection,
+        {
+          locationId: destination.locationId,
+          ...(destination.kind === 'place'
+            ? { placeId: destination.id }
+            : { boxId: destination.id }),
+          name: name.trim() || t`Photo review`,
+          captureIntent: intent,
+          skipServerSuggestions: true,
+          ...(note.trim() ? { note: note.trim() } : {}),
+          batchId,
+          review: {
+            accepted: false,
+            entries: proposals.map((item) => {
+              const suggestions = single
+                ? [...categories.values()].slice(0, 4)
+                : (item.categories ?? []);
+              return {
+                id: newId(),
+                tagRequestId: newId(),
+                name: item.name,
+                quantity: items.length && !single ? String(item.quantity ?? '') : quantity,
+                include: true,
+                categories: suggestions,
+                tags: matches
+                  .filter((tag) =>
+                    suggestions.some((name) => normalize(name) === normalize(tag.name)),
+                  )
+                  .map(({ id }) => id),
+              };
+            }),
+          },
+        },
+        [firstPhoto],
+        adapters,
+      );
+      for (const item of files) revokePreviewUrl(item.previewUrl);
+      previewUrlsRef.current = [];
+      setFiles([]);
+      setName('');
+      setQuantity('');
+      setNote('');
+      onSave();
+      onReview(id);
+    } catch {
+      setStatus(t`SheepKeep could not save on this iPhone. Check available storage and try again.`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function save() {
@@ -394,14 +463,30 @@ export function CaptureForm({
         )}
         {firstPhoto && (
           <CaptureSuggestion
-            key={firstPhoto.key}
+            key={`${firstPhoto.key}:${destination?.id ?? ''}`}
             connection={connection}
             file={firstPhoto.file}
+            locationId={destination?.locationId}
             provider={provider}
             onProviderChange={setProvider}
             onUse={setName}
+            onProposals={destination && files.length === 1 && onReview ? reviewPhoto : undefined}
+            onCategories={
+              destination && files.length === 1 && onReview && name.trim()
+                ? (items) => reviewPhoto(items, true)
+                : undefined
+            }
             disabled={busy}
           />
+        )}
+        {firstPhoto && files.length === 1 && onReview && (
+          <Button
+            variant="secondary"
+            isDisabled={busy || !destination}
+            onPress={() => void reviewPhoto()}
+          >
+            <Trans>Review multiple items</Trans>
+          </Button>
         )}
         {cache && !box && (
           <div className="grid gap-2">

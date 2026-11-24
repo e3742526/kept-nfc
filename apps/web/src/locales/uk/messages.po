@@ -32574,3 +32574,159 @@ msgstr "Наблизити"
 #: src/map/map-view.tsx
 msgid "Zoom out"
 msgstr "Віддалити"
+
+msgid "Browse"
+msgstr "Огляд"
+
+msgid "All inventory"
+msgstr "Усе майно"
+
+msgid "Categories"
+msgstr "Категорії"
+
+msgid "Bins"
+msgstr "Контейнери"
+
+msgid "Recorded at"
+msgstr "Час запису"
+
+msgid "Last modified"
+msgstr "Остання зміна"
+
+msgid "Last directly confirmed"
+msgstr "Останнє пряме підтвердження"
+
+msgid "Include nested contents"
+msgstr "Включати вкладений вміст"
+
+msgid "Include contents of matching bins"
+msgstr "Включати вміст відповідних контейнерів"
+
+msgid "Uncategorized"
+msgstr "Без категорії"
+
+msgid "Require all selected categories"
+msgstr "Усі вибрані категорії потрібні"
+
+msgid "Match any filter group"
+msgstr "Збіг із будь-якою групою фільтрів"
+
+msgid "Match every filter group"
+msgstr "Збіг з усіма групами фільтрів"
+
+msgid "Match any selected category"
+msgstr "Збіг із будь-якою вибраною категорією"
+
+msgid "Showing cached inventory"
+msgstr "Показано збережене на пристрої майно"
+
+msgid "No matching items"
+msgstr "Немає відповідних предметів"
+
+msgid "Inside a matching bin"
+msgstr "У відповідному контейнері"
+
+msgid "Could not suggest items from this photo."
+msgstr "Не вдалося запропонувати предмети за цим фото."
+
+msgid "Suggest items"
+msgstr "Запропонувати предмети"
+
+msgid "Photo review"
+msgstr "Перевірка фото"
+
+msgid "Review multiple items"
+msgstr "Перевірити кілька предметів"
+
+msgid "Search categories"
+msgstr "Пошук категорій"
+
+msgid "New category"
+msgstr "Нова категорія"
+
+msgid "No categories found."
+msgstr "Категорій не знайдено."
+
+msgid "Assign"
+msgstr "Призначити"
+
+msgid "Delete category?"
+msgstr "Видалити категорію?"
+
+msgid "Inventory entries will stay in SheepKeep."
+msgstr "Записи про майно залишаться в SheepKeep."
+
+msgid "Add another"
+msgstr "Додати ще одне значення"
+
+msgid "Linked record"
+msgstr "Пов’язаний запис"
+
+msgid "Change type?"
+msgstr "Змінити тип?"
+
+msgid "Unsaved custom-field edits will be discarded. The new type's fields appear after saving."
+msgstr "Незбережені зміни користувацьких полів буде відкинуто. Поля нового типу з’являться після збереження."
+
+msgid "Check the value for {label}."
+msgstr "Перевірте значення поля {label}."
+
+msgid "Create category {name}?"
+msgstr "Створити категорію {name}?"
+
+msgid "Open original photo"
+msgstr "Відкрити оригінал фото"
+
+msgid "Deselect all"
+msgstr "Скасувати вибір усіх"
+
+msgid "Suggested categories"
+msgstr "Запропоновані категорії"
+
+msgid "Add entry"
+msgstr "Додати запис"
+
+msgid "Group description"
+msgstr "Опис групи"
+
+msgid "Combine into one entry"
+msgstr "Об’єднати в один запис"
+
+msgid "Save selected entries"
+msgstr "Зберегти вибрані записи"
+
+msgid "Record for {name} moved to Trash"
+msgstr "Запис про {name} переміщено до кошика"
+
+msgid "Record for {name} restored"
+msgstr "Запис про {name} відновлено"
+
+msgid "Recorded {name} in {destination}"
+msgstr "Записано {name} в {destination}"
+
+msgid "Added {name} to {destination}"
+msgstr "Додано {name} до {destination}"
+
+msgid "Observed at"
+msgstr "Час спостереження"
+
+msgid "Starter categories"
+msgstr "Початкові категорії"
+
+msgid "Assigned category {added}"
+msgstr "Призначено категорію {added}"
+
+msgid "Removed category {removed}"
+msgstr "Вилучено категорію {removed}"
+
+msgid "Updated categories for {name}"
+msgstr "Оновлено категорії для {name}"
+
+msgid "Updated custom fields for {name}"
+msgstr "Оновлено користувацькі поля для {name}"
+
+msgid "Existing categories with similar names include {near}."
+msgstr "Схожі назви наявних категорій: {near}."
+
+msgid "Suggest categories"
+msgstr "Запропонувати категорії"
