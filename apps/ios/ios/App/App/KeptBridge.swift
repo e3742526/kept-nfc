@@ -554,7 +554,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     override func load() {
         let center = NotificationCenter.default
         center.addObserver(self, selector: #selector(linkAvailable), name: KeptLinks.notification, object: nil)
-        center.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
+        center.addObserver(self, selector: #selector(appDidEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         center.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
@@ -564,8 +564,10 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         notifyListeners("keptLink", data: [:])
     }
 
-    @objc private func appWillResignActive() {
+    @objc private func appDidEnterBackground() {
         Task { @MainActor in
+            // The Core NFC system sheet can temporarily take focus while the app is still foregrounded.
+            guard UIApplication.shared.applicationState == .background else { return }
             self.nfc?.interruptForBackground()
             self.notifyListeners("appState", data: ["active": false])
         }

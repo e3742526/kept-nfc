@@ -11,9 +11,10 @@ import {
   setSuggestWhere,
   suggestWhereOn,
 } from './geo';
-import { fitWithin, fromFile } from './image';
+import { capForUpload, fitWithin, fromFile, UPLOAD_MAX_PX } from './image';
 import { keptCodeIn } from './label-recogniser';
 import { classifyCameraError, openCamera, problemUpfront } from './session';
+import { cameraMaxPx, setCameraMaxPx } from './settings';
 
 const loc = (id: string, lat?: number, lon?: number, radius = 150): SnapLocation => ({
   id,
@@ -43,7 +44,7 @@ describe('the camera session', () => {
     expect(classifyCameraError(new Error('?'))).toBe('failed');
   });
 
-  it('asks for the back camera at up to 4K, and reports a refusal', async () => {
+  it('asks for the back camera at the camera-setting size (2048 by default), and reports a refusal', async () => {
     const getUserMedia = vi.fn().mockRejectedValue(new DOMException('no', 'NotAllowedError'));
     expect(await openCamera({ secure: true, media: { getUserMedia } })).toEqual({
       ok: false,
@@ -51,7 +52,7 @@ describe('the camera session', () => {
     });
     expect(getUserMedia).toHaveBeenCalledWith({
       audio: false,
-      video: { facingMode: 'environment', width: { ideal: 3840 }, height: { ideal: 2160 } },
+      video: { facingMode: 'environment', width: { ideal: 2048 }, height: { ideal: 1152 } },
     });
   });
 });
@@ -71,6 +72,53 @@ describe('the photo policy (D34, D36)', () => {
     const pdf = new Blob(['%PDF'], { type: 'application/pdf' });
     expect((await fromFile(pdf, 'receipt', decode)).original).toBe(pdf);
     expect(decode).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('the camera size and the upload cap', () => {
+  const big = { source: {} as CanvasImageSource, width: 6000, height: 4000 };
+
+  it('defaults to 2048, remembers a smaller choice, and ignores anything else', () => {
+    localStorage.clear();
+    expect(cameraMaxPx()).toBe(2048);
+    setCameraMaxPx(1024);
+    expect(cameraMaxPx()).toBe(1024);
+    localStorage.setItem('kept.camera.maxPx', '9999');
+    expect(cameraMaxPx()).toBe(2048);
+    setCameraMaxPx(2048);
+    expect(Object.keys(localStorage)).toEqual([]);
+  });
+
+  it('leaves a non-image, an image within 4096 px and an undecodable image as they are', async () => {
+    const pdf = new Blob(['%PDF'], { type: 'application/pdf' });
+    const small = new Blob(['jpg'], { type: 'image/jpeg' });
+    const decodeSmall = vi.fn().mockResolvedValue({ ...big, width: UPLOAD_MAX_PX, height: 100 });
+    expect(await capForUpload(pdf, decodeSmall)).toBe(pdf);
+    expect(decodeSmall).not.toHaveBeenCalled();
+    expect(await capForUpload(small, decodeSmall)).toBe(small);
+    expect(await capForUpload(small, vi.fn().mockRejectedValue(new Error('no')))).toBe(small);
+  });
+
+  it('shrinks an image over 4096 px, and keeps an evidence file byte for byte otherwise', async () => {
+    const drawn: number[][] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      drawImage: (_s: unknown, _x: number, _y: number, w: number, h: number) => drawn.push([w, h]),
+    } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb, type) =>
+      cb(new Blob(['small'], { type: type ?? 'image/png' })),
+    );
+    const file = new Blob(['huge'], { type: 'image/jpeg' });
+    const out = await capForUpload(file, vi.fn().mockResolvedValue(big));
+    expect(out).not.toBe(file);
+    expect(out.type).toBe('image/jpeg');
+    expect(drawn[0]).toEqual([4096, 2731]);
+    const receipt = await fromFile(file, 'receipt', vi.fn().mockResolvedValue(big));
+    expect(receipt.original).not.toBe(file);
+    // The display is drawn after the original is read; the original (4096) is the last draw.
+    expect(drawn.at(-2)).toEqual([2048, 1365]);
+    const ok = await fromFile(file, 'receipt', vi.fn().mockResolvedValue({ ...big, width: 3000 }));
+    expect(ok.original).toBe(file);
+    vi.restoreAllMocks();
   });
 });
 

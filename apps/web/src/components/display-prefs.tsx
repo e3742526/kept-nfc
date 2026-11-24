@@ -7,9 +7,11 @@
  */
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { setAccountLocale, setUnits } from '@/api/account';
 import { keys, useMe } from '@/api/queries';
 import type { Me } from '@/api/types';
+import { CAMERA_SIZES, type CameraSize, cameraMaxPx, setCameraMaxPx } from '@/camera/settings';
 import { LANGUAGE_NAMES, LanguageSelect } from '@/components/languages';
 import { Segmented } from '@/components/ui/segmented';
 import { toast } from '@/components/ui/toast';
@@ -176,7 +178,32 @@ export function DisplayPrefs({ signedIn = false }: { signedIn?: boolean }) {
           { id: 'full', label: t`Full width` },
         ]}
       />
+      {signedIn ? <CameraSizeChoice /> : null}
     </div>
+  );
+}
+
+/** The longest edge of a photo taken in the app (camera/settings.ts), kept on this device. */
+function CameraSizeChoice() {
+  const { t } = useLingui();
+  const [size, setSize] = useState<CameraSize>(cameraMaxPx);
+  return (
+    <Segmented<`${CameraSize}`>
+      label={t`Camera photo size`}
+      value={`${size}`}
+      onChange={(v) => {
+        const next = Number(v) as CameraSize;
+        setCameraMaxPx(next);
+        setSize(next);
+      }}
+      description={
+        <Trans>
+          The longest side of a photo taken in Kept, in pixels. Smaller photos upload faster. Photos
+          from your library over 4096 px are made smaller when they upload.
+        </Trans>
+      }
+      options={CAMERA_SIZES.map((n) => ({ id: `${n}` as const, label: `${n}` }))}
+    />
   );
 }
 

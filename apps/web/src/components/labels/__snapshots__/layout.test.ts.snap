@@ -84,6 +84,90 @@ exports[`placeLabels per stock > letter_30_67x25: the first page, cell by cell 1
 }
 `;
 
+exports[`placeLabels per stock > letter_writable_8: the first page, cell by cell 1`] = `
+{
+  "cells": 8,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 12.7,
+    "y": 12.7,
+  },
+  "last": {
+    "cell": 7,
+    "col": 1,
+    "row": 3,
+    "x": 107.95,
+    "y": 203.2,
+  },
+  "page": "@page { size: letter; margin: 0; }",
+  "second": {
+    "cell": 1,
+    "col": 1,
+    "row": 0,
+    "x": 107.95,
+    "y": 12.7,
+  },
+}
+`;
+
+exports[`placeLabels per stock > letter_writable_12: the first page, cell by cell 1`] = `
+{
+  "cells": 12,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 12.7,
+    "y": 12.7,
+  },
+  "last": {
+    "cell": 11,
+    "col": 1,
+    "row": 5,
+    "x": 107.95,
+    "y": 224.367,
+  },
+  "page": "@page { size: letter; margin: 0; }",
+  "second": {
+    "cell": 1,
+    "col": 1,
+    "row": 0,
+    "x": 107.95,
+    "y": 12.7,
+  },
+}
+`;
+
+exports[`placeLabels per stock > letter_writable_24: the first page, cell by cell 1`] = `
+{
+  "cells": 24,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 12.7,
+    "y": 12.7,
+  },
+  "last": {
+    "cell": 23,
+    "col": 2,
+    "row": 7,
+    "x": 139.7,
+    "y": 234.95,
+  },
+  "page": "@page { size: letter; margin: 0; }",
+  "second": {
+    "cell": 1,
+    "col": 1,
+    "row": 0,
+    "x": 76.2,
+    "y": 12.7,
+  },
+}
+`;
+
 exports[`placeLabels per stock > tape_9: the first page, cell by cell 1`] = `
 {
   "cells": 1,

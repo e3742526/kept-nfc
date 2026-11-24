@@ -26,6 +26,7 @@ import type {
   FileClass,
   FileView,
 } from '@/api/inventory/types';
+import { capForUpload } from '@/camera/image';
 import { CameraIcon } from '@/components/icons';
 import { useErrorText } from '@/components/page';
 import { Button, type ButtonVariant } from '@/components/ui/button';
@@ -109,11 +110,13 @@ export type UploadInput = {
 
 /** Hash, then `PUT /files/:id`. A per-location duplicate answers 200 with `deduplicatedFrom`. */
 export async function putFile({
-  file,
+  file: picked,
   locationId,
   fileId = newId(),
   onProgress = () => {},
 }: UploadInput): Promise<FileView> {
+  // An image over 4096 px on its long edge goes shrunk (camera/image.ts); the rest as it is.
+  const file = (await capForUpload(picked)) as File;
   const sha256 = await sha256Hex(file);
   const mime = file.type || 'application/octet-stream';
   const url = fileUploadPath(fileId, locationId, fileClassOf(mime));

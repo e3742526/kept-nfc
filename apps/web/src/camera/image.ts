@@ -4,13 +4,18 @@
  *
  * - **THING:** the photo is shrunk to 2048 px on the long edge, JPEG q0.85, and that JPEG is the
  *   only upload (the `original`). The full-size photo is never kept.
- * - **RECEIPT, LABEL, READING:** the photo is evidence. A camera frame is encoded at full track
- *   resolution, JPEG q0.92, and becomes the `original`; a file (the system camera, the gallery,
- *   a share) is kept **byte for byte**. Both get a 2048 px `display` JPEG made here, because the
+ * - **RECEIPT, LABEL, READING:** the photo is evidence. A camera frame is encoded at the track's
+ *   resolution (within the camera setting), JPEG q0.92, and becomes the `original`; a file (the
+ *   system camera, the gallery, a share) is kept **byte for byte** unless it is over 4096 px. Both get a 2048 px `display` JPEG made here, because the
  *   server can't decode HEIC and the phone can.
  * - **When the phone can't decode a file** (a HEIC on a browser without it, a PDF): the file
  *   goes as it is, with no display, and the server shows "preview unavailable" (D36). Never
  *   rejected.
+ *
+ * - **The camera setting** (settings.ts, 2048 px by default and at most) bounds a camera frame's
+ *   long edge, evidence originals included.
+ * - **Any image bigger than UPLOAD_MAX_PX** (4096) on its long edge, from a file or an upload, is
+ *   re-encoded at that size before it is queued or sent; one at or under it goes as it is.
  *
  * Only canvas and `createImageBitmap`, so it works in every browser Kept supports; a decoder is
  * injectable for tests.
@@ -18,6 +23,10 @@
 import { type CaptureMode, newId, PHOTO_POLICY } from '@kept/shared';
 import { sha256Hex } from '@/lib/sha256';
 import type { LocalBlob } from '@/offline/store';
+import { cameraMaxPx } from './settings';
+
+/** The longest edge, in pixels, of any image sent to the server; larger ones are shrunk to it. */
+export const UPLOAD_MAX_PX = 4096;
 
 export const JPEG_QUALITY = { thing: 0.85, evidence: 0.92, display: 0.85 } as const;
 
@@ -71,20 +80,70 @@ export function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promis
   });
 }
 
+/** Re-encodes `img` at `max` on the long edge, as a PNG when `type` is one, else a JPEG. */
+function shrunk(img: Drawable, max: number, type: string): Promise<Blob> {
+  const canvas = drawScaled(img, max);
+  if (type !== 'image/png') return canvasToJpeg(canvas, JPEG_QUALITY.evidence);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('the canvas made no PNG'))), type);
+  });
+}
+
+/** Whether `img` is bigger than an upload may be. */
+export const overUploadMax = (img: Drawable) => Math.max(img.width, img.height) > UPLOAD_MAX_PX;
+
+/**
+ * `file` as it may be uploaded: an image over UPLOAD_MAX_PX on its long edge, shrunk to it
+ * (JPEG, or PNG for a PNG); anything else, or an image the phone can't decode, as it is.
+ */
+export async function capForUpload<T extends Blob>(
+  file: T,
+  decode: Decode = decodeWithBitmap,
+): Promise<T | Blob> {
+  if (!file.type.startsWith('image/')) return file;
+  let img: Drawable | null = null;
+  try {
+    img = await decode(file);
+    if (!overUploadMax(img)) return file;
+    const blob = await shrunk(img, UPLOAD_MAX_PX, file.type);
+    const name = 'name' in file && typeof file.name === 'string' ? file.name : null;
+    return name !== null && typeof File === 'function'
+      ? new File([blob], name, { type: blob.type, lastModified: Date.now() })
+      : blob;
+  } catch {
+    return file;
+  } finally {
+    if (img && typeof ImageBitmap !== 'undefined' && img.source instanceof ImageBitmap)
+      img.source.close();
+  }
+}
+
 const evidence = (mode: CaptureMode) => PHOTO_POLICY[mode].keepOriginal;
 const shrinkTo = (mode: CaptureMode) => {
   const policy = PHOTO_POLICY[mode];
   return policy.keepOriginal ? policy.displayTo : policy.shrinkTo;
 };
+/** A camera frame's long edge: what the mode shrinks to, and never more than the camera setting. */
+const frameMax = (mode: CaptureMode, setting: number) => Math.min(shrinkTo(mode), setting);
 
 /** A camera frame (already drawn at full resolution) → the blobs its mode keeps. */
-export async function fromFrame(frame: Drawable, mode: CaptureMode): Promise<CapturedImage> {
+export async function fromFrame(
+  frame: Drawable,
+  mode: CaptureMode,
+  maxPx: number = cameraMaxPx(),
+): Promise<CapturedImage> {
   if (!evidence(mode)) {
-    const original = await canvasToJpeg(drawScaled(frame, shrinkTo(mode)), JPEG_QUALITY.thing);
+    const original = await canvasToJpeg(
+      drawScaled(frame, frameMax(mode, maxPx)),
+      JPEG_QUALITY.thing,
+    );
     return { original, display: null, previewUnavailable: false };
   }
-  const original = await canvasToJpeg(drawScaled(frame), JPEG_QUALITY.evidence);
-  const display = await canvasToJpeg(drawScaled(frame, shrinkTo(mode)), JPEG_QUALITY.display);
+  const original = await canvasToJpeg(drawScaled(frame, maxPx), JPEG_QUALITY.evidence);
+  const display = await canvasToJpeg(
+    drawScaled(frame, frameMax(mode, maxPx)),
+    JPEG_QUALITY.display,
+  );
   return { original, display, previewUnavailable: false };
 }
 
@@ -111,8 +170,10 @@ export async function fromFile(
       drawScaled(img, shrinkTo(mode)),
       evidence(mode) ? JPEG_QUALITY.display : JPEG_QUALITY.thing,
     );
+    // An evidence file is kept byte for byte, unless it is bigger than an upload may be.
+    const kept = overUploadMax(img) ? await shrunk(img, UPLOAD_MAX_PX, file.type) : file;
     return evidence(mode)
-      ? { original: file, display: small, previewUnavailable: false }
+      ? { original: kept, display: small, previewUnavailable: false }
       : { original: small, display: null, previewUnavailable: false };
   } catch {
     return { original: file, display: null, previewUnavailable: true };

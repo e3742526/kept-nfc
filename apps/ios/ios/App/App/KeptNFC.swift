@@ -4,9 +4,12 @@ import CoreNFC
 import CryptoKit
 import Foundation
 import KeptNativeStore
+import OSLog
 import UIKit
 
 final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
+    private static let log = Logger(subsystem: "info.keptinventory.nfc", category: "NFC")
+
     enum Mode {
         case read
         case find
@@ -63,6 +66,7 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
 
     func interruptForBackground() {
         guard result != nil else { return }
+        Self.log.notice("NFC reader interrupted when the app entered the background.")
         finish("interrupted")
     }
 
@@ -106,7 +110,9 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
     func readerSessionDidBecomeActive(_ session: NFCNDEFReaderSession) {}
 
     func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
+        guard self.session === session else { return }
         let code = (error as? NFCReaderError)?.code
+        Self.log.notice("Core NFC ended the session with error code \((error as NSError).code, privacy: .public).")
         switch code {
         case .readerSessionInvalidationErrorUserCanceled: finish("cancelled")
         case .readerSessionInvalidationErrorSessionTimeout: finish("timeout")

@@ -1,6 +1,6 @@
 /**
- * The capture camera (D34): the back camera, asked for 4K so the browser gives
- * the best it has, kept open for the whole session. Every reason it can't open has a name, so
+ * The capture camera (D34): the back camera, asked for the size the camera setting
+ * names (2048 px by default; settings.ts), kept open for the whole session. Every reason it can't open has a name, so
  * the screen can say which ("Kept can't use the camera", D31) and offer the file
  * picker instead, which always works.
  *
@@ -8,11 +8,19 @@
  */
 
 import { TRY } from '@/try/flag';
+import { CAMERA_MAX_PX_DEFAULT, cameraMaxPx } from './settings';
 
-export const CAMERA_CONSTRAINTS: MediaStreamConstraints = {
-  audio: false,
-  video: { facingMode: 'environment', width: { ideal: 3840 }, height: { ideal: 2160 } },
-};
+/** The back camera, asked for a 16:9 stream whose long edge is `maxPx` (the camera setting). */
+export function cameraConstraints(maxPx: number = CAMERA_MAX_PX_DEFAULT): MediaStreamConstraints {
+  return {
+    audio: false,
+    video: {
+      facingMode: 'environment',
+      width: { ideal: maxPx },
+      height: { ideal: Math.round((maxPx * 9) / 16) },
+    },
+  };
+}
 
 export type CameraProblem =
   /** Plain HTTP: no camera API at all (D31). */
@@ -80,7 +88,7 @@ export async function openCamera(env: CameraEnv = cameraEnv()): Promise<OpenCame
   const upfront = problemUpfront(env);
   if (upfront || !env.media) return { ok: false, problem: upfront ?? 'unsupported' };
   try {
-    const stream = await env.media.getUserMedia(CAMERA_CONSTRAINTS);
+    const stream = await env.media.getUserMedia(cameraConstraints(cameraMaxPx()));
     return {
       ok: true,
       stream,
