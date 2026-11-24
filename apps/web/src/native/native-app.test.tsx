@@ -886,6 +886,10 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Change' }));
     await user.click(screen.getByRole('button', { name: /Room or box/ }));
     await user.click(await screen.findByRole('option', { name: 'Attic' }));
+    // The picker stays open until Done, so choosing a location never files the item by accident.
+    expect(screen.getByRole('button', { name: /Room or box/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('Attic')).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Winter gloves');
     await user.click(screen.getByRole('button', { name: 'Save capture' }));
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();

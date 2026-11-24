@@ -406,15 +406,24 @@ export function CaptureForm({
                 </Button>
               </div>
             ) : (
-              <DestinationPicker
-                cache={cache}
-                value={destination}
-                onChange={(next) => {
-                  setDestination(next);
-                  if (next) setChangingDestination(false);
-                }}
-                disabled={busy}
-              />
+              <div className="grid gap-3">
+                <DestinationPicker
+                  cache={cache}
+                  value={destination}
+                  onChange={setDestination}
+                  disabled={busy}
+                />
+                {destination && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    className="justify-self-start"
+                    onPress={() => setChangingDestination(false)}
+                  >
+                    <Trans>Done</Trans>
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         )}
