@@ -14,6 +14,12 @@ The rightmost tab opens inventory chat. Searches cover the locations the user ca
 
 The native chat’s record-only context offers add, edit and move-to-Trash proposals. Confirmation runs as the signed-in user and records an audit event. The Trash proposal checks the record version and requires an empty container if the record is a bin. The chat displays Undo while the audit event can be reversed, including when a thread is reopened.
 
+Use **Delete this thread** and confirm to permanently remove the conversation. The same private thread API serves the browser and the iPhone. Confirmed inventory changes retain their normal activity and Undo history.
+
+**Attach photo** adds one picture to the next question. The server decodes and re-encodes a bounded, metadata-free JPEG for the selected Assistant model. It keeps the rendition in the private thread and shows a photo marker in history. Follow-up turns use the text conversation. They send a picture when one is attached again.
+
+**Model** selects a model for the next message. Automatic uses the configured chat model for text and an available vision model for a picture. Choices come from the provider for the authorized context. A provider manager can also pick from that provider's stored text model list. The server checks the selection and provider again during the turn. Model changes use the existing payer and budget rules.
+
 ## Photo review
 
 **Add** and **Add to this bin** show the recorded destination and action. Manual capture can save a broad description with optional categories, notes, quantity and photographs. **Suggest description** proposes a single description. **Suggest categories** keeps the entered description. **Suggest items** opens review with up to 12 entries. **Review multiple items** opens the same review without inference.

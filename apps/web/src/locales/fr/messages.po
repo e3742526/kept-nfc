@@ -33031,3 +33031,24 @@ msgstr "Emplacement par défaut"
 #: src/native/capture-ai.tsx
 msgid "Default photo AI"
 msgstr "IA par défaut pour les photos"
+
+msgid "Attach photo"
+msgstr "Joindre une photo"
+
+msgid "Remove photo"
+msgstr "Retirer la photo"
+
+msgid "Describe this photo"
+msgstr "Décris cette photo"
+
+msgid "Photo attached"
+msgstr "Photo jointe"
+
+msgid "Choose a readable photo."
+msgstr "Choisissez une photo qui peut être ouverte."
+
+msgid "Permanently delete this thread and its messages?"
+msgstr "Supprimer définitivement cette conversation et ses messages ?"
+
+msgid "The selected model is unavailable for this turn."
+msgstr "Le modèle sélectionné est indisponible pour cette demande."

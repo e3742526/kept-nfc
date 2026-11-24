@@ -8,8 +8,9 @@ import { ASSISTANT_TURN_JOB } from './service.js';
 
 // The assistant's jobs (D22, D23, D166), aggregated by jobs/step6.ts:
 // - `assistant-turn`: a tenant job sent by POST /api/v1/assistant/threads/:id/turns in its
-//   transaction, run in the asker's scope; `data` is `{turnId, locale}` only, never the question
-//   (jobs/boss.ts's rule). The handler re-reads the turn under row-level security (loop.ts), so a
+//   transaction, run in the asker's scope; job data holds the turn, locale and optional model
+//   selection, while the question and photo stay in the thread. The handler re-reads the turn
+//   under row-level security (loop.ts), so a
 //   job naming someone else's turn finds nothing and ends. A retryable failure throws for pg-boss's
 //   one retry (JOB_POLICIES), which resumes after the last stored step.
 // - `assistant-maintenance`: daily at 03:15 UTC, kept_system: threads past their expiry go with
@@ -25,7 +26,19 @@ export function turnJobData(raw: unknown): TurnJobData {
     throw new Error('assistant-turn job: data names no turn');
   }
   const locale = typeof d.locale === 'string' && d.locale.length <= 20 ? d.locale : 'en';
-  return { turnId: d.turnId.toLowerCase(), locale };
+  const { model } = d;
+  if (
+    model !== undefined &&
+    (!model ||
+      typeof model.id !== 'string' ||
+      model.id.length < 1 ||
+      model.id.length > 120 ||
+      typeof model.providerId !== 'string' ||
+      !UUID.test(model.providerId))
+  ) {
+    throw new Error('assistant-turn job: invalid model choice');
+  }
+  return { turnId: d.turnId.toLowerCase(), locale, ...(model ? { model } : {}) };
 }
 
 export function assistantJobs(deps: SystemJobDeps): JobDefinition[] {

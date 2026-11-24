@@ -33031,3 +33031,24 @@ msgstr "Vị trí mặc định"
 #: src/native/capture-ai.tsx
 msgid "Default photo AI"
 msgstr "AI mặc định cho ảnh"
+
+msgid "Attach photo"
+msgstr "Đính kèm ảnh"
+
+msgid "Remove photo"
+msgstr "Gỡ ảnh"
+
+msgid "Describe this photo"
+msgstr "Mô tả ảnh này"
+
+msgid "Photo attached"
+msgstr "Đã đính kèm ảnh"
+
+msgid "Choose a readable photo."
+msgstr "Chọn ảnh có thể mở được."
+
+msgid "Permanently delete this thread and its messages?"
+msgstr "Xóa vĩnh viễn cuộc trò chuyện này và các tin nhắn?"
+
+msgid "The selected model is unavailable for this turn."
+msgstr "Mô hình đã chọn không dùng được cho yêu cầu này."

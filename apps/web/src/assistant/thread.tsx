@@ -87,7 +87,9 @@ function TurnLine({
       // `too_large`: the provider refused the request's size against the plan's per-minute limit
       // (ai/errors.ts); asking again would send the same request.
       line =
-        turn?.statusReason === 'too_large' ? (
+        turn?.statusReason === 'model_unavailable' ? (
+          <Trans>The selected model is unavailable for this turn.</Trans>
+        ) : turn?.statusReason === 'too_large' ? (
           <Trans>
             This question is more than your AI plan allows in one minute. Choose a model with a
             higher limit in Settings → AI, or a paid plan.
@@ -133,6 +135,7 @@ function TurnLine({
 
 type Item =
   | { kind: 'question'; key: string; text: string }
+  | { kind: 'photo'; key: string }
   | { kind: 'answer'; key: string; text: string }
   | { kind: 'tool'; key: string; tool: string; locationIds: string[] | null }
   | { kind: 'redacted'; key: string }
@@ -173,6 +176,9 @@ export function threadItems(messages: ThreadMessage[], proposals: Proposal[]): I
             tool: p.tool,
             locationIds: results.get(p.callId) ?? null,
           });
+          break;
+        case 'photo':
+          items.push({ kind: 'photo', key });
           break;
         case 'proposal': {
           const batch = proposals.find((x) => x.id === p.proposalId)?.batchId;
@@ -221,6 +227,7 @@ export function ThreadView({
   onAskAgain: (question: string) => void;
   onNavigate?: () => void;
 }) {
+  const { t } = useLingui();
   const { messages, proposals } = conversation;
   const items = useMemo(() => threadItems(messages, proposals), [messages, proposals]);
   const seen = useMemo(
@@ -250,6 +257,8 @@ export function ThreadView({
           case 'question':
             lastWasAnswer = false;
             return <Question key={item.key} text={item.text} />;
+          case 'photo':
+            return <Question key={item.key} text={t`Photo attached`} />;
           case 'answer':
             return (
               <div key={item.key} className="grid gap-2 text-[15px] text-ink leading-normal">

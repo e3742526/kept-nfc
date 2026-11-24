@@ -18,7 +18,13 @@
  */
 import type { JSONValue } from '@ai-sdk/provider';
 import type { MessageRole, Part } from '@kept/shared';
-import type { AssistantModelMessage, JSONSchema7, ModelMessage, ToolModelMessage } from 'ai';
+import type {
+  AssistantModelMessage,
+  FilePart,
+  JSONSchema7,
+  ModelMessage,
+  ToolModelMessage,
+} from 'ai';
 
 /** A stored message as callModel takes it: the thread's own shape (`@kept/shared` Part). */
 export type KeptMessage = { role: MessageRole; parts: Part[] };
@@ -53,17 +59,22 @@ function asJson(value: unknown): JSONValue {
 }
 
 /** The SDK's messages for a stored conversation, every tool call paired with one result. */
-export function toModelMessages(messages: readonly KeptMessage[]): ModelMessage[] {
+export function toModelMessages(
+  messages: readonly KeptMessage[],
+  photos?: { index: number; parts: FilePart[] },
+): ModelMessage[] {
   const results = new Map<string, ResultPart>();
   for (const m of messages) {
     if (m.role !== 'tool') continue;
     for (const p of m.parts) if (p.type === 'tool_result') results.set(p.callId, p);
   }
   const out: ModelMessage[] = [];
-  for (const m of messages) {
+  for (const [index, m] of messages.entries()) {
     if (m.role === 'user') {
       const text = textOf(m.parts);
-      if (text) out.push({ role: 'user', content: text });
+      if (photos?.index === index) {
+        out.push({ role: 'user', content: [{ type: 'text', text }, ...photos.parts] });
+      } else if (text) out.push({ role: 'user', content: text });
       continue;
     }
     if (m.role === 'tool') continue; // answered right after the call that asked (below)

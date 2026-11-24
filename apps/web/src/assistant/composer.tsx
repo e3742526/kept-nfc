@@ -23,6 +23,7 @@ import { SendIcon, StopIcon } from './icons';
 
 export function Composer({
   value,
+  hasPhoto,
   onChange,
   onSend,
   disabled,
@@ -31,6 +32,7 @@ export function Composer({
   note,
 }: {
   value: string;
+  hasPhoto?: boolean;
   onChange: (v: string) => void;
   onSend: (text: string) => void;
   /** Why asking isn't possible now; null when it is. */
@@ -46,7 +48,7 @@ export function Composer({
   const field = useRef<HTMLTextAreaElement>(null);
   const dictation = useDictation({ locale: i18n.locale, onText: onChange });
   const text = value.trim();
-  const canSend = !disabled && !waiting && text.length > 0;
+  const canSend = !disabled && !waiting && (text.length > 0 || hasPhoto);
 
   useEffect(() => {
     if (dictation.deniedNow)

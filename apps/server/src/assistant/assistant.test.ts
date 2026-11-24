@@ -9,6 +9,7 @@ import { MockLanguageModelV4 } from 'ai/test';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TestApp } from '../../test/app.js';
 import { type TestDb, testDb } from '../../test/db.js';
+import { uniqueJpeg } from '../../test/files.js';
 import { call, join, type Person, peopleApp, person, type RecordedJob } from '../../test/people.js';
 import {
   builtinType,
@@ -201,6 +202,95 @@ const ledger = () =>
   );
 
 describe('a question with a tool step and an answer', () => {
+  it('offers authorized models and sends only the current turn’s photo to the selected model', async () => {
+    const modelsPath = `/api/v1/assistant/models?locationId=${home.id}`;
+    expect(ok(await call(t, modelsPath, { as: louis }))).toEqual({
+      items: [
+        { id: 'gpt-chat', isDefault: true, vision: false },
+        { id: 'gpt-vision', isDefault: false, vision: true },
+      ],
+    });
+    expect((await call(t, modelsPath, { as: alfred })).statusCode).toBe(404);
+    const context = { kind: 'location', id: home.id };
+    const thread = ok(
+      await call(t, '/api/v1/assistant/threads', { as: louis, body: { context } }),
+      201,
+    );
+    const path = `/api/v1/assistant/threads/${thread.id}/turns`;
+    const photo = (await uniqueJpeg()).toString('base64');
+    const question = { text: 'Describe this photo', locale: 'en', photo };
+    expect(
+      (await call(t, path, { as: louis, body: { ...question, model: 'gpt-chat' } })).statusCode,
+    ).toBe(400);
+    expect(
+      (
+        await call(t, path, {
+          as: louis,
+          body: { ...question, photo: Buffer.alloc(20).toString('base64') },
+        })
+      ).statusCode,
+    ).toBe(400);
+    const { turnId } = ok(await call(t, path, { as: louis, body: question }), 202);
+    expect(sent.at(-1)?.data).toEqual({
+      turnId,
+      locale: 'en',
+      model: { id: 'gpt-vision', providerId: homeProvider },
+    });
+    script.push(answer('A sample photo.'));
+    expect(await runTurn(loop, scopeOf(louis), turnJobData(sent.at(-1)?.data))).toMatchObject({
+      status: 'done',
+    });
+    expect(prompts[0]?.prompt).toContainEqual(
+      expect.objectContaining({
+        role: 'user',
+        content: expect.arrayContaining([
+          expect.objectContaining({ type: 'file', mediaType: 'image/jpeg' }),
+        ]),
+      }),
+    );
+    expect((await ledger()).map(({ j }) => JSON.parse(j).model)).toEqual(['gpt-vision']);
+    const detailPath = `/api/v1/assistant/threads/${thread.id}`;
+    const detail = await call(t, detailPath, { as: louis });
+    expect(ok(detail).messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          parts: [{ type: 'text', text: question.text }, { type: 'photo' }],
+        }),
+      ]),
+    );
+    expect(detail.body).not.toContain('jpeg');
+    expect(detail.body).not.toContain(photo);
+
+    const next = ok(
+      await call(t, path, {
+        as: louis,
+        body: { text: 'What did you say?', locale: 'en', model: 'gpt-chat' },
+      }),
+      202,
+    );
+    script.push(answer('I described the photo.'));
+    expect(await runTurn(loop, scopeOf(louis), turnJobData(sent.at(-1)?.data))).toMatchObject({
+      status: 'done',
+    });
+    expect(prompts[1]?.prompt).not.toContainEqual(
+      expect.objectContaining({
+        role: 'user',
+        content: expect.arrayContaining([expect.objectContaining({ type: 'file' })]),
+      }),
+    );
+    expect((await ledger()).map(({ j }) => JSON.parse(j).model)).toEqual([
+      'gpt-vision',
+      'gpt-chat',
+    ]);
+    expect((await call(t, detailPath, { as: ibrahim, method: 'DELETE' })).statusCode).toBe(404);
+    expect((await call(t, detailPath, { as: louis, method: 'DELETE' })).statusCode).toBe(204);
+    expect(
+      await own(db, 'SELECT id FROM public.assistant_messages WHERE turn_id = ANY($1)', [
+        [turnId, next.turnId],
+      ]),
+    ).toEqual([]);
+  });
+
   it('where_is, then a linked answer: two ledger rows paid by Home’s owner, no text in them', async () => {
     const { threadId, turnId } = await ask(louis, `Where is the HDMI cable? ${QMARK}`, {
       kind: 'location',
@@ -1495,7 +1585,7 @@ describe('privacy, pauses and redaction', () => {
     ).toEqual([]);
   });
 
-  it('the job data is a turn id and a locale only', () => {
+  it('validates the turn id and optional model choice without question content in the job', () => {
     const id = crypto.randomUUID();
     expect(turnJobData({ turnId: id.toUpperCase(), locale: 'ar' })).toEqual({
       turnId: id,

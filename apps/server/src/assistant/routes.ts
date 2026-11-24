@@ -1,12 +1,15 @@
-import { CONDITIONS, CONTEXT_KINDS, TURN_LIMITS } from '@kept/shared';
+import { ASSISTANT_PHOTO_MAX_BASE64, CONDITIONS, CONTEXT_KINDS, TURN_LIMITS } from '@kept/shared';
 import { z } from 'zod';
 import { requireScope } from '../auth/http.js';
 import { withScope } from '../db/scope.js';
 import type { KeptApp } from '../http/app.js';
 import { decodeCursor, paginationQuery } from '../http/conventions.js';
+import { notFound } from '../http/errors.js';
 import type { InventoryDeps } from '../http/routes.js';
 import { scopedRead, scopedWrite } from '../http/write.js';
 import type { ToolDeps } from '../tools/types.js';
+import { modelsFor } from './models.js';
+import { prepareAssistantPhoto } from './photo.js';
 import { cancelProposals, confirmProposals } from './proposals.js';
 import { ask, askContext, askPreflight, cancelTurn } from './service.js';
 import {
@@ -44,6 +47,8 @@ const AskBodySchema = z.object({
     .max(TURN_LIMITS.maxQuestionChars * 2),
   context: ContextBody,
   locale: z.string().min(2).max(20),
+  photo: z.base64().min(16).max(ASSISTANT_PHOTO_MAX_BASE64).optional(),
+  model: z.string().min(1).max(120).optional(),
 });
 const ConfirmBodySchema = z.object({
   batchId: z.uuid(),
@@ -94,6 +99,26 @@ export async function assistantRoutes(app: KeptApp, deps: InventoryDeps): Promis
     log: deps.log,
   };
 
+  app.get(
+    '/api/v1/assistant/models',
+    { schema: { querystring: z.object({ locationId: z.uuid().optional() }) } },
+    (req, reply) =>
+      scopedRead(deps.pools, req, async (_tx, client) => {
+        reply.header('cache-control', 'no-store');
+        if (!deps.ai) return { items: [] };
+        const locationId = req.query.locationId?.toLowerCase();
+        const context = locationId
+          ? await resolveContext(client, { kind: 'location', id: locationId })
+          : null;
+        if (locationId && !context?.locationId) throw notFound();
+        return {
+          items: (await modelsFor(client, locationId ?? null)).map(
+            ({ providerId: _providerId, ...model }) => model,
+          ),
+        };
+      }),
+  );
+
   app.get('/api/v1/assistant/threads', { schema: { querystring: ThreadsQuery } }, (req) =>
     scopedRead(deps.pools, req, (_tx, client) =>
       listThreads(
@@ -133,19 +158,23 @@ export async function assistantRoutes(app: KeptApp, deps: InventoryDeps): Promis
 
   app.post(
     '/api/v1/assistant/threads/:id/turns',
-    { schema: { params: Id, body: AskBodySchema } },
+    {
+      bodyLimit: ASSISTANT_PHOTO_MAX_BASE64 + 32_768,
+      schema: { params: Id, body: AskBodySchema },
+    },
     async (req, reply) => {
       const threadId = lower(req.params.id);
       const { context } = await scopedRead(deps.pools, req, (_tx, client) =>
         askContext(client, threadId, req.body),
       );
       const scope = requireScope(req);
-      await withScope(deps.pools.app, scope, (_tx, client) =>
-        askPreflight(deps.ai, client, scope, context.locationId ?? null),
+      const model = await withScope(deps.pools.app, scope, (_tx, client) =>
+        askPreflight(deps.ai, client, scope, context.locationId ?? null, req.body),
       );
+      const photo = req.body.photo ? await prepareAssistantPhoto(req.body.photo) : undefined;
       return scopedWrite(deps.pools, req, reply, async (_tx, client, s) => ({
         status: 202,
-        body: await ask(client, deps.jobs, s, threadId, req.body, context),
+        body: await ask(client, deps.jobs, s, threadId, req.body, context, photo, model),
       }));
     },
   );

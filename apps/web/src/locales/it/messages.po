@@ -33031,3 +33031,24 @@ msgstr "Posizione predefinita"
 #: src/native/capture-ai.tsx
 msgid "Default photo AI"
 msgstr "IA predefinita per le foto"
+
+msgid "Attach photo"
+msgstr "Allega foto"
+
+msgid "Remove photo"
+msgstr "Rimuovi foto"
+
+msgid "Describe this photo"
+msgstr "Descrivi questa foto"
+
+msgid "Photo attached"
+msgstr "Foto allegata"
+
+msgid "Choose a readable photo."
+msgstr "Scegli una foto che si possa aprire."
+
+msgid "Permanently delete this thread and its messages?"
+msgstr "Eliminare definitivamente questa conversazione e i suoi messaggi?"
+
+msgid "The selected model is unavailable for this turn."
+msgstr "Il modello selezionato non è disponibile per questa richiesta."

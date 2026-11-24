@@ -5,8 +5,10 @@
  * carries the page's context with each question (D24), and says the viewer's line (D123).
  */
 import { Trans, useLingui } from '@lingui/react/macro';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
+import { assistantApi } from '@/api/assistant/queries';
 import { useAiStatus } from '@/api/capture/queries';
 import { isApiError } from '@/api/client';
 import { useAllLocations } from '@/api/queries';
@@ -20,6 +22,7 @@ import { TRY } from '@/try/flag';
 import { assistantOff } from './button';
 import { Composer } from './composer';
 import { contextBody, type PageContext } from './context';
+import { AssistantInputs, AssistantPhotoError, useAssistantInputs } from './inputs';
 import { assistantStore, setDraft, useAssistantUi } from './store';
 import { ThreadView } from './thread';
 import { useConversation } from './use-turn';
@@ -52,6 +55,20 @@ export function Conversation({
   const locations = useAllLocations();
   const location = locationId ? locations.data?.find((l) => l.id === locationId) : undefined;
   const ai = useAiStatus(locationId);
+  const models = useQuery({
+    queryKey: ['assistant', 'models', locationId],
+    queryFn: () => assistantApi.models(locationId),
+    enabled: online && !TRY,
+  });
+  const inputs = useAssistantInputs(models.data?.items ?? []);
+  const { setPhoto } = inputs;
+  const previousThread = useRef(threadId);
+  useEffect(() => {
+    if (previousThread.current !== threadId) {
+      previousThread.current = threadId;
+      if (!ask.isPending) setPhoto(undefined);
+    }
+  }, [threadId, ask.isPending, setPhoto]);
 
   let disabled: ReactNode | null = null;
   if (!online) disabled = <Trans>Needs a connection</Trans>;
@@ -113,15 +130,24 @@ export function Conversation({
     } else if (refused.code === 'turn_running')
       refusal = <Trans>The assistant is still answering here. Wait for it, or cancel it.</Trans>;
     else refusal = errorText(refused);
-  } else if (refused) refusal = errorText(refused);
+  } else if (refused instanceof AssistantPhotoError) refusal = t`Choose a readable photo.`;
+  else if (refused) refusal = errorText(refused);
 
   const viewer = location?.role === 'viewer';
   const empty = conversation.messages.length === 0 && !ask.isPending;
   const send = (text: string, fromDraft = true) => {
     if (fromDraft) setDraft('');
     ask.mutate(
-      { text, context },
       {
+        text: text || t`Describe this photo`,
+        context,
+        ...(inputs.model ? { model: inputs.model } : {}),
+        ...(fromDraft && inputs.photo ? { photo: inputs.photo } : {}),
+      },
+      {
+        onSuccess: () => {
+          if (fromDraft) setPhoto(undefined);
+        },
         onError: () => {
           // A refused question comes back into the field, unless something new was typed.
           if (fromDraft && !assistantStore.get().draft) setDraft(text);
@@ -156,12 +182,17 @@ export function Conversation({
       </div>
       <div className="grid gap-2 border-line border-t px-4 pt-2.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] md:pb-3.5">
         {refusal ? <Notice tone="danger">{refusal}</Notice> : null}
+        <AssistantInputs
+          value={inputs}
+          disabled={!!disabled || conversation.live || ask.isPending}
+        />
         <Composer
           value={ui.draft}
           onChange={setDraft}
           onSend={(text) => send(text)}
           disabled={disabled}
           waiting={conversation.live || ask.isPending || held}
+          hasPhoto={!!inputs.photo}
           focusSignal={ui.handoff + (ui.open ? 1 : 0)}
           note={
             viewer && empty ? <Trans>Viewers can ask; changes need an admin</Trans> : privateNote

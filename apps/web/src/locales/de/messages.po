@@ -33031,3 +33031,24 @@ msgstr "Standardstandort"
 #: src/native/capture-ai.tsx
 msgid "Default photo AI"
 msgstr "Standard-KI für Fotos"
+
+msgid "Attach photo"
+msgstr "Foto anhängen"
+
+msgid "Remove photo"
+msgstr "Foto entfernen"
+
+msgid "Describe this photo"
+msgstr "Beschreibe dieses Foto"
+
+msgid "Photo attached"
+msgstr "Foto angehängt"
+
+msgid "Choose a readable photo."
+msgstr "Wähle ein lesbares Foto aus."
+
+msgid "Permanently delete this thread and its messages?"
+msgstr "Diesen Chat und seine Nachrichten endgültig löschen?"
+
+msgid "The selected model is unavailable for this turn."
+msgstr "Das gewählte Modell ist für diese Anfrage nicht verfügbar."

@@ -28,7 +28,9 @@ import { assistantToolAllowed, runTool, toolsFor } from '../tools/context.js';
 import type { ToolDeps } from '../tools/types.js';
 import { checkLinks, locationsIn, seenIn } from './cite.js';
 import { fitToCeiling } from './fit.js';
+import { chooseModel, modelsFor, type SelectedModel } from './models.js';
 import { payingLocation } from './payer.js';
+import { photoInput, type StoredPhoto } from './photo.js';
 import { instructionsFor, PROMPT_VERSION, type PromptLocation, toolSpecOf } from './prompt.js';
 import { propose } from './proposals.js';
 import { askOf, offeredTools } from './select.js';
@@ -71,7 +73,7 @@ export type LoopDeps = {
   clock?: () => number;
 };
 
-export type TurnJobData = { turnId: string; locale: string };
+export type TurnJobData = { turnId: string; locale: string; model?: SelectedModel };
 
 export type TurnOutcome =
   | { status: 'skipped'; why: 'missing' | 'not_runnable' }
@@ -338,12 +340,32 @@ async function steps(
     );
 
     const rt = await deps.ai.runtime(scope);
-    const resolved = await rt.keys.resolve({
+    const defaultProvider = await rt.keys.resolve({
       locationId: prepared.payer,
       userId: scope.userId,
       task: 'assistant',
     });
-    if (!resolved) return finish(deps, scope, turn.id, 'failed', { reason: 'no_provider' });
+    if (!defaultProvider) return finish(deps, scope, turn.id, 'failed', { reason: 'no_provider' });
+    let resolved = defaultProvider;
+    const question = prepared.messages.find((m) => m.role === 'user' && m.turnId === turn.id);
+    const photo = question?.parts.find(
+      (part): part is StoredPhoto => part.type === 'photo' && 'jpeg' in part,
+    );
+    const images = photo ? [photoInput(photo)] : [];
+    if (data.model || photo) {
+      const models = await withScope(deps.pools.app, scope, (_tx, client) =>
+        modelsFor(client, prepared.payer),
+      );
+      const choice = chooseModel(models, data.model?.id, !!photo);
+      if (
+        !choice ||
+        choice.providerId !== resolved.provider.id ||
+        (data.model && data.model.providerId !== choice.providerId)
+      ) {
+        return finish(deps, scope, turn.id, 'failed', { reason: 'model_unavailable' });
+      }
+      resolved = { ...resolved, provider: { ...resolved.provider, model: choice.id } };
+    }
 
     const last = step + 1 >= TURN_LIMITS.maxSteps;
     const names = [...new Set(candidates.flatMap((c) => c.tools))];
@@ -379,6 +401,7 @@ async function steps(
             instructions,
             tools: defs,
             messages: m,
+            images,
             maxOutputTokens: maxOut,
           }),
       });
@@ -398,9 +421,12 @@ async function steps(
       links: { threadId: turn.thread_id },
       instructions,
       text: '',
-      images: [],
+      images,
       output: null,
-      conversation: { messages },
+      conversation: {
+        messages,
+        ...(photo && question ? { photoMessageIndex: messages.indexOf(question) } : {}),
+      },
       tools: { defs, choice: last ? 'none' : 'auto' },
       maxOutputTokens,
       expectedOutputTokens: last

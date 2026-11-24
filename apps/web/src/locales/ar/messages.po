@@ -33031,3 +33031,24 @@ msgstr "الموقع الافتراضي"
 #: src/native/capture-ai.tsx
 msgid "Default photo AI"
 msgstr "الذكاء الاصطناعي الافتراضي للصور"
+
+msgid "Attach photo"
+msgstr "إرفاق صورة"
+
+msgid "Remove photo"
+msgstr "إزالة الصورة"
+
+msgid "Describe this photo"
+msgstr "صِف هذه الصورة"
+
+msgid "Photo attached"
+msgstr "تم إرفاق صورة"
+
+msgid "Choose a readable photo."
+msgstr "اختر صورة يمكن فتحها."
+
+msgid "Permanently delete this thread and its messages?"
+msgstr "هل تريد حذف هذه المحادثة ورسائلها نهائيًا؟"
+
+msgid "The selected model is unavailable for this turn."
+msgstr "النموذج المحدد غير متاح لهذا الطلب."

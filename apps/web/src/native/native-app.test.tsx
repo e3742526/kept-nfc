@@ -1125,7 +1125,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: 'Create Decorations' })).toBeVisible();
   });
 
-  it('opens Assistant from its tab and confirms and undoes inventory changes', async () => {
+  it('uses Assistant photos, model selection, confirmed record changes, and thread deletion', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
       initialConnection: {
@@ -1143,15 +1143,29 @@ describe('KeptPhone mobile workflows', () => {
     const proposals: Proposal[] = [];
     const inventory: string[] = [];
     const ask = vi.fn();
+    const deleted = vi.fn();
     const original = env.adapters.transport.request;
     const request = vi
       .spyOn(env.adapters.transport, 'request')
       .mockImplementation(
         async <T,>(conn: Connection, path: string, options?: NativeRequestOptions): Promise<T> => {
+          if (path === assistantPaths.models) {
+            return {
+              items: [
+                { id: 'text-model', isDefault: true, vision: false },
+                { id: 'photo-model', isDefault: false, vision: true },
+              ],
+            } as T;
+          }
           if (path === assistantPaths.threads)
             return (options?.method === 'POST' ? thread : { items: [] }) as T;
-          if (path === assistantPaths.thread(thread.id))
+          if (path === assistantPaths.thread(thread.id)) {
+            if (options?.method === 'DELETE') {
+              deleted();
+              return undefined as T;
+            }
             return { thread, messages, proposals: proposals.map((p) => ({ ...p })) } as T;
+          }
           if (path === assistantPaths.threadTurns(thread.id)) {
             const body = options?.body as AskBody;
             ask(body);
@@ -1259,6 +1273,36 @@ describe('KeptPhone mobile workflows', () => {
       assistantPaths.proposalsConfirm,
       inventoryPaths.undo('trash-event'),
     ]);
+
+    const fileInput = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"]',
+    );
+    if (!fileInput) throw new Error('Assistant photo input is missing');
+    await user.upload(fileInput, new File(['photo data'], 'fixture.jpg', { type: 'image/jpeg' }));
+    await user.click(screen.getByRole('button', { name: /Model/ }));
+    expect(screen.queryByRole('option', { name: 'text-model' })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('option', { name: 'photo-model' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    await waitFor(() =>
+      expect(ask).toHaveBeenLastCalledWith({
+        text: 'Describe this photo',
+        context,
+        locale: 'en',
+        model: 'photo-model',
+        photo: btoa('photo data'),
+      }),
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Delete this thread' }));
+    expect(deleted).not.toHaveBeenCalled();
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Delete' }),
+    );
+    await waitFor(() => expect(deleted).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Delete this thread' })).not.toBeInTheDocument(),
+    );
+    expect(inventory).toEqual(['add_thing', 'update_thing']);
   });
 
   it('keeps the native defaults from More across a relaunch and applies the photo provider', async () => {

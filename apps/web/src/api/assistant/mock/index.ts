@@ -174,6 +174,12 @@ export function assistantMockRoutes(state: MockState): MockRoute[] {
   };
 
   return [
+    route('GET', p.models, () => ({
+      items: [
+        { id: 'demo-chat', vision: false, isDefault: true },
+        { id: 'demo-vision', vision: true, isDefault: false },
+      ],
+    })),
     route('GET', p.threads, ({ query }) => {
       const q = (query.get('q') ?? '').trim().toLowerCase();
       const places = query.getAll('locationId');
@@ -286,7 +292,7 @@ export function assistantMockRoutes(state: MockState): MockRoute[] {
         role: 'user',
         step: 0,
         createdAt: now(),
-        parts: [{ type: 'text', text }],
+        parts: [{ type: 'text', text }, ...(b.photo ? [{ type: 'photo' as const }] : [])],
       });
       t.title ??= text.slice(0, 60);
       t.locale = b.locale || t.locale;

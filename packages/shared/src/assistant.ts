@@ -28,6 +28,7 @@ export type MessageRole = (typeof MESSAGE_ROLES)[number];
  */
 export type Part =
   | { type: 'text'; text: string }
+  | { type: 'photo' }
   | { type: 'reasoning'; text: string }
   | { type: 'tool_call'; callId: string; tool: string; input: unknown }
   | { type: 'tool_result'; callId: string; tool: string; locationIds: string[]; output: unknown }
@@ -36,6 +37,7 @@ export type Part =
 export type PartType = Part['type'];
 export const PART_TYPES = [
   'text',
+  'photo',
   'reasoning',
   'tool_call',
   'tool_result',
@@ -52,6 +54,9 @@ export type ThreadMessage = {
   /** The model step the message belongs to (0 for the question). */
   step: number;
 };
+
+export type AssistantModel = { id: string; vision: boolean; isDefault: boolean };
+export const ASSISTANT_PHOTO_MAX_BASE64 = 2 * 1024 * 1024;
 
 /** The loop's bounds: Kept runs the loop, one provider request per step. */
 export const TURN_LIMITS = Object.freeze({

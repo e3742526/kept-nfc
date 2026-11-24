@@ -33031,3 +33031,24 @@ msgstr "Типове місце зберігання"
 #: src/native/capture-ai.tsx
 msgid "Default photo AI"
 msgstr "Типовий ШІ для фото"
+
+msgid "Attach photo"
+msgstr "Прикріпити фото"
+
+msgid "Remove photo"
+msgstr "Видалити фото"
+
+msgid "Describe this photo"
+msgstr "Опиши це фото"
+
+msgid "Photo attached"
+msgstr "Фото прикріплено"
+
+msgid "Choose a readable photo."
+msgstr "Виберіть фото, яке можна відкрити."
+
+msgid "Permanently delete this thread and its messages?"
+msgstr "Назавжди видалити цю розмову та її повідомлення?"
+
+msgid "The selected model is unavailable for this turn."
+msgstr "Вибрана модель недоступна для цього запиту."

@@ -10,9 +10,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { assistantApi, assistantKeys, useThread, useTurn } from '@/api/assistant/queries';
 import type { AskBody, Proposal, ThreadMessage, TurnView } from '@/api/assistant/types';
+import { assistantPhotoBase64 } from './inputs';
 import { showThread } from './store';
 
-export type AskInput = { text: string; context: NonNullable<AskBody['context']> };
+export type AskInput = {
+  text: string;
+  context: NonNullable<AskBody['context']>;
+  model?: string;
+  photo?: File;
+};
 
 function mergeById<T extends { id: string }>(a: readonly T[], b: readonly T[]): T[] {
   const seen = new Set(a.map((x) => x.id));
@@ -45,7 +51,8 @@ export function useConversation(threadId: string | null) {
   }, [status, threadId, qc]);
 
   const ask = useMutation({
-    mutationFn: async ({ text, context }: AskInput) => {
+    mutationFn: async ({ text, context, model, photo }: AskInput) => {
+      const encoded = photo ? await assistantPhotoBase64(photo) : undefined;
       let id = threadId;
       if (!id) {
         const t = await assistantApi.createThread({ context });
@@ -53,7 +60,13 @@ export function useConversation(threadId: string | null) {
         created.current = id;
         showThread(id);
       }
-      const r = await assistantApi.ask(id, { text, context, locale: i18n.locale });
+      const r = await assistantApi.ask(id, {
+        text,
+        context,
+        locale: i18n.locale,
+        ...(model ? { model } : {}),
+        ...(encoded ? { photo: encoded } : {}),
+      });
       return { threadId: id, turnId: r.turnId };
     },
     onSuccess: async (r) => {

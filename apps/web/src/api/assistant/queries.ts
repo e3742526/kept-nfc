@@ -12,6 +12,7 @@ import { assistantPaths as p } from './paths';
 import type {
   AskBody,
   AskResult,
+  AssistantModel,
   CancelProposalsBody,
   ConfirmBody,
   ConfirmResult,
@@ -31,6 +32,8 @@ export const assistantKeys = {
 };
 
 export const assistantApi = {
+  models: (locationId: string | null) =>
+    api.get<{ items: AssistantModel[] }>(p.models + qs({ locationId })),
   threads: (params: ThreadsParams = {}) => api.get<ThreadsPage>(p.threads + qs(params)),
   createThread: (body: CreateThreadBody = {}) => api.post<Thread>(p.threads, body),
   thread: (id: string) => api.get<ThreadDetail>(p.thread(id)),

@@ -1,11 +1,18 @@
 import { isLiveTurn, newId, TURN_LIMITS } from '@kept/shared';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { QueryClient, QueryClientProvider, useMutation, useQuery } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { assistantPaths as paths } from '@/api/assistant/paths';
 import type {
   AskResult,
+  AssistantModel,
   ConfirmBody,
   ConfirmResult,
   Proposal,
@@ -15,14 +22,21 @@ import type {
   TurnView,
 } from '@/api/assistant/types';
 import { ApiError } from '@/api/client';
-import { inventoryPaths } from '@/api/inventory/paths';
+import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { PlaceView, ThingView } from '@/api/inventory/types';
 import { FieldList, ProposalRowTitle } from '@/assistant/confirm-card';
 import { cardExpiry, cardRows } from '@/assistant/confirm-rows';
+import {
+  AssistantInputs,
+  AssistantPhotoError,
+  assistantPhotoBase64,
+  useAssistantInputs,
+} from '@/assistant/inputs';
 import { LinkOnlyMarkdown, parse } from '@/assistant/link-only-markdown';
 import { threadItems } from '@/assistant/thread';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
 import { Select, SelectItem } from '@/components/ui/select';
 import { usePlatform } from './adapters';
 import type { Connection, NativeRequestOptions } from './bridge';
@@ -69,6 +83,8 @@ function AssistantConversation({
 }: Props) {
   const { t, i18n } = useLingui();
   const errorText = useErrorText();
+  const confirm = useConfirm();
+  const queryClient = useQueryClient();
   const { transport } = usePlatform();
   const [turnId, setTurnId] = useState<string>();
   const [draft, setDraft] = useState('');
@@ -76,6 +92,13 @@ function AssistantConversation({
   const previousAsk = useRef<{ thread: string; input: string; key: string }>(null);
   const request = <T,>(path: string, options?: NativeRequestOptions) =>
     transport.request<T>(connection, path, options);
+  const models = useQuery({
+    queryKey: ['assistant-models', defaultLocationId],
+    queryFn: () =>
+      request<{ items: AssistantModel[] }>(paths.models + qs({ locationId: defaultLocationId })),
+    enabled: online,
+  });
+  const inputs = useAssistantInputs(models.data?.items ?? []);
   const threads = useQuery({
     queryKey: ['assistant-threads'],
     queryFn: () => request<ThreadsPage>(paths.threads),
@@ -106,6 +129,7 @@ function AssistantConversation({
 
   const ask = useMutation({
     mutationFn: async (text: string) => {
+      const photo = inputs.photo ? await assistantPhotoBase64(inputs.photo) : undefined;
       let id = threadId;
       const context = defaultLocationId
         ? { kind: 'location' as const, id: defaultLocationId, recordOnly: true }
@@ -115,7 +139,13 @@ function AssistantConversation({
         id = created.id;
         onThreadChange(id);
       }
-      const body = { text, context, locale: i18n.locale };
+      const body = {
+        text,
+        context,
+        locale: i18n.locale,
+        ...(photo ? { photo } : {}),
+        ...(inputs.model ? { model: inputs.model } : {}),
+      };
       const input = JSON.stringify(body);
       const prior = previousAsk.current;
       const key = prior?.thread === id && prior.input === input ? prior.key : newId();
@@ -129,6 +159,7 @@ function AssistantConversation({
       return result;
     },
     onSuccess: ({ turnId: id }) => {
+      inputs.setPhoto(undefined);
       setDraft('');
       setTurnId(id);
     },
@@ -161,8 +192,30 @@ function AssistantConversation({
     onThreadChange(id);
     setTurnId(undefined);
     setDraft('');
+    inputs.setPhoto(undefined);
     setError(null);
     previousAsk.current = null;
+  };
+  const removeThread = useMutation({
+    mutationFn: (id: string) => request(paths.thread(id), { method: 'DELETE' }),
+    onSuccess: async (_deleted, id) => {
+      selectThread();
+      queryClient.removeQueries({ queryKey: ['assistant-thread', id] });
+      if (activeTurnId) queryClient.removeQueries({ queryKey: ['assistant-turn', activeTurnId] });
+      await queryClient.invalidateQueries({ queryKey: ['assistant-threads'] });
+    },
+    onError: setError,
+  });
+  const askDelete = async (id: string) => {
+    if (
+      await confirm({
+        title: t`Delete this thread`,
+        body: t`Permanently delete this thread and its messages?`,
+        confirmLabel: t`Delete`,
+        destructive: true,
+      })
+    )
+      removeThread.mutate(id);
   };
   const messages = detail.data?.messages ?? [];
   const proposals = detail.data?.proposals ?? [];
@@ -177,8 +230,8 @@ function AssistantConversation({
   );
   const recent = threads.data?.items.filter((thread) => thread.title) ?? [];
   const threadLoading = !!threadId && !detail.data;
-  const blocked = ask.isPending || live || threadLoading;
-  const text = draft.trim();
+  const blocked = ask.isPending || live || threadLoading || removeThread.isPending;
+  const text = draft.trim() || (inputs.photo ? t`Describe this photo` : '');
   const applyFeedback = async (changed: boolean) => {
     if (changed) onInventoryChanged();
     await refetchDetail();
@@ -200,7 +253,7 @@ function AssistantConversation({
             label={t`Threads`}
             items={recent}
             selectedKey={recent.some((entry) => entry.id === threadId) ? threadId : null}
-            isDisabled={!online || ask.isPending}
+            isDisabled={!online || ask.isPending || removeThread.isPending}
             onSelectionChange={(key) => {
               if (key) selectThread(String(key));
             }}
@@ -213,14 +266,25 @@ function AssistantConversation({
           </Select>
         )}
         {threadId && (
-          <Button
-            variant="secondary"
-            size="small"
-            isDisabled={ask.isPending}
-            onPress={() => selectThread()}
-          >
-            <Trans>New thread</Trans>
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              size="small"
+              isDisabled={ask.isPending || removeThread.isPending}
+              onPress={() => selectThread()}
+            >
+              <Trans>New thread</Trans>
+            </Button>
+            <Button
+              variant="secondary"
+              size="small"
+              isDisabled={!online || ask.isPending || threadLoading}
+              isPending={removeThread.isPending}
+              onPress={() => void askDelete(threadId)}
+            >
+              <Trans>Delete this thread</Trans>
+            </Button>
+          </>
         )}
       </div>
       <div role="log" aria-label={t`Assistant`} className="grid min-w-0 gap-3">
@@ -238,6 +302,12 @@ function AssistantConversation({
             );
           }
           if (item.kind === 'tool') return null;
+          if (item.kind === 'photo')
+            return (
+              <p key={item.key} className="m-0 justify-self-end text-small text-ink-2">
+                <Trans>Photo attached</Trans>
+              </p>
+            );
           if (item.kind === 'redacted')
             return (
               <p key={item.key} className="m-0 text-small text-ink-2">
@@ -312,9 +382,11 @@ function AssistantConversation({
       )}
       {issue ? (
         <p role="alert" className="m-0 text-small text-danger">
-          {issue instanceof ApiError && issue.code === 'ai_unavailable'
-            ? t`AI isn't set up here`
-            : errorText(issue)}
+          {issue instanceof AssistantPhotoError
+            ? t`Choose a readable photo.`
+            : issue instanceof ApiError && issue.code === 'ai_unavailable'
+              ? t`AI isn't set up here`
+              : errorText(issue)}
         </p>
       ) : null}
       {finished &&
@@ -326,7 +398,9 @@ function AssistantConversation({
             ? t`AI paused`
             : turn.data.status === 'cancelled'
               ? t`Stopped`
-              : t`The assistant couldn't finish this answer. Ask again.`}
+              : turn.data.statusReason === 'model_unavailable'
+                ? t`The selected model is unavailable for this turn.`
+                : t`The assistant couldn't finish this answer. Ask again.`}
         </p>
       ) : null}
       <form
@@ -338,6 +412,7 @@ function AssistantConversation({
           ask.mutate(text);
         }}
       >
+        <AssistantInputs value={inputs} disabled={!online || blocked} />
         <label className="grid gap-1 text-small font-semibold">
           <Trans>Ask the assistant</Trans>
           <textarea

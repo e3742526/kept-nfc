@@ -10,6 +10,7 @@ const V1 = '/api/v1';
 const seg = (value: string) => encodeURIComponent(value);
 
 export const assistantPaths = {
+  models: `${V1}/assistant/models`,
   threads: `${V1}/assistant/threads`,
   thread: (id: string) => `${V1}/assistant/threads/${seg(id)}`,
   threadTurns: (id: string) => `${V1}/assistant/threads/${seg(id)}/turns`,
@@ -20,6 +21,7 @@ export const assistantPaths = {
 };
 
 export const ASSISTANT_METHODS: Record<keyof typeof assistantPaths, readonly string[]> = {
+  models: ['GET'],
   threads: ['GET', 'POST'],
   thread: ['GET', 'DELETE'],
   threadTurns: ['POST'],

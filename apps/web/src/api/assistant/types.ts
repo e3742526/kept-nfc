@@ -16,6 +16,7 @@ import type { Page } from '../inventory/types';
 
 export type {
   AssistantContext,
+  AssistantModel,
   ContextKind,
   Part,
   Proposal,
@@ -80,6 +81,8 @@ export type AskBody = {
   text: string;
   context?: { kind: ContextKind; id?: string; recordOnly?: true };
   locale: string;
+  photo?: string;
+  model?: string;
 };
 export type AskResult = { turnId: string };
 

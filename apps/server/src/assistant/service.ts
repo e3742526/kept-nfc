@@ -6,6 +6,8 @@ import type { Scope } from '../db/scope.js';
 import { AppError, notFound, pgErrorOf } from '../http/errors.js';
 import type { JobQueue } from '../jobs/queue.js';
 import type { TurnJobData } from './loop.js';
+import { chooseModel, modelsFor, type SelectedModel } from './models.js';
+import type { StoredPhoto } from './photo.js';
 import { resolveContext, type TurnView, threadRow, titleOf, turnView } from './threads.js';
 
 // Asking and cancelling (D22, D166, D206). A
@@ -23,6 +25,8 @@ export type AskBody = {
     | { kind: ContextKind; id?: string | undefined; recordOnly?: true | undefined }
     | undefined;
   locale: string;
+  photo?: string | undefined;
+  model?: string | undefined;
 };
 
 /** Checked before the transaction, with its own short doors: a provider, and no pause. */
@@ -31,12 +35,23 @@ export async function askPreflight(
   client: pg.ClientBase,
   scope: Scope,
   locationId: string | null,
-): Promise<void> {
+  body?: Pick<AskBody, 'photo' | 'model'>,
+): Promise<SelectedModel | undefined> {
   if (!ai) throw new AppError('ai_unavailable', 400, 'connect AI in Settings');
   const rt = await ai.runtime(scope);
   const resolved = await rt.keys.resolve({ locationId, userId: scope.userId, task: 'assistant' });
   if (!resolved) throw new AppError('ai_unavailable', 400, 'connect AI in Settings');
-  if (!locationId) return;
+  const choices = body?.model || body?.photo ? await modelsFor(client, locationId) : [];
+  const selected = chooseModel(choices, body?.model, !!body?.photo);
+  if ((body?.model || body?.photo) && !selected) {
+    throw new AppError(
+      'validation',
+      400,
+      body.photo ? 'Choose an available model that accepts photos.' : 'Choose an available model.',
+    );
+  }
+  const model = selected ? { id: selected.id, providerId: selected.providerId } : undefined;
+  if (!locationId) return model;
   // kept.ai_status reads the extraction cascade's buckets; a location's and a member's caps
   // count every task, so a pause there pauses the assistant too. (An account cap named for
   // the assistant alone pauses the turn's first step instead, with its over_budget row.)
@@ -50,6 +65,7 @@ export async function askPreflight(
       reason: status.reason,
     });
   }
+  return model;
 }
 
 /** The context a question is asked in: the body's, else the thread's. */
@@ -68,6 +84,8 @@ export async function ask(
   threadId: string,
   body: AskBody,
   context: Awaited<ReturnType<typeof askContext>>['context'],
+  photo?: StoredPhoto,
+  model?: SelectedModel,
 ): Promise<{ turnId: string }> {
   if (!jobs) throw new AppError('ai_unavailable', 400, 'the assistant needs the job queue');
   const text = body.text.trim();
@@ -92,12 +110,18 @@ export async function ask(
     if (pgErrorOf(err)?.code === '23505') {
       throw new AppError('turn_running', 409, 'wait for the answer or cancel it');
     }
+    if (pgErrorOf(err)?.code === '23503') throw notFound();
     throw err;
   }
   await client.query(
     `INSERT INTO public.assistant_messages (thread_id, turn_id, user_id, role, step, parts)
      VALUES ($1, $2, $3, 'user', 0, $4)`,
-    [threadId, turnId, scope.userId, JSON.stringify([{ type: 'text', text }])],
+    [
+      threadId,
+      turnId,
+      scope.userId,
+      JSON.stringify([{ type: 'text', text }, ...(photo ? [photo] : [])]),
+    ],
   );
   await client.query(
     `UPDATE public.assistant_threads
@@ -105,7 +129,11 @@ export async function ask(
       WHERE id = $1`,
     [threadId, titleOf(text), JSON.stringify(context)],
   );
-  const data: TurnJobData = { turnId, locale: body.locale.slice(0, 20) };
+  const data: TurnJobData = {
+    turnId,
+    locale: body.locale.slice(0, 20),
+    ...(model ? { model } : {}),
+  };
   await jobs.sendTenant(client, ASSISTANT_TURN_JOB, data);
   return { turnId };
 }

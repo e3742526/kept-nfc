@@ -440,6 +440,7 @@ const FUNCTIONS: Record<string, { roles: string[]; definer: boolean }> = {
   'kept.assistant_message_tsv()': { roles: NOBODY, definer: true },
   'kept.assistant_title_tsv()': { roles: NOBODY, definer: true },
   'kept.prune_assistant(timestamp with time zone)': { roles: SYS, definer: true },
+  'kept.assistant_models(uuid)': { roles: APP, definer: true },
   'kept.redact_assistant_for(uuid,uuid)': { roles: BOTH, definer: true },
   // (0076) Semantic search: the backfill's and the editor's job's doors, the only
   // way to a match, the index's status, and the background's payer for embeddings.
@@ -2021,6 +2022,12 @@ const PROBES: Probe[] = [
     sql: `SELECT * FROM kept.ai_provider_for($1, 'extraction')`,
     args: (_i, t) => [t.locationId],
     viewer: 'refused',
+  },
+  {
+    name: 'assistant_models',
+    sql: 'SELECT * FROM kept.assistant_models($1)',
+    args: (_i, t) => [t.locationId],
+    viewer: 'empty', // the fixture provider configures only extraction
   },
   {
     name: 'ai_provider_secret',

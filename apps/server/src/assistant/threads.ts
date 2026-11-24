@@ -196,7 +196,7 @@ type MessageRow = {
 export const messageOf = (r: MessageRow): ThreadMessage => ({
   id: r.id,
   role: r.role,
-  parts: r.parts,
+  parts: r.parts.map((part) => (part.type === 'photo' ? { type: 'photo' } : part)),
   createdAt: r.created_at.toISOString(),
   turnId: r.turn_id,
   step: r.step,

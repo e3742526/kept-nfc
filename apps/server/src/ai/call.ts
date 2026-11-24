@@ -157,7 +157,7 @@ export type CallRequest<T> = {
    * then the new user message, or '' when the conversation already ends with what the model must
    * answer (a tool result).
    */
-  conversation?: { messages: KeptMessage[] };
+  conversation?: { messages: KeptMessage[]; photoMessageIndex?: number };
   /** The tools offered for this one step; never a function to run. A tool-calling
    * request passes `output: null`: `value` is the text answer ('' for a step of tool calls). */
   tools?: { defs: ToolSpec[]; choice: 'auto' | 'none' };
@@ -329,7 +329,7 @@ function promptTextOf(
   return `${instructions}\n${toolText}\n${conversationText(history)}\n${text}`;
 }
 
-/** The tokens a text-only request reserves (its input, estimated as callModel does, plus its
+/** The tokens a request reserves (its input, estimated as callModel does, plus its
  * output allowance): what a provider's per-minute ceiling is compared with (assistant/fit.ts). */
 export function requestTokens(
   kind: ProviderKind,
@@ -337,12 +337,13 @@ export function requestTokens(
     instructions: string;
     tools: readonly ToolSpec[] | null;
     messages: readonly KeptMessage[];
+    images?: readonly ImageInput[];
     maxOutputTokens: number;
   },
 ): number {
   return estimateCall({
     kind,
-    images: [],
+    images: r.images ?? [],
     promptText: promptTextOf(r.instructions, r.tools, r.messages, ''),
     maxOutputTokens: r.maxOutputTokens,
     expectedOutputTokens: r.maxOutputTokens,
@@ -470,15 +471,12 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
     // 4. The call, outside any transaction.
     const started = rt.now();
     const t0 = performance.now();
-    const content = [
-      { type: 'text' as const, text: req.text },
-      ...req.images.map((img) => ({
-        type: 'file' as const,
-        mediaType: img.mediaType,
-        data: { type: 'data' as const, data: img.bytes },
-        ...(settings.imagePartOptions ? { providerOptions: settings.imagePartOptions } : {}),
-      })),
-    ];
+    const imageParts = req.images.map((img) => ({
+      type: 'file' as const,
+      mediaType: img.mediaType,
+      data: { type: 'data' as const, data: img.bytes },
+      ...(settings.imagePartOptions ? { providerOptions: settings.imagePartOptions } : {}),
+    }));
     let usage: CallUsage = {
       inputTokens: null,
       outputTokens: null,
@@ -499,10 +497,17 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
     let value: T | null = null;
     let toolCalls: ToolCallOut[] = [];
     let reasoning: string | null = null;
-    const messages: ModelMessage[] = [
-      ...toModelMessages(history),
-      ...(req.text || req.images.length ? [{ role: 'user' as const, content }] : []),
-    ];
+    const photoIndex = req.conversation?.photoMessageIndex;
+    const messages: ModelMessage[] = toModelMessages(
+      history,
+      photoIndex === undefined ? undefined : { index: photoIndex, parts: imageParts },
+    );
+    if (req.text || (imageParts.length && photoIndex === undefined)) {
+      messages.push({
+        role: 'user',
+        content: [{ type: 'text', text: req.text }, ...imageParts],
+      });
+    }
 
     try {
       const result = await generateText({
