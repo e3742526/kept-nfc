@@ -212,6 +212,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
     uploadedFiles: [] as Array<{ id: string; file: string; location: string }>,
     disconnected: 0,
     sharedLabelPdfs: [] as { url: string; name: string }[],
+    reservedLabelKeys: [] as Array<string | undefined>,
   };
 
   const getQueue = (ctx: string) => {
@@ -374,6 +375,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 quantity?: string;
                 target: { containerId?: string; placeId?: string };
                 attachToThingId?: string;
+                claimCode?: string;
                 files: Array<{ fileId: string; role: string }>;
               };
             }>;
@@ -392,8 +394,8 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
               serverThings.set(createdId, {
                 id: createdId,
                 locationId: locId,
-                shortCode: '4CD5EF',
-                labelPrinted: false,
+                shortCode: op.payload.claimCode ?? '4CD5EF',
+                labelPrinted: !!op.payload.claimCode,
                 name: op.payload.name ?? null,
                 typeId: null,
                 placeId: op.payload.target.placeId ?? null,
@@ -477,8 +479,17 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           });
           return { results } as T;
         }
+        if (path === capturePaths.labelReserve) {
+          events.reservedLabelKeys.push(options?.idempotencyKey);
+          return {
+            code: 'RSV234',
+            url: 'https://kept.example.com/l/RSV234',
+            locationId: (options?.body as { locationId?: string } | undefined)?.locationId,
+          } as T;
+        }
         if (path === capturePaths.scanResolve) {
           const text = (options?.body as { text?: string } | undefined)?.text ?? '';
+          if (text.includes('BNK234')) return { outcome: 'claim', locationId: locId } as T;
           if (text.includes('7KQ4MZ') || text.trim().toUpperCase() === '7KQ4MZ') {
             return {
               outcome: 'open',
@@ -2658,6 +2669,139 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Save capture' }));
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
     expect(screen.getByLabelText('Description')).toHaveValue('');
+  });
+
+  it('gives a new item a scanned blank label or a newly written NFC tag, claimed at sync', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    const user = userEvent.setup();
+    env.renderApp();
+    await screen.findByRole('button', { name: /Winter Box/i });
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await user.type(screen.getByLabelText('Description'), 'Camera');
+    await user.click(screen.getByText('QR or NFC label'));
+
+    // A tag that already belongs to something is refused; a blank label of this location is taken.
+    env.pushScan(
+      { status: 'read', url: `${origin}/l/7KQ4MZ` },
+      { status: 'read', url: `${origin}/l/BNK234` },
+    );
+    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
+    expect(
+      await screen.findByText(/already on .*Winter Box.*Use a blank label/),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
+    expect(await screen.findByText(/Scanned label\. It opens this item/)).toBeInTheDocument();
+    expect(screen.getByText('BNK234')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        expect.anything(),
+        capturePaths.syncOps,
+        expect.objectContaining({
+          body: expect.objectContaining({
+            ops: [
+              expect.objectContaining({
+                payload: expect.objectContaining({ name: 'Camera', claimCode: 'BNK234' }),
+              }),
+            ],
+          }),
+        }),
+      ),
+    );
+    // The next item starts without a label.
+    expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+    expect(screen.queryByText('BNK234')).not.toBeInTheDocument();
+
+    // A new NFC tag: a code is reserved, the tag inspected, then written and verified.
+    await user.type(screen.getByLabelText('Description'), 'Lens');
+    await user.click(screen.getByText('QR or NFC label'));
+    env.pushScan(
+      {
+        status: 'inspected',
+        fingerprint: 'fp-1',
+        occupied: false,
+        writable: true,
+        capacity: 137,
+        required: 36,
+      },
+      { status: 'written' },
+    );
+    await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
+    expect(await screen.findByText('This tag is blank and ready to write.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Write and verify' }));
+    expect(await screen.findByText(/NFC tag written and verified/)).toBeInTheDocument();
+    expect(
+      scanTag.mock.calls.slice(-2).map(([, input]) => [input.mode, input.url, input.fingerprint]),
+    ).toEqual([
+      ['inspect', `${origin}/l/RSV234`, undefined],
+      ['write', `${origin}/l/RSV234`, 'fp-1'],
+    ]);
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+    expect(env.events.reservedLabelKeys[0]).toEqual(expect.any(String));
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        expect.anything(),
+        capturePaths.syncOps,
+        expect.objectContaining({
+          body: expect.objectContaining({
+            ops: [
+              expect.objectContaining({
+                payload: expect.objectContaining({ name: 'Lens', claimCode: 'RSV234' }),
+              }),
+            ],
+          }),
+        }),
+      ),
+    );
+  });
+
+  it('makes a new QR label for an item, and labels an item that is not a box', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Watch');
+    await user.click(screen.getByText('QR or NFC label'));
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText(/New QR label\. Share it to print/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));
+    expect(env.events.sharedLabelPdfs).toEqual([{ url: `${origin}/l/RSV234`, name: 'Watch' }]);
+    // Removing it and asking again reuses the same reserved code.
+    await user.click(screen.getByRole('button', { name: 'Remove label' }));
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText('RSV234')).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
+
+    // An item that is not a box has its own label screen, opened from the item.
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(await screen.findByRole('button', { name: /^Watch/ }));
+    expect(await screen.findByRole('heading', { name: 'Watch' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Find this box' })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'QR and NFC label' }));
+    await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));
+    expect(env.events.sharedLabelPdfs.at(-1)).toEqual({ url: `${origin}/l/RSV234`, name: 'Watch' });
   });
 
   it('suggests the box opened last as the next destination', async () => {

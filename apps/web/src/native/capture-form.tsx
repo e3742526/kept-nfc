@@ -21,6 +21,7 @@ import { CaptureSuggestion, type PhotoSuggestion } from './capture-ai';
 import { CategoryPicker } from './category-picker';
 import { type Destination, DestinationPicker, defaultDestination } from './destination';
 import { createBox, type InventoryCache, inventoryPath } from './inventory';
+import { type ItemLabel, ItemLabelPicker } from './item-label';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
@@ -103,6 +104,9 @@ export function CaptureForm({
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState('');
   const [files, setFiles] = useState<ChosenFile[]>([]);
+  const [label, setLabel] = useState<ItemLabel>();
+  // Bumped after each save, so the next item starts with a fresh label picker.
+  const [labelSession, setLabelSession] = useState(0);
   const [provider, setProvider] = useState<CaptureAIProvider>(preferredProvider);
   const photos = evidenceOnly ? [] : files.filter((item) => item.role === 'photo');
   const firstPhoto = photos[0];
@@ -115,7 +119,7 @@ export function CaptureForm({
 
   async function canLeave() {
     if (busy) return false;
-    if (!name && !note && !quantity && !files.length && !tags.length) return true;
+    if (!name && !note && !quantity && !files.length && !tags.length && !label) return true;
     return confirm({
       title: t`Discard this draft?`,
       confirmLabel: t`Discard draft`,
@@ -137,6 +141,14 @@ export function CaptureForm({
 
   const canSave =
     destination && (evidenceOnly ? files.length > 0 : !!name.trim() && !quantityInvalid);
+  // A label is claimed only in the location it was made for.
+  const claimCode =
+    !evidenceOnly && label && label.locationId === destination?.locationId ? label.code : undefined;
+
+  function clearLabel() {
+    setLabel(undefined);
+    setLabelSession((n) => n + 1);
+  }
   const pendingById = new Map(pending.map((entry) => [entry.capture.id, entry]));
   const batchPendingCount = batchEntryIds.filter((id) => {
     const entry = pendingById.get(id);
@@ -192,6 +204,9 @@ export function CaptureForm({
     try {
       const proposals: PhotoSuggestion[] =
         items.length && !single ? items : [{ name: name.trim() }];
+      // The label goes with the item when the review is of one item; with several, it stays
+      // here for the next item saved.
+      const labelled = proposals.length === 1 ? claimCode : undefined;
       const categories = new Map(
         items.flatMap((item) => item.categories ?? []).map((tag) => [normalize(tag), tag]),
       );
@@ -219,6 +234,7 @@ export function CaptureForm({
               include: true,
               categories: single ? [...categories.values()].slice(0, 8) : (item.categories ?? []),
               tags,
+              ...(labelled ? { claimCode: labelled } : {}),
             })),
           },
         },
@@ -233,6 +249,7 @@ export function CaptureForm({
       setNote('');
       setIntent('record');
       setTags([]);
+      if (labelled) clearLabel();
       onSave();
       onReview(id);
     } catch {
@@ -261,6 +278,7 @@ export function CaptureForm({
           ...(firstPhoto ? { skipServerSuggestions: true } : {}),
           ...(note.trim() ? { note: note.trim() } : {}),
           ...(quantity ? { quantity } : {}),
+          ...(claimCode ? { claimCode } : {}),
           batchId,
         },
         files,
@@ -275,6 +293,7 @@ export function CaptureForm({
       setIntent('record');
       setTags([]);
       setFiles([]);
+      clearLabel();
       setStatus(t`Saved on device.`);
       onSave();
       setTimeout(() =>
@@ -404,6 +423,7 @@ export function CaptureForm({
                       ({ id }) => id === next?.locationId,
                     )?.ownerAccountId;
                     if (account !== owner) setTags([]);
+                    if (label && label.locationId !== next?.locationId) setLabel(undefined);
                     setDestination(next);
                   }}
                   disabled={busy}
@@ -565,6 +585,19 @@ export function CaptureForm({
             selected={tags}
             disabled={busy}
             onChange={setTags}
+          />
+        )}
+        {!evidenceOnly && destination && captureLocation && captureLocation.role !== 'viewer' && (
+          <ItemLabelPicker
+            key={`${labelSession}:${destination.locationId}`}
+            connection={connection}
+            cache={cache}
+            locationId={destination.locationId}
+            itemName={name}
+            online={online}
+            value={claimCode ? label : undefined}
+            onChange={setLabel}
+            disabled={busy}
           />
         )}
         {!evidenceOnly && (

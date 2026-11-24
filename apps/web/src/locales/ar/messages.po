@@ -33052,3 +33052,72 @@ msgstr "هل تريد حذف هذه المحادثة ورسائلها نهائي
 
 msgid "The selected model is unavailable for this turn."
 msgstr "النموذج المحدد غير متاح لهذا الطلب."
+
+#: src/native/item-label.tsx
+msgid "Connect to make a new label. You can still scan a blank label."
+msgstr "اتصل بالخادم لإنشاء ملصق جديد. ما زال بإمكانك مسح ملصق فارغ."
+
+#: src/native/item-label.tsx
+msgid "Give a valuable item its own label, then scan the label to open the item."
+msgstr "امنح الغرض الثمين ملصقًا خاصًا به، ثم امسح الملصق لتفتح الغرض مباشرة."
+
+#: src/components/history/labels.ts
+msgid "Made a label for a new item"
+msgstr "أُنشئ ملصق لعنصر جديد"
+
+#: src/native/item-label.tsx
+msgid "New item"
+msgstr "عنصر جديد"
+
+#: src/native/item-label.tsx
+msgid "New QR label"
+msgstr "ملصق QR جديد"
+
+#: src/native/item-label.tsx
+msgid "New QR label. Share it to print, stick it on the item, and it opens this item once the item syncs."
+msgstr "ملصق QR جديد. شاركه لتطبعه، ثم ألصقه على الغرض، وسيفتح هذا الغرض بعد مزامنته."
+
+#: src/native/item-label.tsx
+msgid "NFC tag written and verified. It opens this item once the item syncs."
+msgstr "كُتبت بطاقة NFC وتم التحقق منها. ستفتح هذا الغرض بعد مزامنته."
+
+#: src/native/item-label.tsx
+msgid "QR or NFC label"
+msgstr "ملصق QR أو NFC"
+
+#: src/native/item-label.tsx
+msgid "Remove label"
+msgstr "إزالة الملصق"
+
+#: src/native/item-label.tsx
+msgid "Scan QR label"
+msgstr "مسح ملصق QR"
+
+#: src/native/item-label.tsx
+msgid "Scanned label. It opens this item once the item syncs."
+msgstr "مُسح الملصق. سيفتح هذا الغرض بعد مزامنته."
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this item’s label. Reopen the item and try again."
+msgstr "تعذّر على الخادم تأكيد ملصق هذا الغرض. أعد فتح الغرض وحاول مجددًا."
+
+#: src/native/item-label.tsx
+msgid "This label belongs to another location. Choose a destination there, or use another label."
+msgstr "هذا الملصق تابع لموقع آخر. اختر وجهة هناك، أو استخدم ملصقًا آخر."
+
+#: src/native/item-label.tsx
+msgid "This label is already in use. Use a blank label."
+msgstr "هذا الملصق مستخدم بالفعل. استخدم ملصقًا فارغًا."
+
+#. placeholder {0}: isolate(other)
+#: src/native/item-label.tsx
+msgid "This label is already on {0}. Use a blank label."
+msgstr "هذا الملصق موضوع بالفعل على {0}. استخدم ملصقًا فارغًا."
+
+#: src/native/item-label.tsx
+msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
+msgstr "بطاقة NFC هذه فارغة. اختر «الكتابة على بطاقة NFC جديدة» لتمنحها ملصقًا."
+
+#: src/native/item-label.tsx
+msgid "Write new NFC tag"
+msgstr "الكتابة على بطاقة NFC جديدة"

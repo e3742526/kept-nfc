@@ -33052,3 +33052,72 @@ msgstr "Назавжди видалити цю розмову та її пові
 
 msgid "The selected model is unavailable for this turn."
 msgstr "Вибрана модель недоступна для цього запиту."
+
+#: src/native/item-label.tsx
+msgid "Connect to make a new label. You can still scan a blank label."
+msgstr "Під’єднайтеся, щоб створити нову мітку. Порожню мітку можна сканувати й без з’єднання."
+
+#: src/native/item-label.tsx
+msgid "Give a valuable item its own label, then scan the label to open the item."
+msgstr "Дайте цінній речі власну мітку, а потім скануйте мітку, щоб відкрити цю річ."
+
+#: src/components/history/labels.ts
+msgid "Made a label for a new item"
+msgstr "Створено мітку для нової позиції"
+
+#: src/native/item-label.tsx
+msgid "New item"
+msgstr "Нова позиція"
+
+#: src/native/item-label.tsx
+msgid "New QR label"
+msgstr "Нова QR-мітка"
+
+#: src/native/item-label.tsx
+msgid "New QR label. Share it to print, stick it on the item, and it opens this item once the item syncs."
+msgstr "Нова QR-мітка. Поділіться нею, щоб надрукувати, наклейте на річ — вона відкриє цю позицію після синхронізації."
+
+#: src/native/item-label.tsx
+msgid "NFC tag written and verified. It opens this item once the item syncs."
+msgstr "NFC-мітку записано й перевірено. Вона відкриє цю позицію після синхронізації."
+
+#: src/native/item-label.tsx
+msgid "QR or NFC label"
+msgstr "Мітка QR або NFC"
+
+#: src/native/item-label.tsx
+msgid "Remove label"
+msgstr "Прибрати мітку"
+
+#: src/native/item-label.tsx
+msgid "Scan QR label"
+msgstr "Сканувати QR-мітку"
+
+#: src/native/item-label.tsx
+msgid "Scanned label. It opens this item once the item syncs."
+msgstr "Мітку відскановано. Вона відкриє цю позицію після синхронізації."
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this item’s label. Reopen the item and try again."
+msgstr "Сервер не зміг підтвердити мітку цієї позиції. Відкрийте позицію знову та спробуйте ще раз."
+
+#: src/native/item-label.tsx
+msgid "This label belongs to another location. Choose a destination there, or use another label."
+msgstr "Ця мітка належить до іншого розташування. Виберіть місце призначення там або скористайтеся іншою міткою."
+
+#: src/native/item-label.tsx
+msgid "This label is already in use. Use a blank label."
+msgstr "Ця мітка вже використовується. Скористайтеся порожньою міткою."
+
+#. placeholder {0}: isolate(other)
+#: src/native/item-label.tsx
+msgid "This label is already on {0}. Use a blank label."
+msgstr "Ця мітка вже на {0}. Скористайтеся порожньою міткою."
+
+#: src/native/item-label.tsx
+msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
+msgstr "Ця NFC-мітка порожня. Виберіть «Записати нову NFC-мітку», щоб дати їй мітку."
+
+#: src/native/item-label.tsx
+msgid "Write new NFC tag"
+msgstr "Записати нову NFC-мітку"

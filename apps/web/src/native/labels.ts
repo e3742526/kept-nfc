@@ -1,6 +1,6 @@
 import { normaliseInputCode, parseScan, SHORT_CODE, storedCodeOf } from '@kept/shared';
 import { capturePaths } from '@/api/capture/paths';
-import type { ScanOutcome } from '@/api/capture/types';
+import type { ReservedLabel, ScanOutcome } from '@/api/capture/types';
 import { ApiError } from '@/api/client';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import type { Connection } from './bridge';
@@ -59,6 +59,24 @@ export function labelUrl(origin: string, code: string): string {
   return `${origin}/l/${encodeURIComponent(code)}`;
 }
 
+/**
+ * A new blank code for a label made while adding an item (an NFC tag written now, or one QR
+ * label shared now). The capture claims it with `claimCode` when it syncs. `key` is the
+ * Idempotency-Key: a retry with the same key answers the same code.
+ */
+export function reserveLabel(
+  connection: Connection,
+  locationId: string,
+  key: string,
+  adapters: PlatformAdapters = capacitorAdapters,
+): Promise<ReservedLabel> {
+  return adapters.transport.request<ReservedLabel>(connection, capturePaths.labelReserve, {
+    method: 'POST',
+    idempotencyKey: key,
+    body: { locationId },
+  });
+}
+
 function resolveOfflineFromCache(
   cache: InventoryCache | undefined,
   parsed: ReturnType<typeof parseScan>,
@@ -74,7 +92,7 @@ function resolveOfflineFromCache(
       if (hit.state === 'blank') {
         const location = cache.locations.find((entry) => entry.id === hit.locationId);
         return location && location.role !== 'viewer'
-          ? { status: 'unassigned' }
+          ? { status: 'unassigned', claim: { code, locationId: hit.locationId } }
           : { status: 'not_in_your_kept' };
       }
       if (hit.state === 'assigned') {

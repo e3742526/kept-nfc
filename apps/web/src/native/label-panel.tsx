@@ -39,6 +39,7 @@ import {
   type ScanCandidate,
   type Target,
 } from './labels';
+import { useNfcStatusText } from './nfc-status';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
 
 export type LabelBox = {
@@ -46,6 +47,8 @@ export type LabelBox = {
   name: string;
   locationId: string;
   shortCode: string | null;
+  /** False for an item that is not a box (its label opens the item; there is no Find). */
+  isContainer?: boolean;
 };
 
 export const FIND_TARGET_KEY = 'findTarget';
@@ -163,37 +166,7 @@ export function LabelPanel({
       .catch(() => {});
   }, [action, adapters, box, connection]);
 
-  const nfcStatus = useCallback(
-    (result: Pick<TagReading, 'status'>) => {
-      switch (result.status) {
-        case 'unavailable':
-          return t`NFC is unavailable on this device.`;
-        case 'busy':
-          return t`Finish the current NFC scan and try again.`;
-        case 'blank':
-          return t`This NFC tag is blank.`;
-        case 'malformed':
-          return t`This tag does not contain a SheepKeep label URL.`;
-        case 'cancelled':
-          return t`Scan cancelled.`;
-        case 'timeout':
-          return t`The scan timed out. Try again.`;
-        case 'unsupported':
-          return t`This tag does not support NDEF.`;
-        case 'read_only':
-          return t`This NFC tag is read-only. Try another tag.`;
-        case 'too_small':
-          return t`This NFC tag is too small for the label URL.`;
-        case 'changed':
-          return t`This tag has changed. Inspect it again before writing.`;
-        case 'write_unverified':
-          return t`Writing was interrupted. Inspect the tag again to verify what it holds.`;
-        default:
-          return t`The NFC scan was interrupted. Try again.`;
-      }
-    },
-    [t],
-  );
+  const nfcStatus = useNfcStatusText();
 
   const nonMatchText = useCallback(
     (result: ReadResult): { text: string; verifyDifferent: boolean } => {
@@ -455,7 +428,11 @@ export function LabelPanel({
     if (!box || !url) return false;
     const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
     if (isTarget(result, box.id)) return true;
-    setStatus(t`The server could not confirm this box’s label. Reopen the box and try again.`);
+    setStatus(
+      box.isContainer === false
+        ? t`The server could not confirm this item’s label. Reopen the item and try again.`
+        : t`The server could not confirm this box’s label. Reopen the box and try again.`,
+    );
     return false;
   }
 

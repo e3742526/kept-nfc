@@ -24,6 +24,9 @@ import {
   labelSummary,
   listBatches,
   markPrinted,
+  ReserveBody,
+  ReservedLabelSchema,
+  reserveLabel,
   SummarySchema,
 } from './service.js';
 
@@ -36,6 +39,8 @@ import {
 // GET  /api/v1/labels/batches?locationId&cursor → {items: LabelBatch[], next_cursor}
 // POST /api/v1/labels/batches/:id/printed       → LabelBatch ("Printed OK?")
 // POST /api/v1/labels/batches/:id/dismiss       → LabelBatch ("Not printed": set aside)
+// POST /api/v1/labels/reserve                   {locationId} → 201 {code, url, locationId}: one
+//                                                 blank for a label made while adding an item
 // POST /api/v1/codes/:code/claim                → {outcome: 'claimed', target: {kind, id}};
 //                                                 409 label_claimed {claimedFor: {kind, id, name}}
 // GET  /api/v1/labels/summary?locationId&placeId → {unprinted, blankUnclaimed, things}
@@ -196,6 +201,19 @@ export async function labelRoutes(app: KeptApp, deps: InventoryDeps): Promise<vo
           publicUrl,
           req.params.id.toLowerCase(),
         ),
+      })),
+  );
+
+  app.post(
+    '/api/v1/labels/reserve',
+    {
+      config: { module: 'labels' },
+      schema: { body: ReserveBody, response: { 201: ReservedLabelSchema } },
+    },
+    (req, reply) =>
+      scopedWrite(pools, req, reply, async (tx, client, scope) => ({
+        status: 201,
+        body: await reserveLabel(ctxOf(req, tx, client, scope), publicUrl, req.body),
       })),
   );
 

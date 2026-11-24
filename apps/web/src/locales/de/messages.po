@@ -33052,3 +33052,72 @@ msgstr "Diesen Chat und seine Nachrichten endgültig löschen?"
 
 msgid "The selected model is unavailable for this turn."
 msgstr "Das gewählte Modell ist für diese Anfrage nicht verfügbar."
+
+#: src/native/item-label.tsx
+msgid "Connect to make a new label. You can still scan a blank label."
+msgstr "Verbinde dich, um ein neues Etikett zu erstellen. Ein leeres Etikett kannst du trotzdem scannen."
+
+#: src/native/item-label.tsx
+msgid "Give a valuable item its own label, then scan the label to open the item."
+msgstr "Gib einem wertvollen Artikel ein eigenes Etikett und scanne es, um den Artikel zu öffnen."
+
+#: src/components/history/labels.ts
+msgid "Made a label for a new item"
+msgstr "Etikett für einen neuen Artikel erstellt"
+
+#: src/native/item-label.tsx
+msgid "New item"
+msgstr "Neuer Artikel"
+
+#: src/native/item-label.tsx
+msgid "New QR label"
+msgstr "Neues QR-Etikett"
+
+#: src/native/item-label.tsx
+msgid "New QR label. Share it to print, stick it on the item, and it opens this item once the item syncs."
+msgstr "Neues QR-Etikett. Teile es zum Drucken und klebe es auf den Artikel; sobald der Artikel synchronisiert ist, öffnet es ihn."
+
+#: src/native/item-label.tsx
+msgid "NFC tag written and verified. It opens this item once the item syncs."
+msgstr "NFC-Tag beschrieben und verifiziert. Sobald der Artikel synchronisiert ist, öffnet es ihn."
+
+#: src/native/item-label.tsx
+msgid "QR or NFC label"
+msgstr "QR- oder NFC-Etikett"
+
+#: src/native/item-label.tsx
+msgid "Remove label"
+msgstr "Etikett entfernen"
+
+#: src/native/item-label.tsx
+msgid "Scan QR label"
+msgstr "QR-Etikett scannen"
+
+#: src/native/item-label.tsx
+msgid "Scanned label. It opens this item once the item syncs."
+msgstr "Etikett gescannt. Sobald der Artikel synchronisiert ist, öffnet es ihn."
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this item’s label. Reopen the item and try again."
+msgstr "Der Server konnte das Etikett dieses Artikels nicht bestätigen. Öffne den Artikel erneut und versuche es noch einmal."
+
+#: src/native/item-label.tsx
+msgid "This label belongs to another location. Choose a destination there, or use another label."
+msgstr "Dieses Etikett gehört zu einem anderen Standort. Wähle dort ein Ziel oder nimm ein anderes Etikett."
+
+#: src/native/item-label.tsx
+msgid "This label is already in use. Use a blank label."
+msgstr "Dieses Etikett wird bereits verwendet. Nimm ein leeres Etikett."
+
+#. placeholder {0}: isolate(other)
+#: src/native/item-label.tsx
+msgid "This label is already on {0}. Use a blank label."
+msgstr "Dieses Etikett ist bereits an {0}. Nimm ein leeres Etikett."
+
+#: src/native/item-label.tsx
+msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
+msgstr "Dieses NFC-Tag ist leer. Wähle „Neues NFC-Tag beschreiben“, um ihm ein Etikett zu geben."
+
+#: src/native/item-label.tsx
+msgid "Write new NFC tag"
+msgstr "Neues NFC-Tag beschreiben"

@@ -34,6 +34,8 @@ export type ReviewEntry = {
   include: boolean;
   categories: string[];
   tags: string[];
+  /** A label given to this item while adding it; the server claims it at sync. */
+  claimCode?: string;
 };
 export type PhotoReviewDraft = {
   accepted: boolean;
@@ -55,6 +57,9 @@ export type DraftFields = {
   review?: PhotoReviewDraft;
   tags?: string[];
   binEvidenceId?: string;
+  /** A label given to the item while adding it (a scanned blank, or one reserved for a new NFC
+   * tag or QR label): `create_thing`'s `claimCode`, claimed when the capture syncs. */
+  claimCode?: string;
 };
 type StoredFields = DraftFields & {
   version: number;
@@ -294,6 +299,7 @@ export async function replayCapture(
       note: fields.note,
       tags: fields.tags ?? [],
       existing: fields.attachToThingId ? { id: fields.attachToThingId } : undefined,
+      claimCode: fields.attachToThingId ? undefined : fields.claimCode,
     },
   ];
   const work = [
@@ -307,6 +313,7 @@ export async function replayCapture(
             quantity: undefined,
             tags: [],
             existing: { id: fields.boxId },
+            claimCode: undefined,
           },
         ]
       : []),
@@ -359,6 +366,7 @@ export async function replayCapture(
             name: entry.name,
             note: ('note' in entry ? entry.note : fields.note)?.trim() || undefined,
             quantity: entry.quantity || undefined,
+            claimCode: entry.claimCode,
           }),
       files: uploadedFiles,
     }),
@@ -372,8 +380,15 @@ export async function replayCapture(
   for (const entry of work) {
     const subject = entry.existing?.id ?? entry.id;
     const result = response.results.find(({ clientId }) => clientId === entry.id);
+    // A label claimed first for something else leaves the item made with its own code and a
+    // `label_claim` inbox item to settle it: the capture itself is done.
+    const labelTaken =
+      result?.outcome === 'needs_review' &&
+      result.reason === 'already_claimed' &&
+      !!entry.claimCode;
     if (
-      result?.outcome !== 'applied' ||
+      !result ||
+      (result.outcome !== 'applied' && !labelTaken) ||
       result.idempotencyKey !== (reviewed ? entry.id : (fields.attemptId ?? entry.id)) ||
       result.entity?.type !== 'thing' ||
       result.entity?.id !== subject
@@ -599,6 +614,7 @@ export function heldCaptureExport(
     ...(fields.tags?.length ? { tags: fields.tags } : {}),
     ...(fields.review ? { review: fields.review } : {}),
     ...(fields.binEvidenceId ? { binEvidenceId: fields.binEvidenceId } : {}),
+    ...(fields.claimCode ? { claimCode: fields.claimCode } : {}),
     failure: entry.failure ?? null,
     files: entry.capture.files.map(({ file, sha256 }) => ({
       fileId: file.id,

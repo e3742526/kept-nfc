@@ -442,6 +442,50 @@ async function makeBlanks(client: pg.ClientBase, locationId: string, count: numb
 const blankCapReached = () =>
   new AppError('blank_cap_reached', 409, 'Claim some of the blank labels before printing more.');
 
+export const ReserveBody = z.strictObject({ locationId: z.uuid() });
+export type ReserveBody = z.infer<typeof ReserveBody>;
+
+export const ReservedLabelSchema = z.object({
+  code: z.string(),
+  url: z.string(),
+  locationId: z.uuid(),
+});
+export type ReservedLabel = z.infer<typeof ReservedLabelSchema>;
+
+/**
+ * POST /api/v1/labels/reserve: one new blank code for a label made on the phone while an item is
+ * being added (an NFC tag it writes, or a single QR label it shares), before the item reaches the
+ * server. The capture claims it with `claimCode` when it syncs, as it claims a scanned blank from
+ * a printed sheet. Until then it is an ordinary blank, under the same cap. No batch is made: there
+ * is no sheet to ask "Printed OK?" about. Audited `label.reserve`; the phone sends an
+ * Idempotency-Key, so a retry answers the same code.
+ */
+export async function reserveLabel(
+  ctx: Ctx,
+  publicUrl: string,
+  body: ReserveBody,
+): Promise<ReservedLabel> {
+  const { client, tx, scope } = ctx;
+  const locationId = body.locationId.toLowerCase();
+  await requireRole(client, locationId, 'labels.use');
+  let code: string;
+  try {
+    [code] = (await makeBlanks(client, locationId, 1)) as [string];
+  } catch (err) {
+    if (pgErrorOf(err)?.constraint === 'short_ids_blank_cap') throw blankCapReached();
+    throw err;
+  }
+  await audited(tx, {
+    locationId,
+    actor: actorOf(scope),
+    action: 'label.reserve',
+    entity: { type: 'location', id: locationId },
+    after: { code },
+    requestId: ctx.requestId,
+  });
+  return { code, url: labelUrl(publicUrl, code), locationId };
+}
+
 export type CreateBatchResult = {
   batch: LabelBatch;
   excluded: { pending: number; other: number };

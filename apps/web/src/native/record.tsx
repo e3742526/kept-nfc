@@ -380,6 +380,17 @@ export function RecordScreen({
     row && 'isContainer' in row && row.isContainer
       ? { id: row.id, name, locationId: row.locationId, shortCode: row.shortCode }
       : null;
+  // An item that is not a box can have its own QR or NFC label too (a valuable item).
+  const labelledItem =
+    !box && target.kind === 'thing' && row && 'shortCode' in row && row.shortCode
+      ? {
+          id: row.id,
+          name,
+          locationId: row.locationId,
+          shortCode: row.shortCode,
+          isContainer: false,
+        }
+      : null;
 
   const browsable = !!box || target.kind === 'place';
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh thumbnails after record mutations.
@@ -669,6 +680,12 @@ export function RecordScreen({
               >
                 <FileText size={16} aria-hidden />
                 <Trans>Add documents</Trans>
+              </Button>
+            )}
+            {labelledItem && (
+              <Button variant="secondary" onPress={() => onLabel('enroll', labelledItem)}>
+                <QrCode size={16} aria-hidden />
+                {canEdit ? <Trans>QR and NFC label</Trans> : <Trans>View QR label</Trans>}
               </Button>
             )}
             {online && canEdit && (thing || place) && (

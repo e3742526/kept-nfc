@@ -593,6 +593,76 @@ describe('native outbox staging and replay', () => {
     expect(exported.files[0]?.sha256).toBe('e'.repeat(64));
   });
 
+  it('sends the label given while adding as claimCode, and finishes when it was taken elsewhere', async () => {
+    type SentOp = { clientId: string; idempotencyKey: string; payload: Record<string, unknown> };
+    const sentOps: SentOp[][] = [];
+    let answer: 'applied' | 'needs_review' = 'applied';
+    const request = vi.fn().mockImplementation(async (_conn, path, options) => {
+      if (path !== capturePaths.syncOps) throw new Error(`unexpected ${path}`);
+      const { ops } = (options as { body: { ops: SentOp[] } }).body;
+      sentOps.push(ops);
+      return {
+        results: ops.map((op) => ({
+          clientId: op.clientId,
+          idempotencyKey: op.idempotencyKey,
+          outcome: answer,
+          ...(answer === 'needs_review' ? { reason: 'already_claimed', inboxItemId: newId() } : {}),
+          entity: { type: 'thing', id: op.clientId, shortCode: 'ABC234' },
+        })),
+      };
+    });
+    const { adapters, captures, completionStates } = makeInMemoryAdapters({
+      request,
+      capabilities: () => ({
+        contractVersion: 1,
+        capturePayloadVersions: [2, 3],
+        account: connection.account,
+        epoch: connection.epoch,
+      }),
+    });
+    const locationId = newId();
+    const placeId = newId();
+
+    const first = await saveOnPhone(
+      connection,
+      { locationId, placeId, name: 'Camera', captureIntent: 'record', claimCode: 'ABC234' },
+      [],
+      adapters,
+    );
+    expect(heldCaptureExport(captures.get(first) as PendingCapture).claimCode).toBe('ABC234');
+    await syncOutbox(connection, adapters);
+    expect(sentOps[0]?.[0]?.payload).toMatchObject({
+      id: first,
+      name: 'Camera',
+      claimCode: 'ABC234',
+    });
+    expect(completionStates.get(first)).toBe('synced');
+
+    // Another phone claimed the label first: the item is made with its own code and the
+    // label_claim inbox item settles it, so the capture is done rather than stuck.
+    answer = 'needs_review';
+    const second = await saveOnPhone(
+      connection,
+      { locationId, placeId, name: 'Lens', captureIntent: 'record', claimCode: 'ABC234' },
+      [],
+      adapters,
+    );
+    await syncOutbox(connection, adapters);
+    expect(completionStates.get(second)).toBe('synced');
+    expect(captures.has(second)).toBe(false);
+
+    // Without a label, needs_review still holds the capture.
+    const third = await saveOnPhone(
+      connection,
+      { locationId, placeId, name: 'Tripod', captureIntent: 'record' },
+      [],
+      adapters,
+    );
+    await syncOutbox(connection, adapters);
+    expect(sentOps.at(-1)?.[0]?.payload.claimCode).toBeUndefined();
+    expect(captures.get(third)?.failure).toBe('already_claimed');
+  });
+
   it('retries only the unfinished review work after a record-version conflict', async () => {
     const existingId = newId();
     const binId = newId();

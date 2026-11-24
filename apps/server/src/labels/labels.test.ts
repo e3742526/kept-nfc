@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { TestApp } from '../../test/app.js';
 import { type TestDb, testDb } from '../../test/db.js';
 import { call, freshIp, join, type Person, peopleApp, person } from '../../test/people.js';
+import { captureOp, sent } from '../../test/sync-ops.js';
 import {
   builtinType,
   createLocation,
@@ -672,6 +673,77 @@ describe('POST /api/v1/codes/:code/claim', () => {
     expect(await own(db, `SELECT state FROM public.short_ids WHERE code = $1`, [theirs])).toEqual([
       { state: 'blank' },
     ]);
+  });
+});
+
+describe('POST /api/v1/labels/reserve', () => {
+  const reserve = (as: Person, body: Record<string, unknown>, key?: string) =>
+    call(t, '/api/v1/labels/reserve', {
+      as,
+      body,
+      ...(key ? { headers: { 'idempotency-key': key } } : {}),
+    });
+
+  // catalogue: POST /api/v1/labels/reserve
+  it('makes one blank for a label written while adding an item, audited, once per key', async () => {
+    const key = newId();
+    const out = ok(await reserve(louis, { locationId: home.id }, key), 201) as unknown as {
+      code: string;
+      url: string;
+      locationId: string;
+    };
+    expect(out).toEqual({
+      code: expect.stringMatching(/^[0-9A-Z]{6}$/),
+      url: `${t.publicUrl}/l/${out.code}`,
+      locationId: home.id,
+    });
+    expect(
+      await own(db, 'SELECT state, location_id FROM public.short_ids WHERE code = $1', [out.code]),
+    ).toEqual([{ state: 'blank', location_id: home.id }]);
+    const events = await auditActions(home.id, 'label.reserve');
+    expect(events.at(-1)).toMatchObject({ entity_id: home.id, actor_id: louis.userId });
+    // A retry with the same key is the same code, and makes nothing more.
+    expect(ok(await reserve(louis, { locationId: home.id }, key), 201)).toEqual(out);
+    expect(await auditActions(home.id, 'label.reserve')).toHaveLength(events.length);
+    // No batch: the labels screen has no sheet to ask "Printed OK?" about.
+    expect(
+      await own(db, 'SELECT 1 FROM public.label_batch_codes WHERE code = $1', [out.code]),
+    ).toEqual([]);
+  });
+
+  it('is claimed by the capture of the item it was written for, whose code it becomes', async () => {
+    const { code } = ok(await reserve(louis, { locationId: home.id }), 201) as unknown as {
+      code: string;
+    };
+    const capture = captureOp(home.id, { placeId: shelf }, { name: 'Camera', claimCode: code });
+    const { id } = capture.payload;
+    const [result] = await sent(t, louis, [capture]);
+    expect(result).toMatchObject({
+      outcome: 'applied',
+      entity: { type: 'thing', id, shortCode: code },
+    });
+    const rows = await own<{ thing_id: string; is_primary: boolean; printed: boolean }>(
+      db,
+      'SELECT thing_id, is_primary, printed_at IS NOT NULL AS printed FROM public.short_ids WHERE code = $1',
+      [code],
+    );
+    expect(rows).toEqual([{ thing_id: id, is_primary: true, printed: true }]);
+  });
+
+  it("refuses a viewer, and answers another household's location as a random one", async () => {
+    expect((await reserve(talia, { locationId: home.id })).statusCode).toBe(403);
+    expect(answer(await reserve(ibrahim, { locationId: garage.id }))).toEqual(
+      answer(await reserve(ibrahim, { locationId: newId() })),
+    );
+    expect((await reserve(ibrahim, { locationId: garage.id })).statusCode).toBe(404);
+  });
+
+  it('stops at the blank-label cap', async () => {
+    const attic = await createLocation(t, db, ibrahim, 'household', 'Attic');
+    await blanks(attic, 1000);
+    const res = await reserve(ibrahim, { locationId: attic.id });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ code: 'blank_cap_reached' });
   });
 });
 

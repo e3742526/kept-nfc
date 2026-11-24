@@ -33052,3 +33052,72 @@ msgstr "Xóa vĩnh viễn cuộc trò chuyện này và các tin nhắn?"
 
 msgid "The selected model is unavailable for this turn."
 msgstr "Mô hình đã chọn không dùng được cho yêu cầu này."
+
+#: src/native/item-label.tsx
+msgid "Connect to make a new label. You can still scan a blank label."
+msgstr "Hãy kết nối để tạo nhãn mới. Bạn vẫn có thể quét nhãn trống."
+
+#: src/native/item-label.tsx
+msgid "Give a valuable item its own label, then scan the label to open the item."
+msgstr "Gắn cho món đồ giá trị một nhãn riêng, rồi quét nhãn để mở món đồ đó."
+
+#: src/components/history/labels.ts
+msgid "Made a label for a new item"
+msgstr "Đã tạo nhãn cho một mục mới"
+
+#: src/native/item-label.tsx
+msgid "New item"
+msgstr "Mục mới"
+
+#: src/native/item-label.tsx
+msgid "New QR label"
+msgstr "Nhãn QR mới"
+
+#: src/native/item-label.tsx
+msgid "New QR label. Share it to print, stick it on the item, and it opens this item once the item syncs."
+msgstr "Nhãn QR mới. Chia sẻ để in, dán lên món đồ, và nhãn sẽ mở mục này sau khi mục được đồng bộ."
+
+#: src/native/item-label.tsx
+msgid "NFC tag written and verified. It opens this item once the item syncs."
+msgstr "Đã ghi và xác minh thẻ NFC. Thẻ sẽ mở mục này sau khi mục được đồng bộ."
+
+#: src/native/item-label.tsx
+msgid "QR or NFC label"
+msgstr "Nhãn QR hoặc NFC"
+
+#: src/native/item-label.tsx
+msgid "Remove label"
+msgstr "Bỏ nhãn"
+
+#: src/native/item-label.tsx
+msgid "Scan QR label"
+msgstr "Quét nhãn QR"
+
+#: src/native/item-label.tsx
+msgid "Scanned label. It opens this item once the item syncs."
+msgstr "Đã quét nhãn. Nhãn sẽ mở mục này sau khi mục được đồng bộ."
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this item’s label. Reopen the item and try again."
+msgstr "Máy chủ không thể xác nhận nhãn của mục này. Hãy mở lại mục và thử lại."
+
+#: src/native/item-label.tsx
+msgid "This label belongs to another location. Choose a destination there, or use another label."
+msgstr "Nhãn này thuộc một vị trí khác. Hãy chọn nơi đến ở đó, hoặc dùng nhãn khác."
+
+#: src/native/item-label.tsx
+msgid "This label is already in use. Use a blank label."
+msgstr "Nhãn này đã được dùng. Hãy dùng nhãn trống."
+
+#. placeholder {0}: isolate(other)
+#: src/native/item-label.tsx
+msgid "This label is already on {0}. Use a blank label."
+msgstr "Nhãn này đã gắn trên {0}. Hãy dùng nhãn trống."
+
+#: src/native/item-label.tsx
+msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
+msgstr "Thẻ NFC này đang trống. Chọn «Ghi thẻ NFC mới» để gắn nhãn cho thẻ."
+
+#: src/native/item-label.tsx
+msgid "Write new NFC tag"
+msgstr "Ghi thẻ NFC mới"

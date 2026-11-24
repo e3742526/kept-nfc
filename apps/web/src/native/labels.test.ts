@@ -287,7 +287,7 @@ describe('approvedLabel and resolveLabel', () => {
 
     expect(
       await resolveLabel(connection, baseCache, 'BNK001', 'qr', undefined, false, adapters),
-    ).toEqual({ status: 'unassigned' });
+    ).toEqual({ status: 'unassigned', claim: { code: 'BNK001', locationId: 'loc-1' } });
 
     expect(
       await resolveLabel(connection, baseCache, 'BNK002', 'qr', undefined, false, adapters),

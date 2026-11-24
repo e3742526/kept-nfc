@@ -136,6 +136,7 @@ export const AUDIT_ACTIONS = [
   'kit.dissolve',
   'kit.update',
   'label.claim',
+  'label.reserve',
   'label_batch.create',
   'label_batch.dismiss',
   'labels.printed',

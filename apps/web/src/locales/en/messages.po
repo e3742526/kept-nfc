@@ -33052,3 +33052,72 @@ msgstr "Permanently delete this thread and its messages?"
 
 msgid "The selected model is unavailable for this turn."
 msgstr "The selected model is unavailable for this turn."
+
+#: src/native/item-label.tsx
+msgid "Connect to make a new label. You can still scan a blank label."
+msgstr "Connect to make a new label. You can still scan a blank label."
+
+#: src/native/item-label.tsx
+msgid "Give a valuable item its own label, then scan the label to open the item."
+msgstr "Give a valuable item its own label, then scan the label to open the item."
+
+#: src/components/history/labels.ts
+msgid "Made a label for a new item"
+msgstr "Made a label for a new item"
+
+#: src/native/item-label.tsx
+msgid "New item"
+msgstr "New item"
+
+#: src/native/item-label.tsx
+msgid "New QR label"
+msgstr "New QR label"
+
+#: src/native/item-label.tsx
+msgid "New QR label. Share it to print, stick it on the item, and it opens this item once the item syncs."
+msgstr "New QR label. Share it to print, stick it on the item, and it opens this item once the item syncs."
+
+#: src/native/item-label.tsx
+msgid "NFC tag written and verified. It opens this item once the item syncs."
+msgstr "NFC tag written and verified. It opens this item once the item syncs."
+
+#: src/native/item-label.tsx
+msgid "QR or NFC label"
+msgstr "QR or NFC label"
+
+#: src/native/item-label.tsx
+msgid "Remove label"
+msgstr "Remove label"
+
+#: src/native/item-label.tsx
+msgid "Scan QR label"
+msgstr "Scan QR label"
+
+#: src/native/item-label.tsx
+msgid "Scanned label. It opens this item once the item syncs."
+msgstr "Scanned label. It opens this item once the item syncs."
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this item’s label. Reopen the item and try again."
+msgstr "The server could not confirm this item’s label. Reopen the item and try again."
+
+#: src/native/item-label.tsx
+msgid "This label belongs to another location. Choose a destination there, or use another label."
+msgstr "This label belongs to another location. Choose a destination there, or use another label."
+
+#: src/native/item-label.tsx
+msgid "This label is already in use. Use a blank label."
+msgstr "This label is already in use. Use a blank label."
+
+#. placeholder {0}: isolate(other)
+#: src/native/item-label.tsx
+msgid "This label is already on {0}. Use a blank label."
+msgstr "This label is already on {0}. Use a blank label."
+
+#: src/native/item-label.tsx
+msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
+msgstr "This NFC tag is blank. Choose Write new NFC tag to give it a label."
+
+#: src/native/item-label.tsx
+msgid "Write new NFC tag"
+msgstr "Write new NFC tag"

@@ -290,6 +290,24 @@ export function labelsRoutes(state: MockState): MockRoute[] {
       return batch;
     }),
 
+    // One blank for a label made while adding an item; the capture's claimCode claims it.
+    route('POST', p.labelReserve, ({ body }) => {
+      const gate = sessionGate(state);
+      if (gate) return gate;
+      const { locationId } = body as { locationId: string };
+      if (!access().visible(locationId)) return notFound();
+      if (!access().canWrite(locationId)) return forbidden();
+      if (!labelsOn(locationId)) return err(409, 'module_off', 'Labels are off in this location.');
+      const unclaimed = cap().codes.filter(
+        (c) => c.locationId === locationId && c.state === 'blank',
+      ).length;
+      if (unclaimed + 1 > BLANK_CAP)
+        return err(409, 'blank_cap_reached', 'This location already has 1,000 unclaimed labels.');
+      const code = allocateCode(codeTaken);
+      cap().codes.push({ code, locationId, state: 'blank', target: null, printedAt: null });
+      return reply(201, { code, url: urlOf(code), locationId });
+    }),
+
     route('GET', p.labelSummary, ({ query }) => {
       const gate = sessionGate(state);
       if (gate) return gate;

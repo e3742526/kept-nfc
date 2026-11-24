@@ -544,6 +544,10 @@ export type ClaimBody =
       } & ({ placeId: string } | { containerId: string });
     };
 export type ClaimResult = { outcome: 'claimed'; target: { kind: 'thing' | 'place'; id: string } };
+
+/** POST /api/v1/labels/reserve: a blank code for a label made while adding an item, claimed by
+ * the capture's `claimCode` when it syncs. */
+export type ReservedLabel = { code: string; url: string; locationId: string };
 /** 409 `label_claimed`'s extra field ("This label was claimed on another phone for …"). */
 export type LabelClaimedDetails = {
   claimedFor: { kind: 'thing' | 'place'; id: string; name: string };
