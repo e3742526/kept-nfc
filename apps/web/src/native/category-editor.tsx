@@ -7,6 +7,7 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { TextField } from '@/components/ui/text-field';
+import { sep } from '@/lib/format';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
 import { equivalentCategory } from './category-picker';
@@ -242,7 +243,7 @@ export function CategoryEditor({
                     />
                   )}
                   <bdi>{tag.name}</bdi>
-                  {tag.thingCount !== undefined ? ` · ${tag.thingCount}` : ''}
+                  {tag.thingCount !== undefined ? `${sep()}${tag.thingCount}` : ''}
                 </Button>
                 {things?.length ? (
                   <Button variant="ghost" isDisabled={busy} onPress={() => assign(tag, false)}>

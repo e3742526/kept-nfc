@@ -331,9 +331,8 @@ export async function fileRoutes(app: KeptApp, deps: InventoryDeps): Promise<voi
     },
     (req, reply) => {
       const expected = requireIfMatch(req);
-      return scopedWrite(pools, req, reply, async (tx, client, scope) => ({
-        status: 200,
-        body: await updateAttachment(
+      return scopedWrite(pools, req, reply, async (tx, client, scope) => {
+        const attachment = await updateAttachment(
           tx,
           client,
           files,
@@ -343,8 +342,22 @@ export async function fileRoutes(app: KeptApp, deps: InventoryDeps): Promise<voi
           expected,
           req.body,
           req.id,
-        ),
-      }));
+        );
+        if (
+          !scope.tokenId &&
+          req.body.role === 'photo' &&
+          'thingId' in attachment.subject &&
+          attachment.file
+        ) {
+          await enqueueVisualIndex(
+            deps.jobs,
+            client,
+            [attachment.id],
+            deps.visualProvider === undefined ? undefined : deps.visualProvider !== null,
+          );
+        }
+        return { status: 200, body: attachment };
+      });
     },
   );
 

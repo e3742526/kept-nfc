@@ -14,6 +14,7 @@ import { aiRuntime } from '../ai/runtime.js';
 import { seal } from '../crypto/envelope.js';
 import { partsFor } from '../extraction/image.js';
 import { type ExtractionJobDeps, runExtraction } from '../extraction/job.js';
+import { derivativeKey } from '../storage/blob-store.js';
 import type { RoomResult } from './finish.js';
 
 // Room photos (#194) end to end through the mock provider: POST /captures in ROOM mode, the
@@ -70,7 +71,15 @@ async function photo(as: Person = louis): Promise<{ fileId: string; bytes: Buffe
 async function keyOf(fileId: string): Promise<string> {
   const parts = await partsFor(
     'room',
-    [{ attachmentId: 'a', fileId, locationId: home.id, mime: 'image/jpeg' }],
+    [
+      {
+        attachmentId: 'a',
+        fileId,
+        locationId: home.id,
+        mime: 'image/jpeg',
+        displayKey: derivativeKey(fileId, 'display'),
+      },
+    ],
     { blobs: files.blobs, textOf: async () => null },
   );
   const img = parts.images[0];

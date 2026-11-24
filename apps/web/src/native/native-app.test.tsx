@@ -2528,6 +2528,71 @@ describe('KeptPhone mobile workflows', () => {
     expectLogicalOnly();
   });
 
+  it('opens photo search from Browse and keeps its result when returning from the matching bin', async () => {
+    const connection = {
+      id: 'https://kept.example.com|ibrahim|epoch-1',
+      origin: 'https://kept.example.com',
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const room = env.rooms[0];
+    if (!room) throw new Error('Expected a room fixture');
+    const coverage = { generation: 'whole-image-1', ready: 2, pending: 0, failed: 0, paused: 0 };
+    const match = {
+      thingId: env.boxId,
+      locationId: room.locationId,
+      name: 'Winter Box',
+      path: [{ id: room.id, name: room.name }],
+      attachmentId: '55555555-5555-7555-8555-555555555555',
+      fileId: '66666666-6666-7666-8666-666666666666',
+      capturedAt: '2026-11-23T09:30:00Z',
+      score: 0.42,
+      mime: 'image/heic',
+      isContainer: true,
+    };
+    const adapter = {
+      status: vi.fn().mockResolvedValue(coverage),
+      upload: vi.fn(),
+      search: vi.fn().mockResolvedValue({ outcome: 'matches', coverage, matches: [match] }),
+      cancel: vi.fn(),
+      thumbnail: vi.fn().mockResolvedValue('/fixture-thumb.jpg'),
+    };
+    env.adapters.visualSearch = adapter;
+    const original = vi.spyOn(env.adapters.media, 'openRemote').mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    env.renderApp();
+    expect(await screen.findByRole('button', { name: 'Search with a photo' })).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Browse' }));
+    await user.type(screen.getByRole('textbox', { name: 'Search' }), 'red connector');
+    await user.click(screen.getByRole('button', { name: 'Find in photos' }));
+    expect(await screen.findByText('Bin photo')).toBeInTheDocument();
+    const results = screen.getByRole('list', { name: 'Possible photo matches' });
+    expect(within(results).getByText('Garage')).toBeInTheDocument();
+    expect(results.querySelector('img')).toHaveAttribute(
+      'src',
+      `${connection.origin}/fixture-thumb.jpg`,
+    );
+    await user.click(within(results).getByRole('button', { name: 'Open original photo' }));
+    expect(original).toHaveBeenCalledWith(connection, {
+      thing: match.thingId,
+      file: match.fileId,
+      mime: 'image/heic',
+    });
+    await user.click(within(results).getByRole('button', { name: 'Open record' }));
+    expect(await screen.findByRole('button', { name: 'QR and NFC label' })).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Possible photo matches' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByRole('list', { name: 'Possible photo matches' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Describe what you are looking for' })).toHaveValue(
+      'red connector',
+    );
+    expect(adapter.search).toHaveBeenCalledExactlyOnceWith(connection, {
+      text: 'red connector',
+      limit: 8,
+    });
+  });
+
   it('turns a search with no match into an add, prefilled and focused on the next item', async () => {
     const env = createFakeEnvironment({
       initialConnection: {

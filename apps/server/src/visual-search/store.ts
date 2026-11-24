@@ -1,6 +1,7 @@
 import type { VisualSearchCoverage, VisualSearchMatch } from '@kept/shared';
 import type pg from 'pg';
 import { vectorLiteral } from '../embeddings/provider.js';
+import { isContainerSql } from '../search/query.js';
 
 const DIMENSIONS = 512;
 
@@ -36,8 +37,12 @@ export async function visualCoverage(
   generation: string,
   ids: string[],
 ): Promise<VisualSearchCoverage> {
-  const { rows } = await client.query<Pick<VisualSearchCoverage, 'ready' | 'pending' | 'failed'>>(
-    'SELECT * FROM kept.visual_coverage($1, $2)',
+  const { rows } = await client.query<
+    Pick<VisualSearchCoverage, 'ready' | 'pending' | 'failed' | 'unsupported'>
+  >(
+    `SELECT c.*, (SELECT count(*)::int FROM kept.visual_photo_sources($1, NULL) s
+                    WHERE NOT s.use_original AND s.display_key IS NULL) AS unsupported
+       FROM kept.visual_coverage($1, $2) c`,
     [ids, generation],
   );
   return { ...EMPTY_COVERAGE, generation, ...rows[0] };
@@ -62,7 +67,8 @@ export async function visualMatches(
                             WITH ORDINALITY AS p(entry, ordinal)
                       WHERE p.entry->>'name' IS NOT NULL), '[]'::jsonb) AS path,
             r.attachment_id AS "attachmentId", f.id AS "fileId", r.captured_at AS "capturedAt",
-            r.score, r.is_alternate
+            f.mime, t.container_id AS "containerId",
+            ${isContainerSql('t.id', 't.type_id')} AS "isContainer", r.score, r.is_alternate
        FROM kept.visual_matches($1, $2, $3, $4, $5, $6) r
        JOIN public.things t ON t.id = r.thing_id AND t.location_id = r.location_id
        JOIN public.locations l ON l.id = t.location_id
@@ -88,6 +94,8 @@ export type VisualSource = {
   content_hash: string;
   storage_key: string;
   bytes: string;
+  display_key: string | null;
+  display_bytes: string | null;
   ready: boolean;
 };
 
@@ -97,8 +105,12 @@ export async function visualSource(
   generation: string,
 ) {
   const { rows } = await client.query<VisualSource>(
-    `SELECT s.*, kept.visual_current(s.attachment_id, s.location_id, s.file_id, s.content_hash, $2) AS ready
-       FROM kept.visual_sources(ARRAY(SELECT kept.writable_location_ids()), $1) s`,
+    `SELECT s.attachment_id, s.location_id, s.file_id, s.content_hash, s.storage_key, s.bytes,
+            CASE WHEN NOT s.use_original THEN s.display_key END AS display_key,
+            CASE WHEN NOT s.use_original THEN s.display_bytes END AS display_bytes,
+            kept.visual_current(s.attachment_id, s.location_id, s.file_id, s.content_hash, $2) AS ready
+       FROM kept.visual_photo_sources(ARRAY(SELECT kept.writable_location_ids()), $1) s
+      WHERE s.use_original OR s.display_key IS NOT NULL`,
     [attachmentId, generation],
   );
   return rows[0];
@@ -111,7 +123,7 @@ export async function storeVisualVector(
   vector: number[] | null,
 ): Promise<boolean> {
   const { rows } = await client.query<{ stored: boolean }>(
-    'SELECT kept.visual_store($1, $2, $3, $4, $5, $6) AS stored',
+    'SELECT kept.visual_store($1, $2, $3, $4, $5, $6, $7) AS stored',
     [
       source.attachment_id,
       source.location_id,
@@ -119,6 +131,7 @@ export async function storeVisualVector(
       source.content_hash,
       generation,
       vector ? vectorLiteral(vector) : null,
+      source.display_key,
     ],
   );
   return rows[0]?.stored === true;
@@ -128,10 +141,13 @@ export async function pendingVisualAttachments(
   client: pg.ClientBase,
   locationId: string,
   generation: string,
-) {
+  after?: string,
+): Promise<{ attachments: string[]; next?: string }> {
+  const batchLimit = 100;
   const { rows } = await client.query<{ id: string }>(
-    'SELECT id FROM kept.visual_backlog($1, $2, 100) AS b(id)',
-    [locationId, generation],
+    'SELECT id FROM kept.visual_backlog($1, $2, $3, $4) AS b(id)',
+    [locationId, generation, batchLimit + 1, after ?? null],
   );
-  return rows.map(({ id }) => id);
+  const attachments = rows.slice(0, batchLimit).map(({ id }) => id);
+  return { attachments, next: rows.length > batchLimit ? attachments.at(-1) : undefined };
 }

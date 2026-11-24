@@ -8,6 +8,7 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
+import { sep } from '@/lib/format';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
@@ -210,7 +211,7 @@ export function Rooms({
                   <bdi className="text-body font-semibold">{room.name}</bdi>
                   <span className="text-small font-normal text-ink-2">
                     <bdi>{inventoryPath(cache, room).join(' › ')}</bdi>
-                    {' · '}
+                    {sep()}
                     <Trans>Contents</Trans>{' '}
                     {
                       cache.things.filter(

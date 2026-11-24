@@ -206,6 +206,31 @@ capture's AI review-only policy.
 pnpm exec vitest run --project @kept/server apps/server/test/portability/round-trip.test.ts
 ```
 
+## Search stored photographs
+
+In the iPhone Search or Browse screen, tap **Find in photos** to use a description.
+Tap **Search with a photo** to take a new picture or choose one from the library.
+Open a result to inspect the original and verify its current recorded path. Use the
+bin's existing **Find** action for supported NFC tags. Search keeps no inventory photo
+or offline draft. Ordinary cached search remains available when the phone is offline.
+
+The visual index is opt-in. Run the [local encoder](../../scripts/visual-retrieval/README.md#opt-in-local-encoder)
+and configure its loopback address with `KEPT_VISUAL_ENCODER_URL` on the server and worker.
+Inspect `GET /api/v1/visual-search/status?locationIds=<location UUID>` with an authorized
+session. Pending and failed counts are scoped to the caller. Photos without a supported
+original or bounded display rendition appear as unsupported. Native capture supplies
+display JPEGs for supported camera formats while preserving the original.
+
+For a backfill, a signed-in location owner or admin can use the authenticated
+`POST /api/v1/admin/visual-search/reindex` route with `{"locationId":"<location UUID>"}`.
+The response includes a `next` cursor when there is another batch. Supply that value
+as `after` in the following request. Let the queue drain, then check coverage. Inspect
+failed sources and check encoder availability before starting a retry pass. After recovery into an empty
+database, confirm the original files and run the same backfill against the restored
+locations. Restore resets the derived index and native epoch after backup verification.
+The runbook for [local encoder and quality qualification](../mvp1/visual-retrieval-plan.md)
+describes the current acceptance limits.
+
 ## Automated verification
 
 The [gate record](../mvp1/status.md) tracks G0–G6. The

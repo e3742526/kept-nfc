@@ -111,12 +111,24 @@ async function capture(as: Person, over: Record<string, unknown>) {
 
 /** The mock's key for what the job will send for this file in `mode`. */
 async function keyOf(fileId: string, mode: 'thing' | 'label' | 'receipt' | 'reading') {
-  const [f] = await own<{ mime: string }>(db, 'SELECT mime FROM public.files WHERE id = $1', [
-    fileId,
-  ]);
+  const [f] = await own<{ mime: string; display_key: string | null }>(
+    db,
+    `SELECT f.mime, d.storage_key AS display_key FROM public.files f
+       LEFT JOIN public.file_derivatives d ON d.file_id = f.id AND d.variant = 'display'
+      WHERE f.id = $1`,
+    [fileId],
+  );
   const parts = await partsFor(
     mode,
-    [{ attachmentId: 'a', fileId, locationId: home.id, mime: f?.mime as string }],
+    [
+      {
+        attachmentId: 'a',
+        fileId,
+        locationId: home.id,
+        mime: f?.mime as string,
+        displayKey: f?.display_key ?? null,
+      },
+    ],
     { blobs: files.blobs, textOf: async () => null },
   );
   const img = parts.images[0];

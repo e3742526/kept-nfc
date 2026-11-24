@@ -149,3 +149,125 @@ the other cup first. The corpus is a five-object, single-background turntable sm
 provisional cutoffs and measured timings still need held-out household qualification. This
 command measures the local inference interface. Kept's authorized search, indexing coverage and
 attachment lifecycle are exercised separately by server tests.
+
+## Held-out household-photo proxy
+
+Read the [qualification protocol](household-protocol.md) and
+[frozen text labels](household-text.json). The held-out corpus uses the public
+[Caltech Home Objects 2006 archive](https://doi.org/10.22002/D1.20089), by Pierre Moreels and
+Pietro Perona. The evaluator uses author annotations and keeps the source images outside Git.
+It reserves every fifth sorted annotated object instance for absent photo queries and excludes
+every scene labelled as containing a reserved instance. Each of the 70 remaining scene
+photographs has a neutral title and a distinct recorded bay. The 59 positive and 21 absent
+photo inputs come from other physical exposures. The 63 positive text prompts include five
+additional phrasings. The 12 absent prompts include related household objects. The evaluator
+checks fixture metadata for overlapping query words. Some background objects may be
+unannotated. This is a one-source-domain proxy for the household pilot.
+
+Start the pinned local encoder above and run the evaluator in the same Python 3.12 environment.
+
+```sh
+curl -fL -o .tmp/kept-visual/Home_Objects_06.zip \
+  'https://data.caltech.edu/records/bckkv-8my10/files/Home_Objects_06.zip?download=1'
+.tmp/kept-visual/venv/bin/python scripts/visual-retrieval/qualify-household.py \
+  --archive .tmp/kept-visual/Home_Objects_06.zip \
+  --output .tmp/kept-visual/household.json \
+  --fixture-dir .tmp/kept-visual/household-fixtures
+```
+
+The script verifies the archive SHA-256 and records the protocol and text-label hashes.
+It checks annotation aliases and reports query-level first correct ranks, displayed
+results, outcomes, eligible sources, encoder timing and derived bytes. Its JPEG
+preprocessing uses Pillow. The API follow-up uses Kept's real image preparation,
+worker and authorized search routes.
+
+### Caltech encoder results
+
+Apple M5, CPU, pinned OpenCLIP model and preprocessing above. Use the COIL-20 numbers only
+for comparison with the earlier exploratory corpus. The Caltech report holds the cutoffs
+and ambiguity margin fixed.
+
+| Measure | R10 whole image | R11 whole image | R10 whole image plus four crops |
+| --- | ---: | ---: | ---: |
+| Displayed top-1 | 43/63 | 42/59 | 44/63 |
+| Displayed top-5 | 53/63 | 48/59 | 60/63 |
+| Crowded top-5 | 41/56 | 39/52 | 51/56 |
+| Distinctive top-5 | 22/22 | 18/19 | 22/22 |
+| Absent queries with candidates | 10/12 | 16/21 | 12/12 |
+| Absent queries with a single-path match outcome | 2/12 | 10/21 | 1/12 |
+| Absent single-path match after marking a lead within 0.035 of the cutoff weak | 2/12 | 9/21 | 1/12 |
+| No-match precision | 2/3 | 5/10 | Undefined, zero no-match outcomes |
+| Encoder median / p95, loopback | 11.34 / 12.42 ms | 19.72 / 20.57 ms | Same text encoding |
+
+Within these cohorts, the whole-image encoder met the provisional recall targets and missed
+the 90% abstention target for likely claims. A cordless-drill query returned a distractor at
+cosine 0.240, and a crayon-box query led to another packaged object at 0.285. An absent
+dark bottle had a lead of 0.750 and an absent armchair had a lead of 0.729.
+The low no-match denominators reflect how rarely this system abstained. The crop experiment
+improved crowded recall while returning candidates for every absent text query. It added
+5.36 seconds of serial encoding for these fixtures and multiplied vector storage by five.
+Keep the released whole-image index and communicate uncertainty. Recalibration and region
+selection require a new independent held-out set before promotion.
+
+All 70 eligible images were encoded successfully. The full image pass took 1.54 seconds of
+loopback encoder requests (45.47 originals per second). The images and their four crops
+took 7.25 seconds including local image preparation. The baseline used 140 KiB of float32
+vectors before database overhead. The encoder was ready after 2.13 seconds and sampled at
+about 609 MiB RSS immediately after the run. Process CPU time rose by roughly 11 seconds
+during the measured run. These measurements omit authorized database access and the client.
+
+### Fastify, PostgreSQL and Chromium
+
+Start the disposable database and build the application using the repository instructions.
+Start a dedicated E2E instance and run the harness from the repository root while the local
+encoder is active. Stop the E2E instance after the run to clean up its scratch database.
+
+```sh
+KEPT_VISUAL_ENCODER_URL=http://127.0.0.1:8798 \
+  node --conditions=kept-dist apps/web/e2e/serve.mjs visual-qualification 8237 --seed
+```
+
+```sh
+node --conditions=kept-dist scripts/visual-retrieval/check-household-api.mjs \
+  --fixture-dir .tmp/kept-visual/household-fixtures \
+  --encoder-report .tmp/kept-visual/household.json \
+  --output .tmp/kept-visual/household-api.json --scale
+```
+
+The harness uploads the public originals through the application, waits for the durable
+worker, checks both browser query paths and opens an authorized image at a 375 px viewport.
+It re-runs the benchmark against the actual visual API with a result limit of five. The
+optional `--scale` adds disposable records that reuse the original files and duplicate
+vectors to measure warm API query performance and relation size at 300, 3,000 and 10,000
+candidate rows. The scale rows do not contribute to accuracy or photo ingestion measurements.
+
+The loopback API run indexed 70 of 70 originals. The first became searchable 1.20 seconds
+after attachment. The whole gallery was ready in 139.26 seconds, 132.32 seconds after the
+last attachment. The worker sustained about 0.50 photos per second in this run. The encoder
+was much faster in isolation. Durable dispatch and the serial worker cadence limit this
+backfill rate. Original upload median and p95 were 28.63 and 37.03 ms.
+
+The API returned the same top-1, top-5 and absent outcomes as the whole-image proxy. The
+median and p95 round trip were 56.75 and 67.62 ms for text, and 80.62 and 95.75 ms for
+photos. The photo-input upload, preparation and encoding portion measured 50.03 and
+62.81 ms. Chromium showed no ordinary match for the omitted description, found annotated
+evidence by text and by a separate exposure, opened the authorized photograph and observed
+HTTP 204 for temporary input release.
+
+| Scoped rows | Visual relation and index storage | Warm text HTTP, median / p95 |
+| ---: | ---: | ---: |
+| 70 real sources | 360,448 bytes | 56.75 / 67.62 ms |
+| 300 scale rows | 1,097,728 bytes | 114.92 / 129.43 ms |
+| 3,000 scale rows | 9,756,672 bytes | 308.60 / 328.37 ms |
+| 10,000 scale rows | 32,186,368 bytes | 301.85 / 426.11 ms |
+
+Each scale measurement uses 19 warm requests through the authorized exact-search route
+with a result cap of 20. They measure loopback response times on the test host. The
+Chromium screen limited its list to 10 rendered results at 10,000 ready rows. In three
+queries after forced garbage collection, the JS heap measured 11.68–12.71 MiB before
+and 12.14–12.69 MiB after rendering. A second set raised the real request's result limit
+to 20 using Playwright and disabled service workers during request routing. At 10,000
+ready rows, JavaScript heap for all 20 rendered results measured 11.65–11.87 MiB
+before and 12.35–12.89 MiB afterward. These samples cover JavaScript allocations
+in Chromium. iPhone WKWebView, image decoding, memory under sustained use and WAN
+response times need separate measurements.

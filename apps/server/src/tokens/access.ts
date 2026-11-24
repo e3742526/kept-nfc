@@ -117,6 +117,7 @@ export const NEVER_FOR_TOKENS: readonly RegExp[] = [
   /^\/api\/v1\/connections(\/|$)/,
   /^\/api\/v1\/oauth(\/|$)/,
   /^\/api\/v1\/assistant(\/|$)/,
+  /^\/api\/v1\/visual-search(\/|$)/,
   /^\/api\/v1\/ai(\/|$)/,
   /\/secrets(\/|$)/,
   /\/exports?(\/|$)/,

@@ -5696,6 +5696,10 @@ msgstr "Xe đạp"
 msgid "Bike"
 msgstr "Xe đạp"
 
+#: src/native/visual-search.tsx
+msgid "Bin photo"
+msgstr "Ảnh của thùng"
+
 #: src/map/labels.ts
 msgid "Bistro set"
 msgstr "Bộ bàn ghế bistro"
@@ -6974,6 +6978,10 @@ msgstr "Đã kiểm tra các địa điểm của bạn"
 msgid "Checking it on this device{0}{percent}%"
 msgstr "Đang kiểm tra trên thiết bị này{0}{percent}%"
 
+#: src/native/visual-search.tsx
+msgid "Checking photo search…"
+msgstr "Đang kiểm tra tính năng tìm trong ảnh…"
+
 #: src/components/import/archive-step.tsx
 msgid "Checking the file"
 msgstr "Đang kiểm tra tệp"
@@ -7030,6 +7038,10 @@ msgstr "Chọn một địa điểm."
 msgid "Choose a new password"
 msgstr "Chọn một mật khẩu mới"
 
+#: src/native/visual-search.tsx
+msgid "Choose a photo"
+msgstr "Chọn ảnh"
+
 #. placeholder {0}: fmt.num(VISUAL_IMAGE_MAX_BYTES / 1024 ** 2)
 #: src/components/search/visual-search.tsx
 msgid "Choose a photo up to {0} MB."
@@ -7043,6 +7055,10 @@ msgstr "Chọn mã PIN từ 6 đến 12 chữ số."
 #: src/components/tray/tray.tsx
 msgid "Choose a place"
 msgstr "Chọn một vị trí"
+
+#: src/native/visual-search.tsx
+msgid "Choose a readable photo for visual search."
+msgstr "Chọn ảnh có thể mở được để tìm kiếm."
 
 #: src/components/moving/box-write.tsx
 msgid "Choose a room"
@@ -9395,6 +9411,10 @@ msgstr "Chiều sâu"
 #: src/map/floor-plan/panel.tsx
 msgid "Depth (m)"
 msgstr "Chiều sâu (m)"
+
+#: src/native/visual-search.tsx
+msgid "Describe what you are looking for"
+msgstr "Mô tả thứ bạn đang tìm"
 
 #: src/components/history/labels.ts
 #: src/native/capture-form.tsx
@@ -13413,6 +13433,21 @@ msgstr "{label}: tăng"
 msgid "Indexed {indexed} of {total} things"
 msgstr "Đã lập chỉ mục {indexed} trên {total} đồ vật"
 
+#. placeholder {0}: fmt.num(coverage.ready)
+#: src/native/visual-search.tsx
+msgid "Indexed photos: {0}"
+msgstr "Ảnh đã lập chỉ mục: {0}"
+
+#. placeholder {0}: fmt.num(coverage.failed)
+#: src/native/visual-search.tsx
+msgid "Indexing failed: {0}"
+msgstr "Lỗi lập chỉ mục: {0}"
+
+#. placeholder {0}: fmt.num(coverage.paused)
+#: src/native/visual-search.tsx
+msgid "Indexing paused: {0}"
+msgstr "Tạm dừng lập chỉ mục: {0}"
+
 #: src/components/tags/palette.ts
 msgid "Indigo"
 msgstr "Chàm"
@@ -14027,6 +14062,10 @@ msgstr "Chính xác"
 #: src/native/record-history.tsx
 msgid "Item"
 msgstr "Mục"
+
+#: src/native/visual-search.tsx
+msgid "Item photo"
+msgstr "Ảnh của đồ vật"
 
 #: src/components/import/homebox-choices.tsx
 msgid "Items with quantity 0"
@@ -19839,6 +19878,10 @@ msgstr "Mở yêu cầu bảo hành"
 msgid "Open Connections"
 msgstr "Mở Kết nối"
 
+#: src/native/visual-search.tsx
+msgid "Open containing bin"
+msgstr "Mở thùng chứa đồ vật"
+
 #: src/components/location-position.tsx
 msgid "Open in maps"
 msgstr "Mở trong bản đồ"
@@ -19869,6 +19912,10 @@ msgstr "Mở mục Cho mượn"
 #: src/components/reports/progress.tsx
 msgid "Open PDF"
 msgstr "Mở PDF"
+
+#: src/native/visual-search.tsx
+msgid "Open record"
+msgstr "Mở hồ sơ"
 
 #: src/components/agenda/agenda-row.tsx
 msgid "Open Schedules"
@@ -20876,6 +20923,14 @@ msgstr "Ảnh hoặc tệp"
 msgid "Photo search is unavailable."
 msgstr "Tính năng tìm kiếm ảnh hiện không khả dụng."
 
+#: src/native/visual-search.tsx
+msgid "Photo search needs a connection."
+msgstr "Cần có kết nối để tìm trong ảnh."
+
+#: src/native/visual-search.tsx
+msgid "Photo search uses location only. Browse filters apply to ordinary inventory results."
+msgstr "Tính năng tìm trong ảnh chỉ lọc theo vị trí. Các bộ lọc khi duyệt áp dụng cho kết quả kiểm kê thông thường."
+
 #: src/native/capture-ai.tsx
 msgid "Photo suggestions need Apple Intelligence on iOS 27 or later."
 msgstr "Đề xuất từ ảnh cần Apple Intelligence trên iOS 27 trở lên."
@@ -21339,6 +21394,10 @@ msgstr "Đã xóa vị trí"
 #: src/components/search/visual-search.tsx
 msgid "Possible photo matches"
 msgstr "Ảnh có thể trùng khớp"
+
+#: src/native/visual-search.tsx
+msgid "Possible photo matches. Check the stored photos to confirm."
+msgstr "Có thể trùng khớp. Hãy kiểm tra ảnh đã lưu để xác nhận."
 
 #: src/map/labels.ts
 msgid "Power strip"
@@ -24254,6 +24313,10 @@ msgstr "Tìm kiếm lần kiểm kê"
 msgid "Search currencies"
 msgstr "Tìm kiếm tiền tệ"
 
+#: src/native/visual-search.tsx
+msgid "Search did not find a close match among indexed photos."
+msgstr "Không tìm thấy kết quả gần khớp trong các ảnh đã lập chỉ mục."
+
 #: src/components/admin/embeddings-source.tsx
 msgid "Search embeddings"
 msgstr "Embedding tìm kiếm"
@@ -25105,6 +25168,10 @@ msgstr "Nhiều lựa chọn"
 #: src/components/search/visual-search.tsx
 msgid "Several recorded locations may match."
 msgstr "Có thể có nhiều vị trí đã ghi nhận phù hợp."
+
+#: src/native/visual-search.tsx
+msgid "Several recorded locations may match. Check the stored photos."
+msgstr "Có thể khớp với nhiều vị trí đã ghi nhận. Hãy kiểm tra ảnh đã lưu."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Several things in one photo"
@@ -28117,6 +28184,10 @@ msgstr "Người vận hành máy chủ này cần lưu bộ khôi phục trư�
 msgid "The photo request wasn't sent: AI may be paused, or the provider refused the key."
 msgstr "Yêu cầu ảnh chưa được gửi: AI có thể đang tạm dừng, hoặc nhà cung cấp đã từ chối khóa."
 
+#: src/native/visual-search.tsx
+msgid "The photo search encoder is unavailable."
+msgstr "Bộ mã hóa ảnh tìm kiếm không khả dụng."
+
 #. placeholder {0}: num(r.value)
 #. placeholder {1}: num(converted)
 #: src/components/inbox/reading-review.tsx
@@ -28516,6 +28587,10 @@ msgstr "Các nhãn này cần {n} tờ; các nhãn tiếp theo bắt đầu từ
 #: src/components/import/homebox-choices.tsx
 msgid "These look like boxes"
 msgstr "Những vị trí này trông giống hộp"
+
+#: src/native/visual-search.tsx
+msgid "These matches are weak. Check the stored photos before relying on a location."
+msgstr "Các kết quả này ít tương đồng. Hãy kiểm tra ảnh đã lưu trước khi dựa vào vị trí."
 
 #: src/components/registries/type-editor.tsx
 msgid "These things change type:"
@@ -29178,6 +29253,10 @@ msgstr "Yêu cầu này đã kết thúc. Hãy bắt đầu lại từ Home Assi
 #: src/routes/oauth/consent.tsx
 msgid "This request isn't valid any more"
 msgstr "Yêu cầu này không còn hợp lệ nữa"
+
+#: src/native/visual-search.tsx
+msgid "This search photo is no longer available. Choose it again."
+msgstr "Ảnh dùng để tìm kiếm không còn khả dụng. Hãy chọn lại ảnh."
 
 #: src/components/admin/embeddings-source.tsx
 #: src/components/ai/cap-bars.tsx
@@ -30409,6 +30488,11 @@ msgstr "Đã bỏ hoãn {0}"
 msgid "Unspecified"
 msgstr "Chưa xác định"
 
+#. placeholder {0}: fmt.num(unsupported)
+#: src/native/visual-search.tsx
+msgid "Unsupported photos: {0}"
+msgstr "Ảnh không được hỗ trợ: {0}"
+
 #: src/components/boxcheck/box-check-screen.tsx
 msgid "Unticked become <0>not here</0> when you finish."
 msgstr "Các mục chưa đánh dấu sẽ thành <0>không có ở đây</0> khi bạn hoàn tất."
@@ -30564,6 +30648,10 @@ msgstr "Hãy cập nhật máy chủ SheepKeep này để đăng nhập bằng A
 msgid "Update this SheepKeep server to use this action."
 msgstr "Cập nhật máy chủ SheepKeep này để dùng thao tác đó."
 
+#: src/native/visual-search.tsx
+msgid "Update your SheepKeep server to search photos."
+msgstr "Cập nhật máy chủ SheepKeep để tìm trong ảnh."
+
 #: src/components/pull-to-refresh.tsx
 msgid "Updated"
 msgstr "Đã cập nhật"
@@ -30709,6 +30797,11 @@ msgstr "Dùng nó"
 #: src/routes/signin/two-factor.tsx
 msgid "Use my authenticator app instead"
 msgstr "Dùng ứng dụng xác thực của tôi thay thế"
+
+#. placeholder {0}: fmt.num(NATIVE_VISUAL_SOURCE_MAX_BYTES / 1024 ** 2)
+#: src/native/visual-search.tsx
+msgid "Use one photo up to {0} MB. Search photos are temporary."
+msgstr "Dùng một ảnh tối đa {0} MB. Ảnh dùng để tìm kiếm chỉ là tạm thời."
 
 #: src/components/fuel/fuel-trends.tsx
 msgid "Use the arrow keys to move between points."
@@ -31120,6 +31213,11 @@ msgstr "Đang chờ ngân sách AI đến {0}."
 #: src/components/inbox/inbox-list.tsx
 msgid "Waiting for the AI provider"
 msgstr "Đang chờ nhà cung cấp AI"
+
+#. placeholder {0}: fmt.num(coverage.pending)
+#: src/native/visual-search.tsx
+msgid "Waiting to index: {0}"
+msgstr "Đang chờ lập chỉ mục: {0}"
 
 #: src/components/scan/session/summary.tsx
 msgid "Waiting to save. It will save when you're online."
@@ -32190,6 +32288,10 @@ msgstr "Bạn xem được các địa điểm của mình nhưng không thay đ
 msgid "You changed <0>{name}</0>."
 msgstr "Bạn đã thay đổi <0>{name}</0>."
 
+#: src/native/visual-search.tsx
+msgid "You do not have permission to search photos in this location."
+msgstr "Bạn không có quyền tìm trong ảnh tại vị trí này."
+
 #: src/components/page.tsx
 msgid "You don't have permission to do that."
 msgstr "Bạn không có quyền làm việc đó."
@@ -32634,6 +32736,14 @@ msgstr "Đề xuất đồ vật"
 
 msgid "Photo review"
 msgstr "Xem lại ảnh"
+
+#: src/native/visual-search.tsx
+msgid "Photo search is not enabled on this server."
+msgstr "Máy chủ này chưa bật tính năng tìm trong ảnh."
+
+#: src/native/visual-search.tsx
+msgid "Photo search is temporarily unavailable."
+msgstr "Tính năng tìm trong ảnh tạm thời không khả dụng."
 
 msgid "Review multiple items"
 msgstr "Xem lại nhiều mục"

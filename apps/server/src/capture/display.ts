@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from 'node:crypto';
 import { rm } from 'node:fs/promises';
 import type { Readable } from 'node:stream';
 import type { FastifyRequest } from 'fastify';
@@ -18,6 +19,7 @@ import {
   fileViewOf,
 } from '../files/views.js';
 import { AppError, conflict, forbidden, invalid, notFound } from '../http/errors.js';
+import type { JobQueue } from '../jobs/queue.js';
 import { derivativeKey, type FileStorage, originalKey } from '../storage/blob-store.js';
 import {
   type Derived,
@@ -27,6 +29,7 @@ import {
   type ImageLimiter,
 } from '../storage/derivatives.js';
 import { sniff } from '../storage/sniff.js';
+import { enqueueVisualIndex } from '../visual-search/job.js';
 
 // PUT /api/v1/files/:fileId/display (D34, D36, D99, D117).
 // The phone makes the display JPEG of an evidence photo (it decodes HEIC, the server can't:
@@ -46,7 +49,8 @@ import { sniff } from '../storage/sniff.js';
 // 4. the renditions are stored under the file's derivative keys before any transaction (review
 //    #16), replacing what was there;
 // 5. one transaction, under the keys' advisory locks: kept.set_file_display() (0042) replaces
-//    the derivative rows and sets the file's `derivative_state = 'ready'`, and `file.display_set`
+//    the derivative rows with fresh immutable keys, sets `derivative_state = 'ready'`, and
+//    `file.display_set`
 //    is audited (the hash and sizes, never content).
 //
 // kept_app may not UPDATE `files` (append-only, 0020), hence the definer. It works whether or not
@@ -54,6 +58,19 @@ import { sniff } from '../storage/sniff.js';
 // still gets its preview; the phone leaves "preview unavailable" (D36) for any refusal.
 
 const SHA256 = /^[0-9a-f]{64}$/;
+
+/** Keep the existing UUID-shaped blob key, scoped to the file and immutable per revision.
+ * The database definer derives the same namespace from its authenticated file and revision. */
+function displayNamespace(fileId: string, revision: string): string {
+  const hash = createHash('sha256').update(`kept-display-v1:${fileId}:${revision}`).digest('hex');
+  return [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    hash.slice(12, 16),
+    hash.slice(16, 20),
+    hash.slice(20, 32),
+  ].join('-');
+}
 /** How long after the upload its display may still be set. */
 export const DISPLAY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -61,6 +78,8 @@ export type DisplayDeps = {
   pools: Pick<Pools, 'app' | 'system'>;
   files: FileStorage;
   limiter: ImageLimiter;
+  jobs: JobQueue | null;
+  visualEnabled?: boolean;
   log: { error: (obj: object, msg: string) => void };
 };
 
@@ -160,16 +179,30 @@ export async function setDisplay(
     if (derived.state !== 'ready') {
       throw new AppError('unsupported_media_type', 415, "This JPEG can't be read.");
     }
+    const revision = randomUUID();
+    const namespace = displayNamespace(fileId, revision);
     for (const v of derived.variants) {
-      const key = derivativeKey(fileId, v.variant);
+      const key = derivativeKey(namespace, v.variant);
       if (!stored.includes(key)) stored.push(key);
       await files.blobs.put(key, v.path, { contentType: 'image/jpeg', bytes: v.bytes });
     }
 
-    return await withScope(pools.app, scope, async (tx, client) => {
+    const replaced: string[] = [];
+    const result = await withScope(pools.app, scope, async (tx, client) => {
+      const before = check(await readFile(client, fileId), scope.userId);
+      await lockBlobKeys(client, [originalKey(before.location_id, before.id), ...stored]);
       const file = check(await readFile(client, fileId), scope.userId);
-      await lockBlobKeys(client, [originalKey(file.location_id, file.id), ...stored]);
-      await client.query('SELECT kept.set_file_display($1, $2)', [
+      if ((await lastDisplaySha(client, file)) === declared) {
+        // Another request stored this same rendition while the new blobs were staged.
+        replaced.push(...stored);
+        return { status: 200 as const, body: await viewOf(client, files, file) };
+      }
+      const { rows } = await client.query<{ storage_key: string }>(
+        'SELECT storage_key FROM public.file_derivatives WHERE file_id = $1 AND variant = ANY($2)',
+        [fileId, derived.variants.map((v) => v.variant)],
+      );
+      replaced.push(...rows.map(({ storage_key }) => storage_key));
+      await client.query('SELECT kept.set_file_display($1, $2, $3)', [
         fileId,
         JSON.stringify(
           derived.variants.map((v) => ({
@@ -179,6 +212,7 @@ export async function setDisplay(
             bytes: v.bytes,
           })),
         ),
+        revision,
       ]);
       const row = (await readFile(client, fileId)) as FileRow;
       await audited(tx, {
@@ -195,12 +229,31 @@ export async function setDisplay(
         },
         requestId: req.id,
       });
-      stored.length = 0;
+      if (!scope.tokenId && deps.jobs && deps.visualEnabled !== false) {
+        // A native or browser replay can file the original before the display arrives.
+        const attachments = await client.query<{ id: string }>(
+          `SELECT a.id FROM public.attachments a
+             JOIN kept.visual_photo_sources(ARRAY[$2::uuid], NULL) s ON s.attachment_id = a.id
+            WHERE a.file_id = $1 AND NOT s.use_original
+            ORDER BY a.id LIMIT 100`,
+          [fileId, row.location_id],
+        );
+        await enqueueVisualIndex(
+          deps.jobs,
+          client,
+          attachments.rows.map(({ id }) => id),
+          deps.visualEnabled,
+        );
+      }
       return { status: 200 as const, body: await viewOf(client, files, row) };
     });
+    stored.length = 0;
+    await deleteUnreferencedBlobs(pools, files, replaced, log).catch((e: unknown) => {
+      log.error({ err: e }, 'display: replaced blobs could not be cleaned up');
+    });
+    return result;
   } catch (err) {
-    // Keys no row names (the file had no renditions before): gone again. Keys a row still names
-    // keep the phone's rendition, which is the same photo.
+    // Drop only our own staged blobs after a failed commit.
     if (stored.length > 0) {
       await deleteUnreferencedBlobs(pools, files, stored, log).catch((e: unknown) => {
         log.error({ err: e }, 'display: its blobs could not be cleaned up');

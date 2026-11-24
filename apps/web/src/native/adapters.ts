@@ -20,6 +20,7 @@ import {
   type TagReading,
   unwrap,
 } from './bridge';
+import { nativeVisualSearch, type VisualSearchAdapter } from './visual-search-api';
 
 export type PlatformCredentials = {
   connection(): Promise<Connection | null>;
@@ -112,11 +113,6 @@ export type PlatformLifecycle = {
   onAppStateChange(
     callback: (state: { active: boolean }) => void,
   ): Promise<() => Promise<void> | void>;
-};
-
-/** Reserved integration seam for Phase 3B / MVP 2 full image-based retrieval. */
-export type VisualSearchAdapter = {
-  isSupported: boolean;
 };
 
 export type PlatformAdapters = {
@@ -368,7 +364,7 @@ export const capacitorAdapters: PlatformAdapters = {
       return () => handle.remove();
     },
   },
-  visualSearch: { isSupported: false },
+  visualSearch: nativeVisualSearch(nativeRequest),
 };
 
 const PlatformContext = createContext<PlatformAdapters>(capacitorAdapters);

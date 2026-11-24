@@ -8,7 +8,7 @@ const MAX_EDGE = 1024;
 export class InvalidVisualImage extends Error {}
 
 /** Strip metadata before inference and apply the same orientation and rendition to both inputs. */
-export async function prepareVisualImage(bytes: Buffer): Promise<Buffer> {
+export async function prepareVisualImage(bytes: Buffer, mime?: string): Promise<Buffer> {
   if (bytes.byteLength === 0 || bytes.byteLength > VISUAL_IMAGE_MAX_BYTES) {
     throw new InvalidVisualImage();
   }
@@ -19,7 +19,8 @@ export async function prepareVisualImage(bytes: Buffer): Promise<Buffer> {
       !meta.width ||
       !meta.height ||
       meta.width * meta.height > VISUAL_IMAGE_MAX_PIXELS ||
-      !['jpeg', 'png', 'webp'].includes(meta.format ?? '')
+      !['jpeg', 'png', 'webp'].includes(meta.format ?? '') ||
+      (mime !== undefined && mime !== `image/${meta.format}`)
     ) {
       throw new InvalidVisualImage();
     }
@@ -38,14 +39,14 @@ export async function readVisualSource(
   blobs: BlobStore,
   key: string,
   bytes: number,
-  hash: string,
+  hash?: string,
 ): Promise<Buffer> {
   if (!Number.isSafeInteger(bytes) || bytes < 1 || bytes > VISUAL_IMAGE_MAX_BYTES) {
     throw new InvalidVisualImage();
   }
   const stream = await blobs.stream(key);
   const chunks: Buffer[] = [];
-  const digest = createHash('sha256');
+  const digest = hash ? createHash('sha256') : null;
   let length = 0;
   for await (const data of stream) {
     const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data);
@@ -55,8 +56,10 @@ export async function readVisualSource(
       throw new InvalidVisualImage();
     }
     chunks.push(chunk);
-    digest.update(chunk);
+    digest?.update(chunk);
   }
-  if (length !== bytes || digest.digest('hex') !== hash) throw new InvalidVisualImage();
+  if (length !== bytes || (digest && digest.digest('hex') !== hash)) {
+    throw new InvalidVisualImage();
+  }
   return Buffer.concat(chunks, length);
 }

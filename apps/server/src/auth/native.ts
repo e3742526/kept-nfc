@@ -55,7 +55,7 @@ export async function resetNativeSyncEpoch(db: AuthQuery): Promise<void> {
   );
 }
 
-async function nativeSyncEpoch(db: AuthQuery): Promise<string> {
+export async function nativeSyncEpoch(db: AuthQuery): Promise<string> {
   let { rows } = await db.query<{ value: string }>(
     'SELECT value FROM auth.verification WHERE id = $1',
     [epochKey],

@@ -56,3 +56,21 @@ Restore mismatch is HTTP 409 `{"code":"conflict","error":"…","reason":"restore
 The native preview has an optional `description` alongside the name, quantity estimate and category suggestions. NativeStore holds the proposal edits and supporting photo indexes until review is approved. Replay uses existing capture payload v4 for the approved new records and the ordinary attachment capture for supporting evidence on the destination bin or other existing records. The existing category write and row-versioned record PATCH complete the user-selected updates. All these writes have stable replay IDs. Older servers that lack the required capture version hold the durable review before upload. The review and photo-only operations share a batch ID, and the original files use the existing scoped attachment, export and restore paths.
 
 Category Browse uses the same direct membership, pagination and count contract as advanced Browse. The manager opens a direct category filter, and the advanced controls provide intersection, union and optional inheritance. See [the inventory workflow record](native-inventory-workflows.md#browse-contract).
+
+## Native visual retrieval
+
+The native client sends visual status, text, upload and cancellation through the existing
+authenticated transport. It includes the same native account and restore-epoch headers on all
+four routes. The bridge prepares bounded JPEG in memory for raw upload. A query photo never
+enters the capture outbox or the inventory media store. Native input IDs are accepted only for
+the same session, origin, epoch and permitted location scope that created them. Search and
+status return live authorized paths and source references. Native media preview obtains a short
+lived authorized URL from the existing file route.
+
+The visual filter accepts location IDs. The lexical Browse filter contract remains independent.
+Current visual results add optional evidence media type, container references and weak-match
+presentation, and coverage adds optional encoder, scope and unsupported-source status. An
+older response with the original shape remains readable. A missing route or invalid shape is
+an incompatible server, with a distinct message. See the
+[visual retrieval contract](visual-retrieval-plan.md#whole-image-interfaces) for payload,
+indexing, recovery and query lifetime details.

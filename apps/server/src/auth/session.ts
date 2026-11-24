@@ -60,6 +60,27 @@ export async function resolveSession(
   };
 }
 
+/** Recheck the original session after a long operation. Revocation, expiry and an MFA
+ * change during that operation must take effect before returning private data. */
+export async function sessionIsCurrent(
+  authPool: pg.Pool,
+  session: ResolvedSession,
+): Promise<boolean> {
+  const { rows } = await authPool.query<{ active: boolean }>(
+    `SELECT EXISTS (
+       SELECT 1 FROM auth.session s JOIN auth."user" u ON u.id = s.user_id
+         LEFT JOIN auth.session_mfa m ON m.session_id = s.id
+        WHERE s.id = $1 AND s.user_id = $2 AND s.expires_at > now()
+          AND (u.banned IS NOT TRUE OR u.ban_expires <= now())
+          AND (m.session_id IS NOT NULL) = $3
+          AND (u.two_factor_enabled IS NOT TRUE OR m.session_id IS NOT NULL)
+          AND NOT EXISTS (SELECT 1 FROM auth.user_deletion d WHERE d.user_id = s.user_id)
+     ) AS active`,
+    [session.sessionId, session.userId, session.mfa],
+  );
+  return rows[0]?.active === true;
+}
+
 export type Scope = { userId: string; mfa: boolean };
 
 export type GateDecision =

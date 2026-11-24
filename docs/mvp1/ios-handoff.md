@@ -92,7 +92,7 @@ Enable Sign in with Apple for `info.keptinventory.nfc`, refresh the signing prof
 
 - Held-work reconciliation/adoption into a restored server is intentionally unimplemented (bounded review, preview, metadata+originals Share Sheet export, and explicit discard only).
 - End-to-end tests against a real rolled-back/upgraded HTTP server live in the server suite (`apps/server/src/sync/native-compat.test.ts`); phone UI rolled-back/401-probe flows were verified with fake transport doubles.
-- Browser visual search and the remaining held-out qualification are tracked in the [visual retrieval plan](visual-retrieval-plan.md).
+- Browser and native visual search, image coverage and held-out qualification are tracked in the [visual retrieval plan](visual-retrieval-plan.md).
 
 ## Multi-item photo review and Browse
 
@@ -105,3 +105,28 @@ Enable Sign in with Apple for `info.keptinventory.nfc`, refresh the signing prof
 7. Export, back up and restore the disposable inventory. Verify the shared file hashes, category membership and custom values. Repeat photo inference with Apple Intelligence and ChatGPT plan where configured.
 
 OpenAI Server API has a live fixture check. Apple Intelligence and ChatGPT plan have mocked flow and compilation coverage. The modern iOS Simulator launched the configured app to the Apple sign-in screen. The signed-in physical workflow and hardware-dependent checks remain pending.
+
+## Native visual retrieval qualification
+
+Build 13 of SheepKeep 1.0 used app source `5508ff5a`, Xcode 27.2 (27B52), and an
+arm64 Apple Development signature carrying Sign in with Apple and NDEF. CoreDevice
+installed it in place on the iPhone 17 Pro running iOS 27.2.1 over the local
+network, read back build 13, and launched it without a debugger. The device
+screenshot showed the Search actions and Browse entry. This verifies the build,
+install and launch stages.
+
+Search and Browse now open the visual search screen independently of the assistant.
+Test a description absent from all record metadata and a new picture taken from another
+angle. Open the original from a result, visit its containing bin, and return to results.
+Verify ordinary Search and advanced Browse filters independently. Visual results use the
+location selector and live authorized containment. Scope changes and cancellation
+discard the active search input. The client presents distinct states for offline, disabled,
+encoder trouble, server compatibility, permission, weak matches and partial coverage.
+
+Use the [physical acceptance checklist](../runbooks/nfc-mvp.md#physical-device-acceptance)
+with an isolated test origin and a disposable account. Complete Apple linking, Kept MFA
+and consent before opening a capture or search. In G3, add an ordinary camera original and
+recheck the index, compare authorized photo previews and originals, try an independently
+captured absent object, and cancel a photo query. Record the device capture format separately
+from the JPEG sent for inference. The [held-out measurements](visual-retrieval-plan.md#held-out-household-photo-proxy)
+show that the absence threshold is still unmet.

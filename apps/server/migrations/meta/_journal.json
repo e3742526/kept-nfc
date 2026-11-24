@@ -1303,6 +1303,13 @@
       "when": 1795466880000,
       "tag": "0185_default_function_execute",
       "breakpoints": true
+    },
+    {
+      "idx": 186,
+      "version": "7",
+      "when": 1795466880001,
+      "tag": "0186_visual_photo_renditions",
+      "breakpoints": true
     }
   ]
 }

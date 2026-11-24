@@ -21,16 +21,14 @@ export async function enqueueVisualIndex(
   enabled = localVisualProvider() !== null,
 ) {
   if (!jobs || !enabled) return;
-  for (const attachmentId of attachmentIds) {
-    await jobs.sendTenant(
-      client,
-      INDEX_JOB,
-      { attachmentId },
-      {
-        singletonKey: `visual:${attachmentId}`,
-        singletonSeconds: 30,
-      },
-    );
+  const queued = [...new Set(attachmentIds)].map((attachmentId) => ({
+    data: { attachmentId },
+    dedupe: { singletonKey: `visual:${attachmentId}`, singletonSeconds: 30 },
+  }));
+  if (jobs.sendTenantMany) {
+    await jobs.sendTenantMany(client, INDEX_JOB, queued);
+  } else {
+    for (const { data, dedupe } of queued) await jobs.sendTenant(client, INDEX_JOB, data, dedupe);
   }
 }
 
@@ -40,7 +38,9 @@ function sameSource(before: VisualSource, current: VisualSource | undefined): bo
     before.file_id === current.file_id &&
     before.location_id === current.location_id &&
     before.content_hash === current.content_hash &&
-    before.storage_key === current.storage_key
+    before.storage_key === current.storage_key &&
+    before.display_key === current.display_key &&
+    before.display_bytes === current.display_bytes
   );
 }
 
@@ -60,17 +60,17 @@ export async function indexVisualAttachment(
     );
   const found = await source();
   if (!found || found.ready) return 'skipped';
-  let original: Buffer | undefined;
+  let sourceBytes: Buffer | undefined;
   let image: Buffer | undefined;
   let vector: number[] | null = null;
   try {
-    original = await readVisualSource(
+    sourceBytes = await readVisualSource(
       blobs,
-      found.storage_key,
-      Number(found.bytes),
-      found.content_hash,
+      found.display_key ?? found.storage_key,
+      Number(found.display_bytes ?? found.bytes),
+      found.display_key ? undefined : found.content_hash,
     );
-    image = await prepareVisualImage(original);
+    image = await prepareVisualImage(sourceBytes);
     const check = await source();
     if (!sameSource(found, check) || check?.ready) return 'skipped';
     vector = await provider.encodeImage(image);
@@ -81,7 +81,7 @@ export async function indexVisualAttachment(
     }
     vector = null;
   } finally {
-    original?.fill(0);
+    sourceBytes?.fill(0);
     image?.fill(0);
   }
   const stored = await withScope(pool, scope, (_tx, client) =>

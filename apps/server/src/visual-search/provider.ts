@@ -7,10 +7,12 @@ const MAX_TEXT_BYTES = 4_096;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const MAX_RESPONSE_BYTES = 16_384;
 const REQUEST_TIMEOUT_MS = 30_000;
+const STATUS_TIMEOUT_MS = 1_500;
 
 export type VisualProvider = {
   generation: string;
   dimensions: number;
+  isReady?(): Promise<boolean>;
   encodeText(text: string): Promise<number[]>;
   /** A bounded JPEG prepared by Kept's visual source pipeline. */
   encodeImage(image: Buffer): Promise<number[]>;
@@ -40,6 +42,7 @@ function encoderOrigin(value: URL | string): string {
 function exchange(
   url: URL,
   payload?: { body: Buffer; contentType: 'application/json' | 'image/jpeg' },
+  timeout = REQUEST_TIMEOUT_MS,
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const req = request(
@@ -47,7 +50,7 @@ function exchange(
       {
         agent: false,
         method: payload ? 'POST' : 'GET',
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeout),
         headers: {
           Accept: 'application/json',
           ...(payload && {
@@ -132,6 +135,15 @@ export function openClipEncoder(url: URL | string): VisualProvider {
   return {
     generation: VISUAL_GENERATION,
     dimensions: VISUAL_DIMENSIONS,
+    async isReady() {
+      try {
+        return matchingGeneration(
+          await exchange(new URL('/v1/status', origin), undefined, STATUS_TIMEOUT_MS),
+        );
+      } catch {
+        return false;
+      }
+    },
     encodeText(text) {
       if (!text.trim() || Buffer.byteLength(text) > MAX_TEXT_BYTES) {
         return Promise.reject(new Error('The visual text query is outside encoder limits.'));

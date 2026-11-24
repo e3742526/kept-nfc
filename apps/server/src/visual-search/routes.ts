@@ -13,9 +13,11 @@ import type { FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 import { audited } from '../audit/audited.js';
-import { requireScope } from '../auth/http.js';
+import { expectedOrigin, requireScope } from '../auth/http.js';
+import { nativeContextHook, nativeSyncEpoch } from '../auth/native.js';
+import { sessionIsCurrent } from '../auth/session.js';
 import type { KeptApp } from '../http/app.js';
-import { forbidden, invalid } from '../http/errors.js';
+import { forbidden, invalid, unauthenticated } from '../http/errors.js';
 import type { InventoryDeps } from '../http/routes.js';
 import { scopedWrite } from '../http/write.js';
 import { requireMembership } from '../locations/access.js';
@@ -33,16 +35,29 @@ const LocationQuery = z.object({
     .optional(),
 });
 
-function principal(req: FastifyRequest): string {
-  const scope = requireScope(req);
-  if (scope.tokenId) return `token:${scope.tokenId}`;
-  if (req.authSession) return `session:${req.authSession.sessionId}`;
-  throw forbidden('A signed-in session is required for a temporary photo input.');
+async function principal(req: FastifyRequest, publicUrl: string): Promise<string> {
+  const id = req.authSession?.sessionId;
+  if (!id) throw unauthenticated();
+  // Cookie requests have passed the CSRF check, including approved alternate origins.
+  const origin =
+    req.headers.origin && req.headers.origin !== 'null'
+      ? req.headers.origin
+      : expectedOrigin(req, new URL(publicUrl).origin);
+  return JSON.stringify([id, origin, await nativeSyncEpoch(req.server.pools.auth)]);
+}
+
+async function reauthorize(req: FastifyRequest): Promise<void> {
+  await nativeContextHook(req);
+  if (!req.authSession || !(await sessionIsCurrent(req.server.pools.auth, req.authSession)))
+    throw unauthenticated();
 }
 
 export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Promise<void> {
   const provider = deps.visualProvider === undefined ? localVisualProvider() : deps.visualProvider;
   const queries = new VisualQueries(deps.pools.app, provider);
+  const publicUrl = deps.env.KEPT_PUBLIC_URL;
+  const invalidEncoder =
+    deps.visualProvider === undefined && provider === null && !!process.env.KEPT_VISUAL_ENCODER_URL;
   app.addHook('onClose', async () => queries.close());
 
   app.get(
@@ -50,9 +65,12 @@ export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Pro
     {
       schema: { querystring: LocationQuery, response: { 200: VisualSearchCoverageSchema } },
     },
-    (req, reply) => {
+    async (req, reply) => {
       reply.header('cache-control', 'no-store');
-      return queries.status(requireScope(req), req.query.locationIds);
+      const coverage = await queries.status(requireScope(req), req.query.locationIds, () =>
+        reauthorize(req),
+      );
+      return invalidEncoder ? { ...coverage, encoder: 'unavailable' as const } : coverage;
     },
   );
 
@@ -61,12 +79,13 @@ export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Pro
     {
       schema: { body: VisualSearchRequestSchema, response: { 200: VisualSearchResultSchema } },
     },
-    (req, reply) => {
+    async (req, reply) => {
       reply.header('cache-control', 'no-store');
       return queries.search(
         requireScope(req),
-        'inputId' in req.body ? principal(req) : '',
+        'inputId' in req.body ? await principal(req, publicUrl) : '',
         req.body,
+        () => reauthorize(req),
       );
     },
   );
@@ -89,12 +108,29 @@ export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Pro
         reply.header('cache-control', 'no-store');
         if (!Buffer.isBuffer(bytes) || bytes.byteLength === 0) throw invalid('Send an image.');
         try {
+          const scope = requireScope(req);
+          const owner = await principal(req, publicUrl);
+          const mime = req.headers['content-type']?.split(';', 1)[0]?.trim().toLowerCase();
           const input = await queries.input(
-            requireScope(req),
-            principal(req),
+            scope,
+            owner,
             bytes,
+            mime,
             req.query.locationIds,
+            async () => {
+              await reauthorize(req);
+              if (owner !== (await principal(req, publicUrl))) throw unauthenticated();
+            },
           );
+          let sent = reply.raw.writableEnded;
+          reply.raw.once('finish', () => {
+            sent = true;
+          });
+          const releaseIfDisconnected = () => {
+            if (!sent) queries.cancel(scope, owner, input.inputId);
+          };
+          if (reply.raw.destroyed) releaseIfDisconnected();
+          else reply.raw.once('close', releaseIfDisconnected);
           reply.code(201);
           return input;
         } finally {
@@ -110,8 +146,8 @@ export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Pro
     {
       schema: { params: z.object({ id: z.uuid().toLowerCase() }) },
     },
-    (req, reply) => {
-      queries.cancel(requireScope(req), principal(req), req.params.id);
+    async (req, reply) => {
+      queries.cancel(requireScope(req), await principal(req, publicUrl), req.params.id);
       reply.header('cache-control', 'no-store').code(204).send();
     },
   );
@@ -131,7 +167,12 @@ export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Pro
         if (scope.tokenId || (member.role !== 'owner' && member.role !== 'admin'))
           throw forbidden();
         if (!provider || !deps.jobs || !deps.files) throw visualUnavailable();
-        const attachments = await pendingVisualAttachments(client, locationId, provider.generation);
+        const { attachments, next } = await pendingVisualAttachments(
+          client,
+          locationId,
+          provider.generation,
+          req.body.after,
+        );
         await enqueueVisualIndex(deps.jobs, client, attachments, true);
         await audited(tx, {
           locationId,
@@ -141,7 +182,7 @@ export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Pro
           after: { generation: provider.generation, queued: attachments.length },
           requestId: req.id,
         });
-        return { status: 202, body: { queued: attachments.length } };
+        return { status: 202, body: { queued: attachments.length, next } };
       }),
   );
 }
