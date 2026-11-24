@@ -6,6 +6,8 @@
  * - **Kept labels:** any host's `/l/<code>`, or a bare code typed or read. The host is ignored
  *   (D120), so labels keep working after a domain change. A Kept or Homebox label wins in any
  *   symbol that can carry text (QR, Data Matrix, PDF417, Aztec).
+ * - **Numbered labels** (`PPP-XXXX-NNNN`): any host's `/l/<alias>` or `/t/<alias>`, or the alias
+ *   typed or read bare. The server answers them as the short ID each stands for.
  * - **Homebox labels:** `/a/<assetId>`, `/item/<uuid>`, `/location/<uuid>` on any host (D146).
  *   Asset IDs are `%06d` shown as `000-001`; they come back in that form.
  * - **GS1 codes** (a Data Matrix or Code 128 on electronics and cartons, or brackets typed by
@@ -19,10 +21,14 @@
  * - **Anything else** is `other`, and the scanner shows its text ("Not a Kept label").
  */
 
+import { parseDeviceLabel } from './device-labels.js';
 import { normaliseInputCode, SHORT_CODE } from './short-code.js';
 
 export type ScanResult =
   | { kind: 'kept'; code: string }
+  /** A numbered label (`BIN-A09Z-0001`, device-labels.ts): an alias the server turns into its
+   * short ID. Read from `/l/<alias>` or `/t/<alias>` on any host, or typed. */
+  | { kind: 'alias'; alias: string }
   | {
       kind: 'homebox';
       path: 'a' | 'item' | 'location';
@@ -423,8 +429,16 @@ function fromUrl(text: string): ScanResult | null {
 
   const kept = /\/l\/([^/]+)$/.exec(path);
   if (kept) {
+    const alias = parseDeviceLabel(kept[1] as string);
+    if (alias) return { kind: 'alias', alias: alias.code };
     const code = normaliseInputCode(kept[1] as string);
     return SHORT_CODE.test(code) ? { kind: 'kept', code } : null;
+  }
+  // `/t/` is a thing's page by its short ID or UUID; only a numbered label is a label there.
+  const tagged = /\/t\/([^/]+)$/.exec(path);
+  if (tagged) {
+    const alias = parseDeviceLabel(tagged[1] as string);
+    if (alias) return { kind: 'alias', alias: alias.code };
   }
 
   const hb = /\/(a|item|location)\/([^/]+)$/.exec(path);
@@ -474,6 +488,8 @@ export function parseScan(input: string, format?: string): ScanResult {
     if (label) return label;
     if (!has(TEXT_FORMATS, format)) return other;
   } else {
+    const alias = parseDeviceLabel(text);
+    if (alias) return { kind: 'alias', alias: alias.code };
     const code = normaliseInputCode(text);
     if (SHORT_CODE.test(code)) return { kind: 'kept', code };
   }

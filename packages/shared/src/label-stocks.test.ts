@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { cellsFor, hasQr, isSheet, isTape, LABEL_STOCKS, labelStock } from './label-stocks.js';
+import {
+  cellsFor,
+  hasQr,
+  isSheet,
+  isStacked,
+  isTape,
+  LABEL_STOCKS,
+  labelStock,
+} from './label-stocks.js';
 
 describe('LABEL_STOCKS', () => {
   it('has the supported stocks, in order', () => {
@@ -7,6 +15,10 @@ describe('LABEL_STOCKS', () => {
       'thermal_50x30',
       'thermal_40x30',
       'thermal_62x29',
+      'thermal_1x1in',
+      'thermal_1_5x1in',
+      'thermal_1_5x1_5in',
+      'thermal_2x2in',
       'tape_9',
       'tape_12',
       'tape_18',
@@ -18,6 +30,23 @@ describe('LABEL_STOCKS', () => {
       'letter_writable_12',
       'letter_writable_24',
     ]);
+  });
+
+  it('has inch rolls that stack the QR over the code, each label its own page', () => {
+    const stacked = LABEL_STOCKS.filter(isStacked);
+    expect(stacked.map((s) => [s.key, s.cell.w, s.cell.h, s.content])).toEqual([
+      ['thermal_1x1in', 25.4, 25.4, 'compact'],
+      ['thermal_1_5x1in', 38.1, 25.4, 'compact'],
+      ['thermal_1_5x1_5in', 38.1, 38.1, 'full'],
+      ['thermal_2x2in', 50.8, 50.8, 'full'],
+    ]);
+    for (const s of stacked) {
+      expect(isSheet(s)).toBe(false);
+      expect(s.page).toEqual(s.cell);
+      // Room for a 20 × 10 mm NFC inlay under every one.
+      expect(Math.max(s.cell.w, s.cell.h)).toBeGreaterThanOrEqual(20);
+      expect(Math.min(s.cell.w, s.cell.h)).toBeGreaterThanOrEqual(10);
+    }
   });
 
   it('has label-maker tape 9, 12, 18 and 24 mm wide: one label per thing, a QR from 18 mm', () => {
@@ -48,8 +77,10 @@ describe('LABEL_STOCKS', () => {
     expect(s.names.ar).toBeTruthy();
   });
 
-  it('prints QR and code only on the small A4 stock', () => {
+  it('prints QR and code only on the small stocks', () => {
     expect(LABEL_STOCKS.filter((s) => s.content === 'compact').map((s) => s.key)).toEqual([
+      'thermal_1x1in',
+      'thermal_1_5x1in',
       'a4_65_38x21',
     ]);
   });

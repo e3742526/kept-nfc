@@ -1,9 +1,40 @@
-/** Device-generated printed aliases, separate from legacy Crockford short IDs. */
+/**
+ * Numbered label series (`PPP-XXXX-NNNN`): printed aliases of short IDs, separate from the
+ * Crockford short IDs themselves. `PPP` is the purpose the series was printed for (it never limits
+ * what a label is later claimed for), `XXXX` a random base36 series ID the server reserves, and
+ * `NNNN` the label's place in the series. A series is registered on the server before it prints
+ * (labels/series.ts): each alias stands for one blank short ID, so claiming, moving, retiring and
+ * reprinting a numbered label is what they are for any other label.
+ */
 export const DEVICE_LABEL_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 export const DEVICE_LABEL_CODE = /^[A-Z]{3}-[0-9A-Z]{4}-[0-9]{4}$/;
+/** The same pattern as a SQL-safe source, for CHECKs and route params. */
+export const DEVICE_LABEL_PREFIX = /^[A-Z]{3}$/;
+
+/**
+ * Purposes offered when a series is made. Any three letters are accepted; these are the house
+ * ones. `TMP` is for write-in labels.
+ */
+export const DEVICE_LABEL_PREFIXES = ['BIN', 'ITM', 'LOC', 'SHF', 'TMP', 'GEN'] as const;
+
+/**
+ * What a person typed or a reader gave, folded onto the alias form: trimmed, upper case, spaces
+ * and Unicode hyphens (a printed U+2011 included) as `-`. Unlike a short ID nothing else is folded:
+ * base36 keeps O, I and L. Not validated; check with `parseDeviceLabel`.
+ */
+export function normaliseDeviceLabel(input: string): string {
+  return input
+    .trim()
+    .toUpperCase()
+    .replace(/[\s\u2010-\u2015-]+/g, '-');
+}
+
+export function isDeviceLabel(input: string): boolean {
+  return parseDeviceLabel(input) !== null;
+}
 
 export function parseDeviceLabel(input: string) {
-  const code = input.trim().toUpperCase();
+  const code = normaliseDeviceLabel(input);
   if (!DEVICE_LABEL_CODE.test(code)) return null;
   const prefix = code.slice(0, 3);
   const batchId = code.slice(4, 8);
@@ -34,9 +65,9 @@ export function deviceLabelCode(prefix: string, batchId: string, sequence: numbe
   return `${prefix}-${batchId}-${String(sequence).padStart(4, '0')}`;
 }
 
-/** Allocate once and persist the returned manifest before printing; reprints reuse it.
- * A caller must check persistent local reservations and reconcile server collisions.
- * Raw QR aliases are not registered Kept URLs until a resolver is implemented.
+/** A local manifest, for tests and offline previews only: a series that prints is reserved by
+ * the server (`POST /api/v1/labels/batches` with `series`), which owns uniqueness. Its QR payload
+ * is the bare alias; a printed label carries the alias's HTTPS link instead.
  */
 export function createDeviceLabelBatch(
   prefix: string,

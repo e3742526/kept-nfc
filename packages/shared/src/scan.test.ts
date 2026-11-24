@@ -41,6 +41,36 @@ describe('parseScan: Kept labels (D120, §2.4)', () => {
   });
 });
 
+describe('parseScan: numbered labels', () => {
+  it.each([
+    ['https://labels.example.org/l/BIN-A09Z-0001', 'BIN-A09Z-0001'],
+    ['https://labels.example.org/t/BIN-A09Z-0001', 'BIN-A09Z-0001'],
+    ['https://kept.example/l/bin-a09z-0001/', 'BIN-A09Z-0001'],
+    ['BIN-A09Z-0001', 'BIN-A09Z-0001'],
+    [' tmp oil0 0042 ', 'TMP-OIL0-0042'],
+    ['TMP\u2011OIL0\u20110042', 'TMP-OIL0-0042'],
+  ])('%s → %s', (text, alias) => {
+    expect(parseScan(text, 'qr_code')).toEqual({ kind: 'alias', alias });
+  });
+
+  it('keeps O, I and L: a base36 series is not folded like a short ID', () => {
+    expect(parseScan('LOC-OIL1-0001')).toEqual({ kind: 'alias', alias: 'LOC-OIL1-0001' });
+  });
+
+  it.each([
+    'https://x.example/t/2HX9RB', // a thing page by short ID is not a label
+    'https://x.example/l/BIN-A09Z-0000', // sequence 0 is never issued
+    'https://x.example/l/BI-A09Z-0001',
+    'BIN-A09Z-00001',
+  ])('%s is not a numbered label', (text) => {
+    expect(parseScan(text).kind).not.toBe('alias');
+  });
+
+  it('a short ID still reads as one', () => {
+    expect(parseScan('https://x.example/l/7KQ4MZ')).toEqual({ kind: 'kept', code: '7KQ4MZ' });
+  });
+});
+
 describe('parseScan: Homebox labels (D146)', () => {
   const uuid = '8f1c2b4e-3d5a-4c6b-9e7f-0a1b2c3d4e5f';
   it.each([
