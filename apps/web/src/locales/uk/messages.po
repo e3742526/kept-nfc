@@ -19,6 +19,10 @@ msgstr " та "
 msgid ", "
 msgstr ", "
 
+#: src/native/main.tsx
+msgid "Add “{0}”"
+msgstr "Додати «{0}»"
+
 #: src/components/things/links.tsx
 msgid "…this one"
 msgstr "…цей"

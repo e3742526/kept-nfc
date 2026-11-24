@@ -465,6 +465,51 @@
   font-size: 0.75rem;
 }
 
+/* Search is the first control on Home and stays reachable while the list scrolls. */
+.kept-search {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 10;
+  margin-block-end: 0.75rem;
+  padding-block: 0.25rem;
+  background: var(--paper);
+}
+
+/* Slim secondary shortcuts under search (Rooms, Create box). */
+.kept-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kept-quick-button {
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+/* "Add <search text>" row: turns a search that found nothing into an add. */
+.kept-row-lead-accent {
+  background: color-mix(in srgb, var(--amber) 24%, var(--surface));
+  color: var(--amber-text);
+}
+
+/* Capture: destination summary and the collapsed secondary fields. */
+.kept-destination {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.kept-details > summary {
+  min-block-size: 2.75rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
 /* Filter pull-down row for long lists. */
 .kept-filters {
   display: grid;
@@ -508,6 +553,16 @@
 .kept-tabbar-button[aria-current="page"] {
   color: var(--ink);
   background: color-mix(in srgb, var(--amber) 24%, transparent);
+}
+
+/* Add is the primary action: its icon sits in a filled pill. */
+.kept-tabbar-add svg {
+  box-sizing: content-box;
+  padding-block: 0.1875rem;
+  padding-inline: 0.875rem;
+  border-radius: 999px;
+  background: var(--amber);
+  color: var(--amber-ink);
 }
 
 .kept-tabbar-label {

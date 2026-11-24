@@ -13,10 +13,18 @@ import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import { type CompletionState, type Connection, StorageFullError } from './bridge';
 import { type Destination, DestinationPicker, defaultDestination } from './destination';
-import { createBox, type InventoryCache } from './inventory';
+import { createBox, type InventoryCache, inventoryPath } from './inventory';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
+
+/** Where the item goes, as `Room › Box` (the location name is left to the picker). */
+function destinationLabel(cache: InventoryCache, destination: Destination): string {
+  const row = [...cache.places, ...cache.things].find((entry) => entry.id === destination.id);
+  return row
+    ? [...inventoryPath(cache, row).slice(1), destination.name].join(' › ')
+    : destination.name;
+}
 
 function createPreviewUrl(file: File): string | undefined {
   if (typeof URL.createObjectURL !== 'function') return undefined;
@@ -38,6 +46,8 @@ export function CaptureForm({
   box,
   location,
   cache,
+  initialName = '',
+  suggested,
   pending = [],
   completions = {},
   syncing = false,
@@ -49,6 +59,10 @@ export function CaptureForm({
   box?: Destination;
   location?: string;
   cache?: InventoryCache;
+  /** Description prefilled from a search that found nothing. */
+  initialName?: string;
+  /** Where the next item most likely goes (the box used last); the picker changes it. */
+  suggested?: Destination;
   pending?: readonly PendingCapture[];
   /** Durable terminal states; only `synced` counts as synchronized. */
   completions?: Readonly<Record<string, CompletionState>>;
@@ -61,13 +75,17 @@ export function CaptureForm({
   const adapters = usePlatform();
   const confirm = useConfirm();
   const formatBytes = useBytes();
-  const [destination, setDestination] = useState(() => box ?? (cache && defaultDestination(cache)));
+  const [destination, setDestination] = useState(
+    () => box ?? suggested ?? (cache && defaultDestination(cache)),
+  );
+  const [changingDestination, setChangingDestination] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const photosOnly = destination?.kind === 'photos';
   const documentsOnly = destination?.kind === 'documents';
   const evidenceOnly = photosOnly || documentsOnly;
   const [intent, setIntent] = useState<'record' | 'add'>('record');
   const [batchId] = useState(newId);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(initialName);
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState('');
   const [files, setFiles] = useState<ChosenFile[]>([]);
@@ -180,6 +198,9 @@ export function CaptureForm({
       setFiles([]);
       setStatus(t`Saved on device.`);
       onSave();
+      setTimeout(() =>
+        formRef.current?.querySelector<HTMLInputElement>('input[name=name]')?.focus(),
+      );
     } catch (error) {
       setStatus(
         error instanceof StorageFullError
@@ -265,58 +286,27 @@ export function CaptureForm({
         </div>
       )}
       <form
+        ref={formRef}
         className="grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
           void save();
         }}
       >
-        {cache && !box && (
-          <DestinationPicker
-            cache={cache}
-            value={destination}
-            onChange={setDestination}
-            disabled={busy}
-          />
-        )}
         {!evidenceOnly && (
-          <>
-            <Select
-              label={t`Action`}
-              selectedKey={intent}
-              isDisabled={busy}
-              items={[
-                { id: 'record', label: t`Record existing contents` },
-                { id: 'add', label: t`Add contents` },
-              ]}
-              onSelectionChange={(key) => setIntent(key === 'add' ? 'add' : 'record')}
-            >
-              {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
-            </Select>
-            <TextField
-              label={t`Description`}
-              placeholder={t`Holiday decorations`}
-              value={name}
-              onChange={setName}
-              isDisabled={busy}
-              inputProps={{ maxLength: 200 }}
-            />
-            <AriaTextField className="grid gap-1" value={note} onChange={setNote} isDisabled={busy}>
-              <Label className="text-small font-semibold">
-                <Trans>Notes</Trans>
-              </Label>
-              <TextArea className={inputClass} maxLength={500} rows={3} />
-            </AriaTextField>
-            <TextField
-              label={t`Quantity (optional)`}
-              value={quantity}
-              onChange={setQuantity}
-              isDisabled={busy}
-              isInvalid={quantityInvalid}
-              errorMessage={quantityInvalid ? t`Enter a quantity greater than zero.` : undefined}
-              inputProps={{ inputMode: 'decimal', maxLength: 17 }}
-            />
-          </>
+          <TextField
+            label={t`Description`}
+            placeholder={t`Holiday decorations`}
+            value={name}
+            onChange={setName}
+            isDisabled={busy}
+            inputProps={{
+              maxLength: 200,
+              name: 'name',
+              autoFocus: !initialName,
+              enterKeyHint: 'done',
+            }}
+          />
         )}
         <div className="kept-media-bar">
           {!documentsOnly && (
@@ -392,6 +382,91 @@ export function CaptureForm({
               </li>
             ))}
           </ul>
+        )}
+        {cache && !box && (
+          <div className="grid gap-2">
+            {destination && !changingDestination ? (
+              <div className="kept-card kept-destination">
+                <span className="kept-row-lead" aria-hidden>
+                  {destination.kind === 'place' ? <MapPin size={18} /> : <Package size={18} />}
+                </span>
+                <div className="grid min-w-0 flex-1 gap-0.5">
+                  <span className="text-small text-ink-2">
+                    <Trans>Destination</Trans>
+                  </span>
+                  <bdi className="font-semibold">{destinationLabel(cache, destination)}</bdi>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  isDisabled={busy}
+                  onPress={() => setChangingDestination(true)}
+                >
+                  <Trans>Change</Trans>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                <DestinationPicker
+                  cache={cache}
+                  value={destination}
+                  onChange={setDestination}
+                  disabled={busy}
+                />
+                {destination && (
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    className="justify-self-start"
+                    onPress={() => setChangingDestination(false)}
+                  >
+                    <Trans>Done</Trans>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        {!evidenceOnly && (
+          <details className="kept-details">
+            <summary>
+              <Trans>Details</Trans>
+            </summary>
+            <div className="grid gap-4 pt-3">
+              <Select
+                label={t`Action`}
+                selectedKey={intent}
+                isDisabled={busy}
+                items={[
+                  { id: 'record', label: t`Record existing contents` },
+                  { id: 'add', label: t`Add contents` },
+                ]}
+                onSelectionChange={(key) => setIntent(key === 'add' ? 'add' : 'record')}
+              >
+                {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
+              </Select>
+              <TextField
+                label={t`Quantity (optional)`}
+                value={quantity}
+                onChange={setQuantity}
+                isDisabled={busy}
+                isInvalid={quantityInvalid}
+                errorMessage={quantityInvalid ? t`Enter a quantity greater than zero.` : undefined}
+                inputProps={{ inputMode: 'decimal', maxLength: 17 }}
+              />
+              <AriaTextField
+                className="grid gap-1"
+                value={note}
+                onChange={setNote}
+                isDisabled={busy}
+              >
+                <Label className="text-small font-semibold">
+                  <Trans>Notes</Trans>
+                </Label>
+                <TextArea className={inputClass} maxLength={500} rows={3} />
+              </AriaTextField>
+            </div>
+          </details>
         )}
         <Button type="submit" isPending={busy} isDisabled={!canSave}>
           <Check size={18} aria-hidden />

@@ -19,6 +19,10 @@ msgstr " et "
 msgid ", "
 msgstr ", "
 
+#: src/native/main.tsx
+msgid "Add “{0}”"
+msgstr "Ajouter « {0} »"
+
 #: src/components/things/links.tsx
 msgid "…this one"
 msgstr "…celui-ci"
