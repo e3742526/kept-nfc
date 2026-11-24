@@ -995,6 +995,28 @@ describe('reads', () => {
     }
   });
 
+  it('where_is finds a named destination only in the requested location', async () => {
+    const room = ok(
+      await call(t, `/api/v1/locations/${home.id}/places`, {
+        as: ibrahim,
+        body: { name: 'Chat supply room', kindKey: 'room' },
+      }),
+      201,
+    );
+    const query = { query: 'Chat supply room', kind: 'place' as const };
+    const found = await data(louis, 'where_is', { ...query, location_id: home.id });
+    expect(found.items).toEqual([]);
+    expect(found.places).toContainEqual(
+      expect.objectContaining({
+        id: room.id,
+        location_id: home.id,
+        untrusted: { name: 'Chat supply room', path: ['Home', 'Chat supply room'] },
+      }),
+    );
+    const outside = await data(louis, 'where_is', { ...query, location_id: garage.id });
+    expect(outside.places).toEqual([]);
+  });
+
   it('search_things reads every reachable location without location_id', async () => {
     await createThing(t, ibrahim, garage, { name: 'HDMI switch' });
     const d = await data(louis, 'search_things', { query: 'HDMI' });

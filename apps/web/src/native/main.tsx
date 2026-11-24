@@ -8,6 +8,7 @@ import {
   Inbox,
   LogOut,
   MapPin,
+  MessageSquare,
   Monitor,
   Moon,
   Package,
@@ -43,6 +44,7 @@ import { isolate } from '@/lib/bidi';
 import { sep, useBytes } from '@/lib/format';
 import { setThemePref, type ThemePref, usePrefs, watchSystemTheme } from '@/lib/prefs';
 import { NativePlatformProvider, usePlatform } from './adapters';
+import { AssistantScreen } from './assistant';
 import { ScreenHeader } from './back-button';
 import {
   type CompletionState,
@@ -105,6 +107,7 @@ type Screen =
   | { kind: 'identify' }
   | { kind: 'find' | 'enroll'; box: LabelBox }
   | { kind: 'batches' }
+  | { kind: 'assistant' }
   | { kind: 'more' };
 
 type TabKey = 'home' | 'capture' | 'scan' | 'more';
@@ -120,6 +123,7 @@ function tabFor(screen: Screen): TabKey {
     case 'unplaced':
     case 'labelSheets':
     case 'batches':
+    case 'assistant':
       return 'more';
     default:
       return 'home';
@@ -1611,6 +1615,20 @@ export function Inventory({
       {screen.kind === 'batches' && (
         <Batches connection={connection} onClose={goBack} onOpen={open} onAuthError={onSignOut} />
       )}
+      {screen.kind === 'assistant' && (
+        <AssistantScreen
+          key={connection.id}
+          connection={connection}
+          cache={cache}
+          online={online}
+          onBack={goBack}
+          onOpen={(target) => open(target)}
+          onAuthError={onSignOut}
+          onInventoryChanged={() => {
+            void refresh();
+          }}
+        />
+      )}
       {screen.kind === 'more' && (
         <section className="grid gap-4">
           <h2 className="kept-card-title text-title">
@@ -1627,6 +1645,12 @@ export function Inventory({
           </section>
           <CaptureAISettings connection={connection} />
           <div className="kept-tiles">
+            <ActionTile
+              label={t`Assistant`}
+              Icon={MessageSquare}
+              tone="violet"
+              onPress={() => pushScreen({ kind: 'assistant' })}
+            />
             <ActionTile
               label={t`Print label sheets`}
               Icon={Tags}

@@ -127,7 +127,13 @@ export function linkedIds(blocks: Block[]): { kind: 'thing' | 'place'; id: strin
 const linkClass =
   'font-semibold text-ink underline decoration-ink-3 decoration-1 underline-offset-[3px] outline-none hover:decoration-ink focus-visible:outline-2 focus-visible:outline-info';
 
-function InlineView({ nodes, onNavigate }: { nodes: Inline[]; onNavigate?: () => void }) {
+type InlineNavigation = {
+  onNavigate?: () => void;
+  renderLink?: (link: Extract<Inline, { type: 'link' }>) => ReactNode;
+};
+
+function InlineView({ nodes, ...navigation }: { nodes: Inline[] } & InlineNavigation) {
+  const { onNavigate, renderLink } = navigation;
   return nodes.map((n, i) => {
     const key = `${n.type}${i}`;
     switch (n.type) {
@@ -138,10 +144,11 @@ function InlineView({ nodes, onNavigate }: { nodes: Inline[]; onNavigate?: () =>
       case 'bold':
         return (
           <strong key={key} className="font-semibold">
-            <InlineView nodes={n.children} {...(onNavigate ? { onNavigate } : {})} />
+            <InlineView nodes={n.children} {...navigation} />
           </strong>
         );
       case 'link':
+        if (renderLink) return <Fragment key={key}>{renderLink(n)}</Fragment>;
         return n.kind === 'thing' ? (
           <Link
             key={key}
@@ -170,20 +177,15 @@ function InlineView({ nodes, onNavigate }: { nodes: Inline[]; onNavigate?: () =>
 
 export function LinkOnlyMarkdown({
   blocks,
-  onNavigate,
-}: {
-  blocks: Block[];
-  /** A link was followed (the phone's sheet closes so the page shows). */
-  onNavigate?: () => void;
-}): ReactNode {
-  const nav = onNavigate ? { onNavigate } : {};
+  ...navigation
+}: { blocks: Block[] } & InlineNavigation): ReactNode {
   return (
     <div dir="auto" className="grid gap-2 [overflow-wrap:anywhere]">
       {blocks.map((b, i) =>
         b.type === 'paragraph' ? (
           // biome-ignore lint/suspicious/noArrayIndexKey: blocks have no identity beyond order
           <p key={i} className="m-0">
-            <InlineView nodes={b.children} {...nav} />
+            <InlineView nodes={b.children} {...navigation} />
           </p>
         ) : b.ordered ? (
           // biome-ignore lint/suspicious/noArrayIndexKey: as above
@@ -191,7 +193,7 @@ export function LinkOnlyMarkdown({
             {b.items.map((item, j) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: as above
               <li key={j}>
-                <InlineView nodes={item} {...nav} />
+                <InlineView nodes={item} {...navigation} />
               </li>
             ))}
           </ol>
@@ -201,7 +203,7 @@ export function LinkOnlyMarkdown({
             {b.items.map((item, j) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: as above
               <li key={j}>
-                <InlineView nodes={item} {...nav} />
+                <InlineView nodes={item} {...navigation} />
               </li>
             ))}
           </ul>

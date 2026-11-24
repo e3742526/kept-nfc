@@ -2,6 +2,8 @@ import { I18nProvider } from '@lingui/react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { assistantPaths } from '@/api/assistant/paths';
+import type { AskBody, ConfirmBody, Proposal } from '@/api/assistant/types';
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
@@ -863,6 +865,110 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('adds and modifies inventory in Assistant only after reviewing the proposal', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const locationId = env.rooms[0]?.locationId;
+    if (!locationId) throw new Error('The fixture needs an inventory location');
+    const context = { kind: 'location' as const, id: locationId, locationId };
+    const thread = { id: 'chat', title: null, context };
+    const messages: { id: string; role: 'user'; parts: { type: 'text'; text: string }[] }[] = [];
+    const proposals: Proposal[] = [];
+    const inventory: string[] = [];
+    const ask = vi.fn();
+    const original = env.adapters.transport.request;
+    const request = vi
+      .spyOn(env.adapters.transport, 'request')
+      .mockImplementation(
+        async <T,>(conn: Connection, path: string, options?: NativeRequestOptions): Promise<T> => {
+          if (path === assistantPaths.threads)
+            return (options?.method === 'POST' ? thread : { items: [] }) as T;
+          if (path === assistantPaths.thread(thread.id))
+            return { thread, messages, proposals: proposals.map((p) => ({ ...p })) } as T;
+          if (path === assistantPaths.threadTurns(thread.id)) {
+            const body = options?.body as AskBody;
+            ask(body);
+            const id = String(proposals.length + 1);
+            messages.push({ id, role: 'user', parts: [{ type: 'text', text: body.text }] });
+            const adding = id === '1';
+            proposals.push({
+              id,
+              batchId: id,
+              turnId: id,
+              locationId,
+              tool: adding ? 'add_thing' : 'update_thing',
+              args: adding
+                ? { items: [{ name: 'Socket wrench', quantity: 2 }] }
+                : { thing_id: env.boxId, fields: { name: 'Metric socket wrench' } },
+              argsHash: `fixture-${id}`,
+              before: adding ? {} : { name: 'Socket wrench' },
+              refs: {
+                [locationId]: { kind: 'location', name: 'Home', path: [] },
+                [env.boxId]: { kind: 'thing', name: 'Socket wrench', path: ['Garage'] },
+              },
+              status: 'open',
+              expiresAt: new Date(Date.now() + 600_000).toISOString(),
+            });
+            return { turnId: id } as T;
+          }
+          if (path.startsWith(assistantPaths.turn('')))
+            return { status: 'done', messages, proposals } as T;
+          if (path === assistantPaths.proposalsConfirm) {
+            const body = options?.body as ConfirmBody;
+            const proposal = proposals.find((p) => p.batchId === body.batchId);
+            if (!proposal) throw new Error('The request must confirm an existing proposal');
+            expect(body.proposals).toEqual([{ id: proposal.id, argsHash: proposal.argsHash }]);
+            proposal.status = 'confirmed';
+            inventory.push(proposal.tool);
+            return { results: [{ id: proposal.id, status: 'confirmed' }] } as T;
+          }
+          return original<T>(conn, path, options);
+        },
+      );
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
+    );
+    await user.click(await screen.findByRole('button', { name: 'Assistant' }));
+    const question = screen.getByRole('textbox', { name: 'Ask the assistant' });
+    await user.type(question, 'Add two socket wrenches');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(await screen.findByText('Socket wrench')).toBeVisible();
+    expect(ask).toHaveBeenCalledWith({
+      text: 'Add two socket wrenches',
+      context: { kind: 'location', id: locationId },
+      locale: 'en',
+    });
+    expect(inventory).toEqual([]);
+    await user.click(screen.getByRole('button', { name: 'Confirm 1' }));
+    await waitFor(() => expect(inventory).toEqual(['add_thing']));
+    await user.type(question, 'Rename it to Metric socket wrench');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(await screen.findByText('Metric socket wrench')).toBeVisible();
+    expect(inventory).toEqual(['add_thing']);
+    await user.click(screen.getByRole('button', { name: 'Confirm 1' }));
+    await waitFor(() => expect(inventory).toEqual(['add_thing', 'update_thing']));
+    expect(
+      request.mock.calls
+        .filter(([, , options]) => options?.method === 'POST')
+        .map(([, path]) => path),
+    ).toEqual([
+      assistantPaths.threads,
+      assistantPaths.threadTurns(thread.id),
+      assistantPaths.proposalsConfirm,
+      assistantPaths.threadTurns(thread.id),
+      assistantPaths.proposalsConfirm,
+    ]);
+  });
+
   it('uses an authorized ChatGPT photo suggestion only when accepted, then skips server suggestions', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({

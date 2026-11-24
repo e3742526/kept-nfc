@@ -90,6 +90,17 @@ describe('the tools as the model sees them', () => {
 });
 
 describe('the instructions', () => {
+  it('grounds edits in exact inventory records, quantities and destinations', () => {
+    const text = instructionsFor({ locale: 'en', locations: [], context: null, writes: true });
+    expect(text).toContain('If multiple records still match');
+    expect(text).toContain('relative change');
+    expect(text).toContain('only the fields');
+    expect(text).toContain('Never create a destination');
+    expect(
+      instructionsFor({ locale: 'en', locations: [], context: null, writes: false }),
+    ).not.toContain('Never create a destination');
+  });
+
   it("answer in each of Kept's languages", () => {
     expect(['ar', 'de', 'en', 'es', 'fr', 'it', 'uk', 'vi'].map(languageOf)).toEqual([
       'Arabic',

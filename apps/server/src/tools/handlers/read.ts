@@ -272,15 +272,20 @@ export const WHERE_IS_LIMIT = 5;
 export const whereIs: Handler<'where_is'> = {
   action: 'content.view',
   global: true,
-  meaning: (input) => input.query,
+  meaning: (input) => (input.kind === 'place' ? undefined : input.query),
   run: async (op, input) => {
+    const findPlace = input.kind === 'place';
     const q = SearchQuery.parse({
       q: input.query,
       locationId: op.locations.map((l) => l.id),
-      kind: 'things',
+      kind: findPlace ? 'places' : 'things',
       limit: WHERE_IS_LIMIT,
     });
     const res = await search(op.tx, op.client, op.scope, null, q, op.semantic);
+    if (findPlace) {
+      const places = await Promise.all(res.places.map(({ id }) => placeRefOf(op.client, id)));
+      return { data: { items: [], places } };
+    }
     const items = await summaries(op, res.things.items);
     const mode = searchModeOf(
       op.semantic,

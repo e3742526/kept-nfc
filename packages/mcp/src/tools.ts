@@ -472,12 +472,18 @@ export const TOOL_DEFS = Object.freeze({
     name: 'where_is',
     title: 'Where is it?',
     description:
-      'Where is a thing? Give a name or words from it; answers the best matches with their full place path.',
+      'Find a thing by name, serial or label code, or a destination with kind=place. Returns matching records and their full paths.',
     scope: 'read',
     module: null,
     since: 6,
-    input: z.object({ location_id: locationId, query: shortText(200) }),
-    output: searchList(thingSummary.extend({ uncertain: z.boolean() })),
+    input: z.object({
+      location_id: locationId,
+      query: shortText(200),
+      kind: z.enum(['thing', 'place']).optional(),
+    }),
+    output: searchList(thingSummary.extend({ uncertain: z.boolean() })).extend({
+      places: z.array(placeRef).optional(),
+    }),
   }),
   get_thing: tool({
     name: 'get_thing',

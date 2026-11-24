@@ -2,11 +2,12 @@ import { TOOL_DEFS, type ToolName } from '@kept/mcp';
 import type { AssistantContext, Role } from '@kept/shared';
 import { z } from 'zod';
 import type { ToolSpec } from '../ai/convert.js';
+import { viewerRefusal } from './words.js';
 
 // The assistant's instructions and tool specs (D22, D24, D123, D179).
 // Versioned: `PROMPT_VERSION` is stored in each ledger row's `prompt_version`, never the text.
 
-export const PROMPT_VERSION = 'assistant-2';
+export const PROMPT_VERSION = 'assistant-3';
 
 const LANGUAGES: Record<string, string> = {
   ar: 'Arabic',
@@ -56,9 +57,26 @@ export function instructionsFor(p: PromptInput): string {
       })),
     )}`,
   ];
+  if (p.writes) {
+    lines.push(
+      'Before editing, moving or adjusting an existing item, use where_is to resolve its exact record. Search by label code or serial number when supplied. If multiple records still match, ask which one and distinguish the candidates by location, box or code.',
+      'Treat a stated total as a total and a relative change as a delta. Read the current quantity before proposing a relative change to a total field. Ask if the intent is unclear. Update only the fields the person asked to change.',
+      'Use where_is with kind=place to find a named room, shelf or other place. Use where_is with kind=thing for a box. Use the returned ID as the destination. If the path is ambiguous, ask which one. Never create a destination unless explicitly requested. A list of things the person has in a room is a request to add inventory; preserve their names and quantities.',
+      'Use the location of the current page unless the person specifies another one. With no location in the question or context, one where_is call without location_id can search every visible location.',
+    );
+  }
   if (p.locations.some((l) => !l.canWrite)) {
     lines.push(
-      'Where can_change is false the person is a viewer: never propose a change there; say they can ask an admin.',
+      'Where can_change is false, never propose a change. If the person requests a change there, use the viewer_refusal sentence below, replacing {name} with that location’s name as data.',
+      JSON.stringify(
+        p.locations
+          .filter((l) => !l.canWrite)
+          .map((l) => ({
+            location_id: l.id,
+            viewer_refusal: viewerRefusal(p.locale, 'LOCATION').replace('LOCATION', '{name}'),
+            untrusted: { name: l.name },
+          })),
+      ),
     );
   }
   if (p.context && p.context.kind !== 'none') {

@@ -554,7 +554,7 @@ function AddFields({ row, edit, onEdit }: { row: CardRow; edit: Edit; onEdit: (e
 }
 
 /** A row's fields, then its location. */
-function FieldList({ row, fields }: { row: CardRow; fields: readonly Field[] }) {
+export function FieldList({ row, fields }: { row: CardRow; fields: readonly Field[] }) {
   const { t } = useLingui();
   const label = useFieldLabels();
   return fields.length ? (
@@ -607,6 +607,19 @@ function FieldList({ row, fields }: { row: CardRow; fields: readonly Field[] }) 
   );
 }
 
+export function ProposalRowTitle({ row, children }: { row: CardRow; children: ReactNode }) {
+  const verbs = useVerbLabels();
+  return (
+    <span className="flex flex-wrap items-center gap-x-2 gap-y-1 font-semibold text-[14.5px] leading-snug">
+      <span className="font-semibold text-[11.5px] text-ink-3 uppercase tracking-[.06em]">
+        {verbs[row.verb]}
+      </span>
+      {row.count ? <Count n={row.count.n} of={row.count.of} /> : null}
+      {children}
+    </span>
+  );
+}
+
 /** An add row's fields with the person's edits in place of what was proposed. */
 function EditedFieldList({ row, edit }: { row: CardRow; edit: Edit }) {
   const whereVal = useWhereVal(row.locationId);
@@ -640,13 +653,9 @@ function Row({
   const name = edit?.name ?? row.editable?.name ?? '';
 
   const title = (
-    <span className="flex flex-wrap items-center gap-x-2 gap-y-1 font-semibold text-[14.5px] leading-snug">
-      <span className="font-semibold text-[11.5px] text-ink-3 uppercase tracking-[.06em]">
-        {verbs[row.verb]}
-      </span>
-      {row.count ? <Count n={row.count.n} of={row.count.of} /> : null}
+    <ProposalRowTitle row={row}>
       <TargetView row={row} {...nav} />
-    </span>
+    </ProposalRowTitle>
   );
   const fieldList =
     row.editable && edit ? (
