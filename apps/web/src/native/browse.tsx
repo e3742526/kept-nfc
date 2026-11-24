@@ -8,6 +8,7 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
+import { sep } from '@/lib/format';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
@@ -15,6 +16,7 @@ import { CategoryEditor } from './category-editor';
 import { type InventoryCache, inventoryPath, localInventorySearch, previewUrl } from './inventory';
 import type { Target } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
+import { PhotoSearchActions, type VisualSearchIntent } from './visual-search';
 
 type Option = { id: string; name: string };
 type BrowsePage = Page<ThingRow> & { total?: number; categoryInheritedIds?: string[] };
@@ -161,6 +163,7 @@ export function Browse({
   onFilters,
   onBack,
   onOpen,
+  onPhotoSearch,
   onRooms,
   onAuthError,
   onInventoryChanged,
@@ -172,6 +175,7 @@ export function Browse({
   onFilters: (next: BrowseFilters) => void;
   onBack: () => void;
   onOpen: (target: Target) => void;
+  onPhotoSearch: (mode: VisualSearchIntent['mode']) => void;
   onRooms: () => void;
   onAuthError: (reason: 'expired' | 'restored') => void;
   onInventoryChanged: () => void;
@@ -328,6 +332,7 @@ export function Browse({
         onChange={(q) => update({ q })}
         inputProps={{ maxLength: 200 }}
       />
+      <PhotoSearchActions onOpen={onPhotoSearch} />
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" aria-expanded={advanced} onPress={() => setAdvanced(!advanced)}>
           <Trans>Filters</Trans>
@@ -475,7 +480,8 @@ export function Browse({
       {(advanced ||
         f.rooms.length + f.tags.length + f.bins.length + f.types.length + f.brands.length > 0) && (
         <p className="m-0 text-small">
-          {f.groupMode === 'any' ? t`Match any filter group` : t`Match every filter group`} ·{' '}
+          {f.groupMode === 'any' ? t`Match any filter group` : t`Match every filter group`}
+          {sep()}
           {f.categoryMode === 'all'
             ? t`Require all selected categories`
             : t`Match any selected category`}

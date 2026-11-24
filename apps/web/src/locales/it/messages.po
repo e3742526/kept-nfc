@@ -5696,6 +5696,10 @@ msgstr "Bicicletta"
 msgid "Bike"
 msgstr "Bicicletta"
 
+#: src/native/visual-search.tsx
+msgid "Bin photo"
+msgstr "Foto del contenitore"
+
 #: src/map/labels.ts
 msgid "Bistro set"
 msgstr "Set bistrot"
@@ -6974,6 +6978,10 @@ msgstr "Ha controllato i tuoi luoghi"
 msgid "Checking it on this device{0}{percent}%"
 msgstr "Controllo su questo dispositivo{0}{percent}%"
 
+#: src/native/visual-search.tsx
+msgid "Checking photo search…"
+msgstr "Verifica della ricerca nelle foto…"
+
 #: src/components/import/archive-step.tsx
 msgid "Checking the file"
 msgstr "Controllo del file"
@@ -7030,6 +7038,10 @@ msgstr "Scegli un luogo."
 msgid "Choose a new password"
 msgstr "Scegli una nuova password"
 
+#: src/native/visual-search.tsx
+msgid "Choose a photo"
+msgstr "Scegli una foto"
+
 #. placeholder {0}: fmt.num(VISUAL_IMAGE_MAX_BYTES / 1024 ** 2)
 #: src/components/search/visual-search.tsx
 msgid "Choose a photo up to {0} MB."
@@ -7043,6 +7055,10 @@ msgstr "Scegli un PIN da 6 a 12 cifre."
 #: src/components/tray/tray.tsx
 msgid "Choose a place"
 msgstr "Scegli un posto"
+
+#: src/native/visual-search.tsx
+msgid "Choose a readable photo for visual search."
+msgstr "Scegli una foto leggibile per la ricerca visiva."
 
 #: src/components/moving/box-write.tsx
 msgid "Choose a room"
@@ -9395,6 +9411,10 @@ msgstr "Profondità"
 #: src/map/floor-plan/panel.tsx
 msgid "Depth (m)"
 msgstr "Profondità (m)"
+
+#: src/native/visual-search.tsx
+msgid "Describe what you are looking for"
+msgstr "Descrivi ciò che cerchi"
 
 #: src/components/history/labels.ts
 #: src/native/capture-form.tsx
@@ -13413,6 +13433,21 @@ msgstr "{label}: aumenta"
 msgid "Indexed {indexed} of {total} things"
 msgstr "Indicizzati {indexed} oggetti su {total}"
 
+#. placeholder {0}: fmt.num(coverage.ready)
+#: src/native/visual-search.tsx
+msgid "Indexed photos: {0}"
+msgstr "Foto indicizzate: {0}"
+
+#. placeholder {0}: fmt.num(coverage.failed)
+#: src/native/visual-search.tsx
+msgid "Indexing failed: {0}"
+msgstr "Foto con errori di indicizzazione: {0}"
+
+#. placeholder {0}: fmt.num(coverage.paused)
+#: src/native/visual-search.tsx
+msgid "Indexing paused: {0}"
+msgstr "Foto con indicizzazione in pausa: {0}"
+
 #: src/components/tags/palette.ts
 msgid "Indigo"
 msgstr "Indaco"
@@ -14027,6 +14062,10 @@ msgstr "È giusta"
 #: src/native/record-history.tsx
 msgid "Item"
 msgstr "Articolo"
+
+#: src/native/visual-search.tsx
+msgid "Item photo"
+msgstr "Foto dell’oggetto"
 
 #: src/components/import/homebox-choices.tsx
 msgid "Items with quantity 0"
@@ -19839,6 +19878,10 @@ msgstr "Apri richiesta"
 msgid "Open Connections"
 msgstr "Apri Connessioni"
 
+#: src/native/visual-search.tsx
+msgid "Open containing bin"
+msgstr "Apri il contenitore in cui si trova"
+
 #: src/components/location-position.tsx
 msgid "Open in maps"
 msgstr "Apri nelle mappe"
@@ -19869,6 +19912,10 @@ msgstr "Apri Prestiti"
 #: src/components/reports/progress.tsx
 msgid "Open PDF"
 msgstr "Apri il PDF"
+
+#: src/native/visual-search.tsx
+msgid "Open record"
+msgstr "Apri la scheda"
 
 #: src/components/agenda/agenda-row.tsx
 msgid "Open Schedules"
@@ -20876,6 +20923,14 @@ msgstr "Foto o file"
 msgid "Photo search is unavailable."
 msgstr "La ricerca nelle foto non è disponibile."
 
+#: src/native/visual-search.tsx
+msgid "Photo search needs a connection."
+msgstr "La ricerca nelle foto richiede una connessione."
+
+#: src/native/visual-search.tsx
+msgid "Photo search uses location only. Browse filters apply to ordinary inventory results."
+msgstr "La ricerca nelle foto filtra solo per posizione. I filtri di esplorazione valgono per i normali risultati dell’inventario."
+
 #: src/native/capture-ai.tsx
 msgid "Photo suggestions need Apple Intelligence on iOS 27 or later."
 msgstr "I suggerimenti da foto richiedono Apple Intelligence su iOS 27 o versioni successive."
@@ -21339,6 +21394,10 @@ msgstr "Posizione rimossa"
 #: src/components/search/visual-search.tsx
 msgid "Possible photo matches"
 msgstr "Possibili corrispondenze nelle foto"
+
+#: src/native/visual-search.tsx
+msgid "Possible photo matches. Check the stored photos to confirm."
+msgstr "Possibili corrispondenze. Controlla le foto archiviate per confermarle."
 
 #: src/map/labels.ts
 msgid "Power strip"
@@ -24254,6 +24313,10 @@ msgstr "Cerca nei conteggi"
 msgid "Search currencies"
 msgstr "Cerca valute"
 
+#: src/native/visual-search.tsx
+msgid "Search did not find a close match among indexed photos."
+msgstr "La ricerca non ha trovato corrispondenze simili tra le foto indicizzate."
+
 #: src/components/admin/embeddings-source.tsx
 msgid "Search embeddings"
 msgstr "Embedding di ricerca"
@@ -25105,6 +25168,10 @@ msgstr "Scelta multipla"
 #: src/components/search/visual-search.tsx
 msgid "Several recorded locations may match."
 msgstr "Potrebbero corrispondere più posizioni registrate."
+
+#: src/native/visual-search.tsx
+msgid "Several recorded locations may match. Check the stored photos."
+msgstr "Potrebbero corrispondere più posizioni registrate. Controlla le foto archiviate."
 
 #: src/routes/_app/admin.settings.tsx
 msgid "Several things in one photo"
@@ -28117,6 +28184,10 @@ msgstr "Chi gestisce questo server deve salvare il kit di recupero prima della p
 msgid "The photo request wasn't sent: AI may be paused, or the provider refused the key."
 msgstr "La richiesta con la foto non è stata inviata: l'IA potrebbe essere in pausa, o il fornitore ha rifiutato la chiave."
 
+#: src/native/visual-search.tsx
+msgid "The photo search encoder is unavailable."
+msgstr "Il codificatore per la ricerca nelle foto non è disponibile."
+
 #. placeholder {0}: num(r.value)
 #. placeholder {1}: num(converted)
 #: src/components/inbox/reading-review.tsx
@@ -28516,6 +28587,10 @@ msgstr "Queste etichette occupano {n} fogli; i successivi iniziano dall'etichett
 #: src/components/import/homebox-choices.tsx
 msgid "These look like boxes"
 msgstr "Questi sembrano scatole"
+
+#: src/native/visual-search.tsx
+msgid "These matches are weak. Check the stored photos before relying on a location."
+msgstr "Queste corrispondenze sono deboli. Controlla le foto archiviate prima di fare affidamento sulla posizione."
 
 #: src/components/registries/type-editor.tsx
 msgid "These things change type:"
@@ -29178,6 +29253,10 @@ msgstr "Questa richiesta è terminata. Ricomincia da Home Assistant."
 #: src/routes/oauth/consent.tsx
 msgid "This request isn't valid any more"
 msgstr "Questa richiesta non è più valida"
+
+#: src/native/visual-search.tsx
+msgid "This search photo is no longer available. Choose it again."
+msgstr "La foto di ricerca non è più disponibile. Sceglila di nuovo."
 
 #: src/components/admin/embeddings-source.tsx
 #: src/components/ai/cap-bars.tsx
@@ -30409,6 +30488,11 @@ msgstr "Rinvio di {0} annullato"
 msgid "Unspecified"
 msgstr "Non specificato"
 
+#. placeholder {0}: fmt.num(unsupported)
+#: src/native/visual-search.tsx
+msgid "Unsupported photos: {0}"
+msgstr "Foto non supportate: {0}"
+
 #: src/components/boxcheck/box-check-screen.tsx
 msgid "Unticked become <0>not here</0> when you finish."
 msgstr "Ciò che non è spuntato diventa <0>non qui</0> quando finisci."
@@ -30564,6 +30648,10 @@ msgstr "Aggiorna questo server SheepKeep per accedere con Apple."
 msgid "Update this SheepKeep server to use this action."
 msgstr "Aggiorna questo server SheepKeep per usare l’azione."
 
+#: src/native/visual-search.tsx
+msgid "Update your SheepKeep server to search photos."
+msgstr "Aggiorna il server SheepKeep per cercare nelle foto."
+
 #: src/components/pull-to-refresh.tsx
 msgid "Updated"
 msgstr "Aggiornato"
@@ -30709,6 +30797,11 @@ msgstr "Usalo"
 #: src/routes/signin/two-factor.tsx
 msgid "Use my authenticator app instead"
 msgstr "Usa la mia app di autenticazione"
+
+#. placeholder {0}: fmt.num(NATIVE_VISUAL_SOURCE_MAX_BYTES / 1024 ** 2)
+#: src/native/visual-search.tsx
+msgid "Use one photo up to {0} MB. Search photos are temporary."
+msgstr "Usa una sola foto fino a {0} MB. Le foto di ricerca sono temporanee."
 
 #: src/components/fuel/fuel-trends.tsx
 msgid "Use the arrow keys to move between points."
@@ -31120,6 +31213,11 @@ msgstr "In attesa del budget IA fino al {0}."
 #: src/components/inbox/inbox-list.tsx
 msgid "Waiting for the AI provider"
 msgstr "In attesa del fornitore di IA"
+
+#. placeholder {0}: fmt.num(coverage.pending)
+#: src/native/visual-search.tsx
+msgid "Waiting to index: {0}"
+msgstr "Foto in attesa di indicizzazione: {0}"
 
 #: src/components/scan/session/summary.tsx
 msgid "Waiting to save. It will save when you're online."
@@ -32190,6 +32288,10 @@ msgstr "Puoi vedere i tuoi luoghi ma non modificarli, quindi qui non c'è nulla 
 msgid "You changed <0>{name}</0>."
 msgstr "Hai modificato <0>{name}</0>."
 
+#: src/native/visual-search.tsx
+msgid "You do not have permission to search photos in this location."
+msgstr "Non hai il permesso di cercare nelle foto di questa posizione."
+
 #: src/components/page.tsx
 msgid "You don't have permission to do that."
 msgstr "Non hai l’autorizzazione per farlo."
@@ -32634,6 +32736,14 @@ msgstr "Suggerisci articoli"
 
 msgid "Photo review"
 msgstr "Revisione della foto"
+
+#: src/native/visual-search.tsx
+msgid "Photo search is not enabled on this server."
+msgstr "La ricerca nelle foto è disattivata su questo server."
+
+#: src/native/visual-search.tsx
+msgid "Photo search is temporarily unavailable."
+msgstr "La ricerca nelle foto è temporaneamente non disponibile."
 
 msgid "Review multiple items"
 msgstr "Rivedi più articoli"

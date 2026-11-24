@@ -95,6 +95,11 @@ type NativeKept = {
     ifMatch?: string;
     idempotencyKey?: string;
   }): Promise<NativeResponse>;
+  uploadVisualQuery(input: {
+    context: string;
+    image: string;
+    locationIds?: string;
+  }): Promise<NativeResponse>;
   outbox(input: { context: string; action: string } & Record<string, string | number>): Promise<{
     data?: string;
   }>;

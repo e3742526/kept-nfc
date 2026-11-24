@@ -89,11 +89,18 @@ import { PhotoReview } from './photo-review';
 import { RecordScreen } from './record';
 import { Rooms } from './rooms';
 import { Trash } from './trash';
+import { PhotoSearchActions, type VisualSearchIntent, VisualSearchScreen } from './visual-search';
 import './native.css';
 
 type Screen =
   | { kind: 'home' }
-  | { kind: 'record'; target: Target; backToRooms?: boolean; backToBrowse?: boolean }
+  | {
+      kind: 'record';
+      target: Target;
+      backToRooms?: boolean;
+      backToBrowse?: boolean;
+      backToVisual?: boolean;
+    }
   | { kind: 'new'; place?: Target }
   | { kind: 'rooms' }
   | { kind: 'unplaced' }
@@ -111,6 +118,7 @@ type Screen =
   | { kind: 'batches' }
   | { kind: 'assistant' }
   | { kind: 'browse' }
+  | { kind: 'visualSearch'; intent: VisualSearchIntent }
   | { kind: 'photoReview'; id: string }
   | { kind: 'more' };
 
@@ -546,6 +554,15 @@ export function Inventory({
     setScreen((current) => (current === screen ? { kind } : current));
   };
   const showTabs = screen.kind !== 'record' && screen.kind !== 'find' && screen.kind !== 'enroll';
+  const visualScreen =
+    screen.kind === 'visualSearch'
+      ? screen
+      : backStack.current.findLast(
+          (entry): entry is Extract<Screen, { kind: 'visualSearch' }> =>
+            entry.kind === 'visualSearch',
+        );
+  const openVisualRecord = (target: Target) =>
+    pushScreen({ kind: 'record', target, backToVisual: true });
   const open = (target: Target, backToRooms = false) => {
     setScreen({ kind: 'record', target, backToRooms });
     if (
@@ -1327,6 +1344,18 @@ export function Inventory({
       </div>
       {screen.kind === 'home' && (
         <section className="grid gap-4">
+          <PhotoSearchActions
+            onOpen={(mode) =>
+              pushScreen({
+                kind: 'visualSearch',
+                intent: {
+                  mode,
+                  text: query,
+                  ...(locationFilter ? { locationId: locationFilter } : {}),
+                },
+              })
+            }
+          />
           {query.trim() ? (
             canWrite && (
               <Button
@@ -1514,6 +1543,18 @@ export function Inventory({
             )}
         </section>
       )}
+      {visualScreen && (
+        <VisualSearchScreen
+          connection={connection}
+          visible={screen.kind === 'visualSearch'}
+          online={online}
+          intent={visualScreen.intent}
+          cache={cache}
+          onOpen={openVisualRecord}
+          onBack={goBack}
+          onAuthError={onSignOut}
+        />
+      )}
       {screen.kind === 'record' && (
         <RecordScreen
           key={screen.target.id}
@@ -1524,13 +1565,13 @@ export function Inventory({
           syncing={working}
           online={online}
           onClose={
-            screen.backToBrowse
+            screen.backToBrowse || screen.backToVisual
               ? goBack
               : screen.backToRooms
                 ? () => setScreen({ kind: 'rooms' })
                 : goHome
           }
-          onOpen={open}
+          onOpen={screen.backToVisual ? openVisualRecord : open}
           onCache={cacheDetail}
           onCreateBox={() => setScreen({ kind: 'new', place: screen.target })}
           onCapture={(destination, location) =>
@@ -1539,7 +1580,9 @@ export function Inventory({
           onInventoryChanged={() => {
             void refresh();
           }}
-          onLabel={(kind, box) => setScreen({ kind, box })}
+          onLabel={(kind, box) =>
+            screen.backToVisual ? pushScreen({ kind, box }) : setScreen({ kind, box })
+          }
           onAuthError={onSignOut}
         />
       )}
@@ -1629,9 +1672,11 @@ export function Inventory({
             ) === true
           }
           onClearFindTarget={() => setSavedFindTarget(undefined)}
-          onClose={() =>
-            open({ id: screen.box.id, kind: 'thing', locationId: screen.box.locationId })
-          }
+          onClose={() => {
+            const back = backStack.current.at(-1);
+            if (back?.kind === 'record' && back.backToVisual) goBack();
+            else open({ id: screen.box.id, kind: 'thing', locationId: screen.box.locationId });
+          }}
           onAuthError={onSignOut}
         />
       )}
@@ -1719,6 +1764,9 @@ export function Inventory({
           }}
           onBack={goBack}
           onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onPhotoSearch={(mode) =>
+            pushScreen({ kind: 'visualSearch', intent: { mode, text: browseFilters.q } })
+          }
           onRooms={() => pushScreen({ kind: 'rooms' })}
           onInventoryChanged={() => {
             void refresh();

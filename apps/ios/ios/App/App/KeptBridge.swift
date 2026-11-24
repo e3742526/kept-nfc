@@ -3,11 +3,13 @@ import Capacitor
 import CoreImage
 import CryptoKit
 import Foundation
+import ImageIO
 import KeptNativeStore
 import OSLog
 import QuickLook
 import Security
 import UIKit
+import UniformTypeIdentifiers
 
 final class KeptViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
@@ -34,7 +36,7 @@ struct KeptConnection: Codable, Equatable {
 
 enum KeptNativeError: LocalizedError {
     case invalidServer, missingSession, invalidRequest, signInFailed, appleSignInUnsupported
-    case busy, keychain, storage, previewUnavailable
+    case busy, keychain, storage, previewUnavailable, invalidVisualPhoto
 
     var errorDescription: String? {
         switch self {
@@ -47,7 +49,52 @@ enum KeptNativeError: LocalizedError {
         case .keychain: return "The iPhone could not save or read the session in Keychain."
         case .storage: return "SheepKeep could not save on this iPhone. Check available storage and try again."
         case .previewUnavailable: return "SheepKeep could not open this preview. Close any open sheet and try again."
+        case .invalidVisualPhoto: return "Choose a readable photo for visual search."
         }
+    }
+}
+
+private enum VisualPhotoJPEG {
+    static let maxSourceBytes = 24 * 1024 * 1024
+    private static let maxOutputBytes = 8 * 1024 * 1024
+    private static let maxSourcePixels = 100_000_000
+    private static let allowedTypes: Set<String> = [
+        "public.jpeg", "public.png", "org.webmproject.webp", "public.heic", "public.heif"
+    ]
+    private static let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+
+    static func query(_ base64: String) -> Data? {
+        guard base64.utf8.count <= maxSourceBytes * 4 / 3,
+              let bytes = Data(base64Encoded: base64), !bytes.isEmpty,
+              let source = CGImageSourceCreateWithData(bytes as CFData, sourceOptions)
+        else { return nil }
+        return jpeg(source)
+    }
+
+    static func display(_ url: URL) -> Data? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, sourceOptions) else { return nil }
+        return jpeg(source)
+    }
+
+    private static func jpeg(_ source: CGImageSource) -> Data? {
+        guard let type = CGImageSourceGetType(source), allowedTypes.contains(type as String),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, sourceOptions) as? [String: Any],
+              let width = props[kCGImagePropertyPixelWidth as String] as? Int,
+              let height = props[kCGImagePropertyPixelHeight as String] as? Int,
+              width > 0, height > 0, width <= maxSourcePixels / height
+        else { return nil }
+        let options = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 2048
+        ] as CFDictionary
+        guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
+        let output = NSMutableData()
+        guard let writer = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil) else { return nil }
+        // Encode only the upright pixels. Do not carry source EXIF or GPS into the inference input.
+        CGImageDestinationAddImage(writer, thumbnail, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
+        guard CGImageDestinationFinalize(writer), output.length <= maxOutputBytes else { return nil }
+        return output as Data
     }
 }
 
@@ -471,6 +518,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "captureChatGPTModels", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "suggestCaptureName", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "request", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "uploadVisualQuery", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "outbox", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "uploadOriginal", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "scanTag", returnType: CAPPluginReturnPromise),
@@ -644,6 +692,41 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    @objc func uploadVisualQuery(_ call: CAPPluginCall) {
+        run(call) {
+            let connection = try self.requireConnection(call)
+            guard let image = call.getString("image") else { throw KeptNativeError.invalidVisualPhoto }
+            var path = "/api/v1/visual-search/input"
+            if let rawScope = call.getString("locationIds") {
+                let locations = rawScope.split(separator: ",", omittingEmptySubsequences: false)
+                guard locations.count <= 100, locations.allSatisfy({ UUID(uuidString: String($0)) != nil })
+                else { throw KeptNativeError.invalidRequest }
+                path += "?locationIds=\(rawScope)"
+            }
+            guard let jpeg = await Task.detached(priority: .userInitiated, operation: {
+                VisualPhotoJPEG.query(image)
+            }).value else { throw KeptNativeError.invalidVisualPhoto }
+            guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+            var request = try KeptHTTP.request(connection.origin, path: path, method: "POST", connection: connection)
+            request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+            request.httpBody = jpeg
+            let (data, response) = try await KeptHTTP.send(request)
+            if (try? KeptKeychain.read()) != connection {
+                struct Input: Decodable { let inputId: UUID }
+                if response.statusCode == 201,
+                   let input = try? JSONDecoder().decode(Input.self, from: data),
+                   let cancel = try? KeptHTTP.request(
+                       connection.origin, path: "/api/v1/visual-search/input/\(input.inputId.uuidString.lowercased())",
+                       method: "DELETE", connection: connection
+                   ) {
+                    _ = try? await KeptHTTP.send(cancel)
+                }
+                throw KeptNativeError.missingSession
+            }
+            call.resolve(["status": response.statusCode, "body": String(decoding: data, as: UTF8.self)])
+        }
+    }
+
     @objc func outbox(_ call: CAPPluginCall) {
         run(call) {
             let connection = try self.requireConnection(call)
@@ -748,8 +831,34 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             request.setValue(String(original.file.bytes), forHTTPHeaderField: "Content-Length")
             let (data, response) = try await KeptHTTP.send(request, original: url)
             guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+            if (200..<300).contains(response.statusCode), original.file.role == "photo" {
+                // The original remains usable even if the server cannot accept its display.
+                try? await self.uploadPhotoDisplay(connection, original: url, response: data)
+                guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+            }
             call.resolve(["status": response.statusCode, "body": String(decoding: data, as: UTF8.self)])
         }
+    }
+
+    @MainActor private func uploadPhotoDisplay(
+        _ connection: KeptConnection, original: URL, response: Data
+    ) async throws {
+        struct File: Decodable { let id: UUID; let derivativeState: String }
+        guard let file = try? JSONDecoder().decode(File.self, from: response),
+              file.derivativeState != "ready",
+              let jpeg = await Task.detached(priority: .utility, operation: {
+                  VisualPhotoJPEG.display(original)
+              }).value
+        else { return }
+        guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+        let path = "/api/v1/files/\(file.id.uuidString.lowercased())/display"
+        var request = try KeptHTTP.request(connection.origin, path: path, method: "PUT", connection: connection)
+        request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+        request.setValue(String(jpeg.count), forHTTPHeaderField: "Content-Length")
+        request.setValue(SHA256.hash(data: jpeg).map { String(format: "%02x", $0) }.joined(),
+                         forHTTPHeaderField: "X-Kept-Sha256")
+        request.httpBody = jpeg
+        _ = try await KeptHTTP.send(request)
     }
 
     @objc func scanTag(_ call: CAPPluginCall) {
@@ -1210,6 +1319,9 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             do { try await operation() }
             catch let error as OutboxError where error == .storageFull {
                 call.reject(error.localizedDescription, "storage_full", error)
+            }
+            catch KeptNativeError.invalidVisualPhoto {
+                call.reject(KeptNativeError.invalidVisualPhoto.localizedDescription, "invalid_visual_photo")
             }
             catch let error as URLError { call.reject("Could not connect to SheepKeep.", "network", error) }
             catch { call.reject(error.localizedDescription) }
