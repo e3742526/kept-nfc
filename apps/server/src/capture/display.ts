@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { rm } from 'node:fs/promises';
 import type { Readable } from 'node:stream';
 import type { FastifyRequest } from 'fastify';
@@ -58,6 +58,19 @@ import { enqueueVisualIndex } from '../visual-search/job.js';
 // still gets its preview; the phone leaves "preview unavailable" (D36) for any refusal.
 
 const SHA256 = /^[0-9a-f]{64}$/;
+
+/** Keep the existing UUID-shaped blob key, scoped to the file and immutable per revision.
+ * The database definer derives the same namespace from its authenticated file and revision. */
+function displayNamespace(fileId: string, revision: string): string {
+  const hash = createHash('sha256').update(`kept-display-v1:${fileId}:${revision}`).digest('hex');
+  return [
+    hash.slice(0, 8),
+    hash.slice(8, 12),
+    hash.slice(12, 16),
+    hash.slice(16, 20),
+    hash.slice(20, 32),
+  ].join('-');
+}
 /** How long after the upload its display may still be set. */
 export const DISPLAY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -167,8 +180,9 @@ export async function setDisplay(
       throw new AppError('unsupported_media_type', 415, "This JPEG can't be read.");
     }
     const revision = randomUUID();
+    const namespace = displayNamespace(fileId, revision);
     for (const v of derived.variants) {
-      const key = derivativeKey(revision, v.variant);
+      const key = derivativeKey(namespace, v.variant);
       if (!stored.includes(key)) stored.push(key);
       await files.blobs.put(key, v.path, { contentType: 'image/jpeg', bytes: v.bytes });
     }

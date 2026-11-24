@@ -109,6 +109,7 @@ CREATE FUNCTION kept.set_file_display(p_file uuid, p_variants jsonb, p_revision 
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public AS $$
 DECLARE
   f public.files%ROWTYPE;
+  namespace uuid;
 BEGIN
   SELECT * INTO f FROM public.files x
    WHERE x.id = p_file
@@ -124,13 +125,16 @@ BEGIN
     RAISE EXCEPTION 'renditions are display, thumb and share, with their own revision'
       USING ERRCODE = 'invalid_parameter_value';
   END IF;
+  -- Scope a revision to its file. A caller cannot supply another file's blob namespace.
+  namespace := substr(encode(sha256(convert_to(
+    'kept-display-v1:' || p_file::text || ':' || p_revision::text, 'UTF8')), 'hex'), 1, 32)::uuid;
   DELETE FROM public.file_derivatives d
    WHERE d.file_id = f.id
      AND d.variant IN (SELECT v->>'variant' FROM jsonb_array_elements(p_variants) v);
   INSERT INTO public.file_derivatives (file_id, variant, location_id, storage_key, width, height,
                                        bytes)
   SELECT f.id, v->>'variant', f.location_id,
-         'd/' || p_revision::text || '/' || (v->>'variant') || '.jpg',
+         'd/' || namespace::text || '/' || (v->>'variant') || '.jpg',
          (v->>'width')::int, (v->>'height')::int, (v->>'bytes')::bigint
     FROM jsonb_array_elements(p_variants) v;
   UPDATE public.files x SET derivative_state = 'ready' WHERE x.id = f.id;
