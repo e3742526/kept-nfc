@@ -271,6 +271,9 @@ const env = {
       }
     : {}),
   ...(process.env.KEPT_RESTIC_BIN ? { KEPT_RESTIC_BIN: process.env.KEPT_RESTIC_BIN } : {}),
+  ...(process.env.KEPT_VISUAL_ENCODER_URL
+    ? { KEPT_VISUAL_ENCODER_URL: process.env.KEPT_VISUAL_ENCODER_URL }
+    : {}),
 };
 
 let running = null;
