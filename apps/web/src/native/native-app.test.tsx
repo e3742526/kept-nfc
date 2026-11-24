@@ -202,7 +202,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
   const events = {
     matches: [] as string[],
     nonMatches: [] as string[],
-    openedRemote: [] as Array<{ thing?: string; file: string; mime: string }>,
+    openedRemote: [] as Parameters<PlatformAdapters['media']['openRemote']>[1][],
     openedPending: [] as Array<{ id: string; file: string }>,
     continueCalls: [] as Array<string | undefined>,
     continueSessions: [] as Array<string | undefined>,
@@ -446,6 +446,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
               createdId,
               op.payload.files.map((f, index) => {
                 const meta = uploadedFiles.get(f.fileId);
+                const hasPreview = f.role === 'photo' && meta?.mime === 'image/jpeg';
                 return {
                   id: `att-${createdId}-${index}`,
                   role: f.role,
@@ -460,8 +461,8 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                     width: null,
                     height: null,
                     derivativeState: 'ready',
-                    thumbUrl: null,
-                    displayUrl: null,
+                    thumbUrl: hasPreview ? '/f/fixture-thumb.jpg' : null,
+                    displayUrl: hasPreview ? '/f/fixture-display.jpg' : null,
                   },
                   url: null,
                   subject: { thingId: createdId },
@@ -1588,8 +1589,18 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Save photos' }));
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    await user.click(await screen.findByRole('button', { name: 'photo.jpg' }));
-    expect(env.events.openedRemote.at(-1)?.thing).toBe(env.boxId);
+    const photo = await screen.findByRole('button', { name: 'photo.jpg' });
+    expect(photo.querySelector('img')).toHaveAttribute('src', `${origin}/f/fixture-thumb.jpg`);
+    await user.click(photo);
+    expect(env.events.openedRemote[0]).toMatchObject({ thing: env.boxId, variant: 'display' });
+    const original = screen.getByRole('button', { name: 'Open original photo' });
+    expect(original).toHaveAccessibleDescription('photo.jpg');
+    await user.click(original);
+    expect(env.events.openedRemote[1]).toMatchObject({
+      thing: env.boxId,
+      file: env.events.openedRemote[0]?.file,
+    });
+    expect(env.events.openedRemote[1]?.variant).toBeUndefined();
     expect(screen.getByText('No cached contents.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'QR and NFC label' }));
     await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));

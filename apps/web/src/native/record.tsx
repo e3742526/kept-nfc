@@ -502,17 +502,17 @@ export function RecordScreen({
 
   async function openRemoteFile(
     attachment: Pick<AttachmentView, 'id' | 'file'>,
-    preview?: boolean,
+    variant: 'display' | 'original',
   ) {
-    if (!attachment.file) return;
-    setOpeningMedia(attachment.id);
+    if (!attachment.file || openingMedia !== undefined) return;
+    setOpeningMedia(`${attachment.id}:${variant}`);
     setStatus('');
     try {
       await adapters.media.openRemote(connection, {
         ...(target.kind === 'thing' ? { thing: target.id } : {}),
         file: attachment.file.id,
         mime: attachment.file.mime,
-        ...(preview ? { variant: 'display' } : {}),
+        ...(variant === 'display' ? { variant } : {}),
       });
     } catch (error) {
       if (isAuthRefusal(error)) {
@@ -961,10 +961,14 @@ export function RecordScreen({
                         online &&
                         group === 'photo' &&
                         previewUrl(original?.file?.thumbUrl, connection.origin);
-                      const preview = group === 'photo' && !canEdit;
+                      const preview = group === 'photo' && Boolean(original?.file?.displayUrl);
+                      const variant = preview ? 'display' : 'original';
+                      const mediaKey = `${attachment.id}:${variant}`;
+                      const originalKey = `${attachment.id}:original`;
+                      const labelId = `attachment-label-${attachment.id}`;
                       return (
                         <li key={attachment.id}>
-                          {original?.file && online && (!preview || original.file.displayUrl) ? (
+                          {original?.file && online && (preview || canEdit || group !== 'photo') ? (
                             <Button
                               variant="secondary"
                               className={
@@ -972,11 +976,9 @@ export function RecordScreen({
                                   ? 'grid w-full min-w-0 justify-items-start gap-2 rounded-xl p-2 text-start'
                                   : 'kept-phone-row'
                               }
-                              isPending={openingMedia === attachment.id}
-                              isDisabled={
-                                openingMedia !== undefined && openingMedia !== attachment.id
-                              }
-                              onPress={() => void openRemoteFile(original, preview)}
+                              isPending={openingMedia === mediaKey}
+                              isDisabled={openingMedia !== undefined && openingMedia !== mediaKey}
+                              onPress={() => void openRemoteFile(original, variant)}
                             >
                               {thumbnail && (
                                 <img
@@ -992,12 +994,28 @@ export function RecordScreen({
                                   <FileText size={18} />
                                 </span>
                               )}
-                              <bdi className="min-w-0 flex-1 break-all">{label}</bdi>
+                              <bdi id={labelId} className="min-w-0 flex-1 break-all">
+                                {label}
+                              </bdi>
                             </Button>
                           ) : (
                             <span className="text-ink-2">
                               <bdi>{label}</bdi>
                             </span>
+                          )}
+                          {online && canEdit && preview && original && (
+                            <Button
+                              variant="ghost"
+                              size="small"
+                              aria-describedby={labelId}
+                              isPending={openingMedia === originalKey}
+                              isDisabled={
+                                openingMedia !== undefined && openingMedia !== originalKey
+                              }
+                              onPress={() => void openRemoteFile(original, 'original')}
+                            >
+                              <Trans>Open original photo</Trans>
+                            </Button>
                           )}
                           {original?.createdAt && (
                             <time
@@ -1161,8 +1179,8 @@ export function RecordScreen({
               attachments={detail?.attachments ?? place?.attachments ?? []}
               onOpen={onOpen}
               onOpenPhoto={(attachment) => {
-                if (canEdit || attachment.file?.displayUrl)
-                  void openRemoteFile(attachment, !canEdit);
+                if (attachment.file?.displayUrl) void openRemoteFile(attachment, 'display');
+                else if (canEdit) void openRemoteFile(attachment, 'original');
               }}
               onChanged={() => {
                 setRequest((value) => value + 1);

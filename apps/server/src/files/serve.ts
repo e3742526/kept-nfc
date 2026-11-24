@@ -114,6 +114,15 @@ export async function serveToken(
   }
   // A cached copy lives no longer than the URL that fetched it.
   const left = Math.max(0, signed.expiresAt - Math.floor(Date.now() / 1000));
+  // The signed JPEG renditions also appear in the iPhone app's bundled WebView,
+  // which has a different origin from the file server. Keep Helmet's policy for originals.
+  if (
+    signed.key.startsWith('d/') &&
+    signed.disposition === 'inline' &&
+    signed.contentType === 'image/jpeg'
+  ) {
+    reply.header('cross-origin-resource-policy', 'cross-origin');
+  }
   return reply
     .header('content-type', signed.contentType)
     .header('content-disposition', contentDisposition(signed.disposition, signed.filename))

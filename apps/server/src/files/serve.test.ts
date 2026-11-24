@@ -110,6 +110,7 @@ describe('POST /api/v1/files/:id/url and GET /f/:token', () => {
     expect(got.headers['x-content-type-options']).toBe('nosniff');
     expect(got.headers['content-security-policy']).toBe("default-src 'none'; sandbox");
     expect(got.headers['content-disposition']).toMatch(/^attachment; filename="[0-9a-f-]+\.jpg"/);
+    expect(got.headers['cross-origin-resource-policy']).toBe('same-origin');
     expect(got.headers['cache-control']).toMatch(/^private, max-age=\d+$/);
     expect(setCookies(got)).toEqual([]);
   });
@@ -124,6 +125,7 @@ describe('POST /api/v1/files/:id/url and GET /f/:token', () => {
       expect(got.headers['content-type']).toBe('image/jpeg');
       expect(got.headers['content-disposition']).toMatch(/^inline; /);
       expect(got.headers['content-security-policy']).toBe("default-src 'none'; sandbox");
+      expect(got.headers['cross-origin-resource-policy']).toBe('cross-origin');
     }
   });
 
