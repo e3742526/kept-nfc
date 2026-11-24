@@ -17,7 +17,10 @@ import type { InventoryCache } from './inventory';
 import {
   approvedLabel,
   describeTargetFromCache,
+  labelBase,
+  labelOrigins,
   labelUrl,
+  loadLabelAddress,
   type ReadResult,
   reserveLabel,
   resolveLabel,
@@ -150,8 +153,9 @@ export function ItemLabelPicker({
       }
       const out = await reserveLabel(connection, locationId, reserving.current.key, adapters);
       reserving.current = undefined;
-      // The phone's own origin is what its NFC check and the system camera accept.
-      next = { ...out, url: labelUrl(connection.origin, out.code) };
+      // The label address (else the server's own origin): what the NFC check, the system camera
+      // and a printed label of the same code all carry.
+      next = { ...out, url: labelUrl(await loadLabelAddress(connection, adapters), out.code) };
     }
     if (!live.current) {
       await shelveReservedCode(connection, next.locationId, next.code, adapters);
@@ -262,7 +266,10 @@ export function ItemLabelPicker({
         return;
       }
       // A tag that already holds a blank label of this location is that label: no write.
-      if (reading.url && approvedLabel(reading.url, connection.origin).status === 'approved') {
+      if (
+        reading.url &&
+        approvedLabel(reading.url, labelOrigins(connection)).status === 'approved'
+      ) {
         const result = await resolveLabel(
           connection,
           cache,
@@ -350,7 +357,7 @@ export function ItemLabelPicker({
     setStatus('');
   }
 
-  const valueUrl = value ? labelUrl(connection.origin, value.code) : null;
+  const valueUrl = value ? labelUrl(labelBase(connection), value.code) : null;
   const locked = disabled || busy;
 
   return (

@@ -15,7 +15,7 @@ import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import { LocationPicker, writableLocations } from './destination';
 import type { InventoryCache } from './inventory';
-import { approvedLabel, labelUrl } from './labels';
+import { approvedLabel, labelBase, labelOrigins, labelUrl, loadLabelAddress } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
 
 const counts = [8, 12, 24];
@@ -100,10 +100,12 @@ export function LabelSheets({
         );
       }
       const stock = labelStock(sheet.stock);
+      // The server's link: its label address, and a numbered label's alias.
+      await loadLabelAddress(connection, adapters);
+      const origins = labelOrigins(connection);
       const labels = sheet.labels.map((label) => {
-        const url = labelUrl(connection.origin, label.code);
-        if (approvedLabel(url, connection.origin).status !== 'approved')
-          throw new Error('Invalid label');
+        const url = label.url || labelUrl(labelBase(connection), label.alias ?? label.code);
+        if (approvedLabel(url, origins).status !== 'approved') throw new Error('Invalid label');
         return { url, ...(label.name ? { name: label.name } : {}) };
       });
       await adapters.media.shareLabelSheet(connection, {

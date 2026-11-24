@@ -7,10 +7,16 @@ public enum NFCLabelValidationResult: Equatable {
     case malformed
 }
 
-/// Validates Kept NDEF URLs against the configured server origin without silently switching servers.
+/// Validates SheepKeep label URLs (NDEF tags, label sheets) against the configured server origin
+/// and the server's own label address, without silently switching servers. A label is
+/// `/l/<short ID>` or `/l/<numbered alias>` (`BIN-A09Z-0001`); `approved(code:)` carries the
+/// short ID folded onto Crockford base32, or the alias in upper case (base36: nothing folded).
 public struct NFCLabelValidation {
     private static let shortCodePattern = try! NSRegularExpression(pattern: "^[0-9A-HJKMNP-TV-Z]{6}$")
     private static let labelPathPattern = try! NSRegularExpression(pattern: "^/l/([A-Za-z0-9]{6})$")
+    private static let aliasPathPattern = try! NSRegularExpression(
+        pattern: "^/l/([A-Za-z]{3}-[0-9A-Za-z]{4}-[0-9]{4})$"
+    )
 
     public static func normaliseShortCode(_ raw: String) -> String {
         raw.uppercased()
@@ -25,6 +31,11 @@ public struct NFCLabelValidation {
     }
 
     public static func validate(urlText: String, expectedOrigin: URL) -> NFCLabelValidationResult {
+        validate(urlText: urlText, expectedOrigins: [expectedOrigin])
+    }
+
+    /// `expectedOrigins`: the server's origin, then its label address when it has one.
+    public static func validate(urlText: String, expectedOrigins: [URL]) -> NFCLabelValidationResult {
         let trimmed = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let parts = URLComponents(string: trimmed),
               let scheme = parts.scheme?.lowercased(), scheme == "https",
@@ -32,19 +43,28 @@ public struct NFCLabelValidation {
               parts.user == nil, parts.password == nil
         else { return .malformed }
 
-        guard let expectedScheme = expectedOrigin.scheme?.lowercased(),
-              let expectedHost = expectedOrigin.host?.lowercased()
-        else { return .malformed }
-
         let port = parts.port ?? 443
-        let expectedPort = expectedOrigin.port ?? (expectedScheme == "https" ? 443 : 80)
-        if expectedScheme != "https" || host != expectedHost || port != expectedPort {
-            return .foreign
+        let matches = expectedOrigins.contains { expected in
+            guard let expectedScheme = expected.scheme?.lowercased(),
+                  let expectedHost = expected.host?.lowercased()
+            else { return false }
+            let expectedPort = expected.port ?? (expectedScheme == "https" ? 443 : 80)
+            return expectedScheme == "https" && host == expectedHost && port == expectedPort
+        }
+        guard matches else {
+            return expectedOrigins.isEmpty ? .malformed : .foreign
         }
 
         guard parts.query == nil, parts.fragment == nil else { return .malformed }
         let path = parts.path
         let pathRange = NSRange(path.startIndex..<path.endIndex, in: path)
+        if let match = aliasPathPattern.firstMatch(in: path, options: [], range: pathRange),
+           let aliasRange = Range(match.range(at: 1), in: path)
+        {
+            let alias = String(path[aliasRange]).uppercased()
+            guard !alias.hasSuffix("-0000") else { return .malformed }
+            return .approved(code: alias)
+        }
         guard let match = labelPathPattern.firstMatch(in: path, options: [], range: pathRange),
               let codeRange = Range(match.range(at: 1), in: path)
         else { return .malformed }
@@ -52,6 +72,22 @@ public struct NFCLabelValidation {
         let code = normaliseShortCode(String(path[codeRange]))
         guard isValidShortCode(code) else { return .malformed }
         return .approved(code: code)
+    }
+
+    /// The label address the server names (`GET /api/v1/labels/address`), as an https origin;
+    /// nil for anything else.
+    public static func labelOrigin(_ text: String) -> URL? {
+        guard var parts = URLComponents(string: text.trimmingCharacters(in: .whitespacesAndNewlines)),
+              parts.scheme?.lowercased() == "https",
+              let host = parts.host?.lowercased(), !host.isEmpty,
+              parts.user == nil, parts.password == nil, parts.query == nil, parts.fragment == nil,
+              parts.path.isEmpty || parts.path == "/"
+        else { return nil }
+        parts.scheme = "https"
+        parts.host = host
+        parts.path = ""
+        if parts.port == 443 { parts.port = nil }
+        return parts.url
     }
 }
 

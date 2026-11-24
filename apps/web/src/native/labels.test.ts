@@ -7,6 +7,9 @@ import {
   approvedLabel,
   inspectTagOwner,
   isTarget,
+  labelBase,
+  labelOrigins,
+  loadLabelAddress,
   resolveLabel,
   shelveReservedCode,
   takeShelvedCode,
@@ -418,5 +421,81 @@ describe('the shelf of reserved label codes', () => {
       takeShelvedCode(connection, undefined, locationId, adapters),
     ]);
     expect(checkouts.map((label) => label?.code)).toEqual(['RSV234', undefined]);
+  });
+});
+
+describe('the label address and numbered labels', () => {
+  const other: Connection = { ...connection, id: 'https://kept.example.com|user-2|epoch-1' };
+  const kv = () => {
+    const values = new Map<string, string>();
+    return {
+      values,
+      outbox: {
+        ...capacitorAdapters.outbox,
+        getValue: async (_c: Connection, key: string) => values.get(key),
+        setValue: async (_c: Connection, key: string, value: string) => {
+          values.set(key, value);
+        },
+      },
+    };
+  };
+
+  it('accepts a numbered label under the server or its label address, nothing else', () => {
+    const origins = [connection.origin, 'https://labels.example.org'];
+    expect(approvedLabel('https://labels.example.org/l/bin-a09z-0001', origins)).toEqual({
+      status: 'approved',
+      code: 'BIN-A09Z-0001',
+    });
+    expect(approvedLabel('https://kept.example.com/l/LOC-OIL1-0042', origins)).toEqual({
+      status: 'approved',
+      code: 'LOC-OIL1-0042',
+    });
+    expect(approvedLabel('https://labels.example.org/l/BIN-A09Z-0000', origins)).toEqual({
+      status: 'malformed',
+    });
+    expect(approvedLabel('https://labels.example.org/l/7KQ4MZ', connection.origin)).toEqual({
+      status: 'foreign',
+    });
+  });
+
+  it('asks the server once, remembers its answer offline, and claims what the server names', async () => {
+    const store = kv();
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce({ url: 'https://labels.example.org' })
+      .mockResolvedValueOnce({ outcome: 'claim', locationId: 'loc-1', code: 'RSV234' });
+    const adapters = { ...makeAdapters(request), outbox: store.outbox };
+    expect(await loadLabelAddress(other, adapters)).toBe('https://labels.example.org');
+    expect(await loadLabelAddress(other, adapters)).toBe('https://labels.example.org');
+    expect(labelOrigins(other)).toEqual([connection.origin, 'https://labels.example.org']);
+    expect(labelBase(other)).toBe('https://labels.example.org');
+    expect(store.values.get('labelAddressV1')).toBe('https://labels.example.org');
+    expect(
+      await resolveLabel(
+        other,
+        undefined,
+        'https://labels.example.org/l/BIN-A09Z-0001',
+        'nfc',
+        undefined,
+        false,
+        adapters,
+      ),
+    ).toEqual({ status: 'unassigned', claim: { code: 'RSV234', locationId: 'loc-1' } });
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it('offline, uses the last answer, and else the server itself', async () => {
+    const offline = vi.fn().mockRejectedValue(new ApiError(0, 'offline', 'offline'));
+    const remembered = kv();
+    remembered.values.set('labelAddressV1', 'https://labels.example.org');
+    const third = { ...connection, id: 'https://kept.example.com|user-3|epoch-1' };
+    expect(
+      await loadLabelAddress(third, { ...makeAdapters(offline), outbox: remembered.outbox }),
+    ).toBe('https://labels.example.org');
+    const fourth = { ...connection, id: 'https://kept.example.com|user-4|epoch-1' };
+    expect(await loadLabelAddress(fourth, { ...makeAdapters(offline), outbox: kv().outbox })).toBe(
+      connection.origin,
+    );
+    expect(labelOrigins(fourth)).toEqual([connection.origin]);
   });
 });

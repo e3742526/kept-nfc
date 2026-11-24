@@ -22,7 +22,7 @@ See the [NFC runbook](../../docs/runbooks/nfc-mvp.md) for the integrated setup a
 
 - **`apps/ios/NativeStore` (`KeptNativeStore` Swift Package):**
   - `Outbox.swift`: Actor-backed SQLite (`PRAGMA journal_mode = WAL`, `PRAGMA busy_timeout = 5000`) queue and protected pending-original storage (`excludedFromBackup`), staged file commits + startup manifest repair, `OutboxError.storageFull` mapping (`CocoaError.fileWriteOutOfSpace`, `ENOSPC`, `SQLITE_FULL`), scoped inventory cache, scoped `kv` storage (e.g. Find target state), atomic `retarget`, `clearFailure`, and `StorageStats`.
-  - `NFCLogic.swift`: Strict NDEF label URL validator (`NFCLabelValidation`: HTTPS scheme + exact configured server origin match + `/l/<code>` Crockford folding), `NFCRepeatDebouncer` (2.5 s cooldown), `NDEFRecordSnapshot` SHA-256 fingerprint, and `FindOutcome`.
+  - `NFCLogic.swift`: Strict NDEF label URL validator (`NFCLabelValidation`: HTTPS scheme + the server's origin or its label address + `/l/<code>` with Crockford folding, or `/l/<numbered alias>`), `NFCRepeatDebouncer` (2.5 s cooldown), `NDEFRecordSnapshot` SHA-256 fingerprint, and `FindOutcome`.
 - **`apps/ios/ios/App/App` (Capacitor iOS Host & Swift Bridge):**
   - `KeptBridge.swift`: Privileged native Capacitor plugin registered only when the WKWebView loads the bundled `capacitor://localhost` / `app://` assets. Handles PKCE browser auth (`ASWebAuthenticationSession`), Keychain credentials (`KeptKeychain`), scoped native HTTP requests (`X-Kept-Native-Account`, `X-Kept-Native-Epoch`), raw file uploads (`X-Kept-Sha256`), `Outbox` actions, Quick Look preview (`QLPreviewController`), and `UIApplication` active/resign lifecycle observers.
   - `KeptNFC.swift`: Foreground `NFCNDEFReaderSession` coordinator for `.read`, `.inspect`, `.write(url, expected:)`, and continuous `.find` mode with repeat debounce, multi-tag polling restart (`restartPolling`), background interruption cleanup, and `KeptMatchFeedback` (`UINotificationFeedbackGenerator`, `AudioServicesPlaySystemSound`, `AVAudioSession` `.ambient`, and `UIAccessibility` VoiceOver announcements).
@@ -108,26 +108,30 @@ xcrun simctl launch <SIMULATOR_UDID> info.keptinventory.nfc
 ### Entitlements (`KeptNFC.entitlements` vs `KeptNFC-AssociatedDomains.entitlements`)
 
 - **Default:** `CODE_SIGN_ENTITLEMENTS` points to `App/KeptNFC.entitlements` (foreground NFC tag reading without requiring domain association setup).
-- **Optional Universal Links (`/l/*`):**
-  1. Switch `CODE_SIGN_ENTITLEMENTS` in Xcode build settings to `App/KeptNFC-AssociatedDomains.entitlements`.
-  2. Set `KEPT_NFC_ASSOCIATED_DOMAIN` to your exact Kept hostname (no scheme, no port).
-  3. Serve `/.well-known/apple-app-site-association` on that HTTPS origin as `application/json` (HTTP 200, no redirect):
+- **Optional Universal Links (`/l/*`):** a label's QR code or NFC tag then opens the app where it is installed, and Safari (the web app) everywhere else.
+  1. Switch `CODE_SIGN_ENTITLEMENTS` in Xcode build settings to `App/KeptNFC-AssociatedDomains.entitlements`, and enable **Associated Domains** on the App ID.
+  2. Set `KEPT_NFC_ASSOCIATED_DOMAIN` to the host labels carry: the server's `KEPT_LABEL_URL` host when it has one, else its `KEPT_PUBLIC_URL` host (no scheme, no port).
+  3. Set `KEPT_APPLE_APP_IDS=<TEAM_ID>.info.keptinventory.nfc` on the server. It then serves `/.well-known/apple-app-site-association` itself, as `application/json` with no redirect and no sign-in, on both the label and the public host:
 
 ```json
 {
   "applinks": {
-    "apps": [],
     "details": [
       {
-        "appID": "<TEAM_ID>.info.keptinventory.nfc",
-        "paths": ["/l/*"]
+        "appIDs": ["<TEAM_ID>.info.keptinventory.nfc"],
+        "components": [
+          { "/": "/l/*", "comment": "A label: its code or numbered alias." },
+          { "/": "/t/???-????-????", "comment": "A numbered label read as /t/." }
+        ]
       }
     ]
   }
 }
 ```
 
-Do not ship `apple-app-site-association` or switch Associated Domains unless the hosted domain matches the app's configured Kept server origin.
+  4. Check it from outside your network: `curl -sI https://<label host>/.well-known/apple-app-site-association` answers `200` and `content-type: application/json`. Apple's CDN caches the file; a change can take a day to reach phones.
+
+The app accepts a link, an NFC tag or a QR code under the server's own origin and under the label address the server names (`GET /api/v1/labels/address`, remembered for offline use), and nothing else. A link that arrives before sign-in is held in memory and opened once you are signed in; it is not kept across a force-quit. Universal Links are never guaranteed: iOS opens Safari when the person long-pressed and chose to, when the file can't be fetched, or in some in-app browsers, and the web app answers the same link.
 
 ### Local Server & Phone-Reachable HTTPS
 
@@ -137,7 +141,7 @@ Do not ship `apple-app-site-association` or switch Associated Domains unless the
 ### NFC Tag Hardware Notes
 
 - Use ISO 14443 Type A NDEF-formatted writable tags: **NTAG213** (~144 bytes usable NDEF), **NTAG215** (~504 bytes), or **NTAG216** (~888 bytes).
-- Kept writes exactly **one NDEF URI record** containing `https://<configured-host>/l/<6-char-code>` (~38–60 bytes depending on hostname length). Short HTTPS hostnames comfortably fit NTAG213.
+- Kept writes exactly **one NDEF URI record** containing `https://<label host>/l/<6-char-code>` (~38–60 bytes depending on hostname length; the label host is `KEPT_LABEL_URL`'s, else the server's). A numbered label's link (`/l/BIN-A09Z-0001`) is 7 bytes longer. Short HTTPS hostnames comfortably fit NTAG213 (144 bytes).
 - **Zero secrets or inventory contents** are ever stored on a tag. Multiple tags and printed QR stickers can share the same identifier for one box.
 
 ---
