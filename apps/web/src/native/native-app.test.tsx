@@ -489,7 +489,8 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
         }
         if (path === capturePaths.scanResolve) {
           const text = (options?.body as { text?: string } | undefined)?.text ?? '';
-          if (text.includes('BNK234')) return { outcome: 'claim', locationId: locId } as T;
+          if (text.includes('BNK234') || text.includes('RSV234'))
+            return { outcome: 'claim', locationId: locId } as T;
           if (text.includes('7KQ4MZ') || text.trim().toUpperCase() === '7KQ4MZ') {
             return {
               outcome: 'open',
@@ -2802,6 +2803,85 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: 'QR and NFC label' }));
     await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));
     expect(env.events.sharedLabelPdfs.at(-1)).toEqual({ url: `${origin}/l/RSV234`, name: 'Watch' });
+  });
+
+  it('offers a reserved label again after a draft is discarded, instead of reserving another', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Ring');
+    await user.click(screen.getByText('QR or NFC label'));
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText(/New QR label\. Share it to print/)).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Remove label' }));
+
+    // Discarding the draft leaves the reserved code unused; the next form takes it back.
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Necklace');
+    await user.click(screen.getByText('QR or NFC label'));
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText('RSV234')).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+  });
+
+  it('asks before a label is left behind by a review of several items, and keeps it for the next item', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({ name: '' })),
+      serverProposals: vi.fn(async () => ({
+        items: [{ name: 'Lights' }, { name: 'Tinsel' }],
+      })),
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Holiday supplies');
+    await user.click(screen.getByText('QR or NFC label'));
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText('RSV234')).toBeInTheDocument();
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Photo input is missing');
+    await user.upload(picker, new File([new Uint8Array([1])], 'a.jpg', { type: 'image/jpeg' }));
+
+    // Declining keeps the draft, the photo and the label exactly as they were.
+    await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
+    await user.click(await screen.findByRole('button', { name: 'Cancel' }));
+    expect(screen.queryAllByText('Photo review')).toHaveLength(0);
+    expect(screen.getByText('RSV234')).toBeInTheDocument();
+    expect(screen.getByLabelText('Description')).toHaveValue('Holiday supplies');
+
+    // Confirming reviews both items without the label, which stays for the next item.
+    await user.click(screen.getByRole('button', { name: 'Suggest items' }));
+    await user.click(await screen.findByRole('button', { name: 'Review items' }));
+    expect((await screen.findAllByText('Photo review')).length).toBeGreaterThan(0);
   });
 
   it('suggests the box opened last as the next destination', async () => {

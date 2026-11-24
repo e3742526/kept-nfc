@@ -199,13 +199,27 @@ export function CaptureForm({
 
   async function reviewPhoto(items: PhotoSuggestion[] = [], single = false) {
     if (busy || !firstPhoto || !destination || evidenceOnly || !onReview) return;
+    // A label belongs to one item. A review of several items can't know which, so it is never
+    // guessed: the label stays on this form, for the next item saved, once that is confirmed.
+    if (
+      claimCode &&
+      items.length > 1 &&
+      !single &&
+      !(await confirm({
+        title: t`Keep the label for another item?`,
+        body: t`The label is not added to these items. It stays here for the next item you save.`,
+        confirmLabel: t`Review items`,
+        cancelLabel: t`Cancel`,
+      }))
+    )
+      return;
     setBusy(true);
     setStatus('');
     try {
       const proposals: PhotoSuggestion[] =
         items.length && !single ? items : [{ name: name.trim() }];
       // The label goes with the item when the review is of one item; with several, it stays
-      // here for the next item saved.
+      // here for the next item saved (confirmed above).
       const labelled = proposals.length === 1 ? claimCode : undefined;
       const categories = new Map(
         items.flatMap((item) => item.categories ?? []).map((tag) => [normalize(tag), tag]),

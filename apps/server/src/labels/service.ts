@@ -442,6 +442,9 @@ async function makeBlanks(client: pg.ClientBase, locationId: string, count: numb
 const blankCapReached = () =>
   new AppError('blank_cap_reached', 409, 'Claim some of the blank labels before printing more.');
 
+/** Blank codes made for labels written on a phone (no print batch) that no item has claimed. */
+export const MAX_OUTSTANDING_RESERVATIONS = 50;
+
 export const ReserveBody = z.strictObject({ locationId: z.uuid() });
 export type ReserveBody = z.infer<typeof ReserveBody>;
 
@@ -468,6 +471,22 @@ export async function reserveLabel(
   const { client, tx, scope } = ctx;
   const locationId = body.locationId.toLowerCase();
   await requireRole(client, locationId, 'labels.use');
+  await requireBlankRoom(client, locationId, 1);
+  // A reservation never used (a tag not written, an item discarded) stays a blank. Bound them, so
+  // abandoned ones can't eat the location's blank cap: the phone offers its own back first.
+  const { rows } = await client.query<{ n: number }>(
+    `SELECT count(*)::int AS n FROM public.short_ids s
+      WHERE s.location_id = $1 AND s.state = 'blank'
+        AND NOT EXISTS (SELECT 1 FROM public.label_batch_codes b WHERE b.code = s.code)`,
+    [locationId],
+  );
+  if ((rows[0]?.n ?? 0) >= MAX_OUTSTANDING_RESERVATIONS) {
+    throw new AppError(
+      'reservation_limit',
+      409,
+      'Use or scan the labels you already made before making more.',
+    );
+  }
   let code: string;
   try {
     [code] = (await makeBlanks(client, locationId, 1)) as [string];

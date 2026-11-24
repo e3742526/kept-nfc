@@ -33121,3 +33121,19 @@ msgstr "Thẻ NFC này đang trống. Chọn «Ghi thẻ NFC mới» để gắn
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "Ghi thẻ NFC mới"
+
+#: src/native/capture-form.tsx
+msgid "Keep the label for another item?"
+msgstr "Giữ nhãn cho một mục khác?"
+
+#: src/native/capture-form.tsx
+msgid "Review items"
+msgstr "Xem lại các mục"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded. The label you chose is not added to an existing item. It stays an unused blank label you can scan later."
+msgstr "Khi lưu, tên, mô tả bạn nhập và các danh mục đã chọn sẽ được cập nhật. Số lượng và vị trí giữ nguyên như đã ghi. Nhãn bạn chọn không được gắn vào mục đã có. Nhãn vẫn là nhãn trống chưa dùng, bạn có thể quét sau."
+
+#: src/native/capture-form.tsx
+msgid "The label is not added to these items. It stays here for the next item you save."
+msgstr "Nhãn không được thêm vào các mục này. Nhãn sẽ ở lại đây cho mục tiếp theo bạn lưu."

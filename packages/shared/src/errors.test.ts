@@ -48,6 +48,7 @@ describe('ErrorCode', () => {
       'undo_refused',
       'label_claimed',
       'blank_cap_reached',
+      'reservation_limit',
       'ai_unavailable',
       'ai_paused',
       'private_address',
@@ -109,7 +110,7 @@ describe('ErrorCode', () => {
   });
 
   it('gives every capture code an English sentence', () => {
-    expect(Object.keys(CAPTURE_ERROR_MESSAGES)).toHaveLength(11);
+    expect(Object.keys(CAPTURE_ERROR_MESSAGES)).toHaveLength(12);
     for (const [code, message] of Object.entries(CAPTURE_ERROR_MESSAGES)) {
       expect(isErrorCode(code)).toBe(true);
       expect(message).toMatch(/^[A-Z].+\.$/);

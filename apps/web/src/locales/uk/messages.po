@@ -33121,3 +33121,19 @@ msgstr "Ця NFC-мітка порожня. Виберіть «Записати 
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "Записати нову NFC-мітку"
+
+#: src/native/capture-form.tsx
+msgid "Keep the label for another item?"
+msgstr "Залишити мітку для іншої позиції?"
+
+#: src/native/capture-form.tsx
+msgid "Review items"
+msgstr "Переглянути позиції"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded. The label you chose is not added to an existing item. It stays an unused blank label you can scan later."
+msgstr "Збереження оновить назву, введений опис і додасть вибрані категорії. Кількість і розташування залишаться як записано. Вибрана мітка не додається до наявної позиції. Вона залишається невикористаною порожньою міткою, яку можна відсканувати пізніше."
+
+#: src/native/capture-form.tsx
+msgid "The label is not added to these items. It stays here for the next item you save."
+msgstr "Мітку не буде додано до цих позицій. Вона залишиться тут для наступної позиції, яку ви збережете."

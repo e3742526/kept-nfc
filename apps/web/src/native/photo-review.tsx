@@ -181,13 +181,16 @@ export function PhotoReview({
       if (
         !(await confirm({
           title: t`Update ${thing.name ?? t`Item`}?`,
-          body: t`Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded.`,
+          body: row.claimCode
+            ? t`Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded. The label you chose is not added to an existing item. It stays an unused blank label you can scan later.`
+            : t`Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded.`,
           confirmLabel: t`Review update`,
           cancelLabel: t`Cancel`,
         }))
       )
         return;
       replace(row.id, {
+        claimCode: undefined,
         existing: {
           id: target,
           update: {

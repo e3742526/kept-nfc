@@ -33121,3 +33121,19 @@ msgstr "Cette étiquette NFC est vierge. Choisissez « Écrire une nouvelle éti
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "Écrire une nouvelle étiquette NFC"
+
+#: src/native/capture-form.tsx
+msgid "Keep the label for another item?"
+msgstr "Garder l’étiquette pour un autre article ?"
+
+#: src/native/capture-form.tsx
+msgid "Review items"
+msgstr "Vérifier les articles"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded. The label you chose is not added to an existing item. It stays an unused blank label you can scan later."
+msgstr "L’enregistrement mettra à jour le nom, la description saisie et ajoutera les catégories choisies. La quantité et l’emplacement resteront tels qu’enregistrés. L’étiquette choisie n’est pas ajoutée à un article existant. Elle reste une étiquette vierge inutilisée que vous pourrez scanner plus tard."
+
+#: src/native/capture-form.tsx
+msgid "The label is not added to these items. It stays here for the next item you save."
+msgstr "L’étiquette n’est pas ajoutée à ces articles. Elle reste ici pour le prochain article que vous enregistrerez."

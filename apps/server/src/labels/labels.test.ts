@@ -738,6 +738,21 @@ describe('POST /api/v1/labels/reserve', () => {
     expect((await reserve(ibrahim, { locationId: garage.id })).statusCode).toBe(404);
   });
 
+  it('bounds unclaimed reservations, counting only blanks no print batch holds', async () => {
+    const shed = await createLocation(t, db, ibrahim, 'household', 'Shed');
+    await blanks(shed, 49);
+    ok(await reserve(ibrahim, { locationId: shed.id }), 201);
+    const res = await reserve(ibrahim, { locationId: shed.id });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ code: 'reservation_limit' });
+    // Blanks printed on a sheet are in a batch and don't count: sheets still print.
+    const sheet = ok(
+      await batch(ibrahim, { locationId: shed.id, kind: 'blank', blankCount: 3 }),
+      201,
+    ) as unknown as { batch: Batch };
+    expect(sheet.batch.labels).toHaveLength(3);
+  });
+
   it('stops at the blank-label cap', async () => {
     const attic = await createLocation(t, db, ibrahim, 'household', 'Attic');
     await blanks(attic, 1000);

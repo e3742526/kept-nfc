@@ -33121,3 +33121,19 @@ msgstr "This NFC tag is blank. Choose Write new NFC tag to give it a label."
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "Write new NFC tag"
+
+#: src/native/capture-form.tsx
+msgid "Keep the label for another item?"
+msgstr "Keep the label for another item?"
+
+#: src/native/capture-form.tsx
+msgid "Review items"
+msgstr "Review items"
+
+#: src/native/photo-review.tsx
+msgid "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded. The label you chose is not added to an existing item. It stays an unused blank label you can scan later."
+msgstr "Saving will update the name, any description you enter, and add selected categories. The quantity and location will stay as recorded. The label you chose is not added to an existing item. It stays an unused blank label you can scan later."
+
+#: src/native/capture-form.tsx
+msgid "The label is not added to these items. It stays here for the next item you save."
+msgstr "The label is not added to these items. It stays here for the next item you save."

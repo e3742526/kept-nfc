@@ -3,7 +3,14 @@ import { ApiError } from '@/api/client';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import type { Connection } from './bridge';
 import type { InventoryCache } from './inventory';
-import { approvedLabel, inspectTagOwner, isTarget, resolveLabel } from './labels';
+import {
+  approvedLabel,
+  inspectTagOwner,
+  isTarget,
+  resolveLabel,
+  shelveReservedCode,
+  takeShelvedCode,
+} from './labels';
 
 const connection: Connection = {
   id: 'https://kept.example.com|user-1|epoch-1',
@@ -337,5 +344,56 @@ describe('approvedLabel and resolveLabel', () => {
     expect(
       await inspectTagOwner(connection, baseCache, 'https://other.example.com/l/7KQ4MZ', adapters),
     ).toBeNull();
+  });
+});
+
+describe('the shelf of reserved label codes', () => {
+  const locationId = 'loc-1';
+  function shelfAdapters(online: (code: string) => 'blank' | 'taken' | 'offline') {
+    const kv = new Map<string, string>();
+    const adapters = {
+      ...makeAdapters(vi.fn()),
+      outbox: {
+        ...makeAdapters(vi.fn()).outbox,
+        getValue: async (_c: Connection, key: string) => kv.get(key),
+        setValue: async (_c: Connection, key: string, data: string) => {
+          kv.set(key, data);
+        },
+      },
+      transport: {
+        ...makeAdapters(vi.fn()).transport,
+        request: async (_c: Connection, _path: string, options?: { body?: { text?: string } }) => {
+          const code = /\/l\/([A-Z0-9]{6})/.exec(options?.body?.text ?? '')?.[1] ?? '';
+          const state = online(code);
+          if (state === 'offline') throw new ApiError(0, 'offline', 'Offline');
+          return state === 'blank'
+            ? { outcome: 'claim', locationId }
+            : { outcome: 'open', target: { kind: 'thing', id: 'x', locationId } };
+        },
+      },
+    } as unknown as PlatformAdapters;
+    return { adapters, kv };
+  }
+
+  it('hands back an unused reserved code once, and skips one that has been claimed since', async () => {
+    const { adapters } = shelfAdapters((code) => (code === 'TKN234' ? 'taken' : 'blank'));
+    await shelveReservedCode(connection, locationId, 'TKN234', adapters);
+    await shelveReservedCode(connection, locationId, 'FRE234', adapters);
+    await shelveReservedCode(connection, locationId, 'FRE234', adapters);
+    const first = await takeShelvedCode(connection, undefined, locationId, adapters);
+    expect(first).toEqual({
+      code: 'FRE234',
+      url: `${connection.origin}/l/FRE234`,
+      locationId,
+    });
+    expect(await takeShelvedCode(connection, undefined, locationId, adapters)).toBeNull();
+    expect(await takeShelvedCode(connection, undefined, 'other', adapters)).toBeNull();
+  });
+
+  it('keeps the shelf when the check cannot be made, instead of dropping the code', async () => {
+    const { adapters, kv } = shelfAdapters(() => 'offline');
+    await shelveReservedCode(connection, locationId, 'FRE234', adapters);
+    expect(await takeShelvedCode(connection, undefined, locationId, adapters)).toBeNull();
+    expect(JSON.parse(kv.get('reservedLabels') as string)).toEqual({ [locationId]: ['FRE234'] });
   });
 });

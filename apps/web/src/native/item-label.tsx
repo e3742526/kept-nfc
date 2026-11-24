@@ -21,6 +21,8 @@ import {
   type ReadResult,
   reserveLabel,
   resolveLabel,
+  shelveReservedCode,
+  takeShelvedCode,
 } from './labels';
 import { useNfcStatusText } from './nfc-status';
 
@@ -76,6 +78,14 @@ export function ItemLabelPicker({
   const reserving = useRef<{ key: string; locationId: string } | undefined>(undefined);
   const live = useRef(true);
   const inFlight = useRef(false);
+  // Codes the form holds (written, or chosen for the item) and codes put in front of a person
+  // (a QR label shared): neither may be offered to another item.
+  const inUse = useRef(new Set<string>());
+  const shared = useRef(new Set<string>());
+  const adaptersRef = useRef(adapters);
+  adaptersRef.current = adapters;
+  const connectionRef = useRef(connection);
+  connectionRef.current = connection;
   const https = connection.origin.startsWith('https://');
   const messages = {
     scan: t`Hold the top of your iPhone near one NFC tag.`,
@@ -89,6 +99,17 @@ export function ItemLabelPicker({
     return () => {
       live.current = false;
       void adapters.nfc.cancelTag().catch(() => {});
+      // A code reserved but never written, shown or chosen goes back on the shelf, so a
+      // cancelled attempt does not leave an unclaimed blank behind for good.
+      const held = reserved.current;
+      if (held && !inUse.current.has(held.code) && !shared.current.has(held.code)) {
+        void shelveReservedCode(
+          connectionRef.current,
+          held.locationId,
+          held.code,
+          adaptersRef.current,
+        );
+      }
     };
   }, [adapters]);
 
@@ -110,6 +131,11 @@ export function ItemLabelPicker({
   async function reserve(): Promise<ReservedLabel> {
     const held = reserved.current;
     if (held && held.locationId === locationId) return held;
+    const shelved = await takeShelvedCode(connection, cache, locationId, adapters);
+    if (shelved) {
+      reserved.current = shelved;
+      return shelved;
+    }
     if (reserving.current?.locationId !== locationId) {
       reserving.current = { key: newId(), locationId };
     }
@@ -130,7 +156,7 @@ export function ItemLabelPicker({
         );
         return false;
       }
-      onChange({ code: result.claim.code, locationId, source: 'scanned' });
+      pick({ code: result.claim.code, locationId, source: 'scanned' });
       setStatus('');
       return true;
     }
@@ -215,7 +241,7 @@ export function ItemLabelPicker({
         return;
       }
       if (reading.url === url) {
-        onChange({ code: codeOf(url), locationId, source: 'nfc' });
+        pick({ code: codeOf(url), locationId, source: 'nfc' });
         setStatus(t`SheepKeep tag verified.`);
         return;
       }
@@ -265,7 +291,7 @@ export function ItemLabelPicker({
       setInspection(undefined);
       setExistingOwner(null);
       if (result.status === 'written') {
-        onChange({ code: codeOf(pending.url), locationId, source: 'nfc' });
+        pick({ code: codeOf(pending.url), locationId, source: 'nfc' });
         setStatus(t`SheepKeep tag verified.`);
       } else {
         setStatus(nfcStatus(result));
@@ -279,11 +305,17 @@ export function ItemLabelPicker({
     return run(async () => {
       const { code } = await reserve();
       if (!live.current) return;
-      onChange({ code, locationId, source: 'qr' });
+      pick({ code, locationId, source: 'qr' });
     });
   }
 
+  function pick(label: ItemLabel) {
+    inUse.current.add(label.code);
+    onChange(label);
+  }
+
   function remove() {
+    if (value?.source === 'qr' && !shared.current.has(value.code)) inUse.current.delete(value.code);
     // A written tag keeps its code (scanning it gives it back); a QR label not yet stuck on
     // anything can be offered again.
     if (value?.source === 'nfc' && reserved.current?.code === value.code) {
@@ -339,14 +371,15 @@ export function ItemLabelPicker({
                   <Button
                     variant="secondary"
                     isDisabled={locked}
-                    onPress={() =>
+                    onPress={() => {
+                      shared.current.add(value.code);
                       void run(() =>
                         adapters.media.shareLabelPdf(connection, {
                           url: valueUrl,
                           name: itemName.trim() || t`New item`,
                         }),
-                      )
-                    }
+                      );
+                    }}
                   >
                     <Share size={16} aria-hidden />
                     <Trans>Share QR label PDF</Trans>

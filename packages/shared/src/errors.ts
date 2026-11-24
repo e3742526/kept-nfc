@@ -61,6 +61,8 @@ export const ErrorCode = Object.freeze({
   label_claimed: 'label_claimed',
   /** The location already has 1,000 unclaimed blank labels (D172). */
   blank_cap_reached: 'blank_cap_reached',
+  /** Too many reserved labels no item has claimed yet in this location (POST /labels/reserve). */
+  reservation_limit: 'reservation_limit',
   /** No AI provider resolves for this location, or the provider failed (D19, D121). */
   ai_unavailable: 'ai_unavailable',
   /** The paying account's AI budget is used up; the body carries `pausedUntil` (D19). */
@@ -191,6 +193,7 @@ export type CaptureErrorCode =
   | 'undo_refused'
   | 'label_claimed'
   | 'blank_cap_reached'
+  | 'reservation_limit'
   | 'ai_unavailable'
   | 'ai_paused'
   | 'private_address'
@@ -210,6 +213,7 @@ export const CAPTURE_ERROR_MESSAGES: Readonly<Record<CaptureErrorCode, string>> 
   label_claimed: 'This label was already claimed.',
   blank_cap_reached:
     'This location already has 1,000 unclaimed labels. Use some before printing more.',
+  reservation_limit: 'Use or scan the labels you already made before making more.',
   ai_unavailable: "AI isn't available for this location right now.",
   ai_paused: 'AI is paused until the budget resets.',
   private_address: 'That address is on a private network.',

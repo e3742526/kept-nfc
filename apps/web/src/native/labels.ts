@@ -59,6 +59,67 @@ export function labelUrl(origin: string, code: string): string {
   return `${origin}/l/${encodeURIComponent(code)}`;
 }
 
+const POOL_KEY = 'reservedLabels';
+
+type Pool = Record<string, string[]>;
+
+async function readPool(connection: Connection, adapters: PlatformAdapters): Promise<Pool> {
+  try {
+    const raw = await adapters.outbox.getValue(connection, POOL_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' ? (parsed as Pool) : {};
+  } catch {
+    return {};
+  }
+}
+
+async function writePool(connection: Connection, pool: Pool, adapters: PlatformAdapters) {
+  await adapters.outbox.setValue(connection, POOL_KEY, JSON.stringify(pool)).catch(() => {});
+}
+
+/** Keeps a reserved code that was never written or shown, so the next new label reuses it. */
+export async function shelveReservedCode(
+  connection: Connection,
+  locationId: string,
+  code: string,
+  adapters: PlatformAdapters = capacitorAdapters,
+): Promise<void> {
+  const pool = await readPool(connection, adapters);
+  const held = pool[locationId] ?? [];
+  if (!held.includes(code)) pool[locationId] = [...held, code].slice(-20);
+  await writePool(connection, pool, adapters);
+}
+
+/** A shelved code that is still an unclaimed blank of the location, or null. */
+export async function takeShelvedCode(
+  connection: Connection,
+  cache: InventoryCache | undefined,
+  locationId: string,
+  adapters: PlatformAdapters = capacitorAdapters,
+): Promise<ReservedLabel | null> {
+  const pool = await readPool(connection, adapters);
+  const held = [...(pool[locationId] ?? [])];
+  let found: ReservedLabel | null = null;
+  while (!found && held.length) {
+    const code = held.shift() as string;
+    try {
+      const url = labelUrl(connection.origin, code);
+      const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
+      if (result.status === 'unassigned' && result.claim?.locationId === locationId) {
+        found = { code, url, locationId };
+      }
+    } catch {
+      // Cannot check it now: leave the rest on the shelf and make a new one.
+      held.unshift(code);
+      break;
+    }
+  }
+  if (held.length) pool[locationId] = held;
+  else delete pool[locationId];
+  await writePool(connection, pool, adapters);
+  return found;
+}
+
 /**
  * A new blank code for a label made while adding an item (an NFC tag written now, or one QR
  * label shared now). The capture claims it with `claimCode` when it syncs. `key` is the
