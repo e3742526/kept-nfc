@@ -298,9 +298,12 @@ async function photoImages(
       file_id: string;
       location_id: string;
       mime: string;
+      display_key: string | null;
     }>(
-      `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime
+      `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime,
+              d.storage_key AS display_key
          FROM public.attachments a JOIN public.files f ON f.id = a.file_id
+         LEFT JOIN public.file_derivatives d ON d.file_id = f.id AND d.variant = 'display'
         WHERE a.id = ANY ($1::uuid[])`,
       [room.attachment_ids],
     );
@@ -314,6 +317,7 @@ async function photoImages(
       fileId: s.file_id,
       locationId: s.location_id,
       mime: s.mime,
+      displayKey: s.display_key,
     };
     const parts = await partsFor('room', [source], {
       blobs: files.blobs,

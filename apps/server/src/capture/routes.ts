@@ -173,7 +173,15 @@ export async function captureRoutes(app: KeptApp, deps: InventoryDeps): Promise<
         }
         try {
           const result = await setDisplay(
-            { pools, files, limiter, log: req.log },
+            {
+              pools,
+              files,
+              limiter,
+              jobs: deps.jobs,
+              visualEnabled:
+                deps.visualProvider === undefined ? undefined : deps.visualProvider !== null,
+              log: req.log,
+            },
             req,
             body,
             req.params.fileId.toLowerCase(),

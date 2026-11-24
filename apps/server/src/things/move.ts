@@ -8,6 +8,8 @@ import { lockBlobKeys } from '../files/blob-locks.js';
 import { AppError, forbidden, invalid, notFound, pgErrorOf } from '../http/errors.js';
 import { callerMembership } from '../locations/access.js';
 import { enqueueReindex } from '../search/jobs.js';
+import { enqueueVisualIndex } from '../visual-search/job.js';
+import { localVisualProvider } from '../visual-search/provider.js';
 import {
   type Ctx,
   liveThing,
@@ -718,6 +720,21 @@ async function moveAndAudit(
   if (containerMoved || crossed) {
     const affected = new Set([target.locationId, ...moving.map((t) => t.location_id)]);
     for (const locationId of affected) await enqueueReindex(ctx.jobs, client, locationId);
+  }
+  if (crossed && ctx.jobs && !scope.tokenId && localVisualProvider()) {
+    const relocated = moving.filter((t) => t.location_id !== target.locationId);
+    const ids = relocated.flatMap((t) => [t.id, ...(contents.get(t.id) ?? [])]);
+    const { rows } = await client.query<{ id: string }>(
+      `SELECT s.attachment_id AS id FROM kept.visual_sources(ARRAY[$1::uuid], NULL) s
+        WHERE s.thing_id = ANY ($2::uuid[]) ORDER BY s.attachment_id LIMIT 100`,
+      [target.locationId, ids],
+    );
+    await enqueueVisualIndex(
+      ctx.jobs,
+      client,
+      rows.map(({ id }) => id),
+      true,
+    );
   }
   return true;
 }

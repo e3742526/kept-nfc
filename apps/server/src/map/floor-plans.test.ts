@@ -101,12 +101,16 @@ async function keyOf(
   turn = 0,
   loc: Loc = home,
 ): Promise<string> {
-  const parts = await partsFor('plan', [{ attachmentId: 'a', fileId, locationId: loc.id, mime }], {
-    blobs: files.blobs,
-    textOf: async () => null,
-    turn,
-    renderPdf: (id) => renderPdfForPlan(files, loc.id, id),
-  });
+  const parts = await partsFor(
+    'plan',
+    [{ attachmentId: 'a', fileId, locationId: loc.id, mime, displayKey: null }],
+    {
+      blobs: files.blobs,
+      textOf: async () => null,
+      turn,
+      renderPdf: (id) => renderPdfForPlan(files, loc.id, id),
+    },
+  );
   const img = parts.images[0];
   if (!img) throw new Error('nothing to send');
   return mockKey(img.bytes);
@@ -483,7 +487,7 @@ describe('the plan read (the extract job, mock provider)', () => {
     const fileId = await uploaded(louis, await planPng('f8-no-scale'));
     const parts = await partsFor(
       'plan',
-      [{ attachmentId: 'a', fileId, locationId: home.id, mime: 'image/png' }],
+      [{ attachmentId: 'a', fileId, locationId: home.id, mime: 'image/png', displayKey: null }],
       {
         blobs: files.blobs,
         textOf: async () => null,
@@ -506,7 +510,15 @@ describe('the plan read (the extract job, mock provider)', () => {
     );
     const pdfParts = await partsFor(
       'plan',
-      [{ attachmentId: 'b', fileId: pdf, locationId: home.id, mime: 'application/pdf' }],
+      [
+        {
+          attachmentId: 'b',
+          fileId: pdf,
+          locationId: home.id,
+          mime: 'application/pdf',
+          displayKey: null,
+        },
+      ],
       {
         blobs: files.blobs,
         textOf: async () => null,
@@ -581,7 +593,7 @@ describe('POST /api/v1/floor-plans/:id/apply', () => {
     const size = sentSize(p);
     const parts = await partsFor(
       'plan',
-      [{ attachmentId: 'a', fileId, locationId: loc.id, mime: 'image/png' }],
+      [{ attachmentId: 'a', fileId, locationId: loc.id, mime: 'image/png', displayKey: null }],
       {
         blobs: files.blobs,
         textOf: async () => null,

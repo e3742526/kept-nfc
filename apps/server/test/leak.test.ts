@@ -326,6 +326,7 @@ const FUNCTIONS: Record<string, { roles: string[]; definer: boolean }> = {
   'kept.merge_things(uuid,uuid)': { roles: APP, definer: true },
   // (0042, for T13) The phone's display of a photo: files are append-only to kept_app.
   'kept.set_file_display(uuid,jsonb)': { roles: APP, definer: true },
+  'kept.set_file_display(uuid,jsonb,uuid)': { roles: APP, definer: true },
   // (0046) The next numbered own code (checks the caller writes the location); numbering
   // a new thing; a legacy code's tombstone as it goes and as it comes back.
   'kept.next_own_code(uuid)': { roles: APP, definer: true },
@@ -448,16 +449,20 @@ const FUNCTIONS: Record<string, { roles: string[]; definer: boolean }> = {
   'kept.embedding_status_instance()': { roles: APP, definer: true },
   'kept.visual_locations(uuid[])': { roles: APP, definer: true },
   'kept.visual_sources(uuid[],uuid)': { roles: APP, definer: false },
+  'kept.visual_photo_sources(uuid[],uuid)': { roles: APP, definer: false },
   'kept.visual_coverage(uuid[],text)': { roles: APP, definer: true },
   'kept.visual_backlog(uuid,text,integer)': { roles: APP, definer: true },
+  'kept.visual_backlog(uuid,text,integer,uuid)': { roles: APP, definer: true },
   'kept.visual_current(uuid,uuid,uuid,text,text)': { roles: APP, definer: true },
   'kept.visual_store(uuid,uuid,uuid,text,text,vector)': { roles: APP, definer: true },
+  'kept.visual_store(uuid,uuid,uuid,text,text,vector,text)': { roles: APP, definer: true },
   'kept.visual_matches(uuid[],text,vector,real,integer)': { roles: APP, definer: true },
   'kept.visual_matches(uuid[],text,vector,real,integer,double precision)': {
     roles: APP,
     definer: true,
   },
   'kept.visual_attachment_changed()': { roles: NOBODY, definer: true },
+  'kept.visual_display_changed()': { roles: NOBODY, definer: true },
   // (0099) The backfill's mark, kept_system's alone (security review S4), and the live locations
   // it visits; the editor's job's backlog row for its one thing.
   'kept.embedding_mark(uuid,text,text,integer,text,timestamp with time zone)': {
@@ -2284,6 +2289,12 @@ const PROBES: Probe[] = [
     viewer: 'empty',
   },
   {
+    name: 'visual_photo_sources',
+    sql: 'SELECT * FROM kept.visual_photo_sources(ARRAY[$1::uuid], $2)',
+    args: (i, t) => [t.locationId, i.visualAttachment],
+    viewer: 'empty',
+  },
+  {
     name: 'visual_coverage',
     sql: `SELECT * FROM kept.visual_coverage(ARRAY[$1::uuid], 'visual-probe') WHERE ready + pending + failed > 0`,
     args: (_i, t) => [t.locationId],
@@ -2296,6 +2307,12 @@ const PROBES: Probe[] = [
     viewer: 'empty',
   },
   {
+    name: 'visual_backlog with cursor',
+    sql: `SELECT * FROM kept.visual_backlog($1, 'visual-new-model', 10, NULL)`,
+    args: (_i, t) => [t.locationId],
+    viewer: 'empty',
+  },
+  {
     name: 'visual_current',
     sql: `SELECT kept.visual_current($1, $2, $3, $4, 'visual-probe') AS v`,
     args: (i, t) => [i.visualAttachment, t.locationId, i.file, i.visualHash],
@@ -2304,6 +2321,12 @@ const PROBES: Probe[] = [
   {
     name: 'visual_store',
     sql: `SELECT kept.visual_store($1, $2, $3, $4, 'visual-probe', NULL) AS v`,
+    args: (i, t) => [i.visualAttachment, t.locationId, i.file, i.visualHash],
+    viewer: 'false',
+  },
+  {
+    name: 'visual_store with rendition',
+    sql: `SELECT kept.visual_store($1, $2, $3, $4, 'visual-probe', NULL, 'other') AS v`,
     args: (i, t) => [i.visualAttachment, t.locationId, i.file, i.visualHash],
     viewer: 'false',
   },

@@ -292,6 +292,11 @@ async function restoreCore(o: CoreOptions): Promise<RestoreReport> {
     await client.query('BEGIN');
     try {
       await resetNativeSyncEpoch(client);
+      // A restored search index must be derived again from the verified originals and
+      // their current grants. Older backups can predate the vector table.
+      if ((counts['public.visual_embeddings'] ?? 0) > 0) {
+        await client.query('DELETE FROM public.visual_embeddings');
+      }
       await audited(drizzle(client, { schema }) as unknown as Tx, {
         locationId: null,
         ownerAccountId: null,

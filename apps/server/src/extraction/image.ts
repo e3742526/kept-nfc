@@ -21,12 +21,7 @@ import type { Readable } from 'node:stream';
 import type { ExtractionMode } from '@kept/shared';
 import sharp from 'sharp';
 import type { ImageInput } from '../ai/call.js';
-import {
-  BlobNotFoundError,
-  type BlobStore,
-  derivativeKey,
-  originalKey,
-} from '../storage/blob-store.js';
+import { BlobNotFoundError, type BlobStore, originalKey } from '../storage/blob-store.js';
 import { LIMIT_INPUT_PIXELS } from '../storage/derivatives.js';
 
 /** The longest side of an evidence re-encode (D163 says "up to 3000 px"). */
@@ -44,6 +39,7 @@ export type SourceFile = {
   fileId: string;
   locationId: string;
   mime: string;
+  displayKey: string | null;
 };
 
 export type BuiltParts = {
@@ -112,7 +108,7 @@ export async function reencode(
 
 /** The display derivative as an image part (already upright, ≤ 2048 px, no metadata). */
 async function display(blobs: BlobStore, f: SourceFile): Promise<ImageInput | null> {
-  const bytes = await blob(blobs, derivativeKey(f.fileId, 'display'));
+  const bytes = f.displayKey ? await blob(blobs, f.displayKey) : null;
   if (!bytes) return null;
   try {
     const m = await sharp(bytes).metadata();

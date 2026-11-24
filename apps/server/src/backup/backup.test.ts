@@ -32,6 +32,8 @@ import { withScope } from '../db/scope.js';
 import { systemJobs } from '../jobs/system.js';
 import { assertBlobKey, originalKey } from '../storage/blob-store.js';
 import { S3BlobStore } from '../storage/s3.js';
+import { indexVisualAttachment } from '../visual-search/job.js';
+import type { VisualProvider } from '../visual-search/provider.js';
 import { backupCron } from './config.js';
 import { EXPORT_SKIPPED, runExport } from './export.js';
 import { legacyRuns } from './legacy.js';
@@ -834,8 +836,8 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
       mime: 'application/pdf',
     },
   ];
-  const pdf = originals[2];
-  if (!pdf) throw new Error('Missing PDF fixture');
+  const [firstPhoto, , pdf] = originals;
+  if (!firstPhoto || !pdf) throw new Error('Missing original fixture');
   const staleUpload = await upload(t, native, garage.id, pdf.bytes, {
     id: pdf.fileId,
     cls: pdf.cls,
@@ -1006,7 +1008,7 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
   const label = `https://kept.example.com/l/${box.shortCode}`;
   const denied = await call(t, '/api/v1/scan/resolve', { as: outsider, body: { text: label } });
   expect(denied.json()).toEqual({ outcome: 'not_in_your_kept' });
-  const deniedMedia = await call(t, `/api/v1/files/${originals[0]?.fileId}/url`, {
+  const deniedMedia = await call(t, `/api/v1/files/${firstPhoto.fileId}/url`, {
     as: outsider,
     body: { variant: 'original' },
   });
@@ -1014,6 +1016,31 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
 
   const restic = REAL ? realRestic() : new FakeRestic();
   const target = path.join(scratch, 'native-mvp');
+  const [indexedAttachment] = await own<{ id: string }>(
+    db,
+    'SELECT id FROM public.attachments WHERE thing_id = $1 AND file_id = $2',
+    [captureId, firstPhoto.fileId],
+  );
+  if (!indexedAttachment) throw new Error('Missing visual attachment fixture');
+  const { id: indexedAttachmentId } = indexedAttachment;
+  const vector = [1, ...Array<number>(511).fill(0)];
+  const visualProvider: VisualProvider = {
+    generation: 'restore-visual-test',
+    dimensions: 512,
+    encodeText: async () => vector,
+    encodeImage: async () => vector,
+  };
+  const visualScope = { userId: account, mfa: true };
+  expect(
+    await indexVisualAttachment(
+      db.pools.app,
+      visualScope,
+      files.blobs,
+      visualProvider,
+      indexedAttachmentId,
+    ),
+  ).toBe('stored');
+
   const snapshotDeps = r2Drill
     ? depsFor(restic, target, {
         storage: 's3',
@@ -1079,6 +1106,7 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
     const recovered = await testApp(restoredDb, {
       publicUrl: t.publicUrl,
       nativeAppleKeys,
+      visualProvider,
       files: { ...restored, blobs: restoredBlobs },
     });
     restoredApp = recovered;
@@ -1086,6 +1114,31 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
     expect(renewed.account).toBe(account);
     expect(renewed.epoch).not.toBe(epoch);
     const currentHeaders = { ...headers, 'x-kept-native-epoch': renewed.epoch };
+    const visualStatus = `/api/v1/visual-search/status?locationIds=${garage.id}`;
+    const restoredVisual = await call(recovered, visualStatus, {
+      as: renewed,
+      headers: currentHeaders,
+    });
+    expect(restoredVisual.json()).toMatchObject({ ready: 0 });
+    expect(restoredVisual.json().pending).toBeGreaterThan(0);
+    expect((await call(recovered, visualStatus, { as: renewed, headers })).statusCode).toBe(409);
+    expect(
+      await indexVisualAttachment(
+        pools.app,
+        visualScope,
+        restoredBlobs,
+        visualProvider,
+        indexedAttachmentId,
+      ),
+    ).toBe('stored');
+    const visualSearch = await call(recovered, '/api/v1/visual-search', {
+      as: renewed,
+      headers: currentHeaders,
+      body: { text: 'Fixture object', locationIds: [garage.id] },
+    });
+    expect(visualSearch.json()).toMatchObject({
+      matches: [{ thingId: captureId, fileId: firstPhoto.fileId }],
+    });
     const oldContext = { ...headers, cookie: renewed.cookie };
     const staleCapability = await recovered.app.inject({
       url: '/api/v1/native/capture-capabilities',

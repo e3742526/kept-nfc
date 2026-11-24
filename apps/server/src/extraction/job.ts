@@ -177,19 +177,22 @@ async function sourcesOf(client: pg.ClientBase, ex: ExtractionRow): Promise<Sour
       file_id: string;
       location_id: string;
       mime: string;
+      display_key: string | null;
     }>(
-      `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime
+      `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime, d.storage_key AS display_key
          FROM public.attachments a JOIN public.files f ON f.id = a.file_id
+         LEFT JOIN public.file_derivatives d ON d.file_id = f.id AND d.variant = 'display'
         WHERE a.service_record_id = $2 AND a.role = 'invoice'
         ORDER BY (a.id = $1) DESC, a.sort, a.created_at, a.id
-        LIMIT ${MAX_RECEIPT_PAGES}`,
-      [ex.attachment_id, ex.service_record_id],
+        LIMIT $3`,
+      [ex.attachment_id, ex.service_record_id, MAX_RECEIPT_PAGES],
     );
     return rows.map((r) => ({
       attachmentId: r.attachment_id,
       fileId: r.file_id,
       locationId: r.location_id,
       mime: r.mime,
+      displayKey: r.display_key,
     }));
   }
   const receipt = ex.mode === 'receipt' && ex.purchase_id !== null;
@@ -198,23 +201,27 @@ async function sourcesOf(client: pg.ClientBase, ex: ExtractionRow): Promise<Sour
     file_id: string;
     location_id: string;
     mime: string;
+    display_key: string | null;
   }>(
     receipt
-      ? `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime
+      ? `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime, d.storage_key AS display_key
            FROM public.attachments a JOIN public.files f ON f.id = a.file_id
+           LEFT JOIN public.file_derivatives d ON d.file_id = f.id AND d.variant = 'display'
           WHERE a.purchase_id = $2 AND a.role = 'receipt'
           ORDER BY (a.id = $1) DESC, a.created_at, a.sort, a.id
-          LIMIT ${MAX_RECEIPT_PAGES}`
-      : `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime
+          LIMIT $3`
+      : `SELECT a.id AS attachment_id, f.id AS file_id, f.location_id, f.mime, d.storage_key AS display_key
            FROM public.attachments a JOIN public.files f ON f.id = a.file_id
+           LEFT JOIN public.file_derivatives d ON d.file_id = f.id AND d.variant = 'display'
           WHERE a.id = $1`,
-    receipt ? [ex.attachment_id, ex.purchase_id] : [ex.attachment_id],
+    receipt ? [ex.attachment_id, ex.purchase_id, MAX_RECEIPT_PAGES] : [ex.attachment_id],
   );
   return rows.map((r) => ({
     attachmentId: r.attachment_id,
     fileId: r.file_id,
     locationId: r.location_id,
     mime: r.mime,
+    displayKey: r.display_key,
   }));
 }
 

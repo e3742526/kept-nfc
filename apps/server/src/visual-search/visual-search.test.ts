@@ -10,7 +10,13 @@ import sharp from 'sharp';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import type { TestApp } from '../../test/app.js';
 import { testDb } from '../../test/db.js';
-import { type TestFiles, testFiles, upload } from '../../test/files.js';
+import {
+  fixture as fileFixture,
+  sha256,
+  type TestFiles,
+  testFiles,
+  upload,
+} from '../../test/files.js';
 import { call, join, type Person, peopleApp, person, type RecordedJob } from '../../test/people.js';
 import {
   builtinType,
@@ -21,7 +27,9 @@ import {
   ok,
   own,
 } from '../../test/things.js';
+import { resetNativeSyncEpoch } from '../auth/native.js';
 import { withScope } from '../db/scope.js';
+import { tokenAccessOf } from '../tokens/access.js';
 import { indexVisualAttachment } from './job.js';
 import { localVisualProvider, type VisualProvider } from './provider.js';
 
@@ -202,6 +210,34 @@ it('queues bounded scoped indexing, audits it once with an idempotency key, and 
   );
 });
 
+it('resumes the reindex scan after an attachment ID within the requested location', async () => {
+  const loc = await createLocation(app, db, owner, 'household', 'Backfill cursor');
+  const first = await attach(loc, await photo('red', 2));
+  const second = await attach(loc, await photo('blue', 2));
+  await expect(
+    index(first.attachment.id, owner, {
+      ...fake,
+      encodeImage: async () => {
+        throw new Error('fixture retryable failure');
+      },
+    }),
+  ).resolves.toBe('failed');
+  expect(first.attachment.id < second.attachment.id).toBe(true);
+  sent.length = 0;
+  const result = await call(app, '/api/v1/admin/visual-search/reindex', {
+    as: owner,
+    body: { locationId: loc.id, after: first.attachment.id },
+  });
+  expect(result.statusCode, result.body).toBe(202);
+  expect(result.json()).toEqual({ queued: 1 });
+  expect(sent).toEqual([
+    {
+      name: 'visual-index',
+      data: { attachmentId: second.attachment.id },
+    },
+  ]);
+});
+
 it('isolates photo inputs across principals, separates ambiguous locations, and cancels without writing inventory', async () => {
   const loc = await createLocation(app, db, owner, 'household', 'Garage');
   const a = await makeBox(loc, 'A');
@@ -340,6 +376,156 @@ it('refuses oversized and non-image query inputs before using inference', async 
     body: overPixels,
   });
   expect(oversized.statusCode, oversized.body).toBe(400);
+  const mislabeled = await call(app, `/api/v1/visual-search/input?locationIds=${loc.id}`, {
+    as: owner,
+    headers: { 'content-type': 'image/png' },
+    body: await photo('red'),
+  });
+  expect(mislabeled.statusCode, mislabeled.body).toBe(400);
+});
+
+it('distinguishes disabled encoders, encoder outages, and denied scopes', async () => {
+  const loc = await createLocation(app, db, owner, 'household', 'Encoder status');
+  const offline = await peopleApp(db, {
+    files,
+    visualProvider: { ...fake, isReady: async () => false },
+  });
+  const disabled = await peopleApp(db, { visualProvider: null });
+  try {
+    expect((await status(loc.id, owner, offline)).json()).toMatchObject({
+      generation: fake.generation,
+      encoder: 'unavailable',
+    });
+    expect(
+      (await search({ text: 'mug', locationIds: [loc.id] }, owner, offline)).json(),
+    ).toMatchObject({ outcome: 'unavailable' });
+    expect((await status(loc.id, owner, disabled)).json()).toMatchObject({
+      generation: null,
+      encoder: 'disabled',
+    });
+    const viewer = await person(app, db, 'peter');
+    await join(db, loc.id, viewer.userId, 'viewer');
+    expect((await status(loc.id, viewer)).json()).toMatchObject({
+      access: 'denied',
+      ready: 0,
+      pending: 0,
+      failed: 0,
+    });
+  } finally {
+    await Promise.all([offline.app.close(), disabled.app.close()]);
+  }
+});
+
+it('invalidates photo inputs after a database restore even while the app process is running', async () => {
+  const loc = await createLocation(app, db, owner, 'household', 'Epoch-bound search');
+  const query = (await input(await photo('red'), loc.id)).json<VisualSearchInputResponse>();
+  await resetNativeSyncEpoch(db.pools.auth);
+  expect((await search({ inputId: query.inputId })).statusCode).toBe(404);
+});
+
+it('refuses to deliver a result when the session is revoked during encoding', async () => {
+  const loc = await createLocation(app, db, owner, 'household', 'Revocation race');
+  const member = await person(app, db, 'louis');
+  await join(db, loc.id, member.userId, 'member');
+  const evidence = await attach(loc, await photo('red'));
+  await expect(index(evidence.attachment.id)).resolves.toBe('stored');
+  const racing = await peopleApp(db, {
+    files,
+    visualProvider: {
+      ...fake,
+      encodeText: async () => {
+        await db.pools.auth.query('DELETE FROM auth.session WHERE user_id = $1', [member.userId]);
+        return vector(0);
+      },
+    },
+  });
+  try {
+    const result = await search({ text: 'mug', locationIds: [loc.id] }, member, racing);
+    expect(result.statusCode, result.body).toBe(401);
+  } finally {
+    await racing.app.close();
+  }
+});
+
+it('indexes a HEIC display when it arrives, while retaining and returning the original evidence', async () => {
+  const loc = await createLocation(app, db, owner, 'household', 'iPhone originals');
+  const heic = await fileFixture('image.heic');
+  const evidence = await attach(loc, heic);
+  expect((await status(loc.id)).json()).toMatchObject({ ready: 0, pending: 0, unsupported: 1 });
+  await expect(index(evidence.attachment.id)).resolves.toBe('skipped');
+
+  async function setPreview(jpeg: Buffer) {
+    return call(app, `/api/v1/files/${evidence.file.id}/display`, {
+      as: owner,
+      method: 'PUT',
+      body: jpeg,
+      headers: { 'content-type': 'image/jpeg', 'x-kept-sha256': sha256(jpeg) },
+    });
+  }
+  sent.length = 0;
+  expect((await setPreview(await photo('red'))).statusCode).toBe(200);
+  expect(sent).toContainEqual({
+    name: 'visual-index',
+    data: { attachmentId: evidence.attachment.id },
+  });
+  expect((await status(loc.id)).json()).toMatchObject({ ready: 0, pending: 1, unsupported: 0 });
+  await expect(index(evidence.attachment.id)).resolves.toBe('stored');
+  expect((await search({ text: 'mug', locationIds: [loc.id] })).json()).toMatchObject({
+    outcome: 'matches',
+    coverage: { ready: 1, unsupported: 0 },
+    matches: [{ fileId: evidence.file.id, mime: 'image/heic' }],
+  });
+  const media = ok(
+    await call(app, `/api/v1/files/${evidence.file.id}/url?thingId=${evidence.item.id}`, {
+      as: owner,
+      body: { variant: 'original' },
+    }),
+  );
+  expect((await app.app.inject({ url: String(media.url) })).rawPayload).toEqual(heic);
+
+  expect((await setPreview(await photo('blue'))).statusCode).toBe(200);
+  expect((await status(loc.id)).json()).toMatchObject({ ready: 0, pending: 1, unsupported: 0 });
+  const provider = {
+    ...fake,
+    encodeImage: async () => {
+      expect((await setPreview(await photo('blue', 1))).statusCode).toBe(200);
+      return vector(0);
+    },
+  };
+  await expect(index(evidence.attachment.id, owner, provider)).resolves.toBe('skipped');
+  expect((await search({ text: 'mug', locationIds: [loc.id] })).json()).toMatchObject({
+    outcome: 'partial_coverage',
+    matches: [],
+  });
+  await expect(index(evidence.attachment.id)).resolves.toBe('stored');
+  expect((await search({ text: 'mug', locationIds: [loc.id] })).json()).toMatchObject({
+    outcome: 'no_close_match',
+    matches: [],
+  });
+});
+
+it('indexes an over-limit JPEG through its existing server-made display', async () => {
+  const large = await sharp({
+    create: { width: 4500, height: 4500, channels: 3, background: '#f00' },
+  })
+    .jpeg()
+    .toBuffer();
+  const loc = await createLocation(app, db, owner, 'household', 'Large photos');
+  const evidence = await attach(loc, large);
+  await expect(index(evidence.attachment.id)).resolves.toBe('stored');
+  const legacy = await attach(loc, await sharp(large).resize(4550).jpeg().toBuffer());
+  await own(db, 'UPDATE public.files SET width = NULL, height = NULL WHERE id = $1', [
+    legacy.file.id,
+  ]);
+  await expect(index(legacy.attachment.id)).resolves.toBe('stored');
+  expect((await status(loc.id)).json()).toMatchObject({ ready: 2, pending: 0, unsupported: 0 });
+});
+
+it('keeps visual search and temporary photo inputs outside the bearer token surface', () => {
+  expect(tokenAccessOf('GET', '/api/v1/visual-search/status')).toBe('none');
+  expect(tokenAccessOf('POST', '/api/v1/visual-search')).toBe('none');
+  expect(tokenAccessOf('POST', '/api/v1/visual-search/input')).toBe('none');
+  expect(tokenAccessOf('DELETE', '/api/v1/visual-search/input/:id')).toBe('none');
 });
 
 it('filters viewers, revocation, trashed subjects, role changes and in-flight moves before returning evidence', async () => {

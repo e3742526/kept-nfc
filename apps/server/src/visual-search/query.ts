@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import {
   VISUAL_INPUT_TTL_MS,
+  type VisualSearchCoverage,
   type VisualSearchInputResponse,
   type VisualSearchRequest,
   type VisualSearchResult,
@@ -44,6 +45,11 @@ const emptyResult = (outcome: VisualSearchResult['outcome']): VisualSearchResult
   outcome,
 });
 
+const deniedCoverage: VisualSearchCoverage = { ...EMPTY_COVERAGE, access: 'denied' };
+
+const hasScope = (admitted: string[], requested?: string[]) =>
+  admitted.length > 0 && (!requested || new Set(requested).size === admitted.length);
+
 const sameLocations = (left: string[], right: string[]) =>
   left.length === right.length && left.every((id, index) => id === right[index]);
 
@@ -85,7 +91,9 @@ export class VisualQueries {
     scope: Scope,
     principal: string,
     bytes: Buffer,
-    requested?: string[],
+    mime: string | undefined,
+    requested: string[] | undefined,
+    reauthorize: () => Promise<void>,
   ): Promise<VisualSearchInputResponse> {
     const provider = this.provider;
     if (!provider) throw visualUnavailable();
@@ -106,12 +114,12 @@ export class VisualQueries {
       const locations = await withScope(this.pool, scope, (_tx, client) =>
         visualLocations(client, requested),
       );
-      if (locations.length === 0 || (requested && new Set(requested).size !== locations.length)) {
+      if (!hasScope(locations, requested)) {
         throw notFound();
       }
       let image: Buffer;
       try {
-        image = await prepareVisualImage(bytes);
+        image = await prepareVisualImage(bytes, mime);
       } catch (error) {
         if (error instanceof InvalidVisualImage)
           throw invalid('Send a supported image within the size and pixel limits.');
@@ -119,6 +127,7 @@ export class VisualQueries {
       }
       let vector: number[];
       try {
+        await reauthorize();
         const current = await withScope(this.pool, scope, (_tx, client) =>
           visualLocations(client, locations),
         );
@@ -130,6 +139,7 @@ export class VisualQueries {
         image.fill(0);
       }
       if (!validVector(vector)) throw visualUnavailable();
+      await reauthorize();
       const current = await withScope(this.pool, scope, (_tx, client) =>
         visualLocations(client, locations),
       );
@@ -152,12 +162,20 @@ export class VisualQueries {
     }
   }
 
-  async status(scope: Scope, requested?: string[]) {
+  async status(
+    scope: Scope,
+    requested: string[] | undefined,
+    reauthorize: () => Promise<void>,
+  ): Promise<VisualSearchCoverage> {
     const provider = this.provider;
-    if (!provider) return EMPTY_COVERAGE;
-    return withScope(this.pool, scope, async (_tx, client) =>
-      visualCoverage(client, provider.generation, await visualLocations(client, requested)),
-    );
+    if (!provider) return { ...EMPTY_COVERAGE, encoder: 'disabled' };
+    const encoder = (await provider.isReady?.()) === false ? 'unavailable' : 'ready';
+    await reauthorize();
+    return withScope(this.pool, scope, async (_tx, client) => {
+      const admitted = await visualLocations(client, requested);
+      if (!hasScope(admitted, requested)) return { ...deniedCoverage, encoder };
+      return { ...(await visualCoverage(client, provider.generation, admitted)), encoder };
+    });
   }
 
   private async inputVector(scope: Scope, principal: string, id: string): Promise<Input> {
@@ -181,6 +199,7 @@ export class VisualQueries {
     scope: Scope,
     principal: string,
     body: VisualSearchRequest,
+    reauthorize: () => Promise<void>,
   ): Promise<VisualSearchResult> {
     const provider = this.provider;
     if (!provider) return emptyResult('unavailable');
@@ -192,10 +211,30 @@ export class VisualQueries {
       const admitted = input
         ? input.locations.filter((id) => !requested || requested.includes(id))
         : await withScope(this.pool, scope, (_tx, client) => visualLocations(client, requested));
+      if (!hasScope(admitted, requested)) {
+        if (input) throw notFound();
+        return { ...emptyResult('unavailable'), coverage: deniedCoverage };
+      }
       const start = await withScope(this.pool, scope, (_tx, client) =>
         visualCoverage(client, provider.generation, admitted),
       );
-      if (start.ready === 0) return this.result(start, [], body.limit ?? 10);
+      if (start.ready === 0) {
+        if ((await provider.isReady?.()) === false) return emptyResult('unavailable');
+        await reauthorize();
+        const fresh = await withScope(this.pool, scope, async (_tx, client) => {
+          const allowed = await visualLocations(client, admitted);
+          if (!sameLocations(admitted, allowed)) {
+            if (input) throw notFound();
+            return { ...emptyResult('unavailable'), coverage: deniedCoverage };
+          }
+          return this.result(
+            await visualCoverage(client, provider.generation, allowed),
+            [],
+            body.limit ?? 10,
+          );
+        });
+        if (fresh.coverage.ready === 0) return fresh;
+      }
       let vector: number[];
       try {
         vector = 'text' in body ? await provider.encodeText(body.text) : (input?.vector ?? []);
@@ -203,9 +242,11 @@ export class VisualQueries {
         return emptyResult('unavailable');
       }
       if (!validVector(vector)) return emptyResult('unavailable');
+      await reauthorize();
       if (input && 'inputId' in body) await this.inputVector(scope, principal, body.inputId);
       const limit = body.limit ?? 10;
-      return withScope(this.pool, scope, async (_tx, client) => {
+      const minimumScore = input ? PHOTO_MIN_SCORE : TEXT_MIN_SCORE;
+      const result = await withScope(this.pool, scope, async (_tx, client) => {
         if (input && 'inputId' in body) {
           const allowed = await visualLocations(client, input.locations);
           if (this.inputs.get(body.inputId) !== input || !sameLocations(input.locations, allowed)) {
@@ -214,18 +255,33 @@ export class VisualQueries {
           }
         }
         const current = await visualLocations(client, admitted);
+        if (!sameLocations(admitted, current) && requested) {
+          return { ...emptyResult('unavailable'), coverage: deniedCoverage };
+        }
         const coverage = await visualCoverage(client, provider.generation, current);
         const { matches, ambiguous } = await visualMatches(
           client,
           provider.generation,
           current,
           vector,
-          input ? PHOTO_MIN_SCORE : TEXT_MIN_SCORE,
+          minimumScore,
           Math.max(limit, 2),
           AMBIGUITY_MARGIN,
         );
-        return this.result(coverage, matches, limit, ambiguous);
+        const lead = matches[0];
+        const uncertain = !!lead && lead.score < minimumScore + AMBIGUITY_MARGIN;
+        return this.result(coverage, matches, limit, ambiguous, uncertain);
       });
+      await reauthorize();
+      const current = await withScope(this.pool, scope, (_tx, client) =>
+        visualLocations(client, admitted),
+      );
+      if (input && 'inputId' in body && this.inputs.get(body.inputId) !== input) throw notFound();
+      if (!sameLocations(admitted, current)) {
+        if (input) throw notFound();
+        return { ...emptyResult('unavailable'), coverage: deniedCoverage };
+      }
+      return result;
     } finally {
       release();
     }
@@ -236,14 +292,20 @@ export class VisualQueries {
     matches: VisualSearchResult['matches'],
     limit: number,
     ambiguous = false,
+    uncertain = false,
   ): VisualSearchResult {
     const outcome = ambiguous
       ? 'ambiguous'
       : matches.length > 0
         ? 'matches'
-        : coverage.pending + coverage.failed + coverage.paused > 0
+        : coverage.pending + coverage.failed + coverage.paused + (coverage.unsupported ?? 0) > 0
           ? 'partial_coverage'
           : 'no_close_match';
-    return { outcome, coverage, matches: matches.slice(0, limit) };
+    return {
+      outcome,
+      coverage,
+      matches: matches.slice(0, limit),
+      ...(uncertain && !ambiguous ? { uncertain: true as const } : {}),
+    };
   }
 }
