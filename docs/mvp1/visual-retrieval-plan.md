@@ -19,28 +19,120 @@ Run ordinary search, text-semantic search, full-image vectors, and full-image pl
 
 ## Whole-image interfaces
 
-| Interface | First slice |
+| Interface | Behavior |
 | --- | --- |
-| `POST /api/v1/visual-search/input` | Accepts raw JPEG, PNG or WebP up to 8 MiB and 20 megapixels with optional comma-separated `locationIds`. Returns `{inputId, expiresAt}`. The server encodes the bytes in memory and retains only the vector, bound to the signed-in user, session and authorized locations for at most 15 minutes. |
-| `DELETE /api/v1/visual-search/input/:id` | Clears the caller's input immediately. Repeat calls return 204. |
-| `POST /api/v1/visual-search` | Accepts exactly one of `text` or `inputId`, optional `locationIds` and a limit of 1–20. Returns `{outcome, coverage, matches}`. Photo queries can narrow the scope bound at upload. The current generation indexes and queries whole images. |
-| `GET /api/v1/visual-search/status` | Returns `generation` and scoped `ready`, `pending`, `failed` and `paused` counts. An unconfigured server returns a null generation. |
-| `POST /api/v1/admin/visual-search/reindex` | A signed-in location owner or admin submits `{locationId}`. Each audited call enqueues a bounded batch for the configured generation and returns `{queued}`. |
+| `POST /api/v1/visual-search/input` | Accepts JPEG, PNG or WebP up to 8 MiB and 20 megapixels, with optional comma-separated `locationIds`. Returns `{inputId, expiresAt}`. Encoding uses memory. The vector is bound to the principal, session or token, server origin, restore epoch, and authorized locations for up to 15 minutes. |
+| `DELETE /api/v1/visual-search/input/:id` | Clears the caller's temporary input. Repeat calls return 204. |
+| `POST /api/v1/visual-search` | Accepts one of `text` and `inputId`, optional `locationIds`, and a limit from 1 through 20. Photo queries can narrow the scope specified at upload. |
+| `GET /api/v1/visual-search/status` | Returns the generation and scoped counts for ready, waiting, failed and paused photos. Current servers also report encoder health, denied scopes and photos without a supported rendition. |
+| `POST /api/v1/admin/visual-search/reindex` | A signed-in location owner or admin submits `{locationId}`. Each audited request enqueues up to 100 attachments for the configured generation and returns `{queued, next?}`. Pass the optional continuation as `after` in the next request. |
 
-A match includes the record and location IDs, current containment path, source attachment and file, capture date and the cosine score used for ranking. The browser shows possible matches and recorded locations. It requests a fresh display URL from Kept's existing authorized media route when someone opens evidence. Results keep the best photo for each record. The page handles no close match, incomplete indexing, ambiguity and unavailable inference. Photo search applies location scope, and the usual search filters continue to apply to ordinary results. Searching creates no inventory records.
+The native Search and Browse screens open **Find in photos** and **Search with a photo**.
+The first can reuse the search phrase. Camera and library queries use the existing native
+session and a temporary JPEG. The app shows the live room and container path, evidence
+thumbnail and an original-photo action. Users can open the record, navigate to a containing
+bin, or continue into Find where the record has a supported bin label. Returning from record
+navigation preserves the visual query and its current results. A result identifies a stored
+photo to inspect. A weak match or closely ranked locations need extra verification.
 
-The ranking checks for close alternatives across distinct recorded paths before
-applying the result limit. When several results are requested, one result can
-show the strongest close alternative even if one box would otherwise fill the
-list. A limit of one still reports ambiguity and returns the leading record.
-Canceling a photo query stops the search and releases the temporary input when
-the upload returns its handle.
+Image search supports whole authorized locations. Room, bin, category, nested contents and
+AND/OR filters still apply to ordinary Browse. Visual search has no server-side predicates for
+those filters. The visual screen shows its effective scope and requests only that scope.
+Live RLS, attachment eligibility and session checks govern candidates and coverage. Source
+photos use the ordinary authorized media routes.
 
-## Run the first slice
+Native photo queries convert JPEG, PNG, WebP and HEIC/HEIF with ImageIO to upright JPEG at
+up to 2,048 pixels per side. The source is bounded at 24 MiB and 100 megapixels for this
+conversion. Local lexical search continues offline. Visual search needs a connection and
+keeps no offline queue. Query cancellation releases the handle when the upload delivers it.
+Temporary vectors expire within 15 minutes, or sooner on process restart. Multiple replicas
+would need affinity for upload, search and cleanup.
 
-Start the [pinned loopback OpenCLIP sidecar](../../scripts/visual-retrieval/README.md#opt-in-local-encoder) and opt in on the server and worker. A location owner or admin can enqueue existing eligible photos with the scoped reindex route. Newly attached eligible photos use the durable jobs. The Search page adds **Find in photos** for the description in its search box and **Search with a photo** for a new query image when a generation is configured.
+## Index and reindex
 
-Whole-image indexing currently covers eligible JPEG, PNG and WebP photo attachments. It skips documents, drafts, in-review attachments and sources outside the size limits. Viewers cannot query vectors derived from originals. In a cross-location move or photo replacement, live source checks make the previous vector ineligible. Reindex the destination if a replacement vector is pending. Temporary photo queries use process memory and can expire sooner if the process restarts. Use the same application process for upload and search in a multi-replica setup.
+Start the [pinned loopback OpenCLIP sidecar](../../scripts/visual-retrieval/README.md#opt-in-local-encoder)
+and opt in on the server and worker. Normal in-limit JPEG, PNG and WebP originals are decoded
+and resized for inference. An authorized, bounded display JPEG covers ordinary HEIC/HEIF and
+large camera originals when available. Native uploads retain the original and can supply this
+display rendition. Originals remain the source of evidence, with their existing checksums.
+Existing HEIC/HEIF without a readable display rendition may need one generated where HEVC
+decoding is available. A one-version server rollback can still serve authorized originals and
+display URLs. The older AI extraction worker can miss newer HEIC renditions because it uses
+a fixed blob path. Documents, draft and in-review attachments stay outside this index.
+Viewers cannot query embeddings derived from originals.
+
+Check scoped status after adding photos. Use the audited reindex route for eligible photos
+missing from the current generation. Advance with the returned cursor to pass repeatedly failing sources. Let the queue drain
+before checking coverage or retrying failures. Moving a record updates its displayed
+path. Source changes and permission changes recheck eligibility, and replaced/deleted sources
+lose their old indexed references. A verified restore advances the epoch and discards derived
+vectors after verifying the database against the backup manifest. Reindex the restored
+locations from the recovered originals and their authorized display renditions.
+
+## Held-out household-photo proxy
+
+The [predeclared protocol](../../scripts/visual-retrieval/household-protocol.md) fixes the
+published beta thresholds and separates the COIL-20 tuning evidence from held-out Caltech Home
+Objects scenes and independent object exposures. The benchmark used 70 gallery scenes and
+neutral metadata. It measured the released OpenCLIP ViT-B/32 whole-image configuration first.
+The [reproduction instructions](../../scripts/visual-retrieval/README.md) identify the corpus and
+commands.
+
+| Held-out measure | Text to photo | Independent photo to photo |
+| --- | ---: | ---: |
+| Top 1 | 43/63 (68.3%) | 42/59 (71.2%) |
+| Top 5 | 53/63 (84.1%) | 48/59 (81.4%) |
+| Crowded top 5 | 41/56 (73.2%) | 39/52 (75.0%) |
+| Distinctive top 5 | — | 18/19 (94.7%) |
+| Any candidates for absent queries | 10/12 (83.3%) | 16/21 (76.2%) |
+| Likely claims for absent queries with released cutoff | 2/12 (16.7%) | 10/21 (47.6%) |
+| No-match precision | 2/3 | 5/10 |
+
+The additional weak-match tier reclassifies one absent photo query, leaving 9/21 likely claims
+and 2/12 for text. Both exceed the beta maximum of 10%. Four overlapping gallery crops
+improved crowded text top five to 51/56, returned candidates for all 12 absent text queries
+and used five times the raw vector storage. The shipped index stays whole-image. Ranking stays
+provisional. A calibration or model change needs a separate tuning set and a fresh holdout.
+
+Loopback encoder median/p95 was 11.34/12.42 ms for text and 19.72/20.57 ms for JPEG queries.
+The encoder processed 45.47 stored photos/sec and used about 609 MiB resident memory after the
+run. The 70 vectors contain 143,360 bytes of float32 values before PostgreSQL and index overhead.
+These measurements cover the Apple Silicon host and public proxy corpus. Keep G3 open for
+absent-query behavior and physical acceptance. Keep G6 open for the household pilot.
+
+### Actual application and scale
+
+Disposable Fastify, PostgreSQL 18 and its durable worker reached 70/70 eligible attachments.
+The first attachment became searchable after 1.20 seconds and the complete load took 139.26
+seconds (0.50 photos/sec). The existing worker cadence dominates this result. Original
+uploads took 28.63/37.03 ms median/p95. The browser check used Chromium at 375 px, verified
+that ordinary Search found no matching text, exercised both visual actions, opened authorized
+stored evidence and observed temporary-input deletion.
+
+| Scope | Median | p95 | Vector relation size |
+| --- | ---: | ---: | ---: |
+| Held-out text API | 56.75 ms | 67.62 ms | 352 KiB at 70 |
+| Held-out photo API, including query upload and encoding | 80.62 ms | 95.75 ms | Same index |
+| Photo-query upload, preparation and encoding alone | 50.03 ms | 62.81 ms | — |
+| 300 scoped vectors | 114.92 ms | 129.43 ms | 1.05 MiB |
+| 3,000 scoped vectors | 308.60 ms | 328.37 ms | 9.30 MiB |
+| 10,000 scoped vectors | 301.85 ms | 426.11 ms | 30.70 MiB |
+
+The scale runs used 19 warm samples per size and duplicate vectors on disposable authorized
+records. They measure actual application and database work at fixed scope, with no additional
+accuracy evidence. Native results request eight cards, with the backend capped at 20. Chromium rendered
+20 results at 10,000 rows with 12.35–12.89 MiB of JavaScript heap after garbage collection.
+Physical client memory and long-running indexing throughput remain unmeasured.
+
+### Next qualification work
+
+1. Improve abstention for look-alikes with a separately labeled calibration set and verify
+   both positive recall and likely false positives against a fresh held-out corpus.
+2. Complete the signed-in native workflow with a disposable account, representative camera
+   photos, NFC tags and a recovery destination. Record query latency over the phone's normal
+   network and coverage of its actual capture formats.
+3. Run the household pilot and a production read-only verification after deployment.
+   Repeat the bounded backfill if the generation changes or a database is restored.
 
 ## First-slice evidence
 
