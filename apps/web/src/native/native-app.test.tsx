@@ -6,6 +6,7 @@ import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
 import { paths } from '@/api/paths';
+import * as cameraSession from '@/camera/session';
 import { ConfirmProvider } from '@/components/ui/confirm';
 import { activateLocale, i18n } from '@/i18n/i18n';
 import { expectLogicalOnly } from '@/test/render';
@@ -862,6 +863,79 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('starts with the QR camera and switches between QR and NFC from Scan', async ({
+    onTestFinished,
+  }) => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const stopCamera = vi.fn();
+    const getUserMedia = vi.fn(
+      async () => ({ getTracks: () => [{ stop: stopCamera }] }) as unknown as MediaStream,
+    );
+    const camera = vi.spyOn(cameraSession, 'cameraEnv').mockReturnValue({
+      secure: true,
+      media: { getUserMedia },
+    });
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+    onTestFinished(() => {
+      camera.mockRestore();
+      play.mockRestore();
+    });
+    let deliverTag: (tag: TagReading) => void = () => {};
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag').mockImplementationOnce(
+      () =>
+        new Promise<TagReading>((resolve) => {
+          deliverTag = resolve;
+        }),
+    );
+    const cancelTag = vi.spyOn(env.adapters.nfc, 'cancelTag');
+    const user = userEvent.setup();
+    env.renderApp();
+
+    const scanTab = within(await screen.findByRole('navigation')).getByRole('button', {
+      name: 'Scan',
+    });
+    await user.click(scanTab);
+    expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
+    await waitFor(() => expect(play).toHaveBeenCalledTimes(1));
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(scanTag).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
+    expect(screen.queryByLabelText('Camera view')).not.toBeInTheDocument();
+    expect(stopCamera).toHaveBeenCalledBefore(scanTag);
+    expect(scanTag).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: 'Scan QR code' }));
+    expect(cancelTag).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+
+    // A tag result already on its way from the bridge cannot open a box after switching.
+    await act(async () => deliverTag({ status: 'read', url: `${origin}/l/7KQ4MZ` }));
+    expect(screen.getByRole('heading', { name: 'Identify a label' })).toBeInTheDocument();
+
+    env.pushScan({ status: 'cancelled' }, { status: 'read', url: `${origin}/l/7KQ4MZ` });
+    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
+    expect(await screen.findByText('Scan cancelled.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Scan QR code' })).toBeEnabled();
+    await user.click(screen.getByRole('button', { name: 'Scan again' }));
+    expect(await screen.findByRole('heading', { name: 'Winter Box' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Scan' }));
+    expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
+    expect(getUserMedia).toHaveBeenCalledTimes(3);
+    expect(scanTag).toHaveBeenCalledTimes(3);
+  });
+
   it('creates a room and captures an item there from the home destination picker', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({

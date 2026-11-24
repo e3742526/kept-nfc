@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { appDetect } from '@/camera/scanner';
 import { useErrorText } from '@/components/page';
 import type { Read } from '@/components/scan/resolve';
@@ -49,6 +50,8 @@ export type LabelBox = {
 
 export const FIND_TARGET_KEY = 'findTarget';
 
+type ScanMode = 'qr' | 'qr-result' | 'nfc';
+
 export function LabelPanel({
   connection,
   cache,
@@ -76,7 +79,7 @@ export function LabelPanel({
   const [busy, setBusy] = useState(false);
   const [finding, setFinding] = useState(false);
   const [findPausedState, setFindPausedState] = useState<'timeout' | 'interrupted' | null>(null);
-  const [camera, setCamera] = useState(false);
+  const [scanMode, setScanMode] = useState<ScanMode>(action === 'identify' ? 'qr' : 'nfc');
   const [claim, setClaim] = useState<{ code: string; locationId: string }>();
   const [typed, setTyped] = useState('');
   const [status, setStatus] = useState('');
@@ -88,6 +91,7 @@ export function LabelPanel({
   const inFlight = useRef(false);
   const alreadyAlerted = useRef(false);
   const live = useRef(true);
+  const identifyRead = useRef<AbortController | null>(null);
   const findSessionId = useRef<string | null>(null);
   const findGeneration = useRef(0);
   const invalidateFindSession = useCallback(() => {
@@ -294,10 +298,10 @@ export function LabelPanel({
     [adapters, box, connection, isCurrentFindSession, nonMatchText, t],
   );
 
-  async function read(text: string, mode: 'qr' | 'nfc', format?: string) {
+  async function read(text: string, mode: 'qr' | 'nfc', format?: string, signal?: AbortSignal) {
     setClaim(undefined);
     const result = await resolveLabel(connection, cache, text, mode, format, false, adapters);
-    if (!live.current) return;
+    if (!live.current || signal?.aborted) return;
     if (action === 'find') {
       await handleFindResult(result, false);
       return;
@@ -324,12 +328,38 @@ export function LabelPanel({
   }
 
   function scanIdentify() {
+    if (inFlight.current) return;
+    // Release the camera before asking iOS to start its NFC reader.
+    if (scanMode === 'qr') flushSync(() => setScanMode('nfc'));
+    else setScanMode('nfc');
     return run(async () => {
-      const result = await adapters.nfc.scanTag(connection, { mode: 'read', messages });
-      if (!live.current) return;
-      if (result.status === 'read' && result.url) await read(result.url, 'nfc');
-      else setStatus(nfcStatus(result));
+      const controller = new AbortController();
+      const { signal } = controller;
+      identifyRead.current = controller;
+      setClaim(undefined);
+      try {
+        const result = await adapters.nfc.scanTag(connection, { mode: 'read', messages });
+        if (!live.current || signal.aborted) return;
+        if (result.status === 'read' && result.url)
+          await read(result.url, 'nfc', undefined, signal);
+        else setStatus(nfcStatus(result));
+      } catch (error) {
+        if (!signal.aborted) throw error;
+      } finally {
+        identifyRead.current = null;
+      }
     });
+  }
+
+  function startQr() {
+    if (identifyRead.current) {
+      identifyRead.current.abort();
+      void adapters.nfc.cancelTag().catch(() => {});
+    }
+    setStatus('');
+    setCandidates([]);
+    setClaim(undefined);
+    setScanMode('qr');
   }
 
   function startContinuousFind() {
@@ -491,8 +521,9 @@ export function LabelPanel({
     onClose();
   }
 
-  const openCamera = (readout: Read) => {
-    setCamera(false);
+  const readCamera = (readout: Read) => {
+    if (inFlight.current) return;
+    setScanMode(action === 'identify' ? 'qr-result' : 'nfc');
     void run(() => read(readout.text, 'qr', readout.format));
   };
 
@@ -630,11 +661,41 @@ export function LabelPanel({
       ) : (
         <>
           <div className="kept-card">
-            <p className="text-small text-ink-2">
-              <Trans>Hold the top of your iPhone close to one tag at a time.</Trans>
-            </p>
+            {(action === 'find' || scanMode === 'nfc') && (
+              <p className="text-small text-ink-2">
+                <Trans>Hold the top of your iPhone close to one tag at a time.</Trans>
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
-              {action === 'find' ? (
+              {action === 'identify' ? (
+                <>
+                  <Button
+                    isDisabled={scanMode !== 'nfc' && busy}
+                    onPress={scanMode === 'nfc' ? startQr : () => void scanIdentify()}
+                  >
+                    {scanMode === 'nfc' ? (
+                      <>
+                        <Camera size={18} aria-hidden />
+                        <Trans>Scan QR code</Trans>
+                      </>
+                    ) : (
+                      <>
+                        <Nfc size={18} aria-hidden />
+                        <Trans>Scan NFC tag</Trans>
+                      </>
+                    )}
+                  </Button>
+                  {scanMode !== 'qr' && (
+                    <Button
+                      variant="secondary"
+                      isDisabled={busy}
+                      onPress={scanMode === 'nfc' ? () => void scanIdentify() : startQr}
+                    >
+                      <Trans>Scan again</Trans>
+                    </Button>
+                  )}
+                </>
+              ) : (
                 <Button isPending={busy} onPress={() => void startContinuousFind()}>
                   <Nfc size={18} aria-hidden />
                   {finding ? (
@@ -644,11 +705,6 @@ export function LabelPanel({
                   ) : (
                     <Trans>Scan NFC tag</Trans>
                   )}
-                </Button>
-              ) : (
-                <Button isPending={busy} onPress={() => void scanIdentify()}>
-                  <Nfc size={18} aria-hidden />
-                  <Trans>Scan NFC tag</Trans>
                 </Button>
               )}
               {finding && (
@@ -665,8 +721,8 @@ export function LabelPanel({
                   <Trans>Stop scanning</Trans>
                 </Button>
               )}
-              {!camera && (
-                <Button variant="secondary" isDisabled={busy} onPress={() => setCamera(true)}>
+              {action === 'find' && scanMode !== 'qr' && (
+                <Button variant="secondary" isDisabled={busy} onPress={() => setScanMode('qr')}>
                   <Camera size={18} aria-hidden />
                   <Trans>Scan QR code</Trans>
                 </Button>
@@ -687,15 +743,17 @@ export function LabelPanel({
               </div>
             </div>
           )}
-          {camera && (
+          {scanMode === 'qr' && (
             <div className="relative min-h-52 overflow-hidden rounded-xl bg-charcoal">
-              <ScannerView detect={appDetect()} paused={busy} onRead={openCamera} />
-              <div className="relative z-10 p-2">
-                <Button variant="secondary" onPress={() => setCamera(false)}>
-                  <X size={16} aria-hidden />
-                  <Trans>Close camera</Trans>
-                </Button>
-              </div>
+              <ScannerView detect={appDetect()} paused={busy} onRead={readCamera} />
+              {action === 'find' && (
+                <div className="relative z-10 p-2">
+                  <Button variant="secondary" onPress={() => setScanMode('nfc')}>
+                    <X size={16} aria-hidden />
+                    <Trans>Close camera</Trans>
+                  </Button>
+                </div>
+              )}
             </div>
           )}
           <form
