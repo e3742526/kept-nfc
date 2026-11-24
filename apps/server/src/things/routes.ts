@@ -84,7 +84,12 @@ function optionalIfMatch(req: FastifyRequest): number | null {
   return req.headers['if-match'] === undefined ? null : requireIfMatch(req);
 }
 
-const Page = z.object({ items: z.array(ThingRowSchema), next_cursor: z.string().nullable() });
+const Page = z.object({
+  items: z.array(ThingRowSchema),
+  next_cursor: z.string().nullable(),
+  total: z.number().int().optional(),
+  categoryInheritedIds: z.array(z.uuid()).optional(),
+});
 
 /** POST /things' answer: the view, and the own codes the thing has once it committed (D208). */
 const CreatedThingSchema = ThingViewSchema.extend({ ownCodes: z.array(z.string()) });

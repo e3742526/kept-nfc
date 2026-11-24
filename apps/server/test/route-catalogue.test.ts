@@ -31,6 +31,8 @@ const db = await testDb();
 const ALLOWLIST: Record<string, string> = {
   'POST /api/v1/native/apple':
     'verifies an Apple identity token and starts an expiring iPhone sign-in; linking and native session creation have their own audit events',
+  'POST /api/v1/native/photo-proposals':
+    'reads an inference copy in memory using the location provider and returns suggestions; approved records and evidence are audited when saved through sync',
   'POST /api/v1/auth/*':
     "Better Auth's own endpoints (sign-in and -out, passkeys, 2FA, password reset): authentication, not a change to Kept's data; the security notices they trigger are mailed",
   'POST /api/v1/auth/magic-link/verify':

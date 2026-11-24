@@ -171,6 +171,67 @@ it('keeps a device-suggested capture and its photo without queuing server extrac
   ).toHaveLength(1);
 });
 
+it('replays reviewed entries with one shared original and keeps the other entry’s evidence after trash', async () => {
+  const headers = { ...(await nativeSession()), origin: t.publicUrl };
+  const image = await uniqueJpeg();
+  const fileId = newId();
+  const batchId = newId();
+  const result = await upload(t, { cookie: headers.cookie }, home.id, image, {
+    id: fileId,
+    cls: 'evidence',
+    contentType: 'image/jpeg',
+    headers,
+  });
+  expect(result.statusCode, result.body).toBe(201);
+  const ops = ['Socket set', 'Tape measure'].map((name) =>
+    captureOp(
+      home.id,
+      { placeId: home.unplacedId },
+      {
+        name,
+        batchId,
+        reviewSuggestions: true,
+        captureIntent: 'record',
+        skipServerSuggestions: true,
+        files: [{ fileId, role: 'photo' }],
+      },
+      { payloadVersion: NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION },
+    ),
+  );
+  const sync = () =>
+    t.app.inject({
+      method: 'POST',
+      url: syncUrl,
+      headers,
+      payload: { clientVersion: CLIENT_VERSION, ops },
+    });
+  const first = await sync();
+  expect(first.statusCode, first.body).toBe(200);
+  expect(first.json().results.map((row: { outcome: string }) => row.outcome)).toEqual([
+    'applied',
+    'applied',
+  ]);
+  expect((await sync()).json()).toEqual(first.json());
+  const [left, right] = ops;
+  const trashed = await t.app.inject({
+    method: 'POST',
+    url: `/api/v1/things/${left?.payload.id}/trash`,
+    headers,
+    payload: {},
+  });
+  expect(trashed.statusCode, trashed.body).toBe(200);
+  const attachments = await t.app.inject({
+    url: `/api/v1/things/${right?.payload.id}/attachments`,
+    headers,
+  });
+  expect(attachments.json().items).toEqual([
+    expect.objectContaining({
+      role: 'photo',
+      file: expect.objectContaining({ id: fileId, sha256: sha256(image) }),
+    }),
+  ]);
+});
+
 const oldCreateThing = CreateThingPayload.omit({
   reviewSuggestions: true,
   captureIntent: true,

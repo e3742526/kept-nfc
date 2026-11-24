@@ -34,6 +34,21 @@ export const MIN_PAYLOAD_VERSION = 1;
 export const NATIVE_CAPTURE_PAYLOAD_VERSION = 2;
 export const NATIVE_INVENTORY_PAYLOAD_VERSION = 3;
 export const NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION = 4;
+
+export const DEVICE_PHOTO_PROPOSAL_LIMIT = 12;
+export const DevicePhotoProposals = z.strictObject({
+  items: z
+    .array(
+      z.strictObject({
+        name: z.string().trim().min(1).max(200),
+        quantity: z.number().int().positive().max(10_000).nullable().optional(),
+        categories: z.array(z.string().trim().min(1).max(60)).max(4).nullable().optional(),
+      }),
+    )
+    .min(1)
+    .max(DEVICE_PHOTO_PROPOSAL_LIMIT),
+});
+export type DevicePhotoProposal = z.infer<typeof DevicePhotoProposals>['items'][number];
 export const NativeCaptureCapabilitiesSchema = z.object({
   contractVersion: z.literal(1),
   capturePayloadVersions: z.array(z.number().int().positive()),

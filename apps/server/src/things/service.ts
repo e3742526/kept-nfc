@@ -1352,6 +1352,21 @@ const ICU = 'COLLATE "und-x-icu"';
 /** The list's filters, without paging (GET /things, GET /things.csv). */
 export type ThingListFilter = Omit<ListQuery, 'limit' | 'cursor' | 'group' | 'sort' | 'dir'>;
 
+/** Live ancestors in the caller's scope, with a hard cycle guard from UNION. */
+function anyParent(condition: string): string {
+  return `EXISTS (
+    WITH RECURSIVE parents(id, place_id, container_id) AS (
+      SELECT b.id, b.place_id, b.container_id FROM public.things b
+       WHERE b.id = t.container_id AND b.deleted_at IS NULL
+      UNION
+      SELECT b.id, b.place_id, b.container_id FROM public.things b
+       JOIN parents p ON b.id = p.container_id WHERE b.deleted_at IS NULL
+    )
+    SELECT 1 FROM parents b WHERE ${condition})`;
+}
+
+const parentTagMatch = (ids: string, all: boolean) => anyParent(tagMatchSql('b.id', ids, all));
+
 /**
  * The WHERE conditions of GET /things for `q`, over `public.things t`, their values added through
  * `p`. Shared by the list and its CSV (lists/things-csv.ts, D169), so the file holds exactly the
@@ -1363,6 +1378,7 @@ export async function thingListWhere(
   p: (v: unknown) => string,
 ): Promise<string[]> {
   const where = ['t.deleted_at IS NULL'];
+  const groups: string[] = [];
   // The multi-value filters are "any of" their values or, named in `not`, "none of" them
   // (D205): a thing with no type, brand or owner is "none of" any (http/list-filters.ts). Every
   // location named either way must be one the caller can see (404, review #36).
@@ -1372,9 +1388,10 @@ export async function thingListWhere(
     values: readonly string[] | undefined,
     name: string,
     cond: (ids: string) => string,
+    into = where,
   ) => {
     const f = filterOf(lowerIds(values), name, q.not);
-    if (f) where.push(matchOf(cond(`${p(f.values)}::uuid[]`), f.not));
+    if (f) into.push(matchOf(cond(`${p(f.values)}::uuid[]`), f.not));
   };
   // One location, the common case: a plain equality, so the list reads things_name_sort_idx in
   // order (places/order.test.ts).
@@ -1386,11 +1403,44 @@ export async function thingListWhere(
     where.push(notHidden('t.location_id'));
   if (q.placeId) where.push(`t.place_id = ${p(q.placeId)}::uuid`);
   if (q.containerId) where.push(`t.container_id = ${p(q.containerId)}::uuid`);
-  many(q.typeId, 'typeId', (ids) => `t.type_id = ANY (${ids})`);
-  many(q.brandId, 'brandId', (ids) => `t.brand_id = ANY (${ids})`);
+  many(q.typeId, 'typeId', (ids) => `t.type_id = ANY (${ids})`, groups);
+  many(q.brandId, 'brandId', (ids) => `t.brand_id = ANY (${ids})`, groups);
   many(q.belongsToId, 'belongsToId', (ids) => `t.belongs_to_person_id = ANY (${ids})`);
   if (q.lifecycle) where.push(`t.lifecycle = ${p(q.lifecycle)}`);
-  many(q.tagId, 'tagId', (ids) => tagMatchSql('t.id', ids, isAll(q.all, q.not, 'tagId')));
+  const category: string[] = [];
+  many(
+    q.tagId,
+    'tagId',
+    (ids) => {
+      const all = isAll(q.all, q.not, 'tagId');
+      const direct = tagMatchSql('t.id', ids, all);
+      return q.categoryContents ? `(${direct} OR ${parentTagMatch(ids, all)})` : direct;
+    },
+    category,
+  );
+  if (q.uncategorized)
+    category.push('NOT EXISTS (SELECT 1 FROM public.thing_tags x WHERE x.thing_id = t.id)');
+  if (category.length) groups.push(`(${category.join(' OR ')})`);
+  const rooms = lowerIds(q.roomId);
+  if (rooms.length) {
+    const ids = `${p(rooms)}::uuid[]`;
+    if (q.nested) {
+      const descendants = `WITH RECURSIVE rooms(id) AS (
+        SELECT r.id FROM public.places r WHERE r.id = ANY (${ids}) AND r.deleted_at IS NULL
+        UNION
+        SELECT r.id FROM public.places r JOIN rooms s ON r.parent_id = s.id WHERE r.deleted_at IS NULL
+      ) SELECT id FROM rooms`;
+      groups.push(
+        `(t.place_id IN (${descendants}) OR ${anyParent(`b.place_id IN (${descendants})`)})`,
+      );
+    } else groups.push(`t.place_id = ANY (${ids})`);
+  }
+  const bins = lowerIds(q.binId);
+  if (bins.length) {
+    const ids = `${p(bins)}::uuid[]`;
+    const direct = `t.container_id = ANY (${ids})`;
+    groups.push(q.nested ? `(${direct} OR ${anyParent(`b.id = ANY (${ids})`)})` : direct);
+  }
   if (q.vendorId) {
     // Through the purchase line: purchases the caller can see.
     where.push(`t.purchase_line_id IN (
@@ -1399,7 +1449,9 @@ export async function thingListWhere(
   }
   const state = filterOf(q.state, 'state', q.not);
   if (state)
-    where.push(matchOf(`(${state.values.map((x) => STATE_SQL[x]).join(' OR ')})`, state.not));
+    groups.push(matchOf(`(${state.values.map((x) => STATE_SQL[x]).join(' OR ')})`, state.not));
+  if (q.unplaced)
+    groups.push('EXISTS (SELECT 1 FROM public.places p WHERE p.id = t.place_id AND p.is_unplaced)');
   if (q.container === '1') {
     where.push(`('container' = ANY (kept.type_capabilities(t.type_id))
                  OR EXISTS (SELECT 1 FROM public.things c
@@ -1419,10 +1471,11 @@ export async function thingListWhere(
   if (q.q) {
     const tsq = tsQuery(q.q);
     const nq = p(q.q);
-    where.push(`(${tsq ? `t.search_tsv @@ to_tsquery('simple', ${p(tsq)}) OR ` : ''}
+    groups.push(`(${tsq ? `t.search_tsv @@ to_tsquery('simple', ${p(tsq)}) OR ` : ''}
                  kept.normalize(t.name) % kept.normalize(${nq})
                  OR kept.normalize(t.serial) = kept.normalize(${nq}))`);
   }
+  if (groups.length) where.push(`(${groups.join(q.match === 'any' ? ' OR ' : ' AND ')})`);
 
   return where;
 }
@@ -1442,13 +1495,20 @@ export function thingListOrder(q: Pick<ListQuery, 'group' | 'sort' | 'dir'>): {
         : q.group === 'tag'
           ? `${tagGroupSql('t.id')} ${ICU}`
           : `''::text ${ICU}`;
-  const desc = q.dir ? q.dir === 'desc' : q.sort !== 'name';
+  const desc = q.dir ? q.dir === 'desc' : q.sort !== 'name' && q.sort !== 'location';
   const sort =
     q.sort === 'updated'
       ? 't.updated_at'
       : q.sort === 'lastSeen'
         ? 't.last_seen_at'
-        : thingNameSql('t');
+        : q.sort === 'recorded'
+          ? 't.created_at'
+          : q.sort === 'location'
+            ? `(coalesce((SELECT l.name FROM public.locations l WHERE l.id = t.location_id), '') ||
+                ' ' || coalesce((SELECT p.name FROM public.places p WHERE p.id = t.place_id),
+                                (SELECT b.name FROM public.things b WHERE b.id = t.container_id),
+                                '')) ${NATURAL}`
+            : thingNameSql('t');
   return { group, sort, desc };
 }
 
@@ -1463,9 +1523,20 @@ export async function listThings(
   client: pg.ClientBase,
   files: FileStorage | null,
   q: ListQuery,
-): Promise<{ items: ThingRow[]; next_cursor: string | null }> {
-  const { text, values } = await listThingsSql(client, q);
-  const { rows } = await client.query<{ id: string; g: string; s: string }>(text, values);
+): Promise<{
+  items: ThingRow[];
+  next_cursor: string | null;
+  total?: number;
+  categoryInheritedIds?: string[];
+}> {
+  const { text, values, count } = await listThingsSql(client, q);
+  const { rows } = await client.query<{ id: string; g: string; s: string; inherited?: boolean }>(
+    text,
+    values,
+  );
+  const total = count
+    ? (await client.query<{ total: number }>(count.text, count.values)).rows[0]?.total
+    : undefined;
   const page = rows.slice(0, q.limit);
   const last = page.at(-1);
   return {
@@ -1475,6 +1546,10 @@ export async function listThings(
       page.map((r) => r.id),
     ),
     next_cursor: rows.length > q.limit && last ? encodeCursor([last.g, last.s, last.id]) : null,
+    ...(total === undefined ? {} : { total }),
+    ...(q.categoryContents
+      ? { categoryInheritedIds: page.filter((row) => row.inherited).map(({ id }) => id) }
+      : {}),
   };
 }
 
@@ -1482,7 +1557,7 @@ export async function listThings(
 export async function listThingsSql(
   client: pg.ClientBase,
   q: ListQuery,
-): Promise<{ text: string; values: unknown[] }> {
+): Promise<{ text: string; values: unknown[]; count?: { text: string; values: unknown[] } }> {
   const values: unknown[] = [];
   const p = (v: unknown) => {
     values.push(v);
@@ -1490,7 +1565,21 @@ export async function listThingsSql(
   };
   const where = await thingListWhere(client, q, p);
   const { group, sort, desc } = thingListOrder(q);
-  const sortCast = q.sort === 'name' ? `::text ${NATURAL}` : '::timestamptz';
+  const sortCast =
+    q.sort === 'name' || q.sort === 'location' ? `::text ${NATURAL}` : '::timestamptz';
+  const count = q.count
+    ? {
+        text: `SELECT count(*)::int AS total FROM public.things t WHERE ${where.join(' AND ')}`,
+        values: [...values],
+      }
+    : undefined;
+  const inheritedIds = q.categoryContents ? filterOf(lowerIds(q.tagId), 'tagId', q.not) : null;
+  let inherited = '';
+  if (inheritedIds && !inheritedIds.not) {
+    const ids = `${p(inheritedIds.values)}::uuid[]`;
+    const all = isAll(q.all, q.not, 'tagId');
+    inherited = `, (${parentTagMatch(ids, all)} AND NOT (${tagMatchSql('t.id', ids, all)})) AS inherited`;
+  }
 
   if (q.cursor) {
     const parsed = ListCursor.safeParse(decodeCursor(q.cursor));
@@ -1509,11 +1598,12 @@ export async function listThingsSql(
     }
   }
   return {
-    text: `SELECT t.id, ${group} AS g, (${sort})::text AS s
+    text: `SELECT t.id, ${group} AS g, (${sort})::text AS s${inherited}
        FROM public.things t LEFT JOIN public.types ty ON ty.id = t.type_id
       WHERE ${where.join('\n        AND ')}
       ORDER BY ${group}, ${sort} ${desc ? 'DESC' : 'ASC'}, t.id
       LIMIT ${p(q.limit + 1)}`,
     values,
+    ...(count ? { count } : {}),
   };
 }

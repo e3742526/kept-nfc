@@ -1428,6 +1428,52 @@ describe('GET /api/v1/things (list-standard)', () => {
       ).toEqual([drill.id]);
     }
   });
+
+  it('browses category and room groups before counting and keyset paging', async () => {
+    const room = ok(
+      await call(t, `/api/v1/locations/${list.id}/places`, {
+        as: ann,
+        body: { name: 'Workshop', kindKey: 'room' },
+      }),
+      201,
+    );
+    const [tools, electrical] = await own<{ id: string }>(
+      db,
+      'INSERT INTO public.tags (owner_account_id, name) VALUES ($1, $2), ($1, $3) RETURNING id',
+      [list.accountId, 'Browse tools', 'Browse electrical'],
+    );
+    const bin = await createThing(t, ann, list, {
+      name: 'Browse bin',
+      placeId: room.id,
+      tagIds: [tools?.id, electrical?.id],
+    });
+    const inside = await createThing(t, ann, list, { name: 'Browse drill', containerId: bin.id });
+    const outside = await createThing(t, ann, list, {
+      name: 'Browse voltage meter',
+      tagIds: [electrical?.id],
+    });
+    const base = `/api/v1/things?locationId=${list.id}&count=1&tagId=${tools?.id}&tagId=${electrical?.id}`;
+    const union = ok(await get(ann, base));
+    expect((union.items as Json[]).map(({ id }) => id)).toEqual([bin.id, outside.id]);
+    const intersection = ok(await get(ann, `${base}&all=tagId`));
+    expect(intersection.total).toBe(1);
+    expect((intersection.items as Json[]).map(({ id }) => id)).toEqual([bin.id]);
+    const inherited = `${base}&all=tagId&roomId=${room.id}&nested=1&categoryContents=1&limit=1`;
+    const page = ok(await get(ann, inherited));
+    expect(page.total).toBe(2);
+    expect(page.categoryInheritedIds).toEqual([]);
+    expect((page.items as Json[]).map(({ id }) => id)).toEqual([bin.id]);
+    const next = ok(
+      await get(ann, `${inherited}&cursor=${encodeURIComponent(String(page.next_cursor))}`),
+    );
+    expect(next.total).toBe(2);
+    expect(next.categoryInheritedIds).toEqual([inside.id]);
+    expect((next.items as Json[]).map(({ id }) => id)).toEqual([inside.id]);
+    const any = ok(await get(ann, `${base}&roomId=${room.id}&nested=1&match=any`));
+    expect(any.total).toBe(3);
+    const denied = await get(bob, inherited);
+    expect(denied.statusCode).toBe(404);
+  });
   it('takes several types, brands and owners, and "is none of" each', async () => {
     const multi = await createLocation(t, db, ann, 'complete', 'Multi home');
     const [bosch, makita] = await own<{ id: string }>(

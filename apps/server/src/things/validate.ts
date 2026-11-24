@@ -196,6 +196,14 @@ export const ListQuery = z.object({
   locationId: manyOf(z.uuid()).optional(),
   placeId: z.uuid().optional(),
   containerId: z.uuid().optional(),
+  roomId: manyOf(z.uuid()).optional(),
+  binId: manyOf(z.uuid()).optional(),
+  nested: z.literal('1').optional(),
+  categoryContents: z.literal('1').optional(),
+  uncategorized: z.literal('1').optional(),
+  unplaced: z.literal('1').optional(),
+  match: z.literal('any').optional(),
+  count: z.literal('1').optional(),
   typeId: manyOf(z.uuid()).optional(),
   tagId: manyOf(z.uuid()).optional(),
   belongsToId: manyOf(z.uuid()).optional(),
@@ -216,7 +224,7 @@ export const ListQuery = z.object({
   consumable: z.enum(['0', '1']).optional(),
   q: z.string().trim().max(200).optional(),
   group: z.enum(['type', 'place', 'tag', 'none']).default('none'),
-  sort: z.enum(['name', 'updated', 'lastSeen']).default('name'),
+  sort: z.enum(['name', 'updated', 'lastSeen', 'recorded', 'location']).default('name'),
   /** The order (D211): `asc` or `desc`. Absent, the sort's own: A to Z for the name, newest
    * first for the dates. */
   dir: z.enum(['asc', 'desc']).optional(),
