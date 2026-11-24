@@ -33137,3 +33137,39 @@ msgstr "L’enregistrement mettra à jour le nom, la description saisie et ajout
 #: src/native/capture-form.tsx
 msgid "The label is not added to these items. It stays here for the next item you save."
 msgstr "L’étiquette n’est pas ajoutée à ces articles. Elle reste ici pour le prochain article que vous enregistrerez."
+
+#: src/native/home.tsx
+msgid "Items"
+msgstr "Objets"
+
+#: src/native/home.tsx
+msgid "{drafts, plural, one {# item to review} other {# items to review}}"
+msgstr "{drafts, plural, one {# objet à vérifier} other {# objets à vérifier}}"
+
+#: src/native/home.tsx
+msgid "Offline · {waiting} waiting"
+msgstr "Hors ligne, {waiting} en attente"
+
+#: src/native/home.tsx
+msgid "Sync failed · {waiting} waiting · Retry"
+msgstr "Échec de la synchronisation, {waiting} en attente, réessayer"
+
+#: src/native/home.tsx
+msgid "Synced {syncAge}"
+msgstr "Synchronisé {syncAge}"
+
+#: src/native/main.tsx
+msgid "Add item"
+msgstr "Ajouter un objet"
+
+#: src/native/main.tsx
+msgid "Add box"
+msgstr "Ajouter une boîte"
+
+#: src/native/main.tsx
+msgid "Open in Browse"
+msgstr "Ouvrir dans Parcourir"
+
+#: src/native/main.tsx
+msgid "Appearance"
+msgstr "Apparence"

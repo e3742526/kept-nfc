@@ -45,6 +45,9 @@ export function Rooms({
   const locations = writableLocations(cache);
   const [locationId, setLocationId] = useState(locations[0]?.id ?? null);
   const [locationFilter, setLocationFilter] = useState<string | null>(null);
+  const activeLocation = cache.locations.some((location) => location.id === locationFilter)
+    ? locationFilter
+    : null;
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const boxes = recent.flatMap((boxId) =>
@@ -54,7 +57,7 @@ export function Rooms({
     (place) =>
       place.kindKey === 'room' &&
       !place.isUnplaced &&
-      (!locationFilter || place.locationId === locationFilter),
+      (!activeLocation || place.locationId === activeLocation),
   );
 
   async function create() {
@@ -148,7 +151,7 @@ export function Rooms({
             { id: 'all', name: t`All locations` },
             ...cache.locations.map((loc) => ({ id: loc.id, name: loc.name })),
           ]}
-          selectedKey={locationFilter ?? 'all'}
+          selectedKey={activeLocation ?? 'all'}
           onSelectionChange={(key) =>
             setLocationFilter(key === null || key === 'all' ? null : String(key))
           }

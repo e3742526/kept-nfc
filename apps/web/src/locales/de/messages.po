@@ -33137,3 +33137,39 @@ msgstr "Beim Speichern werden der Name, eine eingegebene Beschreibung und die ge
 #: src/native/capture-form.tsx
 msgid "The label is not added to these items. It stays here for the next item you save."
 msgstr "Das Etikett wird diesen Artikeln nicht hinzugefügt. Es bleibt hier für den nächsten Artikel, den du speicherst."
+
+#: src/native/home.tsx
+msgid "Items"
+msgstr "Einträge"
+
+#: src/native/home.tsx
+msgid "{drafts, plural, one {# item to review} other {# items to review}}"
+msgstr "{drafts, plural, one {# Eintrag zur Prüfung} other {# Einträge zur Prüfung}}"
+
+#: src/native/home.tsx
+msgid "Offline · {waiting} waiting"
+msgstr "Offline, {waiting} warten auf Synchronisierung"
+
+#: src/native/home.tsx
+msgid "Sync failed · {waiting} waiting · Retry"
+msgstr "Synchronisierung fehlgeschlagen, {waiting} ausstehend, erneut versuchen"
+
+#: src/native/home.tsx
+msgid "Synced {syncAge}"
+msgstr "Synchronisiert: {syncAge}"
+
+#: src/native/main.tsx
+msgid "Add item"
+msgstr "Eintrag hinzufügen"
+
+#: src/native/main.tsx
+msgid "Add box"
+msgstr "Kiste hinzufügen"
+
+#: src/native/main.tsx
+msgid "Open in Browse"
+msgstr "In der Übersicht öffnen"
+
+#: src/native/main.tsx
+msgid "Appearance"
+msgstr "Erscheinungsbild"

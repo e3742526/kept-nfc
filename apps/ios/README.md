@@ -7,9 +7,9 @@ See the [NFC runbook](../../docs/runbooks/nfc-mvp.md) for the integrated setup a
 
 ## Inventory on iPhone
 
-- The bottom tab bar has four tabs: **Search** (the landing screen), **Add**, **Scan** and **More**. Tap **Search** again to jump into the search field.
-- **Search** puts the search field first. Type to search boxes, rooms, items and documents. If nothing matches, tap **Add “your text”** to start a new entry with that description. **Rooms** and **Create box** sit under the field. Restore an item from **Trash** under **More**.
-- **Add** opens with the description field first. Add a photo or PDF, check the destination line (it suggests the box you opened last; tap **Change** to pick another room or box), and save. **Details** holds the action, quantity and notes. After each save the form clears so you can enter the next item. Capture works offline with a cached destination.
+- The bottom tab bar has four tabs: **Home**, **Add**, **Scan** and **More**. Home shows tappable inventory counts, shortcuts, recent activity and sync status. **Assistant** is in the header. Open **Settings** from the Home gear or **More**. Home offers **Continue finding** when there is a saved Find target.
+- Tap **Home** again to focus **Search inventory**. Type to search boxes, rooms, items and documents. Use **Open in Browse** to take that search into the filterable inventory view, or **Add “your text”** to start an entry with that description.
+- In **Add**, choose **Add item** or **Add box**. For an item, enter a description, attach a photo or PDF as needed, and check the destination. SheepKeep suggests the last box you opened. Tap **Change** to pick another destination. **Details** holds the action, quantity and notes. After each save, the form clears for the next item. Item capture works offline with a cached destination. Creating a box requires a connection.
 - Open a bin or item and choose **Add photos** to record its appearance without changing the inventory. The **Photos** section shows available previews and opens the authorized file. **Edit** changes the record, **Move** changes its location, and **More actions** includes **Seen here**, **Not here**, and **Move to Trash**. Restore an item from **Trash** under **More**.
 - To give a new item its own label (a valuable item, for example), open **QR or NFC label** on the **Add** form. **Scan QR label** or **Scan NFC tag** takes a blank SheepKeep label, even offline. **Write new NFC tag** and **New QR label** reserve a new code from the server, then write and verify the tag or share a one-label PDF. The server links the label when the item syncs. An existing item that isn't a box has **QR and NFC label** on its screen.
 - Use the **Scan** tab to open an existing label. To print a bin label, open **QR and NFC label**, then **Share QR label PDF**. The 3 × 2 inch PDF uses the bin’s existing HTTPS label and opens in the iOS share sheet. Use **Print label sheets** for writable 8-, 12- or 24-label US Letter sheets. Scan a blank label to assign it to a new or existing box.
@@ -29,7 +29,7 @@ See the [NFC runbook](../../docs/runbooks/nfc-mvp.md) for the integrated setup a
   - `vite.ios.ts`: Dedicated production bundle config building `apps/web/dist-ios` (synced into `apps/ios/ios/App/App/public`).
   - `adapters.ts`: `PlatformAdapters` + `NativePlatformProvider` + `capacitorAdapters` isolating native bridge calls from shared/mobile UI modules.
   - `outbox.ts`, `inventory.ts`, `labels.ts`: Replay engine (`deduplicatedFrom` canonical ID handling, post-upload attachment verification, `reviewSuggestions: true`), offline cache + filename-tokenized local search, strict label URL checking, and unresolved-when-offline Find semantics.
-  - `main.tsx`, `record.tsx`, `capture-form.tsx`, `label-panel.tsx`, `native.css`: Phone navigation, **Add to this box** destination-locked capture, multi-photo + PDF attachment pickers, non-blocking AI review, Find target persistence, failure retargeting, and RTL-ready logical CSS across all 8 locales.
+  - `main.tsx`, `home.tsx`, `record.tsx`, `capture-form.tsx`, `label-panel.tsx`, `native.css`: Home dashboard and phone navigation, **Add to this box** destination-locked capture, multi-photo and PDF attachment pickers, non-blocking AI review, Find target persistence, failure retargeting, and RTL-ready logical CSS across all 8 locales.
 
 ---
 

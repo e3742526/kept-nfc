@@ -33137,3 +33137,39 @@ msgstr "Saving will update the name, any description you enter, and add selected
 #: src/native/capture-form.tsx
 msgid "The label is not added to these items. It stays here for the next item you save."
 msgstr "The label is not added to these items. It stays here for the next item you save."
+
+#: src/native/home.tsx
+msgid "Items"
+msgstr "Items"
+
+#: src/native/home.tsx
+msgid "{drafts, plural, one {# item to review} other {# items to review}}"
+msgstr "{drafts, plural, one {# item to review} other {# items to review}}"
+
+#: src/native/home.tsx
+msgid "Offline · {waiting} waiting"
+msgstr "Offline · {waiting} waiting"
+
+#: src/native/home.tsx
+msgid "Sync failed · {waiting} waiting · Retry"
+msgstr "Sync failed · {waiting} waiting · Retry"
+
+#: src/native/home.tsx
+msgid "Synced {syncAge}"
+msgstr "Synced {syncAge}"
+
+#: src/native/main.tsx
+msgid "Add item"
+msgstr "Add item"
+
+#: src/native/main.tsx
+msgid "Add box"
+msgstr "Add box"
+
+#: src/native/main.tsx
+msgid "Open in Browse"
+msgstr "Open in Browse"
+
+#: src/native/main.tsx
+msgid "Appearance"
+msgstr "Appearance"

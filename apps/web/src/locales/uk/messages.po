@@ -33137,3 +33137,39 @@ msgstr "Збереження оновить назву, введений опи�
 #: src/native/capture-form.tsx
 msgid "The label is not added to these items. It stays here for the next item you save."
 msgstr "Мітку не буде додано до цих позицій. Вона залишиться тут для наступної позиції, яку ви збережете."
+
+#: src/native/home.tsx
+msgid "Items"
+msgstr "Предмети"
+
+#: src/native/home.tsx
+msgid "{drafts, plural, one {# item to review} other {# items to review}}"
+msgstr "{drafts, plural, one {# предмет на перевірку} few {# предмети на перевірку} many {# предметів на перевірку} other {# предмета на перевірку}}"
+
+#: src/native/home.tsx
+msgid "Offline · {waiting} waiting"
+msgstr "Поза мережею, {waiting} очікують синхронізації"
+
+#: src/native/home.tsx
+msgid "Sync failed · {waiting} waiting · Retry"
+msgstr "Не вдалося синхронізувати, {waiting} очікують, спробувати ще раз"
+
+#: src/native/home.tsx
+msgid "Synced {syncAge}"
+msgstr "Синхронізовано {syncAge}"
+
+#: src/native/main.tsx
+msgid "Add item"
+msgstr "Додати предмет"
+
+#: src/native/main.tsx
+msgid "Add box"
+msgstr "Додати коробку"
+
+#: src/native/main.tsx
+msgid "Open in Browse"
+msgstr "Відкрити в огляді"
+
+#: src/native/main.tsx
+msgid "Appearance"
+msgstr "Вигляд"
