@@ -96,9 +96,12 @@ Enable Sign in with Apple for `info.keptinventory.nfc`, refresh the signing prof
 
 ## Multi-item photo review and Browse
 
-1. Open **Add** or **Add to this bin**, choose the destination, and take or select one photo. Choose a provider and tap **Suggest items**. To keep a broad description, enter it and tap **Suggest categories**. Open **Review multiple items** to enter descriptions manually.
-2. In review, open the original, edit names, and exclude any unwanted proposals. Assign existing categories or explicitly create a new one. Leave the app and reopen **Review** from the pending capture list to check recovery.
-3. Save the selected entries. Disconnect and reconnect while syncing to check progress and retry with the same identities. Confirm that each entry opens the same original and that its remaining copies survive when one record goes to Trash.
-4. Open **Browse** from Search. Compare a room and category intersection, a category union, an all-categories comparison, and a cross-group union. Check the bin-contents option and confirm that inherited results have no new direct assignment.
-5. Edit an item or bin with defined custom fields. Check zero, false, clearing an optional value, and a repeatable field. Switch types and confirm the new definitions appear after saving.
-6. Check History for server-recorded and device-save times, a correction, a photo-only event and a Trash event. Check Apple Intelligence and ChatGPT plan inference separately on the physical 17P.
+1. Use a disposable household with **Garage**, **Basement**, **Garage Bin 12**, the Tools, Electrical, Decorations and Pictures categories, and existing custom-field definitions. Open **Add** or **Add to this bin**, verify the full destination, and take or select photos of a drill, extension cords, Christmas lights and other belongings.
+2. Choose a provider and tap **Suggest items**. Rename an entry, exclude a false positive, add a missed item, and assign multiple categories. Open the supporting photos and review the quantity estimates. Keep **Record existing contents** for this run. **Suggest categories** supports one broad description, and **Review multiple items** supports manual review.
+3. Tap **Save review for later**, force-quit, and reopen the pending review. Save the accepted entries and reconnect during replay. Confirm one record per selected entry, the correct destination, shared original checksums and authorized opening of the originals from both the bin and records.
+4. Browse **Tools** across both rooms. Create, rename, assign, remove and delete a disposable category. Compare direct membership with the advanced nested and inherited options. Spot-check offline coverage labels.
+5. Edit custom fields on a synced item and bin. Check zero and false, clearing an optional value, repeatable values, and a type change with pending field edits. Move the bin and verify the contents’ effective path and unchanged observation history.
+6. Expand the photo review in the bin's history. Check server and device times, then add a photo only, perform an explicit unchanged check and Trash one record. Verify the historical wording and that the other record and bin can still open their originals.
+7. Export, back up and restore the disposable inventory. Verify the shared file hashes, category membership and custom values. Repeat photo inference with Apple Intelligence and ChatGPT plan where configured.
+
+OpenAI Server API has a live fixture check. Apple Intelligence and ChatGPT plan have mocked flow and compilation coverage. The modern iOS Simulator launched the configured app to the Apple sign-in screen. The signed-in physical workflow and hardware-dependent checks remain pending.

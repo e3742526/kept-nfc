@@ -24,4 +24,4 @@ The disposable fixture used PostgreSQL, local blob storage and a private HTTPS o
 
 ## Native inventory workflows · 2026-11-23
 
-The native workflow branch adds reviewed photo batches, tag-backed categories and Browse, accurate history timestamps, and editing for existing item and bin custom fields. The capture proposal endpoint and list filters are additive. Existing native capture capabilities and database migrations are sufficient. See [native inventory workflows](native-inventory-workflows.md) and the [physical-device procedure](ios-handoff.md#multi-item-photo-review-and-browse).
+Multi-photo review, tag-backed category management and assignment, and item and bin custom fields build on the native workflows in `076ba2a5`. Disposable proof covers live OpenAI preview and replay, scoped exports, and database restore of shared originals, category assignments and custom values. The [native inventory workflow record](native-inventory-workflows.md) describes the contracts and offline behavior. The [physical-device procedure](ios-handoff.md#multi-item-photo-review-and-browse) remains pending.
