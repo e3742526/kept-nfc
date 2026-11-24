@@ -1474,6 +1474,71 @@ describe('GET /api/v1/things (list-standard)', () => {
     const denied = await get(bob, inherited);
     expect(denied.statusCode).toBe(404);
   });
+  it('browses Tools across Garage and Basement and keeps direct categories when moving a bin', async () => {
+    const location = await createLocation(t, db, ann, 'complete', 'Household photo review');
+    const room = async (name: string) =>
+      ok(
+        await call(t, `/api/v1/locations/${location.id}/places`, {
+          as: ann,
+          body: { name, kindKey: 'room' },
+        }),
+        201,
+      );
+    const garage = await room('Garage');
+    const basement = await room('Basement');
+    const tags: { id: string; name: string }[] = [];
+    for (const name of ['Tools', 'Electrical', 'Decorations', 'Pictures']) {
+      const response = await call(t, `/api/v1/accounts/${location.accountId}/tags`, {
+        as: ann,
+        body: { name },
+      });
+      expect(response.statusCode, response.body).toBe(201);
+      tags.push(response.json().item);
+    }
+    const [tools, electrical, decorations] = tags;
+    const bin = await createThing(t, ann, location, {
+      name: 'Garage Bin 12',
+      placeId: garage.id,
+      typeId: await builtinType(db, 'box_bin'),
+    });
+    const drill = await createThing(t, ann, location, {
+      name: 'Cordless drill',
+      containerId: bin.id,
+      tagIds: [tools?.id],
+    });
+    const cords = await createThing(t, ann, location, {
+      name: 'Extension cords',
+      placeId: basement.id,
+      tagIds: [tools?.id, electrical?.id],
+    });
+    await createThing(t, ann, location, {
+      name: 'Christmas lights',
+      containerId: bin.id,
+      tagIds: [decorations?.id, electrical?.id],
+    });
+    const url = `/api/v1/things?locationId=${location.id}&tagId=${tools?.id}&count=1`;
+    const results = ok(await get(ann, url));
+    expect(results.total).toBe(2);
+    expect((results.items as Json[]).map(({ id }) => id)).toEqual([drill.id, cords.id]);
+    ok(
+      await call(t, '/api/v1/things/move', {
+        as: ann,
+        headers: { 'if-match': String(bin.rowVersion) },
+        body: { thingIds: [bin.id], to: { placeId: basement.id } },
+      }),
+    );
+    const moved = ok(await get(ann, `/api/v1/things/${drill.id}`));
+    expect(moved).toMatchObject({
+      containerId: bin.id,
+      lastSeenAt: drill.lastSeenAt,
+      path: expect.arrayContaining([
+        expect.objectContaining({ id: basement.id }),
+        expect.objectContaining({ id: bin.id }),
+      ]),
+      tags: [expect.objectContaining({ id: tools?.id })],
+    });
+    expect(ok(await get(ann, url)).total).toBe(2);
+  });
   it('takes several types, brands and owners, and "is none of" each', async () => {
     const multi = await createLocation(t, db, ann, 'complete', 'Multi home');
     const [bosch, makita] = await own<{ id: string }>(

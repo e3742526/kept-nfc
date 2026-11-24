@@ -986,3 +986,52 @@ describe('over plain http', () => {
     }
   });
 });
+
+it('exports one original shared by a bin and its categorized inventory records', async () => {
+  const box = await createThing(t, ibrahim, home, {
+    name: 'Garage Bin 12',
+    typeId: await builtinType(db, 'box_bin'),
+  });
+  const category = await call(t, `/api/v1/accounts/${home.accountId}/tags`, {
+    as: ibrahim,
+    body: { name: 'Tools' },
+  });
+  expect(category.statusCode, category.body).toBe(201);
+  const tagId = category.json().item.id as string;
+  const drill = await createThing(t, ibrahim, home, {
+    name: 'Cordless drill',
+    containerId: box.id,
+    tagIds: [tagId],
+  });
+  const photo = await uniqueJpeg();
+  const file = await upload(t, ibrahim, home.id, photo);
+  expect(file.statusCode, file.body).toBe(201);
+  const fileId = file.json().id as string;
+  for (const thingId of [box.id, drill.id]) {
+    ok(
+      await call(t, '/api/v1/attachments', {
+        as: ibrahim,
+        body: { locationId: home.id, fileId, subject: { thingId }, role: 'photo' },
+      }),
+      201,
+    );
+  }
+  const { id, outcome } = await exported(ibrahim, {
+    scope: { locationId: home.id },
+    options: { pdf: false },
+  });
+  expect(outcome.status).toBe('done');
+  const zip = await zipOf(id);
+  const manifest = ManifestSchema.parse(JSON.parse(text(zip, 'manifest.json')));
+  const originals = manifest.files.filter((file) => file.sha256 === sha256(photo));
+  expect(originals).toHaveLength(1);
+  expect(zip.get(originals[0]?.path ?? '')).toEqual(photo);
+  expect(lines(zip, 'data/attachments.ndjson').filter((a) => a.fileId === fileId)).toEqual(
+    expect.arrayContaining(
+      [box.id, drill.id].map((thingId) => expect.objectContaining({ thingId, role: 'photo' })),
+    ),
+  );
+  expect(lines(zip, 'data/thing-tags.ndjson')).toContainEqual(
+    expect.objectContaining({ thingId: drill.id, tagId }),
+  );
+});

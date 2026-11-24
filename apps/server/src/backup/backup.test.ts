@@ -3,7 +3,13 @@ import { randomBytes } from 'node:crypto';
 import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { KEPT_VERSION, NATIVE_CAPTURE_PAYLOAD_VERSION, newId } from '@kept/shared';
+import {
+  KEPT_VERSION,
+  NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
+  newId,
+  PAYLOAD_VERSION,
+} from '@kept/shared';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, inject, it, vi } from 'vitest';
 import { type TestApp, testApp } from '../../test/app.js';
@@ -927,6 +933,75 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
     expect(sha256(file.bytes)).toBe(sha256(original.bytes));
   }
 
+  const reviewedId = newId();
+  const proofId = newId();
+  const batchId = newId();
+  const sharedPhoto = operation.payload.files[0];
+  if (!sharedPhoto) throw new Error('Missing photo fixture');
+  const accepted = {
+    ...operation,
+    clientId: reviewedId,
+    idempotencyKey: reviewedId,
+    payloadVersion: NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
+    payload: {
+      ...operation.payload,
+      id: reviewedId,
+      batchId,
+      name: 'Holiday display',
+      typeId: await builtinType(db, 'tv_display'),
+      files: [sharedPhoto],
+      captureIntent: 'record',
+      skipServerSuggestions: true,
+    },
+  };
+  const binProof = {
+    ...operation,
+    clientId: proofId,
+    idempotencyKey: proofId,
+    payloadVersion: PAYLOAD_VERSION,
+    payload: {
+      id: proofId,
+      batchId,
+      target: operation.payload.target,
+      mode: 'thing',
+      attachToThingId: box.id,
+      files: [sharedPhoto],
+    },
+  };
+  const review = () =>
+    call(t, '/api/v1/sync/ops', {
+      as: native,
+      headers,
+      body: { clientVersion: KEPT_VERSION, ops: [accepted, binProof] },
+    });
+  const approved = await review();
+  expect(approved.json()).toMatchObject({
+    results: [
+      { outcome: 'applied', entity: { id: reviewedId } },
+      { outcome: 'applied', entity: { id: box.id } },
+    ],
+  });
+  expect((await review()).json()).toEqual(approved.json());
+  const tagIds: string[] = [];
+  for (const name of ['Decorations', 'Pictures']) {
+    const created = await call(t, `/api/v1/accounts/${garage.accountId}/tags`, {
+      as: native,
+      headers,
+      body: { name },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    tagIds.push(created.json().item.id);
+  }
+  const detailPath = `/api/v1/things/${reviewedId}`;
+  const before = await call(t, detailPath, { as: native, headers });
+  const patched = await call(t, detailPath, {
+    method: 'PATCH',
+    as: native,
+    headers: { ...headers, 'if-match': String(before.json().rowVersion) },
+    body: { custom: { screen_size: 12 }, tagIds },
+  });
+  expect(patched.statusCode, patched.body).toBe(200);
+
   const outsider = await person(t, db, 'bruce');
   const label = `https://kept.example.com/l/${box.shortCode}`;
   const denied = await call(t, '/api/v1/scan/resolve', { as: outsider, body: { text: label } });
@@ -1071,6 +1146,27 @@ it('restores the NFC inventory capture with its QR URL and byte-identical origin
       expect(file.mime).toBe(original.mime);
       expect(file.bytes.length).toBe(original.bytes.length);
       expect(sha256(file.bytes)).toBe(sha256(original.bytes));
+    }
+    const recoveredReview = await call(recovered, detailPath, {
+      as: renewed,
+      headers: currentHeaders,
+    });
+    expect(recoveredReview.json()).toMatchObject({
+      containerId: box.id,
+      custom: { screen_size: 12 },
+      tags: expect.arrayContaining(tagIds.map((id) => expect.objectContaining({ id }))),
+    });
+    for (const id of [reviewedId, box.id]) {
+      const media = await call(recovered, `/api/v1/things/${id}/attachments`, {
+        as: renewed,
+        headers: currentHeaders,
+      });
+      expect(media.json().items).toEqual([
+        expect.objectContaining({
+          role: 'photo',
+          file: expect.objectContaining({ id: sharedPhoto.fileId, sha256: sharedPhoto.sha256 }),
+        }),
+      ]);
     }
     await withScope(pools.app, { userId: account, mfa: false }, async (_tx, client) => {
       const record = await client.query(
