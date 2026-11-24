@@ -94,7 +94,8 @@ export function CaptureForm({
   );
   const [changingDestination, setChangingDestination] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const photosOnly = destination?.kind === 'photos';
+  const locationPhoto = destination?.kind === 'location-photo';
+  const photosOnly = destination?.kind === 'photos' || locationPhoto;
   const documentsOnly = destination?.kind === 'documents';
   const evidenceOnly = photosOnly || documentsOnly;
   const [tags, setTags] = useState<string[]>([]);
@@ -172,9 +173,13 @@ export function CaptureForm({
     const items = Array.from(source);
     if (
       items.some((file) => file.size === 0 || file.size > mobileFileLimit) ||
-      files.length + items.length > 20
+      files.length + items.length > (locationPhoto ? 1 : 20)
     ) {
-      setStatus(t`Choose up to 20 files, each no larger than 25 MB.`);
+      setStatus(
+        locationPhoto
+          ? t`Choose one photo no larger than 25 MB.`
+          : t`Choose up to 20 files, each no larger than 25 MB.`,
+      );
       return;
     }
     setStatus('');
@@ -287,6 +292,7 @@ export function CaptureForm({
             : destination.kind === 'place'
               ? { placeId: destination.id }
               : { boxId: destination.id }),
+          ...(locationPhoto ? { locationPhoto: true } : {}),
           name: evidenceOnly ? destination.name : name.trim(),
           ...(!evidenceOnly ? { captureIntent: intent, tags } : {}),
           ...(firstPhoto ? { skipServerSuggestions: true } : {}),
@@ -324,13 +330,15 @@ export function CaptureForm({
     }
   }
 
-  const headerTitle = photosOnly
-    ? t`Record photos`
-    : documentsOnly
-      ? t`Add documents`
-      : box && box.kind !== 'place'
-        ? t`Adding to box`
-        : t`Capture inventory`;
+  const headerTitle = locationPhoto
+    ? t`Add location photo`
+    : photosOnly
+      ? t`Record photos`
+      : documentsOnly
+        ? t`Add documents`
+        : box && box.kind !== 'place'
+          ? t`Adding to box`
+          : t`Capture inventory`;
 
   return (
     <section className="grid gap-4">
@@ -479,19 +487,27 @@ export function CaptureForm({
                 defaultCamera="environment"
                 onSelect={(list) => choose(list, 'photo')}
               >
-                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                <Button
+                  variant="secondary"
+                  className="kept-media-btn"
+                  isDisabled={busy || (locationPhoto && files.length > 0)}
+                >
                   <Camera size={20} aria-hidden />
                   <Trans>Take a photo</Trans>
                 </Button>
               </FileTrigger>
               <FileTrigger
                 acceptedFileTypes={['image/*']}
-                allowsMultiple
+                allowsMultiple={!locationPhoto}
                 onSelect={(list) => choose(list, 'photo')}
               >
-                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                <Button
+                  variant="secondary"
+                  className="kept-media-btn"
+                  isDisabled={busy || (locationPhoto && files.length > 0)}
+                >
                   <Images size={20} aria-hidden />
-                  <Trans>Choose photos</Trans>
+                  {locationPhoto ? <Trans>Choose photo</Trans> : <Trans>Choose photos</Trans>}
                 </Button>
               </FileTrigger>
             </>
@@ -645,13 +661,15 @@ export function CaptureForm({
         )}
         <Button type="submit" isPending={busy} isDisabled={!canSave}>
           <Check size={18} aria-hidden />
-          {photosOnly
-            ? t`Save photos`
-            : documentsOnly
-              ? t`Save documents`
-              : box && box.kind !== 'place'
-                ? t`Save to box`
-                : t`Save capture`}
+          {locationPhoto
+            ? t`Save location photo`
+            : photosOnly
+              ? t`Save photos`
+              : documentsOnly
+                ? t`Save documents`
+                : box && box.kind !== 'place'
+                  ? t`Save to box`
+                  : t`Save capture`}
         </Button>
       </form>
       <p role="status" className="text-ink-2">

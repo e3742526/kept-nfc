@@ -34,6 +34,7 @@ export const MIN_PAYLOAD_VERSION = 1;
 export const NATIVE_CAPTURE_PAYLOAD_VERSION = 2;
 export const NATIVE_INVENTORY_PAYLOAD_VERSION = 3;
 export const NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION = 4;
+export const NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION = 5;
 
 export const DEVICE_PHOTO_PROPOSAL_LIMIT = 12;
 export const DevicePhotoProposals = z.strictObject({
@@ -152,6 +153,8 @@ export const CreateThingPayload = z.strictObject({
     .max(20),
   /** "+ photo to this thing" (D175): the capture adds its files to an existing draft. */
   attachToThingId: uuid.optional(),
+  /** A single location photo on an existing item. This never moves or marks it seen. */
+  locationPhoto: z.literal(true).optional(),
   /**
    * RECEIPT mode's "+ photo": this capture's files are further
    * pages of the receipt captured with that capture `id`, not a new receipt.

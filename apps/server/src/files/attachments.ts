@@ -251,6 +251,9 @@ export async function updateAttachment(
   // check and the second overwrite the first (security review #13).
   const before = await readAttachment(client, id, true);
   if (before.condition_room_id) await checkRoomOpen(client, before.condition_room_id);
+  if (before.location_photo_taken_at && patch.role && patch.role !== before.role) {
+    throw invalid('A location photo cannot change its attachment role.');
+  }
   // A hidden receipt is not the caller's to see, let alone change; nor is a new one theirs to make.
   await refuseHiddenMoneyRole(gateOf, before.location_id, before.role);
   if (patch.role !== undefined) await refuseHiddenMoneyRole(gateOf, before.location_id, patch.role);
@@ -347,8 +350,17 @@ export async function listAttachments(
   gateOf: GateOf,
   owner: AttachmentOwner,
   id: string,
-  opts: { role?: string | undefined; limit: number; after: ListKey | null },
-): Promise<{ items: AttachmentView[]; next_cursor: string | null }> {
+  opts: {
+    role?: string | undefined;
+    limit: number;
+    after: ListKey | null;
+    includeLocationPhotos?: boolean;
+  },
+): Promise<{
+  items: AttachmentView[];
+  next_cursor: string | null;
+  locationPhotos?: AttachmentView[];
+}> {
   const q = OWNER_SQL[owner];
   const { rows: found } = await client.query<{ location_id: string }>(q.exists, [id]);
   const locationId = found[0]?.location_id;
@@ -362,12 +374,29 @@ export async function listAttachments(
         AND ($2::text IS NULL OR a.role = $2)
         AND ($3::int IS NULL OR (a.sort, a.id) > ($3::int, $4::uuid))
         AND a.role <> ALL ($6::text[])
+        AND a.location_photo_taken_at IS NULL
       ORDER BY a.sort, a.id
       LIMIT $5`,
     [id, opts.role ?? null, after?.[0] ?? null, after?.[1] ?? null, opts.limit + 1, hidden],
   );
   const page = pageOf(rows, opts.limit, (r): ListKey => [r.sort, r.id]);
-  return { items: await attachmentViews(client, files, page.items), next_cursor: page.next_cursor };
+  const locationPhotos =
+    opts.includeLocationPhotos && !opts.after && (owner === 'thing' || owner === 'place')
+      ? (
+          await client.query<AttachmentRow>(
+            `${ATTACHMENT_SELECT}
+              WHERE ${q.where} AND a.location_photo_taken_at IS NOT NULL
+              ORDER BY a.location_photo_taken_at DESC, a.id DESC LIMIT 3`,
+            [id],
+          )
+        ).rows
+      : [];
+  const views = await attachmentViews(client, files, [...page.items, ...locationPhotos]);
+  return {
+    items: views.slice(0, page.items.length),
+    next_cursor: page.next_cursor,
+    ...(opts.includeLocationPhotos ? { locationPhotos: views.slice(page.items.length) } : {}),
+  };
 }
 
 // ---------------------------------------------------------------------------------------------

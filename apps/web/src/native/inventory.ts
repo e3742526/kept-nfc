@@ -198,15 +198,16 @@ export async function loadDetail(
 ): Promise<{
   thing: ThingView;
   attachments: AttachmentView[];
+  locationPhotos: AttachmentView[];
 }> {
   const [thing, page] = await Promise.all([
     adapters.transport.request<ThingView>(connection, inventoryPaths.thing(id)),
-    adapters.transport.request<Page<AttachmentView>>(
+    adapters.transport.request<Page<AttachmentView> & { locationPhotos?: AttachmentView[] }>(
       connection,
-      `${inventoryPaths.thingAttachments(id)}${qs({ limit: 100 })}`,
+      `${inventoryPaths.thingAttachments(id)}${qs({ limit: 100, includeLocationPhotos: true })}`,
     ),
   ]);
-  return { thing, attachments: page.items };
+  return { thing, attachments: page.items, locationPhotos: page.locationPhotos ?? [] };
 }
 
 export async function loadPlace(

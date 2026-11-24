@@ -33173,3 +33173,31 @@ msgstr "Ouvrir dans Parcourir"
 #: src/native/main.tsx
 msgid "Appearance"
 msgstr "Apparence"
+
+#: src/native/capture-form.tsx
+msgid "Choose one photo no larger than 25 MB."
+msgstr "Choisissez une photo de 25 Mo maximum."
+
+#: src/native/capture-form.tsx
+msgid "Add location photo"
+msgstr "Ajouter une photo de l’emplacement"
+
+#: src/native/capture-form.tsx
+msgid "Choose photo"
+msgstr "Choisir une photo"
+
+#: src/native/capture-form.tsx
+msgid "Save location photo"
+msgstr "Enregistrer la photo de l’emplacement"
+
+#: src/native/record.tsx
+msgid "Location photo"
+msgstr "Photo de l’emplacement"
+
+#: src/native/record.tsx
+msgid "Last logged location"
+msgstr "Dernier emplacement enregistré"
+
+#: src/native/record.tsx
+msgid "Take a photo of where you left this item. SheepKeep keeps the latest three."
+msgstr "Photographiez l’endroit où vous avez laissé cet objet. SheepKeep conserve les trois dernières photos."

@@ -37,6 +37,7 @@ import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { TextField } from '@/components/ui/text-field';
+import { useFormat } from '@/lib/format';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
@@ -255,7 +256,7 @@ export function RecordScreen({
   const adapters = usePlatform();
   const errorText = useErrorText();
   const confirm = useConfirm();
-  const [detail, setDetail] = useState<{ thing: ThingView; attachments: AttachmentView[] }>();
+  const [detail, setDetail] = useState<Awaited<ReturnType<typeof loadDetail>>>();
   const [place, setPlace] = useState<PlaceView>();
   const [unavailable, setUnavailable] = useState(false);
   const [cachedNotice, setCachedNotice] = useState(false);
@@ -270,6 +271,7 @@ export function RecordScreen({
   const [checkId, setCheckId] = useState(newId);
   const [childRows, setChildRows] = useState<ThingRow[]>([]);
   const describe = useRef(errorText);
+  const format = useFormat();
   describe.current = errorText;
   const authErrorRef = useRef(onAuthError);
   authErrorRef.current = onAuthError;
@@ -375,7 +377,16 @@ export function RecordScreen({
   );
   const card = cache?.details[target.id];
   const notes = detail ? thing?.notes : card?.notes;
-  const attachments = detail?.attachments ?? place?.attachments ?? card?.attachments ?? [];
+  const remoteAttachments =
+    detail?.attachments ??
+    place?.attachments.filter((attachment) => !attachment.locationPhotoTakenAt);
+  const attachments = remoteAttachments ?? card?.attachments ?? [];
+  const locationPhotos =
+    detail?.locationPhotos ??
+    place?.attachments
+      .filter((attachment) => attachment.locationPhotoTakenAt)
+      .sort((a, b) => (b.locationPhotoTakenAt ?? '').localeCompare(a.locationPhotoTakenAt ?? '')) ??
+    [];
   const box =
     row && 'isContainer' in row && row.isContainer
       ? { id: row.id, name, locationId: row.locationId, shortCode: row.shortCode }
@@ -547,7 +558,11 @@ export function RecordScreen({
   const showContents = section === 'all' || section === 'contents';
   const showMedia = section === 'all' || section === 'media';
   const showHistory = section === 'all' || section === 'history';
-  const hasSections = browsable || attachments.length > 0 || (online && Boolean(thing || place));
+  const hasSections =
+    browsable ||
+    attachments.length > 0 ||
+    locationPhotos.length > 0 ||
+    (online && Boolean(thing || place));
   return (
     <section className="grid gap-4">
       <ScreenHeader
@@ -878,7 +893,9 @@ export function RecordScreen({
                   return (
                     <li key={entry.capture.id} className="grid gap-2 rounded-lg bg-sunken p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <bdi className="font-semibold">{fields.name}</bdi>
+                        <bdi className="font-semibold">
+                          {fields.locationPhoto ? t`Location photo` : fields.name}
+                        </bdi>
                         <span
                           className={
                             entry.failure
@@ -935,49 +952,88 @@ export function RecordScreen({
             </Button>
           )}
           {showMedia &&
-            (['photo', 'other'] as const).map((group) => {
-              const entries = attachments.filter(
-                (attachment) => (attachment.role === 'photo') === (group === 'photo'),
-              );
-              if (!entries.length) return null;
+            (['location', 'photo', 'other'] as const).map((group) => {
+              const locationGroup = group === 'location';
+              const isPhoto = group !== 'other';
+              const entries = locationGroup
+                ? locationPhotos
+                : attachments.filter((attachment) => (attachment.role === 'photo') === isPhoto);
+              const canLogLocation = locationGroup && canEdit && target.kind === 'thing';
+              if (!entries.length && !canLogLocation) return null;
               return (
                 <section key={group} className="kept-card">
                   <h3 className="kept-card-title">
-                    {group === 'photo' ? (
+                    {locationGroup ? (
+                      <MapPin size={16} aria-hidden />
+                    ) : isPhoto ? (
                       <Image size={16} aria-hidden />
                     ) : (
                       <FileText size={16} aria-hidden />
                     )}
-                    {group === 'photo' ? t`Photos` : t`Documents and files`}
+                    {locationGroup
+                      ? t`Last logged location`
+                      : isPhoto
+                        ? t`Photos`
+                        : t`Documents and files`}
                   </h3>
-                  <ul className={group === 'photo' ? 'grid grid-cols-2 gap-2' : 'grid gap-2'}>
+                  {canLogLocation && (
+                    <>
+                      <p className="text-small text-ink-2">
+                        <Trans>
+                          Take a photo of where you left this item. SheepKeep keeps the latest
+                          three.
+                        </Trans>
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="small"
+                        onPress={() => onCapture({ ...target, name, kind: 'location-photo' }, path)}
+                      >
+                        <Camera size={16} aria-hidden />
+                        <Trans>Add location photo</Trans>
+                      </Button>
+                    </>
+                  )}
+                  <ul
+                    hidden={entries.length === 0}
+                    className={isPhoto ? 'grid grid-cols-2 gap-2' : 'grid gap-2'}
+                  >
                     {entries.map((attachment) => {
                       const label =
-                        attachment.name ?? (group === 'photo' ? t`Photograph` : t`Document`);
-                      const original = (detail?.attachments ?? place?.attachments)?.find(
+                        attachment.name ??
+                        (locationGroup ? t`Location photo` : isPhoto ? t`Photograph` : t`Document`);
+                      const original = (locationGroup ? locationPhotos : remoteAttachments)?.find(
                         (entry) => entry.id === attachment.id,
                       );
+                      const takenAt = locationGroup
+                        ? original?.locationPhotoTakenAt
+                        : original?.createdAt;
                       const thumbnail =
                         online &&
-                        group === 'photo' &&
+                        isPhoto &&
                         previewUrl(original?.file?.thumbUrl, connection.origin);
-                      const preview = group === 'photo' && Boolean(original?.file?.displayUrl);
+                      const preview = isPhoto && Boolean(original?.file?.displayUrl);
                       const variant = preview ? 'display' : 'original';
                       const mediaKey = `${attachment.id}:${variant}`;
                       const originalKey = `${attachment.id}:original`;
                       const labelId = `attachment-label-${attachment.id}`;
+                      const stampId =
+                        locationGroup && takenAt
+                          ? `location-photo-time-${attachment.id}`
+                          : undefined;
                       return (
                         <li key={attachment.id}>
-                          {original?.file && online && (preview || canEdit || group !== 'photo') ? (
+                          {original?.file && online && (preview || canEdit || !isPhoto) ? (
                             <Button
                               variant="secondary"
                               className={
-                                group === 'photo'
+                                isPhoto
                                   ? 'grid w-full min-w-0 justify-items-start gap-2 rounded-xl p-2 text-start'
                                   : 'kept-phone-row'
                               }
                               isPending={openingMedia === mediaKey}
                               isDisabled={openingMedia !== undefined && openingMedia !== mediaKey}
+                              aria-describedby={stampId}
                               onPress={() => void openRemoteFile(original, variant)}
                             >
                               {thumbnail && (
@@ -986,10 +1042,14 @@ export function RecordScreen({
                                   src={thumbnail}
                                   loading="lazy"
                                   referrerPolicy="no-referrer"
-                                  className="aspect-square w-full rounded-lg object-cover"
+                                  className={
+                                    locationGroup
+                                      ? 'aspect-[4/3] w-full rounded-lg bg-sunken object-contain'
+                                      : 'aspect-square w-full rounded-lg object-cover'
+                                  }
                                 />
                               )}
-                              {group !== 'photo' && (
+                              {!isPhoto && (
                                 <span className="kept-row-lead" aria-hidden>
                                   <FileText size={18} />
                                 </span>
@@ -1007,7 +1067,7 @@ export function RecordScreen({
                             <Button
                               variant="ghost"
                               size="small"
-                              aria-describedby={labelId}
+                              aria-describedby={stampId ? `${labelId} ${stampId}` : labelId}
                               isPending={openingMedia === originalKey}
                               isDisabled={
                                 openingMedia !== undefined && openingMedia !== originalKey
@@ -1017,15 +1077,18 @@ export function RecordScreen({
                               <Trans>Open original photo</Trans>
                             </Button>
                           )}
-                          {original?.createdAt && (
+                          {takenAt && (
                             <time
-                              dateTime={original.createdAt}
+                              id={stampId}
+                              dateTime={takenAt}
                               className="mt-1 block text-small text-ink-2"
                             >
-                              {new Date(original.createdAt).toLocaleString()}
+                              {locationGroup
+                                ? format.dateTime(takenAt)
+                                : new Date(takenAt).toLocaleString()}
                             </time>
                           )}
-                          {original && editingFiles && canEdit && online && (
+                          {!locationGroup && original && editingFiles && canEdit && online && (
                             <div className="mt-1 flex flex-wrap gap-1">
                               {thing && original.role === 'photo' && original.file && (
                                 <Button

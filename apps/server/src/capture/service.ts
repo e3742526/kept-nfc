@@ -409,6 +409,14 @@ export async function capture(
   // 1. Who: 404 for a location the caller can't see, 403 for a viewer.
   const role = await requireRole(client, locationId, 'things.edit');
 
+  if (input.locationPhoto) {
+    return captureLocationPhoto(ctx, input, {
+      id,
+      locationId,
+      capturedAt: opts.takenAt ?? new Date(),
+    });
+  }
+
   // 2. What (D19): at least one file or a name; the evidence modes need a photo.
   checkFileRoles(input);
   const photos = input.files.filter((file) => file.role !== 'document');
@@ -608,6 +616,76 @@ export async function capture(
   if (row) result.thing = row;
   if (eventId) result.undo = { eventId, until: until.toISOString() };
   return result;
+}
+
+/** Logs one photo without changing the thing's placement, cover, or last-seen fields. */
+async function captureLocationPhoto(
+  ctx: Ctx,
+  input: CaptureInput,
+  { id, locationId, capturedAt }: { id: string; locationId: string; capturedAt: Date },
+): Promise<CaptureResult> {
+  const { client, tx, scope } = ctx;
+  const [file] = input.files;
+  if (
+    input.mode !== 'thing' ||
+    !input.attachToThingId ||
+    !('unplaced' in input.target) ||
+    input.files.length !== 1 ||
+    !file ||
+    (file.role !== undefined && file.role !== 'photo') ||
+    input.pageOf ||
+    input.reviewSuggestions ||
+    input.skipServerSuggestions ||
+    input.captureIntent ||
+    input.meterId ||
+    input.readingValue ||
+    input.claimCode ||
+    input.templateId ||
+    input.codes
+  ) {
+    throw invalid('Log one location photo for an existing item or box.');
+  }
+
+  // Match merge_things' lock order so a save and a subject reassignment serialize.
+  await client.query("SELECT pg_advisory_xact_lock(hashtext('kept.things'), hashtext($1))", [
+    locationId,
+  ]);
+  const thing = await writableThing(client, input.attachToThingId.toLowerCase(), 'things.edit');
+  if (thing.location_id !== locationId) throw notFound();
+  const fileIds = await dedupedFileIds(client, locationId, [file]);
+  await requireUsableFiles(client, locationId, fileIds);
+  const fileId = fileIds[0] as string;
+  const image = await client.query(
+    "SELECT 1 FROM public.files WHERE id = $1 AND location_id = $2 AND mime LIKE 'image/%'",
+    [fileId, locationId],
+  );
+  if (!image.rowCount) throw invalid('A location photo must be an image.');
+
+  await client.query(
+    `INSERT INTO public.attachments
+       (id, location_id, file_id, thing_id, role, location_photo_taken_at, created_by)
+     VALUES ($1, $2, $3, $4, 'document', $5, kept.current_user_id())`,
+    [id, locationId, fileId, thing.id, capturedAt],
+  );
+  await audited(tx, {
+    locationId,
+    actor: actorOf(scope),
+    action: 'thing.capture',
+    entity: { type: 'thing', id: thing.id },
+    after: {
+      mode: 'thing',
+      batch_id: input.batchId.toLowerCase(),
+      capture_id: id,
+      captured_at: capturedAt.toISOString(),
+      location_photo: true,
+      attachment_ids: [id],
+    },
+    rootThingId: thing.id,
+    subjects: [thing.id],
+    requestId: ctx.requestId,
+  });
+  const [row] = await rowsOf(client, ctx.files, [thing.id]);
+  return row ? { thing: row } : {};
 }
 
 export type Common = {

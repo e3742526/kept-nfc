@@ -1,4 +1,11 @@
-import { NATIVE_CAPTURE_PAYLOAD_VERSION, newId, randomShortCode } from '@kept/shared';
+import {
+  NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
+  newId,
+  type QueueItem,
+  randomShortCode,
+  type SyncOpsResponse,
+} from '@kept/shared';
 import type { FastifyBaseLogger } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { TestApp } from '../../test/app.js';
@@ -18,6 +25,7 @@ import {
   place,
   setDisplayName,
 } from '../../test/things.js';
+import { nativeSyncEpoch } from '../auth/native.js';
 import { applyOps } from './ops.js';
 
 // POST /api/v1/sync/ops through the front door, in the shapes the phone's sync engine sends
@@ -83,6 +91,100 @@ afterAll(async () => {
 });
 
 describe('POST /api/v1/sync/ops', () => {
+  it('logs only the latest three location photos by capture time, independently of the gallery', async () => {
+    const { id } = await createThing(t, ibrahim, home, {
+      name: 'Storage bin with location photos',
+      typeId: await builtinType(db, 'box_bin'),
+    });
+    const before = await thingOf(id);
+    const files = await Promise.all(
+      Array.from({ length: 5 }, async (_, index) =>
+        up(index >= 3 ? ibrahim : louis, await uniqueJpeg()),
+      ),
+    );
+    const target = { unplaced: true };
+    const photoFile = (index: number) => ({ fileId: files[index]?.id, role: 'photo' });
+    const regular = captureOp(home.id, target, { attachToThingId: id, files: [photoFile(0)] });
+    expect((await sent(t, louis, [regular]))[0]?.outcome).toBe('applied');
+    const clock = Date.now() - 60_000;
+    const locationOps = files.map((_, index) =>
+      captureOp(
+        home.id,
+        target,
+        { attachToThingId: id, locationPhoto: true, files: [photoFile(index)] },
+        {
+          payloadVersion: NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
+          takenAt: new Date(clock + index * 1000).toISOString(),
+        },
+      ),
+    );
+    const delayed = locationOps[0];
+    if (!delayed) throw new Error('Missing fixture capture');
+    const epoch = await nativeSyncEpoch(t.app.pools.auth);
+    const sendNative = async (as: Person, ops: QueueItem[]) => {
+      const response = await call(t, '/api/v1/sync/ops', {
+        as,
+        headers: { 'x-kept-native-account': as.userId, 'x-kept-native-epoch': epoch },
+        body: { clientVersion: CLIENT_VERSION, ops },
+      });
+      expect(response.statusCode, response.body).toBe(200);
+      return (response.json() as SyncOpsResponse).results;
+    };
+    const viewer = captureOp(
+      home.id,
+      target,
+      { attachToThingId: id, locationPhoto: true, files: [photoFile(0)] },
+      { payloadVersion: NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION },
+    );
+    expect((await sendNative(talia, [viewer]))[0]?.outcome).toBe('dropped');
+    const [first, second] = await Promise.all([
+      sendNative(louis, locationOps.slice(1, 3)),
+      sendNative(ibrahim, locationOps.slice(3)),
+    ]);
+    expect([...first, ...second].map(({ outcome }) => outcome)).toEqual(Array(4).fill('applied'));
+    expect((await sendNative(louis, [delayed]))[0]?.outcome).toBe('applied');
+    expect((await sendNative(louis, [delayed]))[0]?.outcome).toBe('applied');
+    expect(await thingOf(id)).toEqual(before);
+
+    const page = ok(
+      await call(t, `/api/v1/things/${id}/attachments?limit=1&includeLocationPhotos=true`, {
+        as: talia,
+      }),
+    );
+    expect(page.items).toMatchObject([
+      { id: expect.any(String), role: 'photo', file: { id: files[0]?.id } },
+    ]);
+    expect(page.next_cursor).toBeNull();
+    expect(page.locationPhotos).toMatchObject(
+      locationOps
+        .slice(2)
+        .reverse()
+        .map((op) => ({
+          id: op.payload.id,
+          locationPhotoTakenAt: op.takenAt,
+          file: { thumbUrl: expect.any(String), displayUrl: expect.any(String) },
+        })),
+    );
+    expect(
+      await own(
+        db,
+        'SELECT id FROM public.attachments WHERE thing_id = $1 AND location_photo_taken_at IS NOT NULL',
+        [id],
+      ),
+    ).toHaveLength(3);
+    expect(await eventsOf(db, home.id, id)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: 'thing.capture',
+          actor_id: louis.userId,
+          diff: expect.objectContaining({
+            location_photo: expect.objectContaining({ after: true }),
+          }),
+        }),
+      ]),
+    );
+  });
+
   it('shows box intake, a photo-only observation, moves and removal in inventory history', async () => {
     const typeId = await builtinType(db, 'box_bin');
     const box = (await createThing(t, ibrahim, home, { name: 'Intake bin', typeId })).id;

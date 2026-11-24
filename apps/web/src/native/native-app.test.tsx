@@ -168,6 +168,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
     ],
   ]);
   const attachmentsByThing = new Map<string, unknown[]>();
+  const locationPhotosByThing = new Map<string, unknown[]>();
   const uploadedFiles = new Map<string, { sha256: string; bytes: number; mime: string }>();
 
   let findListener: ((reading: FindTagEvent) => void) | null = null;
@@ -266,7 +267,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           if (capabilitiesOverride) return capabilitiesOverride(_conn) as T;
           return {
             contractVersion: 1,
-            capturePayloadVersions: [2, 3, 4],
+            capturePayloadVersions: [2, 3, 4, 5],
             account: _conn.account,
             epoch: _conn.epoch,
           } as T;
@@ -369,6 +370,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
             ops: Array<{
               clientId: string;
               idempotencyKey: string;
+              takenAt: string;
               payload: {
                 id: string;
                 name?: string;
@@ -376,6 +378,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 quantity?: string;
                 target: { containerId?: string; placeId?: string };
                 attachToThingId?: string;
+                locationPhoto?: true;
                 claimCode?: string;
                 files: Array<{ fileId: string; role: string }>;
               };
@@ -442,36 +445,36 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 meters: [],
                 links: [],
               });
-            attachmentsByThing.set(
-              createdId,
-              op.payload.files.map((f, index) => {
-                const meta = uploadedFiles.get(f.fileId);
-                const hasPreview = f.role === 'photo' && meta?.mime === 'image/jpeg';
-                return {
-                  id: `att-${createdId}-${index}`,
-                  role: f.role,
-                  sort: index,
-                  file: {
-                    id: f.fileId,
-                    sha256: meta?.sha256 ?? 'a'.repeat(64),
-                    bytes: meta?.bytes ?? 10,
-                    mime: meta?.mime ?? (f.role === 'photo' ? 'image/jpeg' : 'application/pdf'),
-                    class: f.role === 'photo' ? 'evidence' : 'document',
-                    hasGps: false,
-                    width: null,
-                    height: null,
-                    derivativeState: 'ready',
-                    thumbUrl: hasPreview ? '/f/fixture-thumb.jpg' : null,
-                    displayUrl: hasPreview ? '/f/fixture-display.jpg' : null,
-                  },
-                  url: null,
-                  subject: { thingId: createdId },
-                  name: f.role === 'photo' ? 'photo.jpg' : 'manual.pdf',
-                  createdBy: { displayName: 'Ibrahim' },
-                  rowVersion: 1,
-                };
-              }),
-            );
+            const attachments = op.payload.files.map((f, index) => {
+              const meta = uploadedFiles.get(f.fileId);
+              const hasPreview = f.role === 'photo' && meta?.mime === 'image/jpeg';
+              return {
+                id: `att-${createdId}-${index}`,
+                role: op.payload.locationPhoto ? 'document' : f.role,
+                sort: index,
+                file: {
+                  id: f.fileId,
+                  sha256: meta?.sha256 ?? 'a'.repeat(64),
+                  bytes: meta?.bytes ?? 10,
+                  mime: meta?.mime ?? (f.role === 'photo' ? 'image/jpeg' : 'application/pdf'),
+                  class: f.role === 'photo' ? 'evidence' : 'document',
+                  hasGps: false,
+                  width: null,
+                  height: null,
+                  derivativeState: 'ready',
+                  thumbUrl: hasPreview ? '/f/fixture-thumb.jpg' : null,
+                  displayUrl: hasPreview ? '/f/fixture-display.jpg' : null,
+                },
+                url: null,
+                subject: { thingId: createdId },
+                name: f.role === 'photo' ? 'photo.jpg' : 'manual.pdf',
+                ...(op.payload.locationPhoto ? { locationPhotoTakenAt: op.takenAt } : {}),
+                createdBy: { displayName: 'Ibrahim' },
+                rowVersion: 1,
+              };
+            });
+            if (op.payload.locationPhoto) locationPhotosByThing.set(createdId, attachments);
+            else attachmentsByThing.set(createdId, attachments);
             return {
               clientId: op.clientId,
               idempotencyKey: op.idempotencyKey,
@@ -584,7 +587,11 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
         if (path.startsWith('/api/v1/things/')) {
           const attMatch = /^\/api\/v1\/things\/([^/]+)\/attachments/.exec(path);
           if (attMatch?.[1]) {
-            return { items: attachmentsByThing.get(attMatch[1]) ?? [], next_cursor: null } as T;
+            return {
+              items: attachmentsByThing.get(attMatch[1]) ?? [],
+              next_cursor: null,
+              locationPhotos: locationPhotosByThing.get(attMatch[1]) ?? [],
+            } as T;
           }
           const detailMatch = /^\/api\/v1\/things\/([^/?]+)$/.exec(path);
           if (detailMatch?.[1]) {
@@ -1605,6 +1612,57 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'QR and NFC label' }));
     await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));
     expect(env.events.sharedLabelPdfs).toEqual([{ url: `${origin}/l/7KQ4MZ`, name: 'Winter Box' }]);
+  });
+
+  it('queues a location photo offline and shows it separately after sync', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Add location photo' }));
+    expect(screen.queryByLabelText('Description')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Attach PDF' })).not.toBeInTheDocument();
+    env.setOnline(false);
+    const picker = document.querySelectorAll<HTMLInputElement>('input[type="file"]')[1];
+    if (!picker) throw new Error('Expected photo picker');
+    await user.upload(picker, new File(['location image'], 'shelf.jpg', { type: 'image/jpeg' }));
+    await user.click(screen.getByRole('button', { name: 'Save location photo' }));
+    expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+    expect(env.events.uploadedFiles).toHaveLength(0);
+
+    env.setOnline(true);
+    act(() => env.emitAppState(true));
+    expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
+    expect(request).toHaveBeenCalledWith(
+      expect.anything(),
+      capturePaths.syncOps,
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ops: [
+            expect.objectContaining({
+              payloadVersion: 5,
+              payload: expect.objectContaining({ attachToThingId: env.boxId, locationPhoto: true }),
+            }),
+          ],
+        }),
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    const heading = await screen.findByRole('heading', { name: 'Last logged location' });
+    const location = heading.closest('section');
+    if (!location) throw new Error('Expected a location photo section');
+    await user.click(await within(location).findByRole('button', { name: 'photo.jpg' }));
+    expect(env.events.openedRemote.at(-1)).toMatchObject({ thing: env.boxId, variant: 'display' });
+    expect(screen.queryByRole('heading', { name: 'Photos' })).not.toBeInTheDocument();
   });
 
   it('edits a bin in place and shows the last known location and photo history', async () => {
@@ -2735,9 +2793,11 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByText('Bin photo')).toBeInTheDocument();
     const results = screen.getByRole('list', { name: 'Possible photo matches' });
     expect(within(results).getByText('Garage')).toBeInTheDocument();
-    expect(results.querySelector('img')).toHaveAttribute(
-      'src',
-      `${connection.origin}/fixture-thumb.jpg`,
+    await waitFor(() =>
+      expect(results.querySelector('img')).toHaveAttribute(
+        'src',
+        `${connection.origin}/fixture-thumb.jpg`,
+      ),
     );
     await user.click(within(results).getByRole('button', { name: 'Open original photo' }));
     expect(original).toHaveBeenCalledWith(connection, {

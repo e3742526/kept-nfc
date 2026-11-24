@@ -7,7 +7,7 @@ export type Destination = {
   id: string;
   locationId: string;
   name: string;
-  kind?: 'box' | 'place' | 'photos' | 'documents';
+  kind?: 'box' | 'place' | 'photos' | 'documents' | 'location-photo';
 };
 
 export function writableLocations(cache: InventoryCache) {

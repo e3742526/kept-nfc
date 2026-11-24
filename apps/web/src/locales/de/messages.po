@@ -33173,3 +33173,31 @@ msgstr "In der Übersicht öffnen"
 #: src/native/main.tsx
 msgid "Appearance"
 msgstr "Erscheinungsbild"
+
+#: src/native/capture-form.tsx
+msgid "Choose one photo no larger than 25 MB."
+msgstr "Wähle ein Foto mit höchstens 25 MB."
+
+#: src/native/capture-form.tsx
+msgid "Add location photo"
+msgstr "Standortfoto hinzufügen"
+
+#: src/native/capture-form.tsx
+msgid "Choose photo"
+msgstr "Foto auswählen"
+
+#: src/native/capture-form.tsx
+msgid "Save location photo"
+msgstr "Standortfoto speichern"
+
+#: src/native/record.tsx
+msgid "Location photo"
+msgstr "Standortfoto"
+
+#: src/native/record.tsx
+msgid "Last logged location"
+msgstr "Zuletzt erfasster Standort"
+
+#: src/native/record.tsx
+msgid "Take a photo of where you left this item. SheepKeep keeps the latest three."
+msgstr "Fotografiere, wo du diesen Eintrag abgelegt hast. SheepKeep speichert die letzten drei Fotos."

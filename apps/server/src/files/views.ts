@@ -86,6 +86,7 @@ export type AttachmentView = {
   alsoInPaperwork?: true;
   createdBy: { displayName: string };
   createdAt?: string;
+  locationPhotoTakenAt?: string;
   /** For PATCH's If-Match (D156). Not in the web contract's type yet; additive. */
   rowVersion: number;
 };
@@ -210,13 +211,15 @@ export type AttachmentRow = { [C in SubjectColumn]: string | null } & {
   sort: number;
   created_by: string;
   created_at: Date;
+  location_photo_taken_at: Date | null;
   row_version: number;
   display_name: string | null;
 };
 
 export const ATTACHMENT_SELECT = `SELECT a.id, a.location_id, a.file_id, a.url,
        ${SUBJECT_COLUMNS.map(([c]) => `a.${c}`).join(', ')},
-       a.role, a.name, a.sort, a.created_by, a.created_at, a.row_version, up.display_name
+       a.role, a.name, a.sort, a.created_by, a.created_at, a.location_photo_taken_at,
+       a.row_version, up.display_name
   FROM public.attachments a
   LEFT JOIN public.user_profiles up ON up.user_id = a.created_by`;
 
@@ -261,6 +264,9 @@ export async function attachmentViews(
         name: r.name,
         createdBy: { displayName: r.display_name ?? '' },
         createdAt: r.created_at.toISOString(),
+        ...(r.location_photo_taken_at
+          ? { locationPhotoTakenAt: r.location_photo_taken_at.toISOString() }
+          : {}),
         rowVersion: r.row_version,
       };
     }),

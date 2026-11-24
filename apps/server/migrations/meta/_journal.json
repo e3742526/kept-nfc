@@ -1317,6 +1317,20 @@
       "when": 1795466880002,
       "tag": "0187_assistant_models",
       "breakpoints": true
+    },
+    {
+      "idx": 188,
+      "version": "7",
+      "when": 1795548307615,
+      "tag": "0188_location_photos",
+      "breakpoints": true
+    },
+    {
+      "idx": 189,
+      "version": "7",
+      "when": 1795548379131,
+      "tag": "0189_trim_location_photos",
+      "breakpoints": true
     }
   ]
 }

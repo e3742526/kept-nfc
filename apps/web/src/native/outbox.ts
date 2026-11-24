@@ -3,6 +3,7 @@ import {
   KEPT_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
+  NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
   newId,
   PAYLOAD_VERSION,
   type SyncOpsResponse,
@@ -48,6 +49,7 @@ export type DraftFields = {
   boxId?: string;
   placeId?: string;
   attachToThingId?: string;
+  locationPhoto?: true;
   captureIntent?: 'record' | 'add';
   skipServerSuggestions?: true;
   name: string;
@@ -283,11 +285,13 @@ export async function replayCapture(
   if (fields.review && !fields.review.accepted) return;
   const reviewed = fields.review?.entries.filter((entry) => entry.include);
   if (reviewed && !reviewed.length) throw new ReplayError('validation');
-  const required = fields.skipServerSuggestions
-    ? NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION
-    : fields.captureIntent
-      ? NATIVE_INVENTORY_PAYLOAD_VERSION
-      : NATIVE_CAPTURE_PAYLOAD_VERSION;
+  const required = fields.locationPhoto
+    ? NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION
+    : fields.skipServerSuggestions
+      ? NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION
+      : fields.captureIntent
+        ? NATIVE_INVENTORY_PAYLOAD_VERSION
+        : NATIVE_CAPTURE_PAYLOAD_VERSION;
   await ensureCaptureCompatible(connection, adapters, required);
   const verified = new Set(fields.review?.verified);
   const entries = reviewed ?? [
@@ -342,7 +346,7 @@ export async function replayCapture(
 
   const ops = work.map((entry) => ({
     clientVersion: KEPT_VERSION,
-    payloadVersion: entry.existing ? PAYLOAD_VERSION : required,
+    payloadVersion: entry.existing && !fields.locationPhoto ? PAYLOAD_VERSION : required,
     clientId: entry.id,
     idempotencyKey: reviewed ? entry.id : (fields.attemptId ?? entry.id),
     op: 'create_thing' as const,
@@ -358,7 +362,10 @@ export async function replayCapture(
           : { unplaced: true },
       mode: 'thing',
       ...(entry.existing
-        ? { attachToThingId: entry.existing.id }
+        ? {
+            attachToThingId: entry.existing.id,
+            ...(fields.locationPhoto ? { locationPhoto: true } : {}),
+          }
         : {
             reviewSuggestions: true,
             captureIntent: fields.captureIntent,
@@ -427,7 +434,9 @@ export async function replayCapture(
       failed ??= error.code;
       continue;
     }
-    if (capture.files.length) {
+    // The accepted log may already have aged out of the three-photo window. The signed-in
+    // server's replay result and the verified upload confirm this operation even in that case.
+    if (capture.files.length && !fields.locationPhoto) {
       const remaining = new Set(
         capture.files.map(({ file, sha256 }) => `${file.role}:${file.bytes}:${sha256}`),
       );

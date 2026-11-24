@@ -3,6 +3,7 @@ import {
   NATIVE_CAPTURE_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
+  NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
   NativeCaptureCapabilitiesSchema,
   newId,
 } from '@kept/shared';
@@ -472,6 +473,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
           NATIVE_CAPTURE_PAYLOAD_VERSION,
           NATIVE_INVENTORY_PAYLOAD_VERSION,
           NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
+          NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
         ],
         ...context,
       };

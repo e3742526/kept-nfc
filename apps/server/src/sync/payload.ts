@@ -8,6 +8,7 @@ import {
   NATIVE_CAPTURE_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
+  NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
   type OpKind,
   type OpPayload,
   PAYLOAD_VERSION,
@@ -48,6 +49,7 @@ export function usesNativeCaptureVersion(item: Pick<QueueItem, 'op' | 'payloadVe
       NATIVE_CAPTURE_PAYLOAD_VERSION,
       NATIVE_INVENTORY_PAYLOAD_VERSION,
       NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
+      NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
     ].includes(item.payloadVersion)
   );
 }
@@ -84,9 +86,13 @@ export function parsedPayload<K extends OpKind>(
 ): OpPayload<K> | null {
   if (usesNativeCaptureVersion({ op, payloadVersion })) {
     const parsed = CreateThingPayload.safeParse(payload);
+    if (!parsed.success) return null;
+    if (payloadVersion === NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION) {
+      return parsed.data.locationPhoto === true ? (parsed.data as OpPayload<K>) : null;
+    }
     const hasIntent = payloadVersion !== NATIVE_CAPTURE_PAYLOAD_VERSION;
     const skipsServer = payloadVersion === NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION;
-    return parsed.success &&
+    return !parsed.data.locationPhoto &&
       parsed.data.reviewSuggestions === true &&
       (parsed.data.skipServerSuggestions === true) === skipsServer &&
       (hasIntent
@@ -109,7 +115,9 @@ export function parsedPayload<K extends OpKind>(
   const parsed = parseOpPayload(op, current);
   return parsed.success &&
     (op !== 'create_thing' ||
-      (!('captureIntent' in parsed.data) && !('skipServerSuggestions' in parsed.data)))
+      (!('captureIntent' in parsed.data) &&
+        !('skipServerSuggestions' in parsed.data) &&
+        !('locationPhoto' in parsed.data)))
     ? (parsed.data as OpPayload<K>)
     : null;
 }

@@ -33173,3 +33173,31 @@ msgstr "Mở trong mục Duyệt"
 #: src/native/main.tsx
 msgid "Appearance"
 msgstr "Giao diện"
+
+#: src/native/capture-form.tsx
+msgid "Choose one photo no larger than 25 MB."
+msgstr "Chọn một ảnh không quá 25 MB."
+
+#: src/native/capture-form.tsx
+msgid "Add location photo"
+msgstr "Thêm ảnh vị trí"
+
+#: src/native/capture-form.tsx
+msgid "Choose photo"
+msgstr "Chọn ảnh"
+
+#: src/native/capture-form.tsx
+msgid "Save location photo"
+msgstr "Lưu ảnh vị trí"
+
+#: src/native/record.tsx
+msgid "Location photo"
+msgstr "Ảnh vị trí"
+
+#: src/native/record.tsx
+msgid "Last logged location"
+msgstr "Vị trí ghi nhận gần nhất"
+
+#: src/native/record.tsx
+msgid "Take a photo of where you left this item. SheepKeep keeps the latest three."
+msgstr "Chụp ảnh nơi bạn để món đồ này. SheepKeep giữ ba ảnh mới nhất."

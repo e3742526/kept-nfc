@@ -1260,6 +1260,7 @@ export type AttachmentView = {
   alsoInPaperwork?: true;
   createdBy: ActorRef;
   createdAt?: string;
+  locationPhotoTakenAt?: string;
   /** For PATCH /api/v1/attachments/:id (If-Match). */
   rowVersion: number;
 };

@@ -150,6 +150,35 @@ describe('kept.merge_things', () => {
     ).toEqual([{ n: 1 }]);
   });
 
+  it('retains the three newest location photos and the gallery photo after merging', async () => {
+    await own(
+      `INSERT INTO public.attachments
+         (location_id, file_id, thing_id, role, location_photo_taken_at, created_by)
+       SELECT a.location_id, a.file_id, v.thing_id, 'document', v.logged_at, a.created_by
+       FROM public.attachments a
+       CROSS JOIN (VALUES
+         ($1::uuid, '2026-11-24T10:00:00Z'::timestamptz),
+         ($2::uuid, '2026-11-24T11:00:00Z'::timestamptz),
+         ($1::uuid, '2026-11-24T12:00:00Z'::timestamptz),
+         ($2::uuid, '2026-11-24T13:00:00Z'::timestamptz)
+       ) AS v(thing_id, logged_at)
+       WHERE a.thing_id = $1 AND a.role = 'photo'`,
+      [dup, keep],
+    );
+    await merge(alfred, dup, keep);
+    const merged = await own<{ thing_id: string; logged_at: Date | null }>(
+      `SELECT thing_id, location_photo_taken_at AS logged_at
+       FROM public.attachments
+       ORDER BY location_photo_taken_at DESC NULLS LAST`,
+    );
+    expect(merged).toEqual([
+      { thing_id: keep, logged_at: new Date('2026-11-24T13:00:00Z') },
+      { thing_id: keep, logged_at: new Date('2026-11-24T12:00:00Z') },
+      { thing_id: keep, logged_at: new Date('2026-11-24T11:00:00Z') },
+      { thing_id: keep, logged_at: null },
+    ]);
+  });
+
   it('refuses both metered, a survivor inside the duplicate, a viewer and another location (42501)', async () => {
     await own(
       `INSERT INTO public.meters (location_id, thing_id, kind, unit)
