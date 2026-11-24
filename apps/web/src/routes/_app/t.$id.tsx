@@ -8,13 +8,15 @@
  * A UUID address, or a code typed another way, is replaced in place by the short
  * ID once the thing has one; a thing created offline keeps its UUID address until it syncs.
  * Offline, or when the server can't be reached, the page is the phone's copy.
+ * A numbered label read as `/t/BIN-A09Z-0001` is a label, not a thing's address: it goes to
+ * `/l/` (components/scan/label-link.tsx), which resolves it.
  *
  * The schema is written out here rather than imported from the screen, because a route's
  * `validateSearch` is not code-split: it stays in the entry chunk (D80).
  */
-import { SURFACE_FILTER_KEYS } from '@kept/shared';
+import { parseDeviceLabel, SURFACE_FILTER_KEYS } from '@kept/shared';
 import { useLingui } from '@lingui/react/macro';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import * as z from 'zod/mini';
 import { useThing } from '@/api/inventory/queries';
 import { ErrorState, LoadingRows, Page } from '@/components/page';
@@ -35,6 +37,10 @@ const oneOf = <T extends string>(values: readonly [T, ...T[]]) =>
   z.optional(z.catch(z.optional(z.enum(values)), undefined));
 
 export const Route = createFileRoute('/_app/t/$id')({
+  beforeLoad: ({ params }) => {
+    const alias = parseDeviceLabel(params.id);
+    if (alias) throw redirect({ to: '/l/$code', params: { code: alias.code }, replace: true });
+  },
   // A vehicle's lists: its readings, fills and services keep their filters here too.
   validateSearch: listSearch([...new Set([...CONTENTS_FILTERS, 'role', ...VEHICLE_FILTERS])], {
     view: oneOf(['list', 'photos']),

@@ -7,7 +7,17 @@
  * top-left corner in every language, like the maker's numbering, so the sheet is laid out LTR
  * and only the names inside a label follow their own direction (`dir=auto`, D97).
  */
-import { cellsFor, hasQr, isSheet, isTape, type LabelCell, type LabelStock } from '@kept/shared';
+import {
+  cellsFor,
+  hasQr,
+  isSheet,
+  isStacked,
+  isTape,
+  type LabelCell,
+  type LabelStock,
+  PRINTED_CODE_HYPHEN,
+  printedCode,
+} from '@kept/shared';
 import type { LabelCellContent } from '@/api/capture/types';
 
 /** The label's faces: Plex Sans with Plex Sans Arabic for Arabic names (D97), Plex Mono for codes. */
@@ -95,7 +105,23 @@ export type CellMetrics = {
   compact: boolean;
   /** Whether the place prints: not on a compact stock, nor on tape. */
   place: boolean;
+  /** The QR on top, the code and text centred under it (`arrange: 'stacked'`). */
+  stacked: boolean;
+  /** The text column's height: the label's, less the padding, and less the QR when stacked. */
+  room: number;
 };
+
+/**
+ * What a label prints as its code: a numbered label's alias, else the short ID's printed form,
+ * both with non-breaking hyphens so they never wrap.
+ */
+export function shownCode(label: Pick<LabelCellContent, 'code' | 'alias'>): string {
+  return label.alias ? label.alias.replaceAll('-', PRINTED_CODE_HYPHEN) : printedCode(label.code);
+}
+
+/** How many characters the printed code is: a short ID's 7, a numbered label's 13. */
+export const codeChars = (label: { alias?: string }): number =>
+  label.alias ? label.alias.length : 7;
 
 /** The smallest name and place a label sets, in mm (about 6.2 pt and 5.7 pt): still readable. */
 export const NAME_MIN = 2.2;
@@ -107,8 +133,10 @@ export const PLACE_INK = '#222222';
 /** The space between the code's characters, in em: the HTML label and the PNG both set it. */
 export const CODE_TRACKING = 0.06;
 
-/** Plex Mono's advance is 0.6 em; the code is set 0.06 em apart, 7 characters with the hyphen. */
-const CODE_EM = 7 * 0.66;
+/** Plex Mono's advance is 0.6 em, set 0.06 em apart: the code's width in em, `chars` long (7 for
+ * a short ID with its hyphen, 13 for a numbered label). */
+const codeEm = (chars = 7) => chars * 0.66;
+const CODE_EM = codeEm();
 
 /** Down to a hundredth of a millimetre, so the CSS sets exactly the size the fit worked with. */
 const floor2 = (n: number) => Math.floor(n * 100 + 1e-6) / 100;
@@ -119,14 +147,15 @@ const floor2 = (n: number) => Math.floor(n * 100 + 1e-6) / 100;
  * starts at about a tenth of the label's height (never larger than four fifths of the code), the
  * place at four fifths of the name; fit.ts steps both down when a long one needs it.
  */
-export function cellMetrics(stock: LabelStock): CellMetrics {
-  if (isTape(stock)) return tapeMetrics(stock);
+export function cellMetrics(stock: LabelStock, codeChars = 7): CellMetrics {
+  if (isTape(stock)) return tapeMetrics(stock, codeChars);
+  if (isStacked(stock)) return stackedMetrics(stock, codeChars);
   const { w, h } = stock.cell;
   const pad = Math.max(1.5, h * 0.06);
   const qr = Math.min(h - 2 * pad, w * 0.48);
   const text = Math.max(0, w - qr - 3 * pad);
   const compact = stock.content === 'compact';
-  const code = Math.min(h * (compact ? 0.16 : 0.13), text / CODE_EM);
+  const code = Math.min(h * (compact ? 0.16 : 0.13), text / codeEm(codeChars));
   const name = floor2(Math.max(NAME_MIN, Math.min(h * 0.095, code * 0.8)));
   return {
     pad,
@@ -138,6 +167,39 @@ export function cellMetrics(stock: LabelStock): CellMetrics {
     path: floor2(Math.max(PATH_MIN, name * 0.8)),
     compact,
     place: !compact,
+    stacked: false,
+    room: h - 2 * pad,
+  };
+}
+
+/**
+ * Square and near-square labels (inch rolls): the QR on top, as wide as the label allows, the code
+ * centred under it, and on a full stock the name and place under that. A full label keeps about a
+ * fifth of its height for the name, so the QR is never the whole label; the code is sized to the
+ * label's width, so a 13-character numbered label stays readable on a 1-inch label (about 7 pt).
+ */
+function stackedMetrics(stock: LabelStock, codeChars: number): CellMetrics {
+  const { w, h } = stock.cell;
+  const pad = Math.max(1.2, h * 0.05);
+  const gap = pad * 0.6;
+  const inner = w - 2 * pad;
+  const compact = stock.content === 'compact';
+  const code = Math.min(h * 0.1, inner / codeEm(codeChars));
+  const words = compact ? 0 : h * 0.22 + gap;
+  const qr = Math.max(0, Math.min(inner, h - 2 * pad - gap - code - words));
+  const name = floor2(Math.max(NAME_MIN, Math.min(h * 0.07, code * 0.8)));
+  return {
+    pad,
+    qr,
+    codeColumn: 0,
+    text: inner,
+    code,
+    name,
+    path: floor2(Math.max(PATH_MIN, name * 0.8)),
+    compact,
+    place: !compact,
+    stacked: true,
+    room: h - 2 * pad - qr - gap,
   };
 }
 
@@ -149,14 +211,14 @@ export function cellMetrics(stock: LabelStock): CellMetrics {
  * beside it. Wide tape: the QR fills the band, the code and the name beside it, as on a roll.
  * The place never prints on tape.
  */
-function tapeMetrics(stock: LabelStock): CellMetrics {
+function tapeMetrics(stock: LabelStock, codeChars: number): CellMetrics {
   const { w, h } = stock.cell;
   const pad = h <= 12 ? h * 0.125 : Math.max(1.5, (h - 18) / 2);
   const band = h - 2 * pad;
   if (hasQr(stock)) {
     const qr = band;
     const text = Math.max(0, w - qr - 3 * pad);
-    const code = Math.min(band * 0.42, text / CODE_EM);
+    const code = Math.min(band * 0.42, text / codeEm(codeChars));
     const name = floor2(Math.max(NAME_MIN, Math.min(band * 0.2, code * 0.6)));
     return {
       pad,
@@ -168,10 +230,12 @@ function tapeMetrics(stock: LabelStock): CellMetrics {
       path: PATH_MIN,
       compact: false,
       place: false,
+      stacked: false,
+      room: h - 2 * pad,
     };
   }
-  const code = band * 0.62;
-  const codeColumn = code * CODE_EM;
+  const code = band * 0.62 * Math.min(1, CODE_EM / codeEm(codeChars));
+  const codeColumn = code * codeEm(codeChars);
   const text = Math.max(0, w - codeColumn - 3 * pad);
   const name = floor2(Math.max(NAME_MIN, Math.min(band * 0.4, code * 0.6)));
   return {
@@ -184,6 +248,8 @@ function tapeMetrics(stock: LabelStock): CellMetrics {
     path: PATH_MIN,
     compact: false,
     place: false,
+    stacked: false,
+    room: h - 2 * pad,
   };
 }
 

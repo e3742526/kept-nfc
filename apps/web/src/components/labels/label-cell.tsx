@@ -16,11 +16,20 @@
  * Sizes are millimetres from `cellMetrics`, set through React's style prop (the CSSOM, which the
  * CSP allows; a `style` attribute in markup it would not).
  */
-import { type LabelStock, printedCode } from '@kept/shared';
+import type { LabelStock } from '@kept/shared';
 import { useMemo } from 'react';
 import type { LabelCellContent } from '@/api/capture/types';
 import { FIT_LINE_HEIGHT, type FittedText, fitLabel, type TextMeasure } from './fit';
-import { CODE_TRACKING, cellMetrics, LABEL_MONO, LABEL_SANS, mm, PLACE_INK } from './layout';
+import {
+  CODE_TRACKING,
+  cellMetrics,
+  codeChars,
+  LABEL_MONO,
+  LABEL_SANS,
+  mm,
+  PLACE_INK,
+  shownCode,
+} from './layout';
 import { type Encode, qrMatrix, qrPath } from './qr';
 
 export function LabelCell({
@@ -36,16 +45,13 @@ export function LabelCell({
   /** How the name and place are measured (`useLabelMeasure`). */
   measure: TextMeasure;
 }) {
-  const m = cellMetrics(stock);
+  const m = cellMetrics(stock, codeChars(label));
   const qr = useMemo(() => {
     if (!encode || m.qr === 0) return null;
     const matrix = qrMatrix(encode, label.url);
     return { d: qrPath(matrix), n: matrix.length };
   }, [encode, label.url, m.qr]);
-  const fit = useMemo(
-    () => fitLabel(stock, { name: label.name, path: label.path }, measure),
-    [stock, label.name, label.path, measure],
-  );
+  const fit = useMemo(() => fitLabel(stock, label, measure), [stock, label, measure]);
   const code = (
     <bdi
       dir="ltr"
@@ -58,7 +64,7 @@ export function LabelCell({
         letterSpacing: `${CODE_TRACKING}em`,
       }}
     >
-      {printedCode(label.code)}
+      {shownCode(label)}
     </bdi>
   );
   return (
@@ -66,8 +72,17 @@ export function LabelCell({
       dir="ltr"
       data-slot="label"
       data-fits={fit.fits ? undefined : 'false'}
-      className="flex size-full items-center overflow-hidden bg-white text-black"
-      style={{ padding: mm(m.pad), columnGap: mm(m.pad) }}
+      data-arrange={m.stacked ? 'stacked' : undefined}
+      className={
+        m.stacked
+          ? 'flex size-full flex-col items-center overflow-hidden bg-white text-center text-black'
+          : 'flex size-full items-center overflow-hidden bg-white text-black'
+      }
+      style={
+        m.stacked
+          ? { padding: mm(m.pad), rowGap: mm(m.pad * 0.6) }
+          : { padding: mm(m.pad), columnGap: mm(m.pad) }
+      }
     >
       {m.qr > 0 ? (
         <svg
@@ -90,10 +105,21 @@ export function LabelCell({
         </div>
       ) : null}
       <div
-        className="grid min-w-0 self-stretch"
+        className={
+          m.stacked ? 'grid min-h-0 min-w-0 justify-items-center' : 'grid min-w-0 self-stretch'
+        }
         // `safe`: a label too long even at the smallest size overflows at the bottom, never
-        // above the code.
-        style={{ inlineSize: mm(m.text), rowGap: mm(m.pad * 0.6), alignContent: 'safe center' }}
+        // above the code. Stacked, the text column is the room under the QR.
+        style={
+          m.stacked
+            ? {
+                inlineSize: mm(m.text),
+                blockSize: mm(m.room),
+                rowGap: mm(m.pad * 0.6),
+                alignContent: 'start',
+              }
+            : { inlineSize: mm(m.text), rowGap: mm(m.pad * 0.6), alignContent: 'safe center' }
+        }
       >
         {m.codeColumn > 0 ? null : code}
         {fit.name ? <Lines slot="label-name" part={fit.name} weight={600} color="#000000" /> : null}

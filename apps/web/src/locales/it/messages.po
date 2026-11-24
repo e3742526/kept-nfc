@@ -33265,3 +33265,27 @@ msgstr "Fotografa il punto in cui hai lasciato questo oggetto. SheepKeep conserv
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Scegli un oggetto o un contenitore"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Codici delle etichette"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "ID brevi"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Numerate"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Uso"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Ogni etichetta riceve il proprio ID di sei caratteri."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Ogni etichetta si legge come {example}: l'uso che scegli, una nuova serie e il suo numero. Un'etichetta si può comunque assegnare a qualsiasi cosa."

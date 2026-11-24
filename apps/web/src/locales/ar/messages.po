@@ -33265,3 +33265,27 @@ msgstr "صوّر المكان الذي تركت فيه هذا العنصر. يح
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "اختر عنصرًا أو صندوقًا"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "رموز الملصقات"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "معرّفات قصيرة"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "مرقّمة"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "الغرض"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "يحصل كل ملصق على معرّف خاص به من ستة أحرف."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "يُقرأ كل ملصق مثل {example}: الغرض الذي تختاره، ثم سلسلة جديدة، ثم رقمه. ويظل بالإمكان ربط أي ملصق بأي شيء."

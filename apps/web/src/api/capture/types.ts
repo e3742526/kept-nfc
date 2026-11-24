@@ -457,6 +457,8 @@ export type CreateLabelBatchBody = {
   /** Every thing or container under the place (or the location) whose code was never printed. */
   unprinted?: { placeId?: string };
   blankCount?: number;
+  /** A blank sheet only: number its labels as a series with this purpose prefix (`BIN`). */
+  series?: { prefix: string };
   /** A `LABEL_STOCKS` key (@kept/shared). */
   stock: string;
   startCell?: number;
@@ -470,6 +472,8 @@ export type CreateLabelBatchBody = {
 
 export type LabelCellContent = {
   code: string;
+  /** A numbered label's alias (`BIN-A09Z-0001`): printed instead of the code, and in `url`. */
+  alias?: string;
   /** `KEPT_PUBLIC_URL + '/l/' + code` (D120). */
   url: string;
   kind: 'thing' | 'place' | 'blank';
@@ -582,7 +586,8 @@ export type ScanSessionView = {
  */
 export type ScanOutcome =
   | { outcome: 'open'; target: { kind: 'thing' | 'place'; id: string; locationId: string } }
-  | { outcome: 'claim'; locationId: string }
+  /** `code`: the short ID to claim (a numbered label's, or the code read). */
+  | { outcome: 'claim'; locationId: string; code?: string }
   | { outcome: 'not_in_your_kept' }
   | {
       outcome: 'legacy_ambiguous';

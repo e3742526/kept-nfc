@@ -2,10 +2,18 @@
  * Label geometry: where each label lands per stock, the start cell on a part-used
  * sheet, how many pages a batch takes, the `@page` rule, and that the code always fits its column.
  */
-import { hasQr, isTape, LABEL_STOCKS, labelStock } from '@kept/shared';
+import { hasQr, isStacked, isTape, LABEL_STOCKS, labelStock } from '@kept/shared';
 import { describe, expect, it } from 'vitest';
 import type { LabelCellContent } from '@/api/capture/types';
-import { cellMetrics, directionOfText, pageCss, pagesFor, placeLabels, rowColOf } from './layout';
+import {
+  cellMetrics,
+  directionOfText,
+  pageCss,
+  pagesFor,
+  placeLabels,
+  rowColOf,
+  shownCode,
+} from './layout';
 
 const labels = (n: number): LabelCellContent[] =>
   Array.from({ length: n }, (_, i) => {
@@ -94,26 +102,59 @@ describe('the start cell', () => {
 });
 
 describe('cellMetrics', () => {
-  it.each(LABEL_STOCKS.map((s) => [s.key] as const))('%s: the parts fit the cell', (key) => {
-    const stock = labelStock(key);
-    const m = cellMetrics(stock);
-    expect(m.pad * 3 + m.qr + m.codeColumn + m.text).toBeCloseTo(stock.cell.w, 5);
-    expect(m.qr).toBeLessThanOrEqual(stock.cell.h - 2 * m.pad + 1e-9);
-    // Seven mono characters at 0.66 em (the advance plus the tracking) fit their column.
-    expect(m.code * 7 * 0.66).toBeLessThanOrEqual((m.codeColumn || m.text) + 1e-9);
-    expect(m.code).toBeLessThanOrEqual(stock.cell.h - 2 * m.pad + 1e-9);
-    if (hasQr(stock)) {
-      // A QR module stays at or above 0.4 mm for a 40-character URL (version 3, 37 modules).
-      expect(m.qr / 37).toBeGreaterThanOrEqual(0.4);
-      expect(m.codeColumn).toBe(0);
-    } else expect(m.qr).toBe(0);
+  it.each(LABEL_STOCKS.filter((s) => !isStacked(s)).map((s) => [s.key] as const))(
+    '%s: the parts fit the cell',
+    (key) => {
+      const stock = labelStock(key);
+      const m = cellMetrics(stock);
+      expect(m.pad * 3 + m.qr + m.codeColumn + m.text).toBeCloseTo(stock.cell.w, 5);
+      expect(m.qr).toBeLessThanOrEqual(stock.cell.h - 2 * m.pad + 1e-9);
+      // Seven mono characters at 0.66 em (the advance plus the tracking) fit their column.
+      expect(m.code * 7 * 0.66).toBeLessThanOrEqual((m.codeColumn || m.text) + 1e-9);
+      expect(m.code).toBeLessThanOrEqual(stock.cell.h - 2 * m.pad + 1e-9);
+      if (hasQr(stock)) {
+        // A QR module stays at or above 0.4 mm for a 40-character URL (version 3, 37 modules).
+        expect(m.qr / 37).toBeGreaterThanOrEqual(0.4);
+        expect(m.codeColumn).toBe(0);
+      } else expect(m.qr).toBe(0);
+    },
+  );
+
+  it.each(LABEL_STOCKS.filter(isStacked).map((s) => [s.key] as const))(
+    '%s: stacked, the QR over a numbered code that fits the width',
+    (key) => {
+      const stock = labelStock(key);
+      for (const chars of [7, 13]) {
+        const m = cellMetrics(stock, chars);
+        expect(m.stacked).toBe(true);
+        expect(m.text).toBeCloseTo(stock.cell.w - 2 * m.pad, 5);
+        expect(m.qr).toBeLessThanOrEqual(m.text + 1e-9);
+        expect(m.code * chars * 0.66).toBeLessThanOrEqual(m.text + 1e-9);
+        // The QR, the gap and the code stay inside the label's height.
+        expect(m.pad * 2 + m.qr + m.pad * 0.6 + m.code).toBeLessThanOrEqual(stock.cell.h + 1e-9);
+        expect(m.room).toBeCloseTo(stock.cell.h - 2 * m.pad - m.qr - m.pad * 0.6, 5);
+        // A module at or above 0.4 mm for a label link (version 3, 37 modules with the quiet zone).
+        expect(m.qr / 37).toBeGreaterThanOrEqual(0.4);
+      }
+      // A numbered label's capitals stay about 7 pt (2.4 mm em) even on a 1-inch label.
+      expect(cellMetrics(stock, 13).code).toBeGreaterThanOrEqual(2.4);
+    },
+  );
+
+  it('prints a numbered label as its alias, a short ID 3 + 3, neither ever wrapping', () => {
+    expect(shownCode({ code: '7KQ4MZ' })).toBe('7KQ\u20114MZ');
+    expect(shownCode({ code: '7KQ4MZ', alias: 'BIN-A09Z-0001' })).toBe('BIN\u2011A09Z\u20110001');
   });
 
   it('prints names and paths except on the compact stock; tape prints the name only', () => {
     expect(LABEL_STOCKS.filter((s) => cellMetrics(s).compact).map((s) => s.key)).toEqual([
+      'thermal_1x1in',
+      'thermal_1_5x1in',
       'a4_65_38x21',
     ]);
     expect(LABEL_STOCKS.filter((s) => !cellMetrics(s).place).map((s) => s.key)).toEqual([
+      'thermal_1x1in',
+      'thermal_1_5x1in',
       'tape_9',
       'tape_12',
       'tape_18',

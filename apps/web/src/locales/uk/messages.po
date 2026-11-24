@@ -33265,3 +33265,27 @@ msgstr "Сфотографуйте місце, де ви залишили цей
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Виберіть предмет або контейнер"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Коди етикеток"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "Короткі ID"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Нумеровані"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Призначення"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Кожна етикетка отримує власний шестисимвольний ID."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Кожна етикетка має вигляд {example}: обране призначення, нова серія і її номер. Етикетку все одно можна прив'язати до будь-чого."

@@ -256,6 +256,94 @@ exports[`placeLabels per stock > tape_24: the first page, cell by cell 1`] = `
 }
 `;
 
+exports[`placeLabels per stock > thermal_1_5x1_5in: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 38.1mm 38.1mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
+exports[`placeLabels per stock > thermal_1_5x1in: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 38.1mm 25.4mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
+exports[`placeLabels per stock > thermal_1x1in: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 25.4mm 25.4mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
+exports[`placeLabels per stock > thermal_2x2in: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 50.8mm 50.8mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
 exports[`placeLabels per stock > thermal_40x30: the first page, cell by cell 1`] = `
 {
   "cells": 1,

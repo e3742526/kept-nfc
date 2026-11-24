@@ -33265,3 +33265,27 @@ msgstr "Take a photo of where you left this item. SheepKeep keeps the latest thr
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Choose an item or bin"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Label codes"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "Short IDs"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Numbered"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Purpose"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Each label gets its own six-character ID."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."

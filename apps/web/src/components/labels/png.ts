@@ -9,17 +9,18 @@
  * test can rasterise it without a canvas.
  */
 import type { LabelStock } from '@kept/shared';
-import { printedCode } from '@kept/shared';
 import type { LabelCellContent } from '@/api/capture/types';
 import { canShareFiles, downloadsWork, saveFile, shareFiles } from '@/lib/files';
 import { FIT_LINE_HEIGHT, fitLabel, loadLabelFaces, type TextMeasure } from './fit';
 import {
   CODE_TRACKING,
   cellMetrics,
+  codeChars,
   directionOfText,
   LABEL_MONO,
   LABEL_SANS,
   PLACE_INK,
+  shownCode,
 } from './layout';
 import { loadQr, qrMatrix } from './qr';
 
@@ -65,8 +66,9 @@ export function drawLabel(
   matrix: readonly (readonly boolean[])[],
 ) {
   const { width, height } = labelPixelSize(stock);
-  const m = cellMetrics(stock);
+  const m = cellMetrics(stock, codeChars(label));
   const pad = pxOf(m.pad);
+  const shown = shownCode(label);
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, width, height);
 
@@ -76,8 +78,11 @@ export function drawLabel(
   if (m.qr > 0) {
     const n = matrix.length;
     const unit = Math.max(1, Math.floor(side / n));
-    const qx = pad + Math.floor((side - unit * n) / 2);
-    const qy = Math.floor((height - unit * n) / 2);
+    // Stacked: centred across the top. Else beside the text, centred down the label.
+    const qx = m.stacked
+      ? Math.floor((width - unit * n) / 2)
+      : pad + Math.floor((side - unit * n) / 2);
+    const qy = m.stacked ? pad : Math.floor((height - unit * n) / 2);
     ctx.fillStyle = '#000000';
     matrix.forEach((row, y) => {
       row.forEach((on, x) => {
@@ -87,7 +92,7 @@ export function drawLabel(
   }
 
   const beside = m.codeColumn > 0;
-  const x0 = beside ? pad + pxOf(m.codeColumn) + pad : pad + side + pad;
+  const x0 = m.stacked ? pad : beside ? pad + pxOf(m.codeColumn) + pad : pad + side + pad;
   const textWidth = pxOf(m.text);
   const code = pxOf(m.code);
   type Block = {
@@ -102,7 +107,7 @@ export function drawLabel(
   ctx.textBaseline = 'top';
   ctx.font = `600 ${code}px ${LABEL_MONO}`;
   const codeBlock: Block = {
-    lines: [printedCode(label.code)],
+    lines: [shown],
     step: code,
     font: ctx.font,
     color: '#000000',
@@ -113,7 +118,7 @@ export function drawLabel(
     ctx.fillStyle = '#000000';
     ctx.direction = 'ltr';
     ctx.textAlign = 'left';
-    fillCode(ctx, printedCode(label.code), pad, Math.round((height - code) / 2), code);
+    fillCode(ctx, shown, pad, Math.round((height - code) / 2), code);
   } else blocks.push(codeBlock);
   // The same lines and sizes as the HTML label (fit.ts), measured on this canvas.
   const measure: TextMeasure = (text, size, weight = 600) => {
@@ -136,20 +141,27 @@ export function drawLabel(
     });
   }
 
-  // Centred as a block beside the QR, like the HTML label.
+  // Centred as a block beside the QR, like the HTML label; stacked, centred under the QR.
   const gap = Math.round(pad * 0.6);
   const total =
     blocks.reduce((sum, b) => sum + b.step * b.lines.length, 0) +
     gap * Math.max(0, blocks.length - 1);
-  let y = Math.max(pad, Math.round((height - total) / 2));
+  let y = m.stacked ? pad + side + gap : Math.max(pad, Math.round((height - total) / 2));
   for (const b of blocks) {
     ctx.font = b.font;
     ctx.fillStyle = b.color;
     ctx.direction = b.rtl ? 'rtl' : 'ltr';
-    ctx.textAlign = b.rtl ? 'right' : 'left';
-    const x = b.rtl ? x0 + textWidth : x0;
+    ctx.textAlign = m.stacked ? 'center' : b.rtl ? 'right' : 'left';
+    const x = m.stacked ? x0 + textWidth / 2 : b.rtl ? x0 + textWidth : x0;
     for (const line of b.lines) {
-      if (b.code) fillCode(ctx, line, x, y, code);
+      // The code's tracking is drawn a character at a time without `letterSpacing`, from the
+      // left: centred, it starts half its width before the middle.
+      if (b.code && m.stacked) {
+        ctx.textAlign = 'left';
+        const w = ctx.measureText(line).width + code * CODE_TRACKING * (line.length - 1);
+        fillCode(ctx, line, Math.round(x - w / 2), y, code);
+        ctx.textAlign = 'center';
+      } else if (b.code) fillCode(ctx, line, x, y, code);
       else ctx.fillText(line, x, y);
       y += b.step;
     }
@@ -174,7 +186,7 @@ export async function labelPngs(
     drawLabel(ctx, stock, label, qrMatrix(encode, label.url));
     const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, 'image/png'));
     if (!blob) throw new Error('canvas.toBlob gave nothing');
-    files.push(new File([blob], `kept-${label.code}.png`, { type: 'image/png' }));
+    files.push(new File([blob], `kept-${label.alias ?? label.code}.png`, { type: 'image/png' }));
   }
   return files;
 }

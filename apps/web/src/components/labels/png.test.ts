@@ -122,6 +122,10 @@ describe('labelPixelSize', () => {
       thermal_50x30: { width: 591, height: 354 },
       thermal_40x30: { width: 472, height: 354 },
       thermal_62x29: { width: 732, height: 343 },
+      thermal_1x1in: { width: 300, height: 300 },
+      thermal_1_5x1in: { width: 450, height: 300 },
+      thermal_1_5x1_5in: { width: 450, height: 450 },
+      thermal_2x2in: { width: 600, height: 600 },
       tape_9: { width: 472, height: 106 },
       tape_12: { width: 591, height: 142 },
       tape_18: { width: 591, height: 213 },
@@ -129,6 +133,9 @@ describe('labelPixelSize', () => {
       a4_24_70x37: { width: 827, height: 437 },
       a4_65_38x21: { width: 450, height: 250 },
       letter_30_67x25: { width: 788, height: 300 },
+      letter_writable_8: { width: 1125, height: 750 },
+      letter_writable_12: { width: 1125, height: 500 },
+      letter_writable_24: { width: 750, height: 375 },
     });
   });
 });
@@ -141,6 +148,22 @@ describe('drawLabel', () => {
       const { width, height } = labelPixelSize(stock);
       const { ctx, image } = raster(width, height);
       const l = label();
+      drawLabel(ctx, stock, l, qrMatrix(encode, l.url));
+      const [read] = await new ponyfill.BarcodeDetector({ formats: ['qr_code'] }).detect(image);
+      expect(read?.rawValue).toBe(l.url);
+    },
+  );
+
+  it.each(['thermal_1x1in', 'thermal_2x2in'] as const)(
+    '%s: a numbered label, stacked, reads back and prints its alias centred under the QR',
+    async (key) => {
+      const stock = labelStock(key);
+      const { width, height } = labelPixelSize(stock);
+      const { ctx, image } = raster(width, height);
+      const l = label({
+        alias: 'BIN-A09Z-0001',
+        url: 'https://labels.example.org/l/BIN-A09Z-0001',
+      });
       drawLabel(ctx, stock, l, qrMatrix(encode, l.url));
       const [read] = await new ponyfill.BarcodeDetector({ formats: ['qr_code'] }).detect(image);
       expect(read?.rawValue).toBe(l.url);

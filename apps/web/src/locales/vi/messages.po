@@ -33265,3 +33265,27 @@ msgstr "Chụp ảnh nơi bạn để món đồ này. SheepKeep giữ ba ảnh 
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Chọn vật phẩm hoặc thùng"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Mã nhãn"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "ID ngắn"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Đánh số"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Mục đích"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Mỗi nhãn có ID riêng gồm sáu ký tự."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Mỗi nhãn có dạng {example}: mục đích bạn chọn, một loạt mới và số thứ tự. Bạn vẫn có thể gán bất kỳ nhãn nào cho bất cứ thứ gì."

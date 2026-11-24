@@ -33265,3 +33265,27 @@ msgstr "Fotografía el lugar donde dejaste este artículo. SheepKeep guarda las 
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Elige un artículo o un contenedor"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Códigos de etiqueta"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "IDs cortos"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Numeradas"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Uso"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Cada etiqueta obtiene su propio ID de seis caracteres."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Cada etiqueta se lee como {example}: el uso que elijas, una serie nueva y su número. Igualmente puedes asignar cualquier etiqueta a lo que quieras."
