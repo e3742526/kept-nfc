@@ -83,7 +83,6 @@ afterAll(async () => {
 });
 
 describe('POST /api/v1/sync/ops', () => {
-  // catalogue: POST /api/v1/sync/ops
   it('shows box intake, a photo-only observation, moves and removal in inventory history', async () => {
     const typeId = await builtinType(db, 'box_bin');
     const box = (await createThing(t, ibrahim, home, { name: 'Intake bin', typeId })).id;
@@ -208,6 +207,7 @@ describe('POST /api/v1/sync/ops', () => {
     expect((await thingOf(item.id))?.last_seen_at).toEqual(before?.last_seen_at);
   });
 
+  // catalogue: POST /api/v1/sync/ops
   it('applies a queued capture as the caller, audits it, and answers its short ID', async () => {
     const shelf = await place(db, home, 'Shelf A');
     const item = captureOp(home.id, { placeId: shelf }, { name: 'Step ladder' });

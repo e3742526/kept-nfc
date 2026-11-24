@@ -117,7 +117,7 @@ export function RecordHistory({
         return (
           [added && t`Assigned category ${added}`, removed && t`Removed category ${removed}`]
             .filter(Boolean)
-            .join(' · ') || t`Updated categories for ${name}`
+            .join(sep()) || t`Updated categories for ${name}`
         );
       }
       if (Object.keys(event.diff ?? {}).some((key) => key.startsWith('custom.')))
