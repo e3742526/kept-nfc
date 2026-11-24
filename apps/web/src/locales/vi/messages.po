@@ -33261,3 +33261,7 @@ msgstr "Vị trí ghi nhận gần nhất"
 #: src/native/record.tsx
 msgid "Take a photo of where you left this item. SheepKeep keeps the latest three."
 msgstr "Chụp ảnh nơi bạn để món đồ này. SheepKeep giữ ba ảnh mới nhất."
+
+#: src/native/main.tsx
+msgid "Choose an item or bin"
+msgstr "Chọn vật phẩm hoặc thùng"

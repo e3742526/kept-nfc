@@ -1,3 +1,4 @@
+import { normalize } from '@kept/shared';
 import { I18nProvider } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
@@ -25,7 +26,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { capturePaths } from '@/api/capture/paths';
 import type { CaptureBatch, InboxPage } from '@/api/capture/types';
@@ -118,6 +119,7 @@ type Screen =
       name?: string;
     }
   | { kind: 'identify' }
+  | { kind: 'nfcTarget' }
   | { kind: 'find' | 'enroll'; box: LabelBox }
   | { kind: 'batches' }
   | { kind: 'assistant' }
@@ -137,6 +139,7 @@ function tabFor(screen: Screen): TabKey {
     case 'photoReview':
       return 'capture';
     case 'identify':
+    case 'nfcTarget':
       return 'scan';
     case 'more':
     case 'settings':
@@ -330,6 +333,86 @@ function ThingList({
         );
       })}
     </ul>
+  );
+}
+
+const NFC_TARGET_PAGE_SIZE = 40;
+
+function NfcTargetPicker({
+  cache,
+  onClose,
+  onChoose,
+}: {
+  cache: InventoryCache;
+  onClose: () => void;
+  onChoose: (target: LabelBox) => void;
+}) {
+  const { t } = useLingui();
+  const [query, setQuery] = useState('');
+  const [limit, setLimit] = useState(NFC_TARGET_PAGE_SIZE);
+  const choices = useMemo(() => {
+    const writable = new Set(writableLocations(cache).map(({ id }) => id));
+    return cache.things
+      .filter(
+        (thing) =>
+          thing.shortCode && thing.reviewState === 'confirmed' && writable.has(thing.locationId),
+      )
+      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+  }, [cache]);
+  const term = normalize(query);
+  const matches = term
+    ? choices.filter((thing) =>
+        [thing.name, thing.shortCode].some((value) => value && normalize(value).includes(term)),
+      )
+    : choices;
+
+  return (
+    <section className="grid gap-3">
+      <ScreenHeader title={<Trans>Choose an item or bin</Trans>} onBack={onClose} />
+      <TextField
+        label={t`Search inventory`}
+        value={query}
+        onChange={(value) => {
+          setQuery(value);
+          setLimit(NFC_TARGET_PAGE_SIZE);
+        }}
+      />
+      {cache.truncated && (
+        <p className="text-small text-ink-2">
+          <Trans>Only part of your inventory is cached.</Trans>
+        </p>
+      )}
+      {matches.length ? (
+        <ThingList
+          items={matches.slice(0, limit).map((thing) => ({
+            id: thing.id,
+            name: thing.name,
+            locationId: thing.locationId,
+            path: inventoryPath(cache, thing).join(' › '),
+          }))}
+          onOpen={({ id, locationId }) => {
+            const thing = matches.find((item) => item.id === id && item.locationId === locationId);
+            if (!thing?.shortCode) return;
+            onChoose({
+              id,
+              locationId,
+              name: thing.name ?? t`Untitled`,
+              shortCode: thing.shortCode,
+              isContainer: thing.isContainer,
+            });
+          }}
+        />
+      ) : (
+        <p className="text-small text-ink-2" role="status">
+          <Trans>No matching items</Trans>
+        </p>
+      )}
+      {matches.length > limit && (
+        <Button variant="secondary" onPress={() => setLimit(limit + NFC_TARGET_PAGE_SIZE)}>
+          <Trans>Show more</Trans>
+        </Button>
+      )}
+    </section>
   );
 }
 
@@ -1696,7 +1779,15 @@ export function Inventory({
             if (online) void refresh();
           }}
           onClose={goBack}
+          onProgram={canWrite ? () => pushScreen({ kind: 'nfcTarget' }) : undefined}
           onAuthError={onSignOut}
+        />
+      )}
+      {screen.kind === 'nfcTarget' && cache && (
+        <NfcTargetPicker
+          cache={cache}
+          onClose={goBack}
+          onChoose={(box) => pushScreen({ kind: 'enroll', box })}
         />
       )}
       {(screen.kind === 'find' || screen.kind === 'enroll') && (
@@ -1714,7 +1805,7 @@ export function Inventory({
           onClearFindTarget={() => setSavedFindTarget(undefined)}
           onClose={() => {
             const back = backStack.current.at(-1);
-            if (back?.kind === 'record') goBack();
+            if (back?.kind === 'record' || back?.kind === 'nfcTarget') goBack();
             else open({ id: screen.box.id, kind: 'thing', locationId: screen.box.locationId });
           }}
           onAuthError={onSignOut}

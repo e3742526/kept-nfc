@@ -63,6 +63,7 @@ export function LabelPanel({
   canEnroll = false,
   onOpen,
   onClose,
+  onProgram,
   onClearFindTarget,
   onAuthError,
 }: {
@@ -73,6 +74,7 @@ export function LabelPanel({
   canEnroll?: boolean;
   onOpen: (target: Target) => void;
   onClose: () => void;
+  onProgram?: () => void;
   onClearFindTarget?: () => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
@@ -702,6 +704,12 @@ export function LabelPanel({
                 <Button variant="secondary" isDisabled={busy} onPress={() => setScanMode('qr')}>
                   <Camera size={18} aria-hidden />
                   <Trans>Scan QR code</Trans>
+                </Button>
+              )}
+              {action === 'identify' && onProgram && (
+                <Button variant="secondary" isDisabled={busy} onPress={onProgram}>
+                  <Nfc size={18} aria-hidden />
+                  <Trans>Write NFC tag</Trans>
                 </Button>
               )}
             </div>

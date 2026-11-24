@@ -33261,3 +33261,7 @@ msgstr "Last logged location"
 #: src/native/record.tsx
 msgid "Take a photo of where you left this item. SheepKeep keeps the latest three."
 msgstr "Take a photo of where you left this item. SheepKeep keeps the latest three."
+
+#: src/native/main.tsx
+msgid "Choose an item or bin"
+msgstr "Choose an item or bin"

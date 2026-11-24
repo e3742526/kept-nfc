@@ -508,6 +508,14 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
               target: { kind: 'thing', id: spareBoxId, locationId: locId },
             } as T;
           }
+          if (text.endsWith('/4CD5EF')) {
+            const item = [...serverThings.values()].find((thing) => thing.shortCode === '4CD5EF');
+            if (item)
+              return {
+                outcome: 'open',
+                target: { kind: 'thing', id: item.id, locationId: locId },
+              } as T;
+          }
           if (text.includes('AMBIG1')) {
             return {
               outcome: 'legacy_ambiguous',
@@ -2019,6 +2027,69 @@ describe('KeptPhone mobile workflows', () => {
     expect(
       await screen.findByRole('heading', { name: 'Holiday ornaments box' }),
     ).toBeInTheDocument();
+  });
+
+  it('opens the NFC writer from Scan for a bin or an item and verifies the chosen label', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    const user = userEvent.setup();
+    env.renderApp();
+    await screen.findByRole('navigation');
+    const tab = (name: string) =>
+      within(screen.getByRole('navigation')).getByRole('button', { name });
+    await user.click(tab('Add'));
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Cordless drill');
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
+
+    await user.click(tab('Scan'));
+    await user.click(await screen.findByRole('button', { name: 'Write NFC tag' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Choose an item or bin' }),
+    ).toBeInTheDocument();
+    await user.type(screen.getByRole('textbox', { name: 'Search inventory' }), '7KQ4MZ');
+    expect(screen.queryByRole('button', { name: /Spare Box/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Winter Box/ }));
+    expect(await screen.findByRole('button', { name: 'Inspect NFC tag' })).toBeEnabled();
+    expect(screen.getByText('7KQ4MZ')).toBeInTheDocument();
+    expect(scanTag).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Choose an item or bin' }),
+    ).toBeInTheDocument();
+
+    await user.type(screen.getByRole('textbox', { name: 'Search inventory' }), 'cordless');
+    await user.click(await screen.findByRole('button', { name: /Cordless drill/ }));
+    const fingerprint = 'a'.repeat(64);
+    env.pushScan(
+      {
+        status: 'inspected',
+        occupied: false,
+        writable: true,
+        required: 36,
+        capacity: 140,
+        fingerprint,
+      },
+      { status: 'written' },
+    );
+    await user.click(screen.getByRole('button', { name: 'Inspect NFC tag' }));
+    await user.click(await screen.findByRole('button', { name: 'Write and verify' }));
+    expect(await screen.findByText('SheepKeep tag verified.')).toBeInTheDocument();
+    expect(scanTag).toHaveBeenLastCalledWith(
+      connection,
+      expect.objectContaining({
+        mode: 'write',
+        url: `${origin}/l/4CD5EF`,
+        fingerprint,
+      }),
+    );
   });
 
   it('handles NFC enroll recovery, continuous Find nonmatch/offline/match, and target persistence', async () => {

@@ -33261,3 +33261,7 @@ msgstr "آخر مكان مسجّل"
 #: src/native/record.tsx
 msgid "Take a photo of where you left this item. SheepKeep keeps the latest three."
 msgstr "صوّر المكان الذي تركت فيه هذا العنصر. يحتفظ شيب كيب بآخر ثلاث صور."
+
+#: src/native/main.tsx
+msgid "Choose an item or bin"
+msgstr "اختر عنصرًا أو صندوقًا"
