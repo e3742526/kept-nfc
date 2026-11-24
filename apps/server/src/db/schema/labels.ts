@@ -77,3 +77,61 @@ export const labelBatchCodes = pgTable(
     index('label_batch_codes_code_idx').on(t.code),
   ],
 );
+
+// Numbered label series (`PPP-XXXX-NNNN`, @kept/shared device-labels.ts). A series is a blank
+// batch whose labels print an alias instead of their short ID: each alias stands for exactly one
+// short ID for good, so a numbered label is claimed, moved, retired and reprinted as its short ID
+// is. The physical label's identity is the short ID; the alias is how it is printed and read.
+// Like short IDs, series and aliases are never updated, deleted or reissued: no foreign key to
+// locations, so they outlive a purged location as tombstones its printed labels can't be
+// mistaken for. Row-level security and grants are in the custom migration that follows.
+
+/** One numbered series: its purpose prefix and random base36 series ID, unique across the
+ * instance, and the blank batch that first printed it (gone with its location; the series
+ * stays). */
+export const labelSeries = pgTable(
+  'label_series',
+  {
+    id: id(),
+    locationId: uuid('location_id').notNull(),
+    prefix: char('prefix', { length: 3 }).notNull(),
+    series: char('series', { length: 4 }).notNull(),
+    batchId: uuid('batch_id'),
+    labelCount: integer('label_count').notNull(),
+    createdBy: uuid('created_by').notNull(),
+    createdAt: tstz('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('label_series_prefix_series_uq').on(t.prefix, t.series),
+    unique('label_series_location_id_uq').on(t.locationId, t.id),
+    check('label_series_prefix_chk', sql`prefix ~ '^[A-Z]{3}$'`),
+    check('label_series_series_chk', sql`series ~ '^[0-9A-Z]{4}$'`),
+    check('label_series_count_chk', sql`label_count BETWEEN 1 AND 9999`),
+    index('label_series_batch_idx').on(t.batchId),
+  ],
+);
+
+/** A numbered label: its place in its series, and the short ID it stands for (one alias per
+ * short ID, in the series' location). */
+export const labelAliases = pgTable(
+  'label_aliases',
+  {
+    code: char('code', { length: 6 })
+      .primaryKey()
+      .references(() => shortIds.code, { onDelete: 'no action' }),
+    locationId: uuid('location_id').notNull(),
+    seriesId: uuid('series_id').notNull(),
+    sequence: integer('sequence').notNull(),
+    createdAt: tstz('created_at').notNull().defaultNow(),
+  },
+  (t) => [
+    unique('label_aliases_series_sequence_uq').on(t.seriesId, t.sequence),
+    check('label_aliases_sequence_chk', sql`sequence BETWEEN 1 AND 9999`),
+    foreignKey({
+      name: 'label_aliases_series_fk',
+      columns: [t.locationId, t.seriesId],
+      foreignColumns: [labelSeries.locationId, labelSeries.id],
+    }),
+    index('label_aliases_location_idx').on(t.locationId),
+  ],
+);

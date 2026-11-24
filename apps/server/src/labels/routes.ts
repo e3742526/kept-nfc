@@ -5,7 +5,7 @@ import type { Pools } from '../db/pools.js';
 import { type Scope, type Tx, withScope } from '../db/scope.js';
 import type { KeptApp } from '../http/app.js';
 import { paginate, paginationQuery } from '../http/conventions.js';
-import { AppError } from '../http/errors.js';
+import { AppError, notFound } from '../http/errors.js';
 import { locationModuleSet } from '../http/modules.js';
 import type { InventoryDeps } from '../http/routes.js';
 import { scopedRead, scopedWrite } from '../http/write.js';
@@ -13,6 +13,7 @@ import { requireMembership } from '../locations/access.js';
 import type { Ctx } from '../things/service.js';
 import { ClaimTarget, claimableCode, claimLabel, labelClaimed } from './claim.js';
 import { formerHostHook } from './former-hosts.js';
+import { APPLE_ASSOCIATION_PATH, appleAssociation } from './label-host.js';
 import {
   CreateBatchBody,
   CreateBatchResultSchema,
@@ -44,6 +45,10 @@ import {
 // POST /api/v1/codes/:code/claim                → {outcome: 'claimed', target: {kind, id}};
 //                                                 409 label_claimed {claimedFor: {kind, id, name}}
 // GET  /api/v1/labels/summary?locationId&placeId → {unprinted, blankUnclaimed, things}
+// GET  /api/v1/labels/address                   → {url}: the origin new labels and NFC tags
+//                                                 carry (KEPT_LABEL_URL, else KEPT_PUBLIC_URL)
+// GET  /.well-known/apple-app-site-association  → the iPhone app's label links (KEPT_APPLE_APP_IDS),
+//                                                 no sign-in; 404 when none is configured
 //
 // Module `labels`: the writes and a batch by id are gated on their location (a write in a
 // location with labels off is 409 `module_off`, a read 404). The list and the summary take the
@@ -54,7 +59,8 @@ import {
 // another household's, a viewer's) is the same 404 a random code gets: the module gate and the
 // claim both answer a code the caller can't see as not found (D137).
 //
-// The former-hostname redirect (former-hosts.ts) is an onRequest hook on the whole app.
+// The former-hostname redirect (former-hosts.ts) is an onRequest hook on the whole app; the label
+// address (label-host.ts) one in http/app.ts, ahead of sign-in.
 
 const Id = z.uuid();
 const CodeParam = z.object({ code: z.string().min(1).max(32) });
@@ -111,7 +117,9 @@ async function requireLabelsOn(tx: Tx, client: pg.ClientBase, locationId: string
 
 export async function labelRoutes(app: KeptApp, deps: InventoryDeps): Promise<void> {
   const { pools } = deps;
-  const publicUrl = deps.env.KEPT_PUBLIC_URL;
+  // Every label link this server makes: the label address, when there is one (label-host.ts).
+  const publicUrl = deps.env.KEPT_LABEL_URL ?? deps.env.KEPT_PUBLIC_URL;
+  const association = appleAssociation(deps.env.KEPT_APPLE_APP_IDS ?? []);
   const ctxOf = (req: FastifyRequest, tx: Tx, client: pg.PoolClient, scope: Scope): Ctx => ({
     tx,
     client,
@@ -122,7 +130,29 @@ export async function labelRoutes(app: KeptApp, deps: InventoryDeps): Promise<vo
   });
 
   // Former hostnames (D120).
-  app.addHook('onRequest', formerHostHook(pools.system, publicUrl, deps.env.KEPT_EXTRA_ADDRESSES));
+  app.addHook(
+    'onRequest',
+    formerHostHook(pools.system, deps.env.KEPT_PUBLIC_URL, deps.env.KEPT_EXTRA_ADDRESSES),
+  );
+
+  // Served as it is, without a redirect, as Apple requires; public: it names only the app.
+  app.get(
+    APPLE_ASSOCIATION_PATH,
+    { config: { auth: 'none' }, schema: { hide: true } },
+    async (_req, reply) => {
+      if (!association) throw notFound();
+      return reply
+        .header('content-type', 'application/json')
+        .header('cache-control', 'public, max-age=3600')
+        .send(JSON.stringify(association));
+    },
+  );
+
+  app.get(
+    '/api/v1/labels/address',
+    { schema: { response: { 200: z.object({ url: z.string() }) } } },
+    async () => ({ url: publicUrl.replace(/\/+$/, '') }),
+  );
 
   app.post(
     '/api/v1/labels/batches',

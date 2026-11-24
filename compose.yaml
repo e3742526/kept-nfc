@@ -186,6 +186,9 @@ services:
       KEPT_HSTS: ${KEPT_HSTS:-}
       KEPT_HTTP_SIGN_IN_DAYS: ${KEPT_HTTP_SIGN_IN_DAYS:-}
       KEPT_EXTRA_ADDRESSES: ${KEPT_EXTRA_ADDRESSES:-}
+      # Labels' permanent address and the iPhone app IDs that open its links (both optional).
+      KEPT_LABEL_URL: ${KEPT_LABEL_URL:-}
+      KEPT_APPLE_APP_IDS: ${KEPT_APPLE_APP_IDS:-}
       KEPT_SMTP_URL: ${KEPT_SMTP_URL:-}
       KEPT_SMTP_FROM: ${KEPT_SMTP_FROM:-}
       KEPT_LOG_LEVEL: ${KEPT_LOG_LEVEL:-info}

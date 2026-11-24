@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { newId, randomShortCode } from '@kept/shared';
+import { newId, randomDeviceBatchId, randomShortCode } from '@kept/shared';
 import type pg from 'pg';
 import type { Tenant } from './tenancy.js';
 
@@ -257,9 +257,33 @@ export async function fillCapture(c: pg.ClientBase, t: Tenant, label: string): P
     `INSERT INTO public.label_batch_codes (batch_id, location_id, code, sort) VALUES ($1, $2, $3, 1)`,
     [batch, t.locationId, code],
   );
+  const blank = randomShortCode();
   await c.query(
     `INSERT INTO public.short_ids (code, location_id, state, is_primary) VALUES ($1, $2, 'blank', false)`,
-    [randomShortCode(), t.locationId],
+    [blank, t.locationId],
+  );
+  // A numbered series of one, printed on a blank batch, its alias standing for the blank code.
+  const blankBatch = newId();
+  await c.query(
+    `INSERT INTO public.label_batches (id, location_id, kind, stock, code_count, created_by)
+     VALUES ($1, $2, 'blank', 'thermal_1x1in', 1, $3)`,
+    [blankBatch, t.locationId, t.userId],
+  );
+  await c.query(
+    `INSERT INTO public.label_batch_codes (batch_id, location_id, code, sort) VALUES ($1, $2, $3, 1)`,
+    [blankBatch, t.locationId, blank],
+  );
+  const series = newId();
+  await c.query(
+    `INSERT INTO public.label_series (id, location_id, prefix, series, batch_id, label_count,
+                                      created_by)
+     VALUES ($1, $2, 'BIN', $3, $4, 1, $5)`,
+    [series, t.locationId, randomDeviceBatchId(), blankBatch, t.userId],
+  );
+  await c.query(
+    `INSERT INTO public.label_aliases (code, location_id, series_id, sequence)
+     VALUES ($1, $2, $3, 1)`,
+    [blank, t.locationId, series],
   );
 }
 
