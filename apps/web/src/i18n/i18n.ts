@@ -41,16 +41,22 @@ export async function activateLocale(locale: Locale, digits: Digits = 'eastern')
 /**
  * The language a page starts in: the one picked on this device, else the browser's, shown and not
  * stored (#474): only a language the person picks is kept. Offline, a catalogue never loaded online
- * isn't cached (sw.ts): English, then no catalogue, so the shell still renders.
+ * isn't cached (sw.ts): English, then no catalogue, so the shell still renders. The page is marked
+ * with the language that loaded (its `lang` and direction), not the one asked for: an Arabic page
+ * whose catalogue didn't come shows English, and must read left to right as English.
  */
 export async function startLocale(): Promise<Locale> {
   settleStoredLocale();
   const locale = initialLocale();
-  await activateLocale(locale, storedDigits()).catch(() =>
-    activateLocale('en').catch(() => i18n.loadAndActivate({ locale: 'en', messages: {} })),
-  );
-  showLocale(locale);
-  return locale;
+  let active: Locale = locale;
+  try {
+    await activateLocale(locale, storedDigits());
+  } catch {
+    active = 'en';
+    await activateLocale('en').catch(() => i18n.loadAndActivate({ locale: 'en', messages: {} }));
+  }
+  showLocale(active);
+  return active;
 }
 
 export { i18n };
