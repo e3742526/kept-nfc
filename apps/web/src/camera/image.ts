@@ -38,8 +38,19 @@ export type CapturedImage = {
   previewUnavailable: boolean;
 };
 
-/** A picture the canvas can draw, with its size. */
-export type Drawable = { source: CanvasImageSource; width: number; height: number };
+/** A part of a picture, in its own pixels. */
+export type Crop = { x: number; y: number; width: number; height: number };
+
+/**
+ * A picture the canvas can draw, with its size. With `crop`, only that part of `source` is drawn,
+ * and `width` × `height` is the crop's size.
+ */
+export type Drawable = {
+  source: CanvasImageSource;
+  width: number;
+  height: number;
+  crop?: Crop;
+};
 
 /** Decodes a file into something drawable; `createImageBitmap` by default. */
 export type Decode = (blob: Blob) => Promise<Drawable>;
@@ -66,7 +77,9 @@ export function drawScaled(img: Drawable, max?: number): HTMLCanvasElement {
   canvas.height = size.height;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('no 2d canvas');
-  ctx.drawImage(img.source, 0, 0, size.width, size.height);
+  const c = img.crop;
+  if (c) ctx.drawImage(img.source, c.x, c.y, c.width, c.height, 0, 0, size.width, size.height);
+  else ctx.drawImage(img.source, 0, 0, size.width, size.height);
   return canvas;
 }
 

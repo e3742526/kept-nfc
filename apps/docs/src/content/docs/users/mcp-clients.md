@@ -153,6 +153,8 @@ higher. The part of Kept a tool needs is the name under **What to track**.
 | `create_place` | change | | Add a place under another place, or at the top of the location. With `template`, add furniture and a place for each of its compartments in one step, as [Furniture with compartments](/users/locations/#furniture-with-compartments) does; one Undo takes it all back. A rack template takes `units` and `numbering` ([Racks](/users/locations/#racks)). A room takes its real size, `width_cm` and `length_cm` (50 cm to 100 m), and goes on the [map](/users/location-map/) with it. |
 | `update_place` | change | | Change a place as its page does: rename it, change its kind, move it into another place or to the top, set its fields, and the order of the places in it (A to Z or Custom order, then Move up or Move down). `turn` (`right` or `left`, where its top went) turns [furniture with compartments](/users/locations/#turning-furniture) onto its side or back, with `renumber` true or false. Undo for 7 days, except a move up or down: the opposite move undoes it. |
 | `turn_into_boxes` | change | | Turn up to 50 places into boxes, as **Turn places into boxes** does. Each keeps its ID, label and what's in it; one with places inside stays a place, and so does one at the top of the location (turn that one in Kept). One Undo turns them all back. |
+| `get_map` | read | | Where each room is on the [map](/users/location-map/): its floors, and each room's rectangle in centimetres from its floor's corner as the plan view shows it (from the left, from the top, width and length), or none when nobody has placed it yet. |
+| `arrange_rooms` | change | | Place, move or resize rooms on the map, or set their **kind** and **floor** (wood, tiles, concrete, deck, grass), as **Arrange** does. Only the rooms it names change; everything else stays where it is. It sends the map's version from `get_map`, and is refused when someone arranged the map since or when two rooms on a floor would overlap. A room not on the map yet needs its whole rectangle. One Undo, for 10 minutes, puts the map back. |
 | `attach_link` | change | | A link that opens Kept's capture sheet to add a photo, receipt or document. |
 | `log_reading` | change | | Record a meter reading: odometer, hours, electricity. |
 | `lend_thing` | change | Lending | Lend a thing to someone, with an optional due date. A box or a kit goes with everything in it, each on its own line. |
@@ -192,7 +194,7 @@ sees money, as in the app; a minimum needs **Things you run out of**. A type Kep
 left out and the answer's `not_set` says so; the assistant's card
 shows it as "not set" with a picker.
 
-The moving tools and `change_lifecycle` are for connected apps only; the assistant in Kept doesn't use them.
+The moving tools, `change_lifecycle`, `get_map` and `arrange_rooms` are for connected apps only; the assistant in Kept doesn't use them.
 
 Every tool that takes an id also takes a 6-character short ID such as `K7D2QX`. The full
 contracts are in

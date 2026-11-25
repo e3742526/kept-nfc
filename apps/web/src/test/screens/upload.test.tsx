@@ -124,7 +124,8 @@ describe('hashing and the wire format', () => {
 });
 
 describe('uploading on the thing page', () => {
-  const input = () => document.querySelector<HTMLInputElement>('input[type="file"]');
+  // The album picker; the camera's input (capture=environment) sits beside it.
+  const input = () => document.querySelector<HTMLInputElement>('input[type="file"]:not([capture])');
 
   it('adds a photo to the carousel, with progress while it runs', async () => {
     mockDigest();
@@ -135,7 +136,8 @@ describe('uploading on the thing page', () => {
     await user.upload(picker, jpeg());
     await waitFor(() => expect(mock.lastCall('POST', p.attachments)).toBeDefined());
     expect(await screen.findByRole('img', { name: 'Photo 1 of 1' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add a photo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Take a photo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gallery' })).toBeInTheDocument();
   });
 
   it('HEIC is kept and says "Preview unavailable", never an error', async () => {

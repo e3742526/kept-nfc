@@ -173,3 +173,28 @@ describe('a photo full screen', () => {
     expect(shown()).not.toBe(first);
   });
 });
+
+describe('the header frame', () => {
+  it('shows the whole photo in a square frame, not a crop of it', async () => {
+    await render();
+    const img = await screen.findByRole('img', { name: 'Photo 1 of 3' });
+    expect(img).toHaveClass('object-contain');
+    expect(img).not.toHaveClass('object-cover');
+    expect(screen.getByRole('region', { name: 'Photos' })).toHaveClass('aspect-square');
+  });
+});
+
+describe('adding a photo', () => {
+  it('offers the camera beside the album', async () => {
+    await render();
+    await screen.findByRole('button', { name: 'Take a photo' });
+    await screen.findByRole('button', { name: 'Gallery' });
+    const inputs = [...document.querySelectorAll<HTMLInputElement>('input[type="file"]')];
+    const camera = inputs.find((i) => i.getAttribute('capture') === 'environment');
+    const album = inputs.find((i) => !i.hasAttribute('capture'));
+    expect(camera?.accept).toBe('image/*');
+    expect(camera?.multiple).toBe(false);
+    expect(album?.accept).toBe('image/*');
+    expect(album?.multiple).toBe(true);
+  });
+});

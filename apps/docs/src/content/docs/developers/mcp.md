@@ -46,6 +46,8 @@ User-written strings in outputs sit under an `untrusted` key. Lists default to 2
 | `change_lifecycle` | write | core (MCP only) |
 | `create_place` | write | core |
 | `update_place`, `turn_into_boxes` | write | core |
+| `get_map` | read | core (MCP only) |
+| `arrange_rooms` | write | core (MCP only) |
 | `attach_link` | write | core |
 | `log_reading` | write | core |
 | `log_service` | write | core |
@@ -91,13 +93,24 @@ details: one left out is cleared. An ended price follows the money gate. The rou
 to a write token too. A tool that needs a file, such as a receipt, returns a short link from
 `attach_link` that opens the capture sheet in the web app.
 
+**The map's rooms.** `get_map` answers the rooms of `mapView()` (`apps/server/src/map/view.ts`,
+the view behind `GET /locations/:id/map`): the floors, each room with its rectangle (`null` when
+nobody placed it, and the web lays it out) and the layout's `version`. `arrange_rooms` writes
+through `putLayout()` (`map/service.ts`, the operation behind `PUT /locations/:id/layout`). That
+route takes the whole layout, so the handler (`tools/handlers/map.ts`) rebuilds it from the same
+view, every room and node that has a layout row, changes only the rooms named and sends the rest
+as it was. The role (`things.edit`), the version check (409 `arranged_since`, answered as
+`conflict` with a hint to call `get_map` again), rooms that don't overlap on a floor and the
+`place.arrange` audit, undoable for ten minutes, are the route's own. A room with no layout row
+needs its whole rectangle; its kind and floor default as a new room's do.
+
 A tool is offered only in locations where its module is on and, for a write tool, where the
 principal may write. `capabilities` lists what each location allows. Roles are checked on every
 call, never cached in a token (D180).
 
 A tool's `doors` say who is offered it: MCP and the in-app assistant, unless it names fewer. The
-Moving mode tools (D251) and `change_lifecycle` are MCP's only; `runTool()` answers
-`tool_unavailable` at the other door.
+Moving mode tools (D251), `change_lifecycle`, `get_map` and `arrange_rooms` are MCP's only;
+`runTool()` answers `tool_unavailable` at the other door.
 The moving tools call `moving/service.ts`, the routes' own functions: packing is the ordinary move
 into the box's container, and a box's state change and an unpack are undoable for 7 days, as in
 the web.

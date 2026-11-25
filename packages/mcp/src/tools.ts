@@ -39,6 +39,8 @@ import {
   isShortCode,
   LIFECYCLES,
   MAP_LIMITS,
+  MAP_ROOM_KINDS,
+  MAP_SURFACES,
   MAX_BOX_PREFIX,
   MAX_MOVE_NAME,
   MODULE_IDS,
@@ -201,6 +203,31 @@ const writeResult = z.object({
 });
 
 const list = <T extends z.ZodType>(item: T) => z.object({ items: z.array(item) });
+
+// --- The location map (1.x, D237) ---------------------------------------------------------------
+
+const mapCoord = z.number().int().min(0).max(MAP_LIMITS.maxCoord);
+const roomSide = z.number().int().min(MAP_LIMITS.minRoom).max(MAP_LIMITS.maxRoom);
+
+/** A room as the map tools cite it: the place, its floor, and its rectangle on the map. */
+const mapRoom = z.object({
+  id: uuid,
+  short_code: z.string().nullable(),
+  kind: z.string().describe('Its place kind'),
+  floor_id: uuid.nullable().describe('The floor it is on; null: a room on no floor'),
+  map: z
+    .object({
+      x_cm: z.number().int(),
+      z_cm: z.number().int(),
+      width_cm: z.number().int(),
+      length_cm: z.number().int(),
+      room_kind: z.enum(MAP_ROOM_KINDS),
+      surface: z.enum(MAP_SURFACES),
+    })
+    .nullable()
+    .describe('Its rectangle; null: nobody placed it, and the app lays it out by itself'),
+  untrusted: z.object({ name: z.string() }),
+});
 
 // ---------------------------------------------------------------------------------------------
 
@@ -986,6 +1013,79 @@ export const TOOL_DEFS = Object.freeze({
             ),
         }),
       ),
+    }),
+  }),
+  // 1.x: the location map's rooms (GET /locations/:id/map and PUT /locations/:id/layout). A room
+  // is a place directly on a floor or at the top of the location; its rectangle is in whole
+  // centimetres from its floor's corner as the plan view shows it: `x_cm` from the left, `z_cm` from
+  // the top, `width_cm` left to right and `length_cm` top to bottom (create_place's size). MCP
+  // only: the assistant's card has no rows for a layout.
+  get_map: tool({
+    name: 'get_map',
+    title: 'The map',
+    description:
+      'Where is each room on the location’s map? Its floors, and each room’s rectangle in centimetres from its floor’s corner, with the map’s `version` to arrange from.',
+    scope: 'read',
+    module: null,
+    since: '1.x',
+    doors: ['mcp'],
+    input: z.object({ location_id: locationId, cursor, limit }),
+    output: z.object({
+      version: z
+        .string()
+        .nullable()
+        .describe('When it was last arranged; null: never. arrange_rooms sends it back'),
+      can_arrange: z.boolean().describe('Whether you may arrange it'),
+      floors: z.array(
+        z.object({
+          id: uuid.nullable().describe('null: the rooms on no floor'),
+          untrusted: z.object({ name: z.string().nullable() }),
+        }),
+      ),
+      items: z.array(mapRoom),
+    }),
+  }),
+  arrange_rooms: tool({
+    name: 'arrange_rooms',
+    title: 'Arrange rooms',
+    description:
+      'Place, move or resize rooms on the location’s map, or set their kind and floor surface. Only the rooms named change; send get_map’s `version`. One Undo, for 10 minutes, puts the map back.',
+    scope: 'write',
+    module: null,
+    since: '1.x',
+    doors: ['mcp'],
+    input: z.object({
+      location_id: locationId,
+      version: z
+        .string()
+        .max(40)
+        .nullable()
+        .describe('get_map’s version: the map you arranged from'),
+      rooms: z
+        .array(
+          z
+            .object({
+              room_id: idOrCode,
+              x_cm: mapCoord.optional().describe('From the floor’s left edge in the plan view'),
+              z_cm: mapCoord.optional().describe('From the floor’s top edge in the plan view'),
+              width_cm: roomSide.optional().describe('Left to right'),
+              length_cm: roomSide.optional().describe('Top to bottom'),
+              room_kind: z.enum(MAP_ROOM_KINDS).optional(),
+              surface: z.enum(MAP_SURFACES).optional().describe('Its floor'),
+            })
+            .refine((r) => Object.keys(r).length > 1, {
+              message: 'a position, a size, a kind or a surface',
+            }),
+        )
+        .min(1)
+        .max(50)
+        .describe(
+          'Each room to change; one not on the map yet needs x_cm, z_cm, width_cm and length_cm',
+        ),
+    }),
+    output: writeResult.extend({
+      version: z.string().nullable().describe('The map’s version now'),
+      rooms: z.array(mapRoom).describe('The rooms named, as they are now'),
     }),
   }),
   attach_link: tool({

@@ -437,7 +437,8 @@ describe('a viewer’s thing detail', () => {
     await findHeading('Samsung TV, 55″');
     expect(screen.queryByRole('button', { name: 'Actions' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add the first photo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Take a photo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Gallery' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Link a thing' })).toBeNull();
     expect(screen.getByText("You're a viewer here")).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Copy link' }));

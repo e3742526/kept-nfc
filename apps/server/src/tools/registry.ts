@@ -11,6 +11,7 @@ import {
   upcoming,
   updateClaimTool,
 } from './handlers/household.js';
+import { arrangeRoomsTool, getMapTool } from './handlers/map.js';
 import {
   addBoxTool,
   getMoveTool,
@@ -73,6 +74,9 @@ const HANDLERS: HandlerTable = {
   // 1.x (#313): the place form and Turn places into boxes.
   update_place: updatePlaceTool,
   turn_into_boxes: turnIntoBoxesTool,
+  // 1.x: the location map's rooms, MCP only.
+  get_map: getMapTool,
+  arrange_rooms: arrangeRoomsTool,
   attach_link: attachLink,
   log_reading: logReading,
   // Step 4's services (lending, schedules, warranties and claims, the agenda).
