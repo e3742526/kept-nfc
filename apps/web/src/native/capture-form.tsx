@@ -19,7 +19,12 @@ import {
 } from './bridge';
 import { CaptureSuggestion, type PhotoSuggestion } from './capture-ai';
 import { CategoryPicker } from './category-picker';
-import { type Destination, DestinationPicker, defaultDestination } from './destination';
+import {
+  type Destination,
+  DestinationPicker,
+  defaultDestination,
+  PlacePreview,
+} from './destination';
 import { createBox, type InventoryCache, inventoryPath } from './inventory';
 import { type ItemLabel, ItemLabelPicker } from './item-label';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
@@ -28,6 +33,7 @@ type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
 
 /** Return the recorded path, with the location name when the screen has room for it. */
 function destinationLabel(cache: InventoryCache, destination: Destination, full = false): string {
+  if (full && destination.path) return destination.path;
   const row = [...cache.places, ...cache.things].find((entry) => entry.id === destination.id);
   return row
     ? [...inventoryPath(cache, row).slice(full ? 0 : 1), destination.name].join(' › ')
@@ -66,6 +72,7 @@ export function CaptureForm({
   onClose,
   onSave,
   onReview,
+  onAuthError,
 }: {
   connection: Connection;
   box?: Destination;
@@ -86,6 +93,7 @@ export function CaptureForm({
   onClose: () => void;
   onSave: () => void;
   onReview?: (id: string) => void;
+  onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
@@ -239,6 +247,9 @@ export function CaptureForm({
           ...(destination.kind === 'place'
             ? { placeId: destination.id }
             : { boxId: destination.id, binEvidenceId: newId() }),
+          ...(cache?.pendingPlaceIds?.includes(destination.id)
+            ? { dependsOnPlace: destination.id }
+            : {}),
           name: name.trim() || t`Photo review`,
           captureIntent: intent,
           skipServerSuggestions: true,
@@ -295,6 +306,9 @@ export function CaptureForm({
             : destination.kind === 'place'
               ? { placeId: destination.id }
               : { boxId: destination.id }),
+          ...(cache?.pendingPlaceIds?.includes(destination.id)
+            ? { dependsOnPlace: destination.id }
+            : {}),
           ...(locationPhoto ? { locationPhoto: true } : {}),
           name: evidenceOnly ? destination.name : name.trim(),
           ...(!evidenceOnly ? { captureIntent: intent, tags } : {}),
@@ -363,7 +377,7 @@ export function CaptureForm({
           )
         }
       />
-      {box && (
+      {box && (evidenceOnly || !cache) && (
         <header className="kept-card">
           <div className="flex items-start gap-3">
             <span className="kept-row-lead" aria-hidden>
@@ -416,12 +430,16 @@ export function CaptureForm({
           void save();
         }}
       >
-        {cache && !box && (
+        {cache && !evidenceOnly && (
           <div className="grid gap-2">
             {destination && !changingDestination ? (
               <div className="kept-card kept-destination">
                 <span className="kept-row-lead" aria-hidden>
-                  {destination.kind === 'place' ? <MapPin size={18} /> : <Package size={18} />}
+                  {destination.kind === 'place' ? (
+                    <PlacePreview connection={connection} id={destination.id} online={online} />
+                  ) : (
+                    <Package size={18} />
+                  )}
                 </span>
                 <div className="grid min-w-0 flex-1 gap-0.5">
                   <span className="text-small text-ink-2">
@@ -441,8 +459,11 @@ export function CaptureForm({
             ) : (
               <div className="grid gap-3">
                 <DestinationPicker
+                  connection={connection}
+                  online={online}
                   cache={cache}
                   value={destination}
+                  onAuthError={onAuthError}
                   onChange={(next) => {
                     const owner = cache.locations.find(
                       ({ id }) => id === next?.locationId,
@@ -691,7 +712,7 @@ export function NewBoxForm({
 }: {
   connection: Connection;
   cache: InventoryCache;
-  place?: { id: string; name: string; locationId: string };
+  place?: Destination;
   onClose: () => void;
   onCreated: (id: string, locationId: string) => void;
 }) {
@@ -699,7 +720,7 @@ export function NewBoxForm({
   const adapters = usePlatform();
   const [name, setName] = useState('');
   const [target, setTarget] = useState<Destination | undefined>(() =>
-    place ? { ...place, kind: 'place' } : defaultDestination(cache),
+    place ? { ...place, kind: place.kind ?? 'place' } : defaultDestination(cache),
   );
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
@@ -741,11 +762,12 @@ export function NewBoxForm({
           isDisabled={busy}
         />
         <DestinationPicker
+          connection={connection}
+          online={true}
           cache={cache}
           value={target}
           onChange={setTarget}
           disabled={busy}
-          placesOnly
         />
         <Button type="submit" isPending={busy} isDisabled={!target}>
           <Plus size={18} aria-hidden />

@@ -1,27 +1,190 @@
-import { newId } from '@kept/shared';
+import { type LocationDestination, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { ChevronRight, Clock, MapPin, Package, Plus, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronRight, MapPin, Package, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { inventoryPaths } from '@/api/inventory/paths';
 import type { CreatePlaceBody, PlaceView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
-import { sep } from '@/lib/format';
+import { matchesAll, queryWords } from '@/offline/local-search';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
-import { LocationPicker, writableLocations } from './destination';
-import { type InventoryCache, inventoryPath, previewUrl } from './inventory';
+import {
+  ancestorsOf,
+  LocationPicker,
+  PlacePreview,
+  useLocationDestinations,
+  writableLocations,
+} from './destination';
+import type { InventoryCache } from './inventory';
 import type { Target } from './labels';
-import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
+import {
+  ensureCaptureCompatible,
+  isAuthRefusal,
+  isRestoreEpochMismatch,
+  ReplayError,
+  saveOnPhone,
+} from './outbox';
 
-export function Rooms({
+type AuthHandler = (reason: 'expired' | 'restored') => void;
+
+export function PlaceCreateForm({
   cache,
   connection,
   online,
-  recent,
+  parent,
+  onCreated,
+  onClose,
+  onAuthError,
+}: {
+  cache: InventoryCache;
+  connection: Connection;
+  online: boolean;
+  parent?: { id: string; locationId: string } | undefined;
+  onCreated: (target: Target) => void;
+  onClose: () => void;
+  onAuthError?: AuthHandler | undefined;
+}) {
+  const { t } = useLingui();
+  const adapters = usePlatform();
+  const errorText = useErrorText();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [descriptionSupported, setDescriptionSupported] = useState(false);
+  const [id, setId] = useState(newId);
+  const locations = writableLocations(cache);
+  const [locationId, setLocationId] = useState(parent?.locationId ?? locations[0]?.id ?? null);
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState('');
+  useEffect(() => {
+    if (!online) return;
+    let current = true;
+    void ensureCaptureCompatible(connection, adapters)
+      .then((caps) => {
+        if (current) setDescriptionSupported(caps.placeDescriptions === true);
+      })
+      .catch(() => {
+        if (current) setDescriptionSupported(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [adapters, connection, online]);
+
+  async function create() {
+    if (busy || !locationId || !name.trim()) return;
+    setBusy(true);
+    setStatus('');
+    try {
+      const text = description.trim();
+      const pendingParent = parent && cache.pendingPlaceIds?.includes(parent.id);
+      if (!online || pendingParent) {
+        const id = await saveOnPhone(
+          connection,
+          {
+            locationId,
+            name: name.trim(),
+            placeCreation: {
+              parentId: parent?.id ?? null,
+              kindKey: parent ? 'zone' : 'room',
+              description: text || null,
+            },
+            ...(pendingParent ? { dependsOnPlace: parent.id } : {}),
+          },
+          [],
+          adapters,
+        );
+        onCreated({ kind: 'place', id, locationId });
+        return;
+      }
+      if (text && !(await ensureCaptureCompatible(connection, adapters)).placeDescriptions)
+        throw new ReplayError('compatibility_hold');
+      const body: CreatePlaceBody = {
+        id,
+        name: name.trim(),
+        kindKey: parent ? 'zone' : 'room',
+        ...(parent ? { parentId: parent.id } : {}),
+        ...(text ? { description: text } : {}),
+      };
+      const place = await adapters.transport.request<PlaceView>(
+        connection,
+        inventoryPaths.locationPlaces(locationId),
+        { method: 'POST', body, idempotencyKey: id },
+      );
+      onCreated({ kind: 'place', id: place.id, locationId: place.locationId });
+    } catch (error) {
+      if (isAuthRefusal(error)) onAuthError?.('expired');
+      else if (isRestoreEpochMismatch(error)) onAuthError?.('restored');
+      else if (error instanceof ReplayError && error.reason === 'compatibility_hold')
+        setStatus(t`Update this SheepKeep server to use this action.`);
+      else setStatus(errorText(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form
+      className="kept-card"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void create();
+      }}
+    >
+      <TextField
+        label={t`Name`}
+        value={name}
+        maxLength={120}
+        isDisabled={busy}
+        onChange={(value) => {
+          setName(value);
+          setId(newId());
+        }}
+      />
+      {(!online || descriptionSupported || description) && (
+        <TextField
+          label={t`Description`}
+          value={description}
+          maxLength={500}
+          isDisabled={busy}
+          onChange={(value) => {
+            setDescription(value);
+            setId(newId());
+          }}
+        />
+      )}
+      {!parent && (
+        <LocationPicker
+          cache={cache}
+          value={locationId}
+          disabled={busy}
+          onChange={(value) => {
+            setLocationId(value);
+            setId(newId());
+          }}
+        />
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" isPending={busy} isDisabled={!locationId || !name.trim()}>
+          <Plus size={16} aria-hidden />
+          {parent ? <Trans>Add sub-location</Trans> : <Trans>Create place</Trans>}
+        </Button>
+        <Button variant="ghost" isDisabled={busy} onPress={onClose}>
+          <Trans>Cancel</Trans>
+        </Button>
+      </div>
+      {status && <p role="alert">{status}</p>}
+    </form>
+  );
+}
+
+export function Places({
+  cache,
+  connection,
+  online,
   onOpen,
   onCreated,
   onClose,
@@ -30,130 +193,50 @@ export function Rooms({
   cache: InventoryCache;
   connection: Connection;
   online: boolean;
-  recent: string[];
   onOpen: (target: Target) => void;
   onCreated: (target: Target) => void;
   onClose: () => void;
-  onAuthError: (reason: 'expired' | 'restored') => void;
+  onAuthError: AuthHandler;
 }) {
   const { t } = useLingui();
-  const adapters = usePlatform();
-  const errorText = useErrorText();
   const [adding, setAdding] = useState(false);
-  const [name, setName] = useState('');
-  const [id, setId] = useState(newId);
-  const locations = writableLocations(cache);
-  const [locationId, setLocationId] = useState(locations[0]?.id ?? null);
-  const [locationFilter, setLocationFilter] = useState<string | null>(null);
-  const activeLocation = cache.locations.some((location) => location.id === locationFilter)
-    ? locationFilter
-    : null;
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState('');
-  const boxes = recent.flatMap((boxId) =>
-    cache.things.filter((thing) => thing.id === boxId && thing.isContainer),
-  );
-  const rooms = cache.places.filter(
-    (place) =>
-      place.kindKey === 'room' &&
-      !place.isUnplaced &&
-      (!activeLocation || place.locationId === activeLocation),
-  );
-
-  async function create() {
-    if (busy || !online || !locationId || !name.trim()) return;
-    setBusy(true);
-    setStatus('');
-    try {
-      const body: CreatePlaceBody = { id, name: name.trim(), kindKey: 'room' };
-      const room = await adapters.transport.request<PlaceView>(
-        connection,
-        inventoryPaths.locationPlaces(locationId),
-        { method: 'POST', body, idempotencyKey: id },
-      );
-      onCreated({ kind: 'place', id: room.id, locationId: room.locationId });
-    } catch (error) {
-      if (isAuthRefusal(error)) onAuthError('expired');
-      else if (isRestoreEpochMismatch(error)) onAuthError('restored');
-      else setStatus(errorText(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<string>();
+  const locations = cache.locations;
+  const active = locations.find((location) => location.id === filter);
   return (
     <section className="grid gap-4">
       <ScreenHeader
-        title={<Trans>Rooms</Trans>}
+        title={<Trans>Places</Trans>}
         onBack={onClose}
         icon={<MapPin size={18} aria-hidden />}
         trailing={
           !adding && (
             <Button
               size="small"
-              isDisabled={!online || !locations.length}
+              isDisabled={!writableLocations(cache).length}
               onPress={() => setAdding(true)}
             >
               <Plus size={16} aria-hidden />
-              <Trans>Create room</Trans>
+              <Trans>Create place</Trans>
             </Button>
           )
         }
       />
       {adding && (
-        <form
-          className="kept-card"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void create();
-          }}
-        >
-          <TextField
-            label={t`Room name`}
-            value={name}
-            onChange={(value) => {
-              setName(value);
-              setId(newId());
-            }}
-            isDisabled={busy}
-            inputProps={{ maxLength: 120 }}
-          />
-          <LocationPicker
-            cache={cache}
-            value={locationId}
-            onChange={(value) => {
-              setLocationId(value);
-              setId(newId());
-            }}
-            disabled={busy}
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="submit"
-              isPending={busy}
-              isDisabled={!online || !locationId || !name.trim()}
-            >
-              <Plus size={16} aria-hidden />
-              <Trans>Create room</Trans>
-            </Button>
-            <Button variant="ghost" isDisabled={busy} onPress={() => setAdding(false)}>
-              <X size={16} aria-hidden />
-              <Trans>Cancel</Trans>
-            </Button>
-          </div>
-          {status && <p role="alert">{status}</p>}
-        </form>
+        <PlaceCreateForm
+          {...{ cache, connection, online, onCreated, onAuthError }}
+          onClose={() => setAdding(false)}
+        />
       )}
-      {cache.locations.length > 1 && (
+      <TextField label={t`Search places`} value={query} onChange={setQuery} />
+      {locations.length > 1 && (
         <Select
           label={t`Location`}
-          items={[
-            { id: 'all', name: t`All locations` },
-            ...cache.locations.map((loc) => ({ id: loc.id, name: loc.name })),
-          ]}
-          selectedKey={activeLocation ?? 'all'}
+          items={[{ id: 'all', name: t`All locations` }, ...locations]}
+          selectedKey={active?.id ?? 'all'}
           onSelectionChange={(key) =>
-            setLocationFilter(key === null || key === 'all' ? null : String(key))
+            setFilter(typeof key === 'string' && key !== 'all' ? key : undefined)
           }
         >
           {(item) => (
@@ -163,128 +246,190 @@ export function Rooms({
           )}
         </Select>
       )}
-      {boxes.length > 0 && (
-        <section className="grid gap-2">
-          <h3 className="kept-card-title text-ink-2">
-            <Clock size={16} aria-hidden />
-            <Trans>Recently opened boxes</Trans>
-          </h3>
-          <ul className="grid gap-2">
-            {boxes.map((box) => (
-              <li key={box.id}>
-                <Button
-                  variant="secondary"
-                  className="kept-phone-row"
-                  onPress={() => onOpen({ kind: 'thing', id: box.id, locationId: box.locationId })}
-                >
-                  <span className="kept-row-lead" aria-hidden>
-                    <Package size={18} />
-                  </span>
-                  <span className="kept-row-body">
-                    <bdi className="text-body font-semibold">{box.name ?? t`Untitled`}</bdi>
-                    <bdi className="text-small font-normal text-ink-2">
-                      {inventoryPath(cache, box).join(' › ')}
-                    </bdi>
-                  </span>
-                  <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {(!online || cache.truncated) && (
-        <p className="text-small text-ink-2">
-          <Trans>Showing cached inventory</Trans>
-        </p>
-      )}
-      {rooms.length ? (
-        <ul className="grid gap-2">
-          {rooms.map((room) => (
-            <li key={room.id}>
-              <Button
-                variant="secondary"
-                className="kept-phone-row"
-                onPress={() => onOpen({ kind: 'place', id: room.id, locationId: room.locationId })}
-              >
-                <span className="kept-row-lead" aria-hidden>
-                  <RoomCover connection={connection} id={room.id} online={online} />
-                </span>
-                <span className="kept-row-body">
-                  <bdi className="text-body font-semibold">{room.name}</bdi>
-                  <span className="text-small font-normal text-ink-2">
-                    <bdi>{inventoryPath(cache, room).join(' › ')}</bdi>
-                    {sep()}
-                    <Trans>Contents</Trans>{' '}
-                    {
-                      cache.things.filter(
-                        (item) => item.placeId === room.id && item.reviewState === 'confirmed',
-                      ).length
-                    }
-                  </span>
-                </span>
-                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-ink-2">
-          <Trans>No rooms yet.</Trans>
-        </p>
-      )}
+      {(active ? [active] : locations).map(({ id, name }) => (
+        <LocationPlaces
+          key={id}
+          {...{ cache, connection, online, query, onOpen }}
+          locationId={id}
+          name={name}
+        />
+      ))}
     </section>
   );
 }
 
-function RoomCover({
+function LocationPlaces({
+  cache,
   connection,
-  id,
   online,
+  locationId,
+  name,
+  query,
+  onOpen,
 }: {
+  cache: InventoryCache;
   connection: Connection;
-  id: string;
   online: boolean;
+  locationId: string;
+  name: string;
+  query: string;
+  onOpen: (target: Target) => void;
 }) {
-  const { transport } = usePlatform();
-  const marker = useRef<HTMLSpanElement>(null);
-  const [thumb, setThumb] = useState<string>();
-  useEffect(() => {
-    if (!online || !marker.current || typeof IntersectionObserver === 'undefined') return;
-    let active = true;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
-      observer.disconnect();
-      void transport
-        .request<PlaceView>(connection, inventoryPaths.place(id))
-        .then((place) => {
-          if (!active) return;
-          const photo = place.attachments.find(
-            (item) => item.role === 'photo' && item.file?.thumbUrl,
-          );
-          setThumb(previewUrl(photo?.file?.thumbUrl, connection.origin));
-        })
-        .catch(() => {});
-    });
-    observer.observe(marker.current);
-    return () => {
-      active = false;
-      observer.disconnect();
-    };
-  }, [connection, id, online, transport]);
+  const { t } = useLingui();
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { rows, incomplete, loading } = useLocationDestinations(
+    cache,
+    connection,
+    locationId,
+    online,
+  );
+  const byId = useMemo(() => new Map(rows.map((row) => [row.id, row])), [rows]);
+  const children = useMemo(() => {
+    const grouped = new Map<string | null, LocationDestination[]>();
+    for (const row of rows) {
+      const parent = row.parentId && byId.has(row.parentId) ? row.parentId : null;
+      const group = grouped.get(parent) ?? [];
+      group.push(row);
+      grouped.set(parent, group);
+    }
+    for (const group of grouped.values()) {
+      group.sort((a, b) =>
+        (a.name ?? '').localeCompare(b.name ?? '', undefined, { numeric: true }),
+      );
+    }
+    return grouped;
+  }, [byId, rows]);
+  const counts = useMemo(() => {
+    const direct = new Map<string, number>();
+    const total = new Map<string, number>();
+    if (!cache.truncated) {
+      for (const item of cache.things) {
+        if (item.locationId !== locationId || item.reviewState !== 'confirmed') continue;
+        const parent = item.containerId ?? item.placeId;
+        if (parent) direct.set(parent, (direct.get(parent) ?? 0) + 1);
+      }
+      for (const [parent, count] of direct) {
+        for (const { id } of ancestorsOf(parent, byId)) total.set(id, (total.get(id) ?? 0) + count);
+      }
+    }
+    return { direct, total };
+  }, [byId, cache.things, cache.truncated, locationId]);
+  const search = queryWords(query);
+  const searching = search.length > 0;
+  const nameOf = (row: LocationDestination) => row.name ?? t`Untitled`;
+  const pathOf = (row: LocationDestination) =>
+    [name, ...ancestorsOf(row.id, byId).map(nameOf)].join(' › ');
+  const shown = searching
+    ? rows.filter((row) => matchesAll(queryWords([pathOf(row), row.description].join(' ')), search))
+    : (children.get(null) ?? []);
+
+  const render = (row: LocationDestination, ancestors = new Set<string>()) => {
+    const nested = children.get(row.id) ?? [];
+    const open = expanded.has(row.id);
+    const breadcrumb = pathOf(row);
+    const direct = counts.direct.get(row.id) ?? 0;
+    const total = counts.total.get(row.id) ?? 0;
+    return (
+      <li key={row.id} className="grid gap-2">
+        <div className="flex items-center gap-1">
+          {!searching && nested.length > 0 && (
+            <Button
+              variant="ghost"
+              size="small"
+              aria-label={t`Expand or collapse ${nameOf(row)}`}
+              aria-expanded={open}
+              onPress={() =>
+                setExpanded((previous) => {
+                  const next = new Set(previous);
+                  if (next.has(row.id)) next.delete(row.id);
+                  else next.add(row.id);
+                  return next;
+                })
+              }
+            >
+              {open ? (
+                <ChevronDown size={16} aria-hidden />
+              ) : (
+                <ChevronRight size={16} className="rtl:rotate-180" aria-hidden />
+              )}
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            className="kept-phone-row flex-1"
+            onPress={() =>
+              onOpen({
+                kind: row.kind === 'place' ? 'place' : 'thing',
+                id: row.id,
+                locationId,
+              })
+            }
+          >
+            <span className="kept-row-lead" aria-hidden>
+              {row.kind === 'place' ? (
+                <PlacePreview
+                  connection={connection}
+                  id={row.id}
+                  online={online && !row.isUnplaced}
+                />
+              ) : (
+                <Package size={18} />
+              )}
+            </span>
+            <span className="kept-row-body">
+              <bdi className="font-semibold">{nameOf(row)}</bdi>
+              <bdi className="text-small font-normal text-ink-2">{breadcrumb}</bdi>
+              {row.description && (
+                <bdi className="text-small font-normal text-ink-2">{row.description}</bdi>
+              )}
+              {!cache.truncated && (
+                <span className="text-small font-normal text-ink-2">
+                  <Trans>
+                    Direct items {direct} · All levels {total}
+                  </Trans>
+                </span>
+              )}
+            </span>
+          </Button>
+        </div>
+        {!searching && open && (
+          <ul
+            className={
+              ancestors.size < 3 ? 'ms-3 grid gap-2 border-s border-line ps-2' : 'grid gap-2'
+            }
+          >
+            {nested
+              .filter((child) => child.id !== row.id && !ancestors.has(child.id))
+              .map((child) => render(child, new Set([...ancestors, row.id])))}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
   return (
-    <span ref={marker}>
-      {online && thumb ? (
-        <img
-          src={thumb}
-          alt=""
-          className="kept-thumb"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-        />
+    <section className="grid gap-2">
+      <h3 className="kept-card-title">
+        <bdi>{name}</bdi>
+      </h3>
+      {loading ? (
+        <p role="status">
+          <Trans>Loading places…</Trans>
+        </p>
       ) : (
-        <MapPin size={18} />
+        incomplete && (
+          <p className="text-small text-ink-2">
+            <Trans>Some destinations are missing from this device.</Trans>
+          </p>
+        )
       )}
-    </span>
+      {shown.length ? (
+        <ul className="grid gap-2">{shown.map((row) => render(row))}</ul>
+      ) : (
+        <p className="text-small text-ink-2">
+          <Trans>No places to show.</Trans>
+        </p>
+      )}
+    </section>
   );
 }

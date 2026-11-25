@@ -89,6 +89,7 @@ export type AttachmentView = {
   locationPhotoTakenAt?: string;
   photoRotation?: number;
   photoArchivedAt?: string;
+  thumbnailSelectedAt?: string;
   /** For PATCH's If-Match (D156). Not in the web contract's type yet; additive. */
   rowVersion: number;
 };
@@ -214,6 +215,7 @@ export type AttachmentRow = { [C in SubjectColumn]: string | null } & {
   created_by: string;
   created_at: Date;
   location_photo_taken_at: Date | null;
+  in_review: boolean;
   photo_rotation: number;
   photo_archived_at: Date | null;
   thumbnail_selected_at: Date | null;
@@ -223,7 +225,7 @@ export type AttachmentRow = { [C in SubjectColumn]: string | null } & {
 
 export const ATTACHMENT_SELECT = `SELECT a.id, a.location_id, a.file_id, a.url,
        ${SUBJECT_COLUMNS.map(([c]) => `a.${c}`).join(', ')},
-       a.role, a.name, a.sort, a.created_by, a.created_at, a.location_photo_taken_at,
+       a.role, a.name, a.sort, a.created_by, a.created_at, a.location_photo_taken_at, a.in_review,
        a.photo_rotation, a.photo_archived_at, a.thumbnail_selected_at, a.row_version, up.display_name
   FROM public.attachments a
   LEFT JOIN public.user_profiles up ON up.user_id = a.created_by`;
@@ -274,6 +276,9 @@ export async function attachmentViews(
           : {}),
         ...(r.photo_rotation ? { photoRotation: r.photo_rotation } : {}),
         ...(r.photo_archived_at ? { photoArchivedAt: r.photo_archived_at.toISOString() } : {}),
+        ...(r.thumbnail_selected_at
+          ? { thumbnailSelectedAt: r.thumbnail_selected_at.toISOString() }
+          : {}),
         rowVersion: r.row_version,
       };
     }),

@@ -371,6 +371,6 @@ export async function inspectTagOwner(
   return null;
 }
 
-export function isTarget(result: ReadResult, id: string): boolean {
-  return result.status === 'resolved' && result.target.kind === 'thing' && result.target.id === id;
+export function isTarget(result: ReadResult, id: string, kind: Target['kind'] = 'thing'): boolean {
+  return result.status === 'resolved' && result.target.kind === kind && result.target.id === id;
 }

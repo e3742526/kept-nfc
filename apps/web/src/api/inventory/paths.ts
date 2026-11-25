@@ -44,6 +44,7 @@ export const inventoryPaths = {
   purchaseLineLink: (id: string) => `${V1}/purchase-lines/${seg(id)}/link`,
 
   // ----- places (task 13) -----
+  locationDestinations: (id: string) => `${V1}/locations/${seg(id)}/destinations`,
   locationPlaces: (locationId: string) => `${V1}/locations/${seg(locationId)}/places`,
   /** GET `{placeIds}`, PUT `{fold, open}` → 204: the places you folded in the outline (#358). */
   placeFolds: (locationId: string) => `${V1}/locations/${seg(locationId)}/place-folds`,
@@ -146,6 +147,7 @@ export const inventoryPaths = {
   thingTrash: (id: string) => `${V1}/things/${seg(id)}/trash`,
   thingRestore: (id: string) => `${V1}/things/${seg(id)}/restore`,
   trash: `${V1}/trash`,
+  placementHistory: (id: string) => `${V1}/things/${seg(id)}/placement-history`,
   thingHistory: (id: string) => `${V1}/things/${seg(id)}/history`,
   activity: `${V1}/activity`,
   locationActors: (id: string) => `${V1}/locations/${seg(id)}/actors`,
@@ -210,6 +212,7 @@ export const METHODS: Record<keyof typeof inventoryPaths, readonly Method[]> = {
   purchases: ['POST'],
   purchase: ['GET', 'PATCH', 'DELETE'],
   purchaseLineLink: ['POST', 'DELETE'],
+  locationDestinations: ['GET'],
   locationPlaces: ['GET', 'POST'],
   placeFolds: ['GET', 'PUT'],
   place: ['GET', 'PATCH', 'DELETE'],
@@ -269,6 +272,7 @@ export const METHODS: Record<keyof typeof inventoryPaths, readonly Method[]> = {
   thingTrash: ['POST'],
   thingRestore: ['POST'],
   trash: ['GET'],
+  placementHistory: ['GET'],
   thingHistory: ['GET'],
   activity: ['GET'],
   locationActors: ['GET'],

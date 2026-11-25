@@ -7,7 +7,14 @@ import type { AskBody, ConfirmBody, Proposal } from '@/api/assistant/types';
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
-import type { AttachmentView, Tag, ThingView, UpdateAttachmentBody } from '@/api/inventory/types';
+import type {
+  AttachmentView,
+  CreateAttachmentBody,
+  FileView,
+  Tag,
+  ThingView,
+  UpdateAttachmentBody,
+} from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import * as cameraSession from '@/camera/session';
 import { ConfirmProvider } from '@/components/ui/confirm';
@@ -51,14 +58,16 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
   const garage = {
     id: placeId,
     locationId: locId,
-    parentId: null,
+    parentId: null as string | null,
+    description: null as string | null,
     name: 'Garage',
     kindKey: 'room',
     isUnplaced: false,
     deleted: false,
     rowVersion: 1,
     path: [],
-    attachments: [],
+    counts: { things: 0, places: 0 },
+    attachments: [] as AttachmentView[],
   };
   const rooms = [garage, { ...garage, id: unplacedId, name: 'Unplaced', isUnplaced: true }];
   const outboxByContext = new Map<string, PendingCapture[]>();
@@ -268,6 +277,8 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           return {
             contractVersion: 1,
             capturePayloadVersions: [2, 3, 4, 5],
+            placeDescriptions: true,
+            placeCreationPayloadVersion: 6,
             account: _conn.account,
             epoch: _conn.epoch,
           } as T;
@@ -289,6 +300,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
               {
                 id: locId,
                 ownerAccountId: 'acc-1',
+                effectiveModules: ['labels'],
                 name: 'Home',
                 role: 'owner',
                 unplacedPlaceId: unplacedId,
@@ -357,22 +369,48 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           } as T;
         }
         if (path === inventoryPaths.locationPlaces(locId) && options?.method === 'POST') {
-          const body = options.body as { id: string; name: string; kindKey: string };
+          const body = options.body as {
+            id: string;
+            name: string;
+            kindKey: string;
+            parentId?: string;
+            description?: string;
+          };
           expect(options.idempotencyKey).toBe(body.id);
           const room = { ...garage, ...body };
           rooms.push(room);
           return room as T;
         }
         const room = rooms.find((entry) => inventoryPaths.place(entry.id) === path);
-        if (room) return room as T;
+        if (room) {
+          if (options?.method === 'PATCH') {
+            if (options.ifMatch !== room.rowVersion)
+              throw new ApiError(412, 'precondition_failed', 'Stale');
+            Object.assign(room, options.body);
+            room.rowVersion++;
+          }
+          const path = [{ id: room.id, name: room.name }];
+          let next = room;
+          while (next.parentId) {
+            const parent = rooms.find((entry) => entry.id === next.parentId);
+            if (!parent) break;
+            path.unshift({ id: parent.id, name: parent.name });
+            next = parent;
+          }
+          return { ...room, path } as T;
+        }
         if (path === capturePaths.syncOps) {
           const body = options?.body as {
             ops: Array<{
               clientId: string;
+              op: string;
               idempotencyKey: string;
               takenAt: string;
               payload: {
                 id: string;
+                parentId?: string | null;
+                kindKey?: string;
+                description?: string | null;
                 name?: string;
                 note?: string;
                 quantity?: string;
@@ -391,6 +429,23 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 idempotencyKey: op.idempotencyKey,
                 outcome: 'dropped',
                 reason: forceDropReason,
+              };
+            }
+            if (op.op === 'create_area') {
+              const { id, name, parentId, description, kindKey } = op.payload;
+              rooms.push({
+                ...garage,
+                id,
+                name: name ?? '',
+                parentId: parentId ?? null,
+                description: description ?? null,
+                kindKey: kindKey ?? 'room',
+              });
+              return {
+                clientId: op.clientId,
+                idempotencyKey: op.idempotencyKey,
+                outcome: 'applied',
+                entity: { type: 'place', id },
               };
             }
             const createdId = op.payload.attachToThingId ?? op.payload.id;
@@ -875,6 +930,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
     spareBoxId,
     renderApp,
     rooms,
+    serverThings,
     setOnline: (value: boolean) => {
       online = value;
     },
@@ -949,6 +1005,155 @@ async function openWinterBox(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('enrolls a place label and scans it into an active capture without losing the draft', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const garage = env.rooms[0];
+    if (!garage) throw new Error('Missing Garage');
+    const code = 'P14CE2';
+    const url = `${origin}/l/${code}`;
+    const alias = 'GARAGE-SHELF-LABEL';
+    const request = env.adapters.transport.request;
+    const issue = vi.fn();
+    const syncCapture = vi.fn();
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    env.adapters.transport.request = async <T,>(
+      context: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ): Promise<T> => {
+      if (path === inventoryPaths.placeLabel(garage.id)) {
+        issue(options);
+        return { code } as T;
+      }
+      if (path === capturePaths.scanResolve) {
+        const text = (options?.body as { text?: string })?.text;
+        if (text === url || text === alias) {
+          return { outcome: 'open', target: { ...garage, kind: 'place' } } as T;
+        }
+      }
+      if (path === capturePaths.syncOps) syncCapture(options?.body);
+      return request(context, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(screen.getByRole('button', { name: /^Garage/ }));
+    await user.click(await screen.findByRole('button', { name: 'QR and NFC label' }));
+    expect(await screen.findByText(code)).toBeInTheDocument();
+    expect(issue).toHaveBeenCalledWith(expect.objectContaining({ method: 'POST' }));
+    const fingerprint = 'c'.repeat(64);
+    env.pushScan(
+      {
+        status: 'inspected',
+        occupied: false,
+        writable: true,
+        required: 30,
+        capacity: 140,
+        fingerprint,
+      },
+      { status: 'written' },
+    );
+    await user.click(screen.getByRole('button', { name: 'Inspect NFC tag' }));
+    await user.click(await screen.findByRole('button', { name: 'Write and verify' }));
+    expect(await screen.findByText('SheepKeep tag verified.')).toBeInTheDocument();
+    expect(scanTag).toHaveBeenLastCalledWith(
+      connection,
+      expect.objectContaining({
+        mode: 'write',
+        url,
+        fingerprint,
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'USB cable');
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    await user.click(screen.getByRole('button', { name: 'Scan place label' }));
+    const scanner = within(await screen.findByRole('dialog', { name: 'Scan place label' }));
+    env.pushScan({ status: 'read', url });
+    await user.click(await scanner.findByRole('button', { name: 'Scan NFC tag' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Scan place label' })).toBeNull(),
+    );
+    await user.click(screen.getByRole('button', { name: 'Scan place label' }));
+    const legacyScanner = within(await screen.findByRole('dialog', { name: 'Scan place label' }));
+    await user.type(await legacyScanner.findByRole('textbox', { name: 'Type the code' }), alias);
+    await user.click(legacyScanner.getByRole('button', { name: 'Open label' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Scan place label' })).toBeNull(),
+    );
+    expect(syncCapture).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue('USB cable');
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('Home › Garage')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
+    expect(syncCapture).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ops: [
+          expect.objectContaining({
+            locationId: garage.locationId,
+            payload: expect.objectContaining({ name: 'USB cable', target: { placeId: garage.id } }),
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('opens Where to look from an item and switches the historical grouping', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = env.adapters.transport.request;
+    const recordedAt = '2026-11-24T10:00:00Z';
+    const row = {
+      locationId: env.rooms[0]?.locationId,
+      locationName: 'Home',
+      count: 3,
+      lastRecordedAt: recordedAt,
+    };
+    const history = vi.fn(() => ({
+      rooms: [{ ...row, path: ['Garage'] }],
+      destinations: [{ ...row, path: ['Garage', 'Shelf 1'] }],
+      locations: [{ ...row, path: [] }],
+      limited: true,
+    }));
+    env.adapters.transport.request = async <T,>(
+      connection: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ): Promise<T> =>
+      path === inventoryPaths.placementHistory(env.boxId)
+        ? (history() as T)
+        : request(connection, path, options);
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    expect(history).not.toHaveBeenCalled();
+    await user.click(await screen.findByRole('button', { name: 'Where to look' }));
+    expect(await screen.findByText('Recorded placements 3')).toBeVisible();
+    expect(screen.getByText('Based on the most recent recorded placements.')).toBeVisible();
+    await user.click(screen.getByRole('radio', { name: 'Exact places' }));
+    expect(screen.getByText(/Shelf 1/)).toBeVisible();
+    await user.click(screen.getByRole('radio', { name: 'Locations' }));
+    expect(screen.queryByText(/Shelf 1/)).toBeNull();
+    expect(history).toHaveBeenCalledTimes(1);
+  });
+
   it('resumes a two-photo review and syncs only selected entries with shared originals', async () => {
     const origin = 'https://kept.example.com';
     const category = (id: string, name: string): Tag => ({
@@ -1566,7 +1771,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(scanTag).toHaveBeenCalledTimes(3);
   });
 
-  it('creates a room and captures an item there from the home destination picker', async () => {
+  it('creates a place and captures an item there from the home destination picker', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
       initialConnection: {
@@ -1578,11 +1783,26 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    await user.click(await screen.findByRole('button', { name: /Rooms$/ }));
-    await user.click(screen.getByRole('button', { name: 'Create room' }));
-    await user.type(screen.getByRole('textbox', { name: 'Room name' }), 'Attic');
-    await user.click(screen.getByRole('button', { name: 'Create room' }));
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Attic');
+    await user.type(
+      await screen.findByRole('textbox', { name: 'Description' }),
+      'Seasonal shelves',
+    );
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
     expect(await screen.findByRole('heading', { name: 'Attic' })).toBeInTheDocument();
+    expect(screen.getByText('Seasonal shelves')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add sub-location' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Shelf 1');
+    await user.click(screen.getAllByRole('button', { name: 'Add sub-location' })[1] as HTMLElement);
+    expect(await screen.findByRole('heading', { name: 'Shelf 1' })).toBeInTheDocument();
+    expect(screen.getByText('Home › Attic › Shelf 1')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add sub-location' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Upper shelf');
+    await user.click(screen.getAllByRole('button', { name: 'Add sub-location' })[1] as HTMLElement);
+    expect(await screen.findByRole('heading', { name: 'Upper shelf' })).toBeInTheDocument();
+    expect(screen.getByText('Home › Attic › Shelf 1 › Upper shelf')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
@@ -1591,16 +1811,416 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: /Room or box/ }));
     await user.click(await screen.findByRole('option', { name: 'Attic' }));
     // The picker stays open until Done, so choosing a location never files the item by accident.
-    expect(screen.getByRole('button', { name: /Room or box/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Room or box/ }));
+    await user.click(await screen.findByRole('option', { name: 'Shelf 1' }));
+    await user.click(screen.getByRole('button', { name: /Room or box/ }));
+    await user.click(await screen.findByRole('option', { name: 'Upper shelf' }));
     await user.click(screen.getByRole('button', { name: 'Done' }));
-    expect(screen.getByText('Home › Attic')).toBeInTheDocument();
+    expect(screen.getByText('Home › Attic › Shelf 1 › Upper shelf')).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Winter gloves');
     await user.click(screen.getByRole('button', { name: 'Save capture' }));
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    await user.click(screen.getByRole('button', { name: /Rooms$/ }));
-    await user.click(screen.getByRole('button', { name: /Attic/ }));
+    await user.click(screen.getByRole('button', { name: /Places$/ }));
+    await user.type(screen.getByRole('textbox', { name: 'Search places' }), 'Seasonal');
+    expect(screen.getByRole('button', { name: /Attic/ })).toBeInTheDocument();
+    await user.clear(screen.getByRole('textbox', { name: 'Search places' }));
+    expect(screen.getByRole('button', { name: /^Attic/ })).toHaveTextContent(
+      'Direct items 0, All levels 1',
+    );
+    await user.click(screen.getByRole('button', { name: 'Expand or collapse Attic' }));
+    expect(screen.getByRole('button', { name: /^Shelf 1/ })).toHaveTextContent(
+      'Direct items 0, All levels 1',
+    );
+    await user.click(screen.getByRole('button', { name: 'Expand or collapse Shelf 1' }));
+    const deepest = screen.getByRole('button', { name: /^Upper shelf/ });
+    expect(deepest).toHaveTextContent('Direct items 1, All levels 1');
+    await user.click(deepest);
     expect(await screen.findByRole('button', { name: 'Winter gloves' })).toBeInTheDocument();
+  });
+
+  it('moves a deep bin through Places and updates the same item path and counts', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const garage = env.rooms[0];
+    const bin = env.serverThings.get(env.boxId);
+    if (!garage || !bin) throw new Error('Missing garage or bin fixture');
+    const shelf = {
+      ...garage,
+      id: '60555555-5555-7555-8555-555555555555',
+      name: 'Workshop shelf',
+      parentId: garage.id,
+    };
+    const upper = {
+      ...shelf,
+      id: '70555555-5555-7555-8555-555555555555',
+      name: 'Upper shelf',
+      parentId: shelf.id,
+    };
+    const shed = { ...garage, id: '90555555-5555-7555-8555-555555555555', name: 'Shed' };
+    env.rooms.push(shelf, upper, shed);
+    const cableId = 'a0555555-5555-7555-8555-555555555555';
+    const cable = {
+      ...bin,
+      id: cableId,
+      name: 'USB cable',
+      containerId: env.boxId,
+      placeId: null,
+      isContainer: false,
+      typeId: null,
+      shortCode: null,
+      labelPrinted: false,
+    };
+    env.serverThings.set(cableId, cable);
+    const originalBinPath = [garage, shelf, upper].map(({ id, name }) => ({ id, name }));
+    Object.assign(bin, { placeId: upper.id, path: originalBinPath });
+    Object.assign(cable, { path: [...originalBinPath, { id: env.boxId, name: bin.name }] });
+    const move = vi.fn();
+    const request = env.adapters.transport.request;
+    env.adapters.transport.request = async <T,>(
+      connection: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path === inventoryPaths.movePreview) return { crossLocation: false } as T;
+      if (path === inventoryPaths.move) {
+        move(options);
+        const nextPath = [{ id: shed.id, name: shed.name }];
+        Object.assign(bin, { placeId: shed.id, path: nextPath, rowVersion: 2 });
+        Object.assign(cable, { path: [...nextPath, { id: env.boxId, name: bin.name }] });
+        return { moved: [env.boxId] } as T;
+      }
+      return request<T>(connection, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(screen.getByRole('button', { name: 'Expand or collapse Garage' }));
+    await user.click(screen.getByRole('button', { name: 'Expand or collapse Workshop shelf' }));
+    expect(screen.getByRole('button', { name: /^Upper shelf/ })).toHaveTextContent(
+      'Direct items 1, All levels 2',
+    );
+    await user.click(screen.getByRole('button', { name: 'Expand or collapse Upper shelf' }));
+    await user.click(screen.getByRole('button', { name: /^Winter Box/ }));
+    expect(
+      await screen.findByText('Home › Garage › Workshop shelf › Upper shelf'),
+    ).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Move' }));
+    await user.click(screen.getByRole('button', { name: /Room or box/ }));
+    await user.click(await screen.findByRole('option', { name: 'Shed' }));
+    await user.click(screen.getAllByRole('button', { name: 'Move' })[1] as HTMLElement);
+    await waitFor(() =>
+      expect(move).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ifMatch: 1,
+          body: { thingIds: [env.boxId], to: { placeId: shed.id } },
+        }),
+      ),
+    );
+    expect(await screen.findByText('Home › Shed')).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'USB cable' }));
+    expect(await screen.findByRole('heading', { name: 'USB cable' })).toBeInTheDocument();
+    expect(await screen.findByText('Home › Shed › Winter Box')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByRole('button', { name: /^Shed/ })).toHaveTextContent(
+      'Direct items 1, All levels 2',
+    );
+  });
+
+  it('loads places beyond a capped snapshot when online and discloses missing places offline', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const garage = env.rooms[0];
+    if (!garage) throw new Error('Missing Garage');
+    const request = env.adapters.transport.request;
+    const liveReads = vi.fn();
+    env.adapters.transport.request = async <T,>(
+      connection: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ): Promise<T> => {
+      if (path === inventoryPaths.locationDestinations(garage.locationId)) {
+        liveReads();
+        return [
+          { ...garage, kind: 'place' },
+          {
+            id: 'remote-shelf',
+            locationId: garage.locationId,
+            parentId: garage.id,
+            name: 'Electrical shelf',
+            description: 'Cables and adapters',
+            kind: 'place',
+          },
+        ] as T;
+      }
+      const result = await request<T>(connection, path, options);
+      if (path.startsWith(capturePaths.syncSnapshot)) return { ...result, truncated: true };
+      return result;
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: 'Places' }));
+    await user.type(screen.getByRole('textbox', { name: 'Search places' }), 'adapters');
+    expect(await screen.findByRole('button', { name: /^Electrical shelf/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Direct items/)).toBeNull();
+    expect(liveReads).toHaveBeenCalled();
+    env.setOnline(false);
+    act(() => env.emitAppState(true));
+    expect(
+      await screen.findByText('Some destinations are missing from this device.'),
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: /^Electrical shelf/ })).toBeNull();
+  });
+
+  it('reopens pending place and item work after offline relaunch and replays it in dependency order', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const user = userEvent.setup();
+    let supportsOfflinePlaces = true;
+    const transport = env.adapters.transport.request;
+    env.adapters.transport.request = async <T,>(
+      context: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path === capturePaths.nativeCaptureCapabilities && !supportsOfflinePlaces) {
+        const caps = await transport<T>(context, path, options);
+        return { ...caps, placeCreationPayloadVersion: undefined } as T;
+      }
+      if (path !== inventoryPaths.attachments) return transport<T>(context, path, options);
+      const body = options?.body as CreateAttachmentBody & {
+        id: string;
+        subject: { placeId: string };
+      };
+      const place = env.rooms.find(({ id }) => id === body.subject.placeId);
+      if (!place) throw new Error('Photo replay ran before its place existed');
+      const entry = (await env.adapters.outbox.list(context)).find(({ capture }) =>
+        capture.files.some(({ file }) => file.id === body.fileId),
+      );
+      const original = entry?.capture.files[0];
+      if (!original) throw new Error('Missing original photo');
+      const attachment = {
+        id: body.id,
+        file: { id: body.fileId, sha256: original.sha256 },
+      } as AttachmentView;
+      place.attachments = [...place.attachments, attachment];
+      return attachment as T;
+    };
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const first = env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    env.setOnline(false);
+    act(() => env.emitAppState(true));
+    await screen.findByText('Offline. Changes stay on this iPhone until SheepKeep is reachable.');
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Offline garage');
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Beside the house');
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    await screen.findByRole('heading', { name: 'Offline garage' });
+    await user.click(screen.getByRole('button', { name: 'Add sub-location' }));
+    const name = screen.getByRole('textbox', { name: 'Name' });
+    await user.type(name, 'Offline shelf');
+    const form = name.closest('form');
+    if (!form) throw new Error('Missing place form');
+    await user.click(within(form).getByRole('button', { name: 'Add sub-location' }));
+    await screen.findByRole('heading', { name: 'Offline shelf' });
+    const input = first.container.querySelector<HTMLInputElement>(
+      'input[aria-label="Choose reference photo"]',
+    );
+    if (!input) throw new Error('Missing photo input');
+    await user.upload(input, new File(['fixture photo'], 'shelf.jpg', { type: 'image/jpeg' }));
+    await waitFor(async () => expect(await env.adapters.outbox.list(connection)).toHaveLength(3));
+    await user.click(screen.getByRole('button', { name: 'Add here' }));
+    const captureName = screen.getByRole('textbox', { name: 'Description' });
+    const captureForm = captureName.closest('form');
+    if (!captureForm) throw new Error('Missing capture form');
+    expect(within(captureForm).getByText(/ › Offline garage › Offline shelf$/)).toBeVisible();
+    await user.type(captureName, 'USB cable');
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await waitFor(async () => expect(await env.adapters.outbox.list(connection)).toHaveLength(4));
+    const manifest = await env.adapters.outbox.list(connection);
+    const parent = manifest[0]?.capture.id;
+    const shelf = manifest[1]?.capture.id;
+    expect(manifest[2]?.capture.files).toHaveLength(1);
+    first.unmount();
+    const second = env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(await screen.findByRole('button', { name: /^Offline garage/ }));
+    await screen.findByRole('heading', { name: 'Offline garage' });
+    await user.click(screen.getByRole('button', { name: 'Offline shelf' }));
+    expect(await screen.findByRole('heading', { name: 'Offline shelf' })).toBeVisible();
+    expect(request.mock.calls.filter(([, path]) => path === capturePaths.syncOps)).toEqual([]);
+    supportsOfflinePlaces = false;
+    env.setOnline(true);
+    act(() => env.emitAppState(true));
+    await waitFor(async () =>
+      expect((await env.adapters.outbox.list(connection))[0]?.failure).toBe('compatibility_hold'),
+    );
+    expect(request.mock.calls.filter(([, path]) => path === capturePaths.syncOps)).toEqual([]);
+    expect(env.events.uploadedFiles).toEqual([]);
+    supportsOfflinePlaces = true;
+    await user.click(await screen.findByRole('button', { name: 'Retry sync' }));
+    await waitFor(async () => expect(await env.adapters.outbox.list(connection)).toEqual([]));
+    const ops = request.mock.calls
+      .filter(([, path]) => path === capturePaths.syncOps)
+      .flatMap(([, , options]) => (options?.body as { ops: unknown[] } | undefined)?.ops ?? []);
+    expect(ops).toMatchObject([
+      { op: 'create_area', clientId: parent, payload: { description: 'Beside the house' } },
+      { op: 'create_area', clientId: shelf, dependsOn: [parent], payload: { parentId: parent } },
+      { op: 'create_thing', dependsOn: [shelf], payload: { target: { placeId: shelf } } },
+    ]);
+    expect(
+      request.mock.calls.find(([, path]) => path === inventoryPaths.attachments)?.[2]?.body,
+    ).toMatchObject({ subject: { placeId: shelf }, role: 'photo' });
+    second.unmount();
+  });
+
+  it('retries reference photo replacement with the same key after an uncertain response', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const garage = env.rooms[0];
+    if (!garage) throw new Error('Missing Garage');
+    const file: FileView = {
+      id: '55555555-5555-7555-8555-555555555555',
+      mime: 'image/jpeg',
+      class: 'photo',
+      sha256: 'a'.repeat(64),
+      bytes: 5,
+      width: 50,
+      height: 50,
+      hasGps: false,
+      derivativeState: 'ready',
+      displayUrl: '/f/full',
+      thumbUrl: '/f/thumb',
+    };
+    const old: AttachmentView = {
+      id: '66666666-6666-7666-8666-666666666666',
+      file,
+      rowVersion: 2,
+      role: 'photo',
+      name: 'Shelf layout',
+      subject: { placeId: garage.id },
+      sort: 10,
+      url: null,
+      createdBy: { displayName: 'Ibrahim' },
+      canManage: true,
+    };
+    let attachments: AttachmentView[] = [
+      old,
+      { ...old, id: 'log', name: 'Location log', locationPhotoTakenAt: '2026-11-24T10:00:00Z' },
+    ];
+    const request = env.adapters.transport.request;
+    const attempts: NativeRequestOptions[] = [];
+    const upload = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Upload failed'))
+      .mockResolvedValue(file);
+    env.adapters.transport.uploadOriginal = upload;
+    env.adapters.transport.request = async <T,>(
+      connection: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ): Promise<T> => {
+      if (path === inventoryPaths.place(garage.id)) return { ...garage, attachments } as T;
+      if (path === inventoryPaths.attachments && options?.method === 'POST') {
+        attempts.push(options);
+        const body = options.body as CreateAttachmentBody;
+        if (attempts.length === 1) {
+          expect(body.replacesAttachmentId).toBe(old.id);
+          expect(options.ifMatch).toBe(old.rowVersion);
+          throw new ApiError(0, 'offline', 'Response lost');
+        }
+        const updated = { ...old, id: options.idempotencyKey as string };
+        attachments = [updated, ...attachments.slice(1)];
+        return updated as T;
+      }
+      return request<T>(connection, path, options);
+    };
+    const user = userEvent.setup();
+    const { container } = env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(screen.getByRole('button', { name: /^Garage/ }));
+    expect(await screen.findByRole('button', { name: 'Take photo' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Shelf layout' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Replace photo' }));
+    const input = container.querySelector<HTMLInputElement>(
+      'input[aria-label="Choose reference photo"]',
+    );
+    if (!input) throw new Error('Missing reference photo input');
+    await user.upload(input, new File(['photo'], 'shelf.jpg', { type: 'image/jpeg' }));
+    expect(await screen.findByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(attempts).toHaveLength(0);
+    expect(screen.getByRole('button', { name: 'Shelf layout' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(attempts).toHaveLength(1));
+    await user.click(await screen.findByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(attempts).toHaveLength(2));
+    expect(attempts[1]).toEqual(attempts[0]);
+    expect(upload).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('button', { name: 'Shelf layout' })).toBeInTheDocument();
+    expect(
+      await env.adapters.outbox.list({
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      }),
+    ).toEqual([]);
+  });
+
+  it('keeps place description writes disabled against an older server', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    env.setCapabilitiesHandler(({ account, epoch }) => ({
+      contractVersion: 1,
+      capturePayloadVersions: [2, 3, 4, 5],
+      account,
+      epoch,
+    }));
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    expect(screen.queryByRole('textbox', { name: 'Description' })).toBeNull();
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Storage');
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    expect(await screen.findByRole('heading', { name: 'Storage' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(screen.queryByRole('textbox', { name: 'Description' })).toBeNull();
   });
 
   it('adds photos to a bin without a new item and shares its existing label URL', async () => {
@@ -2776,7 +3396,7 @@ describe('KeptPhone mobile workflows', () => {
 
     const boxes = await screen.findByRole('button', { name: '2 Boxes' });
     expect(screen.getByRole('button', { name: '2 Items' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '1 Rooms' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '1 Places' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '0 Unplaced' })).toBeInTheDocument();
     // Find shows only when a target is saved; Assistant is the header button, not a tab.
     expect(screen.queryByText('Resumable Find target')).not.toBeInTheDocument();
@@ -2841,7 +3461,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByLabelText('Description')).toBeInTheDocument();
   });
 
-  it('shows remaining rooms when the selected location is revoked', async () => {
+  it('shows remaining places when the selected location is revoked', async () => {
     const env = createFakeEnvironment({
       initialConnection: {
         id: 'https://kept.example.com|ibrahim|epoch-1',
@@ -2853,14 +3473,14 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    await user.click(await screen.findByRole('button', { name: '1 Rooms' }));
+    await user.click(await screen.findByRole('button', { name: '1 Places' }));
     await user.click(screen.getByRole('button', { name: /Location/ }));
     await user.click(screen.getByRole('option', { name: 'Cabin' }));
     expect(screen.queryByRole('button', { name: /Garage/ })).not.toBeInTheDocument();
 
     env.revokeCabinLocation();
     act(() => env.emitAppState(true));
-    expect(await screen.findByRole('button', { name: /Garage/ })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^Garage/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Location/ })).not.toBeInTheDocument();
   });
 
@@ -2935,7 +3555,7 @@ describe('KeptPhone mobile workflows', () => {
     // away; sign-out lives only in Settings.
     await user.click(within(tabbar).getByRole('button', { name: 'Home' }));
     const search = await screen.findByRole('searchbox', { name: 'Search inventory' });
-    expect(screen.getByRole('button', { name: /Rooms$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Places$/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Capture inventory' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument();
 

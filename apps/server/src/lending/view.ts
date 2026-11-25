@@ -23,8 +23,8 @@ import {
 } from '../schedules/view.js';
 import type { FileStorage } from '../storage/blob-store.js';
 import {
-  ROW_COLUMNS,
   type RowRecord,
+  rowColumns,
   rowOf,
   type ThingRow,
   ThingRowSchema,
@@ -272,7 +272,7 @@ export async function anyRowsOf(
   const out = new Map<string, ThingRow>();
   if (ids.length === 0) return out;
   const { rows } = await client.query<RowRecord>(
-    `SELECT ${ROW_COLUMNS}
+    `SELECT ${rowColumns(false)}
        FROM public.things t LEFT JOIN public.types ty ON ty.id = t.type_id
       WHERE t.id = ANY ($1::uuid[])`,
     [[...new Set(ids)]],

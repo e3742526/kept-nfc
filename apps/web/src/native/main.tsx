@@ -32,10 +32,11 @@ import { capturePaths } from '@/api/capture/paths';
 import type { CaptureBatch, InboxPage } from '@/api/capture/types';
 import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { Page, SearchResponse } from '@/api/inventory/types';
+import type { Page, SearchResponse, ThingRow } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import { AppMark, BrandLockup } from '@/components/brand';
 import { PhotoImage } from '@/components/photo-image';
+import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
 import { ProjectNotice } from '@/components/project-notice';
 import { Button } from '@/components/ui/button';
 import { ConfirmProvider, useConfirm } from '@/components/ui/confirm';
@@ -68,6 +69,7 @@ import {
   previewUrl,
   type RecordDetail,
   readInventory,
+  withPendingPlaces,
 } from './inventory';
 import { FIND_TARGET_KEY, type LabelBox, LabelPanel } from './label-panel';
 import { LabelSheets } from './label-sheets';
@@ -91,7 +93,7 @@ import {
 import { applyPalette, type PaletteId, setPalette, usePalette } from './palette';
 import { PhotoReview } from './photo-review';
 import { RecordScreen } from './record';
-import { Rooms } from './rooms';
+import { Places } from './rooms';
 import { Trash } from './trash';
 import { PhotoSearchActions, type VisualSearchIntent, VisualSearchScreen } from './visual-search';
 import './native.css';
@@ -106,7 +108,7 @@ type Screen =
       backToAssistant?: boolean;
       backToVisual?: boolean;
     }
-  | { kind: 'new'; place?: Target }
+  | { kind: 'new'; place?: Target; destination?: Destination }
   | { kind: 'rooms' }
   | { kind: 'unplaced' }
   | { kind: 'labelSheets' }
@@ -298,6 +300,7 @@ function ThingList({
     path: string;
     thumbUrl?: string | null;
     thumbnailRotation?: number;
+    placeEvidence?: ThingRow['placeEvidence'];
   }[];
   origin?: string;
   onOpen: (target: Target) => void;
@@ -326,6 +329,10 @@ function ThingList({
                 {thing.path && (
                   <bdi className="font-normal text-small text-ink-2">{thing.path}</bdi>
                 )}
+                <PlaceEvidenceDetails
+                  evidence={thing.placeEvidence}
+                  resolveThumbnail={(url) => (origin ? previewUrl(url, origin) : undefined)}
+                />
               </span>
               <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
             </Button>
@@ -630,9 +637,13 @@ export function Inventory({
   }, [adapters, connection]);
 
   const backStack = useRef<Screen[]>([]);
-  const [cache, setCache] = useState<InventoryCache>();
+  const [authoritativeCache, setCache] = useState<InventoryCache>();
   const cacheRef = useRef<InventoryCache | undefined>(undefined);
   const [pending, setPending] = useState<PendingCapture[]>([]);
+  const cache = useMemo(
+    () => withPendingPlaces(authoritativeCache, pending),
+    [authoritativeCache, pending],
+  );
   const [completions, setCompletions] = useState<Record<string, CompletionState>>({});
   const [held, setHeld] = useState<PendingCapture[]>([]);
   const [stats, setStats] = useState<StorageStats>();
@@ -758,6 +769,8 @@ export function Inventory({
   const failureText = useCallback(
     (reason: string, fields: ReturnType<typeof draftFields>): string => {
       switch (reason) {
+        case 'waiting_for_place':
+          return t`Waiting to sync`;
         case 'target_trashed':
         case 'target_missing':
           return fields.boxId && !fields.review
@@ -1692,9 +1705,17 @@ export function Inventory({
                 ? () => setScreen({ kind: 'rooms' })
                 : goHome
           }
-          onOpen={screen.backToVisual ? openVisualRecord : open}
+          onOpen={
+            screen.backToVisual ? openVisualRecord : (target) => open(target, screen.backToRooms)
+          }
           onCache={cacheDetail}
-          onCreateBox={() => setScreen({ kind: 'new', place: screen.target })}
+          onCreateBox={(place) =>
+            setScreen({
+              kind: 'new',
+              place: { ...place, kind: place.kind === 'box' ? 'thing' : 'place' },
+              destination: place,
+            })
+          }
           onCapture={(destination, location) =>
             pushScreen({ kind: 'capture', destination, location, fromRecord: true })
           }
@@ -1710,7 +1731,7 @@ export function Inventory({
         <NewBoxForm
           connection={connection}
           cache={cache}
-          place={cache.places.find((entry) => entry.id === screen.place?.id)}
+          place={screen.destination ?? cache.places.find((entry) => entry.id === screen.place?.id)}
           onClose={() => (screen.place ? open(screen.place, true) : goHome())}
           onCreated={(id, locationId) => {
             open({ id, locationId, kind: 'thing' });
@@ -1719,11 +1740,10 @@ export function Inventory({
         />
       )}
       {screen.kind === 'rooms' && cache && (
-        <Rooms
+        <Places
           connection={connection}
           cache={cache}
           online={online}
-          recent={recentBoxes}
           onClose={goBack}
           onOpen={(target) => open(target, true)}
           onCreated={(target) => {
@@ -1752,6 +1772,7 @@ export function Inventory({
           onClose={goBack}
           onSave={savedLocally}
           onReview={(id) => pushScreen({ kind: 'photoReview', id })}
+          onAuthError={onSignOut}
         />
       )}
       {screen.kind === 'capture' && <div className="mt-4 grid gap-2">{queuePanels}</div>}
@@ -1799,14 +1820,23 @@ export function Inventory({
           onOpen={open}
           canEnroll={
             cache?.locations.some(
-              (location) => location.id === screen.box.locationId && location.role !== 'viewer',
+              (location) =>
+                location.id === screen.box.locationId &&
+                location.role !== 'viewer' &&
+                (screen.box.kind !== 'place' ||
+                  (online && location.effectiveModules?.includes('labels'))),
             ) === true
           }
           onClearFindTarget={() => setSavedFindTarget(undefined)}
           onClose={() => {
             const back = backStack.current.at(-1);
             if (back?.kind === 'record' || back?.kind === 'nfcTarget') goBack();
-            else open({ id: screen.box.id, kind: 'thing', locationId: screen.box.locationId });
+            else
+              open({
+                id: screen.box.id,
+                kind: screen.box.kind ?? 'thing',
+                locationId: screen.box.locationId,
+              });
           }}
           onAuthError={onSignOut}
         />

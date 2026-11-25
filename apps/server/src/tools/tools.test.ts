@@ -12,6 +12,7 @@ import type { TestApp } from '../../test/app.js';
 import { type TestDb, testDb } from '../../test/db.js';
 import { call, join, type Person, peopleApp, person } from '../../test/people.js';
 import {
+  builtinType,
   createLocation,
   createThing,
   type Json,
@@ -1015,6 +1016,66 @@ describe('reads', () => {
     );
     const outside = await data(louis, 'where_is', { ...query, location_id: garage.id });
     expect(outside.places).toEqual([]);
+  });
+
+  it('returns both paths for duplicate place names and searches a confirmed room or bin recursively', async () => {
+    async function createPlace(name: string, parentId?: string) {
+      return ok(
+        await call(t, `/api/v1/locations/${home.id}/places`, {
+          as: ibrahim,
+          body: { name, kindKey: parentId ? 'zone' : 'room', ...(parentId ? { parentId } : {}) },
+        }),
+        201,
+      );
+    }
+    const front = await createPlace('Front Workshop');
+    const rear = await createPlace('Rear Workshop');
+    const first = await createPlace('Parts shelf', front.id);
+    const second = await createPlace('Parts shelf', rear.id);
+    const boxType = await builtinType(db, 'box_bin');
+    const box = await createThing(t, ibrahim, home, {
+      name: 'Hinge case',
+      typeId: boxType,
+      placeId: first.id,
+    });
+    const nested = await createThing(t, ibrahim, home, {
+      name: 'Small case',
+      typeId: boxType,
+      containerId: box.id,
+    });
+    const hinge = await createThing(t, ibrahim, home, {
+      name: 'Hinge screw',
+      containerId: nested.id,
+    });
+    const places = await data(louis, 'where_is', {
+      location_id: home.id,
+      query: 'Parts shelf',
+      kind: 'place',
+    });
+    expect(places.places).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: first.id,
+          untrusted: { name: 'Parts shelf', path: ['Home', 'Front Workshop', 'Parts shelf'] },
+        }),
+        expect.objectContaining({
+          id: second.id,
+          untrusted: { name: 'Parts shelf', path: ['Home', 'Rear Workshop', 'Parts shelf'] },
+        }),
+      ]),
+    );
+    const find = (place_id: string, status?: string) =>
+      data(louis, 'search_things', {
+        location_id: home.id,
+        query: 'hinge screw',
+        filters: { place_id, ...(status ? { status } : {}) },
+      });
+    for (const id of [front.id, first.id, box.id]) {
+      expect((await find(id)).items.map((item: Json) => item.id)).toContain(hinge.id);
+    }
+    expect((await find(second.id)).items).toEqual([]);
+    await own(db, "UPDATE public.things SET lifecycle = 'archived' WHERE id = $1", [hinge.id]);
+    expect((await find(box.id, 'archived')).items.map((item: Json) => item.id)).toEqual([hinge.id]);
   });
 
   it('search_things reads every reachable location without location_id', async () => {

@@ -9,12 +9,14 @@
  * Not here: Copy link is the only action (A viewer's thing detail).
  */
 
-import type { ModuleId } from '@kept/shared';
+import type { ModuleId, PlacementHistory } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { api } from '@/api/client';
 import { useClaims, useThingLoans } from '@/api/household/queries';
+import { inventoryPaths } from '@/api/inventory/paths';
 import { inventoryKeys, useThing } from '@/api/inventory/queries';
 import { useInvalidateThing } from '@/api/inventory/thing-api';
 import type { ThingView } from '@/api/inventory/types';
@@ -69,6 +71,7 @@ import { PaperworkSection } from './paperwork';
 import { RetypeSheet } from './retype-sheet';
 import { SplitSheet } from './split-sheet';
 import { TrashContentsSheet } from './trash';
+import { WhereToLook } from './where-to-look';
 
 export type ThingTab =
   | 'contents'
@@ -395,6 +398,10 @@ function Loaded({ tab, sheet }: { tab: ThingTab | undefined; sheet: SheetName | 
       >
         {/* #366: the type chip opens the type picker, for whoever edits things. */}
         <ThingHeader onType={can('things.edit') ? () => openSheet('retype') : undefined} />
+        <WhereToLook
+          key={`${thing.id}:${thing.rowVersion}`}
+          load={() => api.get<PlacementHistory>(inventoryPaths.placementHistory(thing.id))}
+        />
         {/* At every width: on a phone the header's back arrow is icon-only, and this says where
             it goes (the maintainer couldn't tell how to get back to a thing's place). */}
         <div>

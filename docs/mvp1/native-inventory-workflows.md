@@ -22,6 +22,26 @@ Use **Delete this thread** and confirm to permanently remove the conversation. T
 
 When a lookup changes who pays, the turn keeps the requested model if the new payer's provider offers it. Otherwise it uses that provider's default eligible model. Photo turns still require a model that accepts images.
 
+## Places and reference photos
+
+Open **Places** from Home to browse by inventory location. Expand a room, spot or box to see what is inside. The search matches names, breadcrumbs and descriptions. Direct counts show items immediately inside the record. All-level counts include items under its descendants.
+
+Use **Create place** at the top of a location or **Add sub-location** on a place. Only the name is required. Top-level places default to Room and children default to Spot. **Move** changes the parent within the same inventory location. Trash offers to move the contents or trash them with the place.
+
+**Add here** starts a capture with the current place selected. The destination picker drills down one level at a time and keeps the selected path visible. You can stop at a room, a shelf or a box wherever the operation permits it. The picker remembers successful destinations for the connected account. Use Unplaced for items that belong to the inventory location without a more specific place.
+
+When Labels is enabled, an editor can open **QR and NFC label** on a place to show its SheepKeep QR code or write and verify a compatible NFC tag. The label follows the same place through a rename or move. Scanning a place from **Scan** opens its record with current direct items and child places. While choosing a destination, **Scan place label** fills the current picker and preserves edits in progress. A registered legacy code can resolve to the same record.
+
+The iPhone camera and photo library add ordinary place attachments to **Reference photos**, which also appears on the web place page. These uploads run separately from saving the place. They create no AI drafts. You can open a photo at display size, replace or remove it, or choose a cover where your role allows. A replacement keeps the original photo's position and cover selection. Rolling location photos and Room Photos still in review stay outside this gallery.
+
+Item and photo search show the current path from the inventory location down to the innermost bin. Search also shows the nearest place with storage directions and the nearest place with a ready reference thumbnail. The two can come from different places along the path. The assistant can search all descendants of a selected room, shelf or bin, and asks for a path when more than one destination fits.
+
+On iPhone, create places, add items, and add or replace reference photos while offline. Pending places appear in Places and can be selected as destinations. A queued child, item or photo waits for its pending place to sync. An offline replacement uses the version on the phone and keeps the original upload in the queue if the server reports a conflict. Recently viewed covers can be available offline. Editing or moving a saved place and changing its cover need a connection.
+
+A capped snapshot shows incomplete results offline and uses the scoped location hierarchy when online. Apply migration `0191_place_descriptions` before deploying the server that advertises description writes. For a one-release rollback, revert the app and server code while keeping the column and stored descriptions.
+
+The rollback test runs the pre-Places server from `e84eedae` against a migrated development test database. Build that revision in a separate checkout and set `KEPT_TEST_PLACE_ROLLBACK_SERVER` to its `apps/server/dist/http/app.js` before running `pnpm exec vitest run --project @kept/server apps/server/src/sync/native-compat.test.ts`. The test checks that an edit from the previous server preserves the stored description and that queued place creation replays after returning to the current build.
+
 ## Photo review
 
 **Add** and **Add to this bin** show the recorded destination and action. Manual capture can save a broad description with optional categories, notes, quantity and photographs. **Suggest description** proposes a single description. **Suggest categories** keeps the entered description. **Suggest items** opens review with up to 12 entries. **Review multiple items** opens the same review without inference.
@@ -51,6 +71,16 @@ Native views use resolved definitions and existing type names, field labels and 
 ## Provenance
 
 History shows the authoritative server event time and separately labels the device save time. Direct confirmation events can supply an observation date. Legacy inventory activity timestamps also include saves and moves, so Browse and record details label these as recorded activity. The native capture payload has no dedicated photo timestamp. Bin history groups the loaded inventory entries from the same photo review and preserves each entry's history. Photo-only evidence, a direct unchanged check, physical moves, corrections, removal to Unplaced, Trash, and restoration use separate wording. Category and field edits use the existing audited mutation routes.
+
+## Where to look
+
+Open **Where to look** on an item or box to see ranked storage history. Switch between rooms and
+areas, exact places, and inventory locations. Each result shows the number of recorded placements
+and the most recent date. Counts include initial placements and recorded moves, including movement
+with a box. The server uses the viewer’s location access. An older event that only saved a
+destination ID can use that destination’s current breadcrumb. The list shows up to 12 results per
+group. For long histories, the panel labels counts based on the most recent retained records.
+Open the panel while connected.
 
 ## Verification
 

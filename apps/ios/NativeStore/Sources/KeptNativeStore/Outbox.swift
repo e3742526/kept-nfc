@@ -268,6 +268,29 @@ public final class Outbox {
         if fs.fileExists(atPath: folder.path) { try fs.removeItem(at: folder) }
     }
 
+    /// Reads an online reference upload without adding it to the durable capture queue.
+    public func stagedPhoto(context: String, draft: String, file: String, mime: String) throws
+        -> (URL, PendingOriginal)
+    {
+        guard UUID(uuidString: file) != nil, mime.hasPrefix("image/"), mime.utf8.count <= 120
+        else { throw OutboxError.invalid }
+        let folder = try captureFolder(context: context, id: draft, staged: true)
+        let url = folder.appendingPathComponent(file.lowercased())
+        guard fs.fileExists(atPath: url.path) else { throw OutboxError.missing }
+        let handle = try FileHandle(forReadingFrom: url)
+        defer { try? handle.close() }
+        let bytes = try handle.seekToEnd()
+        guard bytes > 0, bytes <= UInt64(perFileLimit) else { throw OutboxError.invalid }
+        try handle.seek(toOffset: 0)
+        var hasher = SHA256()
+        while let chunk = try handle.read(upToCount: chunkLimit), !chunk.isEmpty {
+            hasher.update(data: chunk)
+        }
+        let sha = hasher.finalize().map { String(format: "%02x", $0) }.joined()
+        let original = StagedOriginal(id: file, name: "", mime: mime, role: "photo", bytes: Int(bytes))
+        return (url, PendingOriginal(file: original, sha256: sha))
+    }
+
     public func pending(context: String) throws -> [OutboxEntry] {
         try query(
             "SELECT manifest, failure FROM captures WHERE context = ? AND completed = 0 ORDER BY id",
@@ -426,6 +449,7 @@ public final class Outbox {
 
     public func clearCache(context: String) throws {
         try sql("DELETE FROM cache WHERE context = ?", [context])
+        try deleteValue(context: context, key: "placePhotoCache")
     }
 
     public func readValue(context: String, key: String) throws -> String? {

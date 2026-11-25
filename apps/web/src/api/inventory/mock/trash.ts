@@ -9,7 +9,12 @@
  * - a few older events (a money edit, a secret change, a move in from another location, a price
  *   in a location without Money) are added once, so the timeline has every row kind to show.
  */
-import { ACTIVITY_KINDS, type ActivityKind } from '@kept/shared';
+import {
+  ACTIVITY_KINDS,
+  type ActivityKind,
+  type RecordedPlacement,
+  rankPlacements,
+} from '@kept/shared';
 import type { MockState } from '../../mock/fixtures';
 import {
   err,
@@ -326,6 +331,66 @@ export function trashRoutes(state: MockState): MockRoute[] {
       items = narrow(items, query, 'kind', (x, v) => x.kind === v);
       items = narrow(items, query, 'deletedById', (x, v) => x.deletedBy?.id === v);
       return paginate(items, query);
+    }),
+
+    route('GET', p.placementHistory(':id'), ({ params }) => {
+      const thing = liveThing(inv(), params.id ?? null);
+      if (!thing || !access().visible(thing.locationId)) return notFound();
+      const events = inv().events.filter(
+        (e) => e.entity.id === thing.id && e.location_id && access().visible(e.location_id),
+      );
+      const undone = new Set(events.map((e) => e.undo_of));
+      const placements = events.flatMap((e): RecordedPlacement[] => {
+        if (
+          !['thing.create', 'thing.capture', 'thing.move'].includes(e.action) ||
+          e.undo_of ||
+          undone.has(e.id)
+        )
+          return [];
+        const loc = state.locations.find(({ id }) => id === e.location_id);
+        const after = (field: string) => {
+          const change = e.diff?.[field];
+          return change && 'after' in change ? change.after : undefined;
+        };
+        const to = after('location_id');
+        const place = after('place_id');
+        const container = after('container_id');
+        const intent = after('placement_intent');
+        if (!loc || (to && to !== loc.id) || intent === 'correct' || intent === 'remove') return [];
+        const target =
+          typeof container === 'string' ? container : typeof place === 'string' ? place : undefined;
+        if (!target) return [];
+        if (inv().places.some((p) => p.id === target && p.isUnplaced))
+          return [{ locationId: loc.id, locationName: loc.name, recordedAt: e.at }];
+        const box = typeof container === 'string' ? liveThing(inv(), container) : undefined;
+        const steps = box
+          ? [...thingPath(inv(), box), { id: box.id, name: box.name ?? '' }]
+          : placePath(inv(), target);
+        const saved = after('path');
+        const path = Array.isArray(saved)
+          ? saved.filter((part): part is string => typeof part === 'string')
+          : steps.map(({ name }) => name).filter(Boolean);
+        const roomIndex = steps.findLastIndex(({ id }) =>
+          inv().places.some((p) => p.id === id && p.kindKey === 'room'),
+        );
+        const hasRoom =
+          roomIndex >= 0 &&
+          steps.slice(0, roomIndex + 1).every(({ name }, index) => name === path[index]);
+        return [
+          {
+            locationId: loc.id,
+            locationName: loc.name,
+            recordedAt: e.at,
+            ...(path.length
+              ? {
+                  room: path.slice(0, hasRoom ? roomIndex + 1 : 1),
+                  destination: { id: target, path },
+                }
+              : {}),
+          },
+        ];
+      });
+      return rankPlacements(placements, false);
     }),
 
     route('GET', p.thingHistory(':id'), ({ params, query }) => {

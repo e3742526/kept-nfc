@@ -8,6 +8,7 @@ import { type Tx, withSystem } from '../db/scope.js';
 import { checkVersion, pageOf } from '../http/conventions.js';
 import { AppError, forbidden, invalid, notFound } from '../http/errors.js';
 import { requireCan, requireMembership } from '../locations/access.js';
+import { lockTree, requireParent } from '../places/service.js';
 import type { Gate } from '../serialize/gates.js';
 import type { FileStorage } from '../storage/blob-store.js';
 import { lockBlobKeys } from './blob-locks.js';
@@ -155,6 +156,9 @@ const auditImage = (
   role: r.role,
   sort: r.sort,
   ...('name' in r && r.name ? { name: r.name } : {}),
+  ...('thumbnail_selected_at' in r && r.thumbnail_selected_at
+    ? { thumbnailSelectedAt: r.thumbnail_selected_at.toISOString() }
+    : {}),
   fileId: r.file_id,
   url: r.url,
   thingId: r.thing_id,
@@ -174,6 +178,7 @@ export async function createAttachment(
   userId: string,
   body: CreateAttachment,
   requestId: string,
+  coverSelectedAt: Date | null = null,
 ): Promise<AttachmentView> {
   const locationId = body.locationId.toLowerCase();
   const me = await requireMembership(client, locationId);
@@ -200,10 +205,10 @@ export async function createAttachment(
   const columns = SUBJECT_COLUMNS.map(([c]) => c);
   const { rows } = await client.query<{ id: string }>(
     `INSERT INTO public.attachments (id, location_id, file_id, url, ${columns.join(', ')}, role,
-                                     sort, name, created_by)
+                                     sort, name, created_by, thumbnail_selected_at)
      VALUES ($1, $2, $3, $4, ${columns.map((_, i) => `$${i + 5}`).join(', ')},
              $${columns.length + 5}, $${columns.length + 6}, $${columns.length + 7},
-             kept.current_user_id())
+             kept.current_user_id(), $${columns.length + 8})
      RETURNING id`,
     [
       body.id,
@@ -214,6 +219,7 @@ export async function createAttachment(
       body.role,
       body.sort ?? 0,
       body.name ?? null,
+      coverSelectedAt,
     ],
   );
   const id = (rows[0] as { id: string }).id;
@@ -230,6 +236,65 @@ export async function createAttachment(
   });
   const [view] = await attachmentViews(client, files, [row]);
   return view as AttachmentView;
+}
+
+/** Swap a place reference only after both images have passed the scoped checks. */
+export async function replacePlacePhoto(
+  tx: Tx,
+  client: pg.ClientBase,
+  files: FileStorage | null,
+  gateOf: GateOf,
+  userId: string,
+  body: CreateAttachment,
+  previousId: string,
+  expected: number,
+  requestId: string,
+): Promise<AttachmentView> {
+  if (!('placeId' in body.subject) || body.role !== 'photo' || !body.fileId) {
+    throw invalid('Replacement requires an uploaded photo on a place.');
+  }
+  const locationId = body.locationId.toLowerCase();
+  const placeId = body.subject.placeId.toLowerCase();
+  const me = await requireMembership(client, locationId);
+  requireCan(me.role, 'attachments.add', 'Viewers can look at attachments but not add them.');
+  await lockTree(client, locationId);
+  await requireParent(client, locationId, placeId);
+  const previous = await readAttachment(client, previousId, true);
+  if (previous.location_id !== locationId || previous.place_id !== placeId) throw notFound();
+  requireOwnOrAny(me.role, previous, userId);
+  checkVersion({ rowVersion: previous.row_version }, expected, ['photo']);
+  if (
+    !previous.file_id ||
+    previous.role !== 'photo' ||
+    previous.in_review ||
+    previous.location_photo_taken_at ||
+    previous.photo_archived_at
+  ) {
+    throw invalid('Only an active place reference photo can be replaced.');
+  }
+
+  const fileId = body.fileId.toLowerCase();
+  const { rows } = await client.query<{ id: string; mime: string }>(
+    `SELECT id, mime FROM public.files WHERE id = ANY ($1::uuid[]) AND location_id = $2`,
+    [[previous.file_id, fileId], locationId],
+  );
+  for (const id of [previous.file_id, fileId]) {
+    const file = rows.find((row) => row.id === id);
+    if (!file) throw notFound();
+    if (!file.mime.startsWith('image/')) throw invalid('Replacement requires image files.');
+  }
+  const replacement = await createAttachment(
+    tx,
+    client,
+    files,
+    gateOf,
+    userId,
+    { ...body, sort: previous.sort, name: previous.name },
+    requestId,
+    previous.thumbnail_selected_at,
+  );
+  await deleteAttachment(tx, client, userId, previousId, requestId);
+  return replacement;
 }
 
 type AttachmentPatch = {
@@ -305,8 +370,11 @@ export async function updateAttachment(
       throw invalid('Only ordinary inventory photos can be archived.');
     }
     const archived = patch.photoArchived ?? Boolean(before.photo_archived_at);
-    if (patch.selectThumbnail && (!ordinary || !before.thing_id || archived)) {
-      throw invalid('Only active item photos can be selected as thumbnails.');
+    if (
+      patch.selectThumbnail &&
+      (!ordinary || archived || before.in_review || before.location_photo_taken_at)
+    ) {
+      throw invalid('Only active item and place photos can be selected as thumbnails.');
     }
     const { rowCount } = await client.query(
       "SELECT 1 FROM public.files WHERE id = $1 AND mime LIKE 'image/%'",
@@ -364,7 +432,8 @@ export async function deleteAttachment(
   const me = await requireMembership(client, row.location_id);
   requireOwnOrAny(me.role, row, userId);
   if (row.condition_room_id) await checkRoomOpen(client, row.condition_room_id);
-  await client.query('DELETE FROM public.attachments WHERE id = $1', [id]);
+  const { rowCount } = await client.query('DELETE FROM public.attachments WHERE id = $1', [id]);
+  if (!rowCount) throw notFound();
   await audited(tx, {
     locationId: row.location_id,
     actor: { type: 'user', id: userId },

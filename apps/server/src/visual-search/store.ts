@@ -1,7 +1,9 @@
 import type { VisualSearchCoverage, VisualSearchMatch } from '@kept/shared';
 import type pg from 'pg';
 import { vectorLiteral } from '../embeddings/provider.js';
+import { placeEvidenceForPaths } from '../places/reference-evidence.js';
 import { isContainerSql } from '../search/query.js';
+import type { FileStorage } from '../storage/blob-store.js';
 
 const DIMENSIONS = 512;
 
@@ -56,9 +58,14 @@ export async function visualMatches(
   minScore: number,
   limit: number,
   ambiguityMargin: number,
+  files: FileStorage | null,
 ): Promise<{ matches: VisualSearchMatch[]; ambiguous: boolean }> {
   const { rows } = await client.query<
-    Omit<VisualSearchMatch, 'capturedAt'> & { capturedAt: Date; is_alternate: boolean }
+    Omit<VisualSearchMatch, 'capturedAt' | 'path'> & {
+      capturedAt: Date;
+      is_alternate: boolean;
+      path: (VisualSearchMatch['path'][number] & { kind?: 'place' | 'container' })[];
+    }
   >(
     `SELECT t.id AS "thingId", l.id AS "locationId", t.name,
             jsonb_build_array(jsonb_build_object('id', l.id, 'name', l.name)) ||
@@ -78,10 +85,16 @@ export async function visualMatches(
       ORDER BY r.score DESC, r.attachment_id`,
     [ids, generation, vectorLiteral(vector), minScore, limit, ambiguityMargin],
   );
+  const evidence = await placeEvidenceForPaths(
+    client,
+    files,
+    rows.map(({ path }) => path.filter((step) => step.kind === 'place').map(({ id }) => id)),
+  );
   return {
-    matches: rows.map(({ is_alternate: _alternate, capturedAt, ...match }) => ({
+    matches: rows.map(({ is_alternate: _alternate, capturedAt, ...match }, index) => ({
       ...match,
       capturedAt: capturedAt.toISOString(),
+      ...(evidence[index] ? { placeEvidence: evidence[index] } : {}),
     })),
     ambiguous: rows.some(({ is_alternate }) => is_alternate),
   };

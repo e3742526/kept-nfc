@@ -106,6 +106,13 @@ Enable Sign in with Apple for `info.keptinventory.nfc`, refresh the signing prof
 
 OpenAI Server API has a live fixture check. Apple Intelligence and ChatGPT plan have mocked flow and compilation coverage. The modern iOS Simulator launched the configured app to the Apple sign-in screen. The signed-in physical workflow and hardware-dependent checks remain pending.
 
+## Places and label qualification
+
+1. Use a disposable household on a signed-in iPhone. Create a garage, shelf and bin. Add one reference with **Take photo** and another with **Add photo**. Select a cover, replace it, and check the gallery and cover on the web.
+2. Print the garage QR code and write a compatible NFC tag. Scan each from **Scan** and from **Scan place label** during an unsaved capture. Rename and move the garage, then repeat the scans with the same labels and a registered legacy code.
+3. Go offline. Create a place and child, save an item in the child, and queue a reference photo. Force-quit and reopen the app before reconnecting. Confirm one place, child, item and photo in the expected hierarchy after replay.
+4. Cache an existing cover, go offline and queue its replacement. Change its attachment on the web before reconnecting. Confirm the iPhone retains its original upload and shows the conflict. Repeat without the concurrent change and confirm the replacement keeps the cover selection.
+
 ## Native visual retrieval qualification
 
 Build 13 of SheepKeep 1.0 used app source `5508ff5a`, Xcode 27.2 (27B52), and an

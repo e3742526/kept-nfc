@@ -33265,3 +33265,183 @@ msgstr "Chụp ảnh nơi bạn để món đồ này. SheepKeep giữ ba ảnh 
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Chọn vật phẩm hoặc thùng"
+
+#: src/components/places/reference-photos.tsx
+msgid "Add photo"
+msgstr "Thêm ảnh"
+
+#: src/native/record.tsx
+#: src/native/rooms.tsx
+msgid "Add sub-location"
+msgstr "Thêm nơi bên trong"
+
+#: src/components/display-prefs.tsx
+msgid "Camera photo size"
+msgstr "Kích thước ảnh chụp"
+
+#: src/native/claim-bin-label.tsx
+msgid "Choose existing box"
+msgstr "Chọn hộp có sẵn"
+
+#: src/components/places/reference-photos.tsx
+msgid "Choose reference photo"
+msgstr "Chọn ảnh tham chiếu"
+
+#: src/native/destination.tsx
+msgid "Choose this destination"
+msgstr "Chọn nơi này"
+
+#: src/native/rooms.tsx
+msgid "Create place"
+msgstr "Tạo nơi lưu trữ"
+
+#: src/native/rooms.tsx
+msgid "Direct items {direct} · All levels {total}"
+msgstr "Trực tiếp {direct} · Tất cả các cấp {total}"
+
+#. placeholder {0}: nameOf(row)
+#: src/native/rooms.tsx
+msgid "Expand or collapse {0}"
+msgstr "Mở rộng hoặc thu gọn {0}"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Loading places…"
+msgstr "Đang tải các nơi lưu trữ…"
+
+#: src/native/place-actions.tsx
+msgid "Move contents"
+msgstr "Di chuyển đồ bên trong"
+
+#: src/native/rooms.tsx
+msgid "No places to show."
+msgstr "Không có nơi nào để hiển thị."
+
+#: src/native/destination.tsx
+msgid "Recent destinations"
+msgstr "Các nơi dùng gần đây"
+
+#: src/components/places/reference-photos.tsx
+msgid "Reference photos"
+msgstr "Ảnh tham chiếu"
+
+#: src/components/places/reference-photos.tsx
+msgid "Remove photo?"
+msgstr "Xóa ảnh?"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo"
+msgstr "Thay ảnh"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo?"
+msgstr "Thay ảnh?"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace the current reference photo with your selection."
+msgstr "Thay ảnh tham chiếu hiện tại bằng ảnh đã chọn."
+
+#: src/components/places/reference-photos.tsx
+msgid "Review replacement"
+msgstr "Xem lại ảnh thay thế"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Some destinations are missing from this device."
+msgstr "Thiết bị này thiếu một số nơi lưu trữ."
+
+#: src/components/places/reference-photos.tsx
+msgid "Take photo"
+msgstr "Chụp ảnh"
+
+#: src/components/places/reference-photos.tsx
+msgid "Take reference photo"
+msgstr "Chụp ảnh tham chiếu"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in Kept, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Cạnh dài nhất của ảnh chụp trong Kept, tính bằng pixel. Ảnh nhỏ tải lên nhanh hơn. Ảnh trong thư viện có cạnh dài hơn 4096 pixel sẽ được thu nhỏ khi tải lên."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo changed. Review it before replacing it."
+msgstr "Ảnh tham chiếu này đã thay đổi. Hãy xem lại trước khi thay."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo is gone. Choose another photo to replace."
+msgstr "Ảnh tham chiếu này không còn. Hãy chọn ảnh khác để thay."
+
+#: src/components/things/where-to-look.tsx
+msgid "Based on the most recent recorded placements."
+msgstr "Dựa trên những lần ghi nhận vị trí gần đây nhất."
+
+#: src/components/things/where-to-look.tsx
+msgid "Connect to see location history."
+msgstr "Kết nối để xem lịch sử vị trí."
+
+#: src/components/things/where-to-look.tsx
+msgid "Exact places"
+msgstr "Vị trí cụ thể"
+
+#: src/components/things/where-to-look.tsx
+msgid "Group by"
+msgstr "Nhóm theo"
+
+#: src/components/things/where-to-look.tsx
+msgid "Last recorded <0>{date}</0>"
+msgstr "Ghi nhận gần nhất <0>{date}</0>"
+
+#: src/components/things/where-to-look.tsx
+msgid "Loading location history…"
+msgstr "Đang tải lịch sử vị trí…"
+
+#: src/components/things/where-to-look.tsx
+msgid "No placement history yet."
+msgstr "Chưa có lịch sử vị trí."
+
+#: src/components/things/where-to-look.tsx
+msgid "No recorded places in this group."
+msgstr "Nhóm này chưa có vị trí được ghi nhận."
+
+#: src/components/things/where-to-look.tsx
+msgid "Recorded placements {count}"
+msgstr "Số lần ghi nhận {count}"
+
+#: src/components/things/where-to-look.tsx
+msgid "Rooms and areas"
+msgstr "Phòng và khu vực"
+
+#: src/components/things/where-to-look.tsx
+msgid "Show location history"
+msgstr "Hiện lịch sử vị trí"
+
+#: src/components/things/where-to-look.tsx
+msgid "Where to look"
+msgstr "Tìm ở đâu"
+
+#: src/native/destination.tsx
+msgid "Choose a different place."
+msgstr "Chọn một nơi khác."
+
+#: src/native/destination.tsx
+msgid "Connect to check where this place belongs."
+msgstr "Hãy kết nối để kiểm tra nơi này nằm ở đâu trong hệ thống vị trí."
+
+#: src/native/label-panel.tsx
+msgid "Scan a place label."
+msgstr "Quét nhãn của một nơi."
+
+#: src/native/destination.tsx
+msgid "Scan place label"
+msgstr "Quét nhãn nơi"
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this place’s label. Reopen the place and try again."
+msgstr "Máy chủ không thể xác nhận nhãn của nơi này. Hãy mở lại nơi đó và thử lại."
+
+#: src/native/destination.tsx
+msgid "This place is outside the available destinations."
+msgstr "Nơi này nằm ngoài các điểm đến hiện có."
+
+#: src/components/places/reference-photos.tsx
+msgid "Set as cover"
+msgstr "Đặt làm ảnh bìa"

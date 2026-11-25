@@ -1,8 +1,10 @@
 import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { newId } from '@kept/shared';
 import pg from 'pg';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { insertLocation, insertUser } from '../../test/tenancy.js';
 import { migrationsFolder, runMigrations } from './migrate.js';
 import {
   bootReleaseGuard,
@@ -140,6 +142,61 @@ describe('kept migrate', () => {
     expect(await releases()).toEqual([
       { version: '1.0.0', last_migration: imageJournal(previous).at(-1)?.tag },
     ]);
+  });
+
+  it('upgrades populated places and keeps their descriptions through one release rollback', async () => {
+    await runMigrations(ownerUrl, {
+      folder: previous,
+      release: { version: '1.0.0', revision: null },
+    });
+    const id = newId();
+    await owner(async (client) => {
+      await client.query('BEGIN');
+      const userId = await insertUser(client, 'Ibrahim');
+      const accountId = newId();
+      await client.query('INSERT INTO public.owner_accounts (id, user_id) VALUES ($1, $2)', [
+        accountId,
+        userId,
+      ]);
+      const { locationId } = await insertLocation(client, { userId, accountId });
+      await client.query('INSERT INTO public.places (id, location_id, name) VALUES ($1, $2, $3)', [
+        id,
+        locationId,
+        'Garage',
+      ]);
+      await client.query('COMMIT');
+    });
+    expect(
+      await runMigrations(ownerUrl, {
+        release: { version: '1.1.0', revision: null },
+      }),
+    ).toMatchObject({ applied: 1 });
+    await owner(async (client) => {
+      const { rows } = await client.query(
+        'SELECT name, description FROM public.places WHERE id = $1',
+        [id],
+      );
+      expect(rows).toEqual([{ name: 'Garage', description: null }]);
+      await client.query('UPDATE public.places SET description = $2 WHERE id = $1', [
+        id,
+        'Lawn equipment',
+      ]);
+    });
+    expect(
+      await runMigrations(ownerUrl, {
+        folder: previous,
+        release: { version: '1.0.0', revision: null },
+      }),
+    ).toMatchObject({ applied: 0, rolledBackFrom: '1.1.0' });
+    await owner(async (client) => {
+      // The rolled-back code still names only the original columns in inserts and updates.
+      await client.query('UPDATE public.places SET name = $2 WHERE id = $1', [id, 'Workshop']);
+      const { rows } = await client.query(
+        'SELECT name, description FROM public.places WHERE id = $1',
+        [id],
+      );
+      expect(rows).toEqual([{ name: 'Workshop', description: 'Lawn equipment' }]);
+    });
   });
 
   it('takes the snapshot before any DDL when migrations are pending on a populated database', async () => {

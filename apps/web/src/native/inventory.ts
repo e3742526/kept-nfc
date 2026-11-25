@@ -17,7 +17,10 @@ import { matchesAll, queryWords } from '@/offline/local-search';
 import { codesKey, legacyCodesByThing, termsOf } from '@/offline/store';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import type { Connection } from './bridge';
+import type { Destination } from './destination';
 import { draftFields, type PendingCapture } from './outbox';
+import { loadPlaceWithPhotoCache, refreshPlacePhotoCache } from './place-photo-cache';
+import { rememberDestination } from './recent-destinations';
 
 export type RecordDetail = {
   id: string;
@@ -32,6 +35,7 @@ export type InventoryCache = {
   types: SnapType[];
   tags?: SnapTag[];
   places: SnapPlace[];
+  pendingPlaceIds?: string[];
   things: SnapThing[];
   codes: SnapCode[];
   legacyCodes: SnapLegacyCode[];
@@ -103,11 +107,54 @@ export function pendingForRecord(pending: readonly PendingCapture[], id: string)
   return pending.filter((entry) => {
     try {
       const fields = draftFields(entry.capture);
-      return (fields.attachToThingId ?? fields.boxId ?? fields.placeId) === id;
+      return (
+        (fields.attachToThingId ??
+          fields.boxId ??
+          fields.placeId ??
+          fields.placeCreation?.parentId) === id
+      );
     } catch {
       return false;
     }
   });
+}
+
+export function withPendingPlaces(
+  cache: InventoryCache | undefined,
+  pending: readonly PendingCapture[],
+) {
+  if (!cache || !pending.length) return cache;
+  const known = new Set(cache.places.map(({ id }) => id));
+  const writable = new Set(
+    cache.locations.filter(({ role }) => role !== 'viewer').map(({ id }) => id),
+  );
+  const places = pending.flatMap(({ capture }): SnapPlace[] => {
+    const fields = draftFields(capture);
+    const area = fields.placeCreation;
+    if (!area || known.has(capture.id) || !writable.has(fields.locationId)) return [];
+    return [
+      {
+        id: capture.id,
+        locationId: fields.locationId,
+        parentId: area.parentId,
+        name: fields.name,
+        description: area.description,
+        kindKey: area.kindKey,
+        icon: null,
+        isUnplaced: false,
+        sort: 0,
+        createdAt: capture.takenAt,
+        deleted: false,
+      },
+    ];
+  });
+  return places.length
+    ? {
+        ...cache,
+        places: [...cache.places, ...places],
+        pendingPlaceIds: places.map(({ id }) => id),
+      }
+    : cache;
 }
 
 export async function readInventory(
@@ -127,6 +174,7 @@ export async function loadInventory(
   const things = new Map<string, SnapThing>();
   const codes = new Map<string, SnapCode>();
   const legacyCodes = new Map<string, SnapLegacyCode>();
+  const removedPlaces = new Set<string>();
   let cursor: string | undefined;
 
   for (let round = 0; round < 200; round++) {
@@ -136,8 +184,13 @@ export async function loadInventory(
     );
     const visible = new Set(page.locations.map((location) => location.id));
     for (const place of page.changes.places) {
-      if (place.deleted) places.delete(place.id);
-      else places.set(place.id, place);
+      if (place.deleted) {
+        places.delete(place.id);
+        removedPlaces.add(place.id);
+      } else {
+        places.set(place.id, place);
+        removedPlaces.delete(place.id);
+      }
     }
     for (const thing of page.changes.things) {
       if (thing.deleted) things.delete(thing.id);
@@ -152,7 +205,10 @@ export async function loadInventory(
     }
     for (const row of page.removed) {
       if (row.entityType === 'thing') things.delete(row.entityId);
-      if (row.entityType === 'place') places.delete(row.entityId);
+      if (row.entityType === 'place') {
+        places.delete(row.entityId);
+        removedPlaces.add(row.entityId);
+      }
       if (row.entityType === 'code') codes.delete(row.entityId);
       if (row.entityType === 'legacy_code') {
         for (const [key, code] of legacyCodes) {
@@ -183,6 +239,13 @@ export async function loadInventory(
         ),
       };
       await adapters.outbox.saveCache(connection, JSON.stringify(next));
+      void refreshPlacePhotoCache(
+        connection,
+        adapters,
+        ({ id, locationId }) =>
+          visible.has(locationId) && !removedPlaces.has(id) && (next.truncated || places.has(id)),
+        (id) => loadPlace(connection, id, adapters),
+      ).catch(() => {});
       return next;
     }
     if (page.nextCursor === cursor) break;
@@ -210,31 +273,37 @@ export async function loadDetail(
   return { thing, attachments: page.items, locationPhotos: page.locationPhotos ?? [] };
 }
 
-export async function loadPlace(
+export function loadPlace(
   connection: Connection,
   id: string,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<PlaceView> {
-  return adapters.transport.request(connection, inventoryPaths.place(id));
+  return loadPlaceWithPhotoCache(connection, adapters, id, () =>
+    adapters.transport.request(connection, inventoryPaths.place(id)),
+  );
 }
 
 export async function createBox(
   connection: Connection,
   cache: InventoryCache,
-  destination: Pick<SnapPlace, 'id' | 'locationId'>,
+  destination: Destination,
   name: string,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<ThingView> {
   const type = cache.types.find((entry) => entry.builtinKey === 'box_bin' && entry.isContainer);
   if (!type) throw new ApiError(400, 'validation', 'This SheepKeep has no Box type.');
-  return adapters.transport.request(connection, inventoryPaths.things, {
+  const view = await adapters.transport.request<ThingView>(connection, inventoryPaths.things, {
     method: 'POST',
     body: {
       id: newId(),
       typeId: type.id,
       name,
       locationId: destination.locationId,
-      placeId: destination.id,
+      ...(destination.kind === 'box'
+        ? { containerId: destination.id }
+        : { placeId: destination.id }),
     },
   });
+  void rememberDestination(connection, adapters, destination.id);
+  return view;
 }

@@ -4,6 +4,7 @@ import { Camera, ChevronRight, Image, Images, ScanSearch } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileTrigger } from 'react-aria-components';
 import { isApiError } from '@/api/client';
+import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
@@ -242,6 +243,10 @@ function MatchCard({
               ))}
             </p>
           )}
+          <PlaceEvidenceDetails
+            evidence={match.placeEvidence}
+            resolveThumbnail={(url) => previewUrl(url, connection.origin)}
+          />
           <time dateTime={match.capturedAt} className="text-small text-ink-2">
             {fmt.date(match.capturedAt)}
           </time>

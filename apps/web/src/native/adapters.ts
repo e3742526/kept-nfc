@@ -32,7 +32,14 @@ export type PlatformTransport = {
   request<T>(connection: Connection, path: string, options?: NativeRequestOptions): Promise<T>;
   uploadOriginal(
     connection: Connection,
-    input: { id: string; file: string; location: string; uploadId?: string },
+    input: {
+      id: string;
+      file: string;
+      location: string;
+      uploadId?: string;
+      stagedPhotoMime?: string;
+      placePhoto?: boolean;
+    },
   ): Promise<FileView>;
 };
 
@@ -90,6 +97,7 @@ export type PlatformFeedback = {
 };
 
 export type PlatformMedia = {
+  readThumbnail?(connection: Connection, url: string): Promise<string>;
   openRemote(
     connection: Connection,
     input: { thing?: string; file: string; mime: string; variant?: 'display' },
@@ -203,6 +211,8 @@ export const capacitorAdapters: PlatformAdapters = {
           file: input.file,
           location: input.location,
           ...(input.uploadId ? { uploadId: input.uploadId } : {}),
+          ...(input.stagedPhotoMime ? { stagedPhotoMime: input.stagedPhotoMime } : {}),
+          ...(input.placePhoto ? { placePhoto: true } : {}),
         })
         .catch(networkError);
       return unwrap<FileView>(answer);
@@ -331,6 +341,9 @@ export const capacitorAdapters: PlatformAdapters = {
     },
   },
   media: {
+    async readThumbnail(connection, url) {
+      return (await native.readThumbnail({ context: connection.id, url })).data;
+    },
     openRemote(connection, input) {
       return native.openMedia({ context: connection.id, ...input });
     },

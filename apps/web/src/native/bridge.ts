@@ -73,6 +73,7 @@ export type LabelSheet = {
 };
 
 type NativeKept = {
+  readThumbnail(input: { context: string; url: string }): Promise<{ data: string }>;
   connection(): Promise<Connection | Record<string, never>>;
   connect(input: { address: string }): Promise<Connection>;
   disconnect(): Promise<{ revoked: boolean }>;
@@ -109,6 +110,8 @@ type NativeKept = {
     file: string;
     location: string;
     uploadId?: string;
+    stagedPhotoMime?: string;
+    placePhoto?: boolean;
   }): Promise<NativeResponse>;
   scanTag(input: {
     context: string;

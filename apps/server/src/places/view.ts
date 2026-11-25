@@ -1,7 +1,9 @@
+import type { LocationDestination } from '@kept/shared';
 import {
   ATTACHMENT_ROLES,
   CHILD_ORDERS,
   type ChildOrder,
+  can,
   DERIVED_STATES,
   type DerivedState,
   FIELD_KINDS,
@@ -65,6 +67,7 @@ export const PlaceNodeSchema = z.object({
   id: z.uuid(),
   parentId: z.uuid().nullable(),
   name: z.string(),
+  description: z.string().nullable(),
   kindKey: z.string(),
   icon: z.string().nullable(),
   sort: z.number().int(),
@@ -145,7 +148,9 @@ const AttachmentViewSchema = z.object({
   createdBy: z.object({ displayName: z.string() }),
   createdAt: z.iso.datetime().optional(),
   locationPhotoTakenAt: z.iso.datetime().optional(),
+  thumbnailSelectedAt: z.iso.datetime().optional(),
   photoRotation: z.number().optional(),
+  canManage: z.boolean(),
   rowVersion: z.number().int(),
 });
 type AttachmentView = z.infer<typeof AttachmentViewSchema>;
@@ -155,6 +160,7 @@ export const PlaceViewSchema = z.object({
   locationId: z.uuid(),
   parentId: z.uuid().nullable(),
   name: z.string(),
+  description: z.string().nullable(),
   kindKey: z.string(),
   icon: z.string().nullable(),
   isUnplaced: z.boolean(),
@@ -220,6 +226,7 @@ export type PlaceRow = {
   ownerAccountId: string;
   parentId: string | null;
   name: string;
+  description: string | null;
   kindKey: string;
   icon: string | null;
   sort: number;
@@ -231,7 +238,7 @@ export type PlaceRow = {
   rowVersion: number;
 };
 
-const PLACE_COLUMNS = `p.id, p.location_id, l.owner_account_id, p.parent_id, p.name, p.kind_key,
+const PLACE_COLUMNS = `p.id, p.location_id, l.owner_account_id, p.parent_id, p.name, p.description, p.kind_key,
   p.icon, p.sort, p.is_unplaced, p.child_order, p.custom, p.deleted_at, p.trash_batch_id,
   p.row_version`;
 
@@ -241,6 +248,7 @@ type RawPlace = {
   owner_account_id: string;
   parent_id: string | null;
   name: string;
+  description: string | null;
   kind_key: string;
   icon: string | null;
   sort: number;
@@ -258,6 +266,7 @@ const placeRowOf = (r: RawPlace): PlaceRow => ({
   ownerAccountId: r.owner_account_id,
   parentId: r.parent_id,
   name: r.name,
+  description: r.description,
   kindKey: r.kind_key,
   icon: r.icon,
   sort: r.sort,
@@ -315,7 +324,7 @@ export async function unplacedOf(client: pg.ClientBase, locationId: string): Pro
 // The tree
 // ---------------------------------------------------------------------------------------------
 
-const NODE_COLUMNS = `p.id, p.parent_id, p.name, p.kind_key, p.icon, p.sort, p.is_unplaced,
+const NODE_COLUMNS = `p.id, p.parent_id, p.name, p.description, p.kind_key, p.icon, p.sort, p.is_unplaced,
   p.child_order,
   (SELECT sc.code FROM public.short_ids sc
     WHERE sc.place_id = p.id AND sc.is_primary AND sc.state = 'assigned' LIMIT 1) AS short_code,
@@ -332,6 +341,7 @@ type RawNode = {
   id: string;
   parent_id: string | null;
   name: string;
+  description: string | null;
   kind_key: string;
   icon: string | null;
   sort: number;
@@ -348,6 +358,7 @@ const nodeOf = (r: RawNode): PlaceNode => ({
   id: r.id,
   parentId: r.parent_id,
   name: r.name,
+  description: r.description,
   kindKey: r.kind_key,
   icon: r.icon,
   sort: r.sort,
@@ -369,6 +380,27 @@ export async function placeNodes(client: pg.ClientBase, locationId: string): Pro
     [locationId],
   );
   return rows.map(nodeOf);
+}
+
+export async function locationDestinations(
+  client: pg.ClientBase,
+  locationId: string,
+): Promise<LocationDestination[]> {
+  const { rows } = await client.query<LocationDestination>(
+    `SELECT p.id, p.location_id AS "locationId", p.parent_id AS "parentId",
+            p.name, p.description, 'place' AS kind, p.is_unplaced AS "isUnplaced"
+       FROM public.places p
+      WHERE p.location_id = $1 AND p.deleted_at IS NULL
+      UNION ALL
+     SELECT t.id, t.location_id, coalesce(t.container_id, t.place_id),
+            t.name, NULL, 'box', false
+       FROM public.things t
+      WHERE t.location_id = $1 AND t.deleted_at IS NULL AND t.review_state = 'confirmed'
+        AND ${isContainerSql('t.id', 't.type_id')}
+      ORDER BY name, id`,
+    [locationId],
+  );
+  return rows;
 }
 
 /** How many boxes the tree shows under one place; `boxCount` says how many more there are. */
@@ -555,14 +587,21 @@ async function attachmentsOf(
   client: pg.ClientBase,
   files: FileStorage | null,
   placeId: string,
+  userId: string,
+  role: Gate['role'],
 ): Promise<AttachmentView[]> {
   const { rows } = await client.query<AttachmentRow>(
-    `${ATTACHMENT_SELECT} WHERE a.place_id = $1 AND a.photo_archived_at IS NULL ORDER BY a.sort, a.created_at, a.id`,
+    `${ATTACHMENT_SELECT} WHERE a.place_id = $1 AND NOT a.in_review AND a.photo_archived_at IS NULL ORDER BY a.sort, a.created_at, a.id`,
     [placeId],
   );
+  const creators = new Map(rows.map((row) => [row.id, row.created_by]));
   return (await attachmentViews(client, files, rows)).map((a) => ({
     ...a,
     subject: { placeId },
+    canManage: can(
+      role,
+      creators.get(a.id) === userId ? 'attachments.delete-own' : 'attachments.delete-any',
+    ),
     createdBy: { displayName: a.createdBy.displayName || 'A former member' },
   }));
 }
@@ -590,6 +629,7 @@ export async function placeView(
     locationId: place.locationId,
     parentId: place.parentId,
     name: place.name,
+    description: place.description,
     kindKey: place.kindKey,
     icon: place.icon,
     isUnplaced: place.isUnplaced,
@@ -600,7 +640,7 @@ export async function placeView(
     custom: customForView(gate, fields, place.custom),
     secrets: await secretsOf(client, gate, place.id, fields),
     counts: { places: rows[0]?.places ?? 0, things: rows[0]?.things ?? 0 },
-    attachments: await attachmentsOf(client, files, place.id),
+    attachments: await attachmentsOf(client, files, place.id, scope.userId, gate.role),
     furniture: await furnitureViewOf(client, place.id),
     rack: await rackViewOf(client, place.id),
     rowVersion: place.rowVersion,
@@ -696,7 +736,7 @@ export async function placeContents(
 
   const pp = new Params();
   const placeWhere = [`p.parent_id = ${pp.add(place.id)}::uuid`, 'p.deleted_at IS NULL'];
-  if (q) placeWhere.push(nameHas('p.name', pp.add(q)));
+  if (q) placeWhere.push(nameHas("concat_ws(' ', p.name, p.description)", pp.add(q)));
   const { rows: placeRows } = await client.query<RawNode>(
     `SELECT ${NODE_COLUMNS} FROM public.places p WHERE ${placeWhere.join(' AND ')}
       ORDER BY ${placeOrderSql('p')}`,

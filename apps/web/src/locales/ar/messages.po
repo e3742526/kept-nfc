@@ -33265,3 +33265,183 @@ msgstr "صوّر المكان الذي تركت فيه هذا العنصر. يح
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "اختر عنصرًا أو صندوقًا"
+
+#: src/components/places/reference-photos.tsx
+msgid "Add photo"
+msgstr "أضف صورة"
+
+#: src/native/record.tsx
+#: src/native/rooms.tsx
+msgid "Add sub-location"
+msgstr "أضف مكانًا فرعيًا"
+
+#: src/components/display-prefs.tsx
+msgid "Camera photo size"
+msgstr "حجم صور الكاميرا"
+
+#: src/native/claim-bin-label.tsx
+msgid "Choose existing box"
+msgstr "اختر صندوقًا موجودًا"
+
+#: src/components/places/reference-photos.tsx
+msgid "Choose reference photo"
+msgstr "اختر صورة مرجعية"
+
+#: src/native/destination.tsx
+msgid "Choose this destination"
+msgstr "اختر هذا المكان"
+
+#: src/native/rooms.tsx
+msgid "Create place"
+msgstr "أنشئ مكانًا"
+
+#: src/native/rooms.tsx
+msgid "Direct items {direct} · All levels {total}"
+msgstr "في هذا المكان {direct} · في كل المستويات {total}"
+
+#. placeholder {0}: nameOf(row)
+#: src/native/rooms.tsx
+msgid "Expand or collapse {0}"
+msgstr "وسّع أو اطوِ {0}"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Loading places…"
+msgstr "جارٍ تحميل الأماكن…"
+
+#: src/native/place-actions.tsx
+msgid "Move contents"
+msgstr "انقل المحتويات"
+
+#: src/native/rooms.tsx
+msgid "No places to show."
+msgstr "لا توجد أماكن لعرضها."
+
+#: src/native/destination.tsx
+msgid "Recent destinations"
+msgstr "الأماكن المستخدمة مؤخرًا"
+
+#: src/components/places/reference-photos.tsx
+msgid "Reference photos"
+msgstr "صور مرجعية"
+
+#: src/components/places/reference-photos.tsx
+msgid "Remove photo?"
+msgstr "أتريد إزالة الصورة؟"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo"
+msgstr "استبدل الصورة"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo?"
+msgstr "أتريد استبدال الصورة؟"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace the current reference photo with your selection."
+msgstr "استبدل الصورة المرجعية الحالية بالصورة التي اخترتها."
+
+#: src/components/places/reference-photos.tsx
+msgid "Review replacement"
+msgstr "راجع الاستبدال"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Some destinations are missing from this device."
+msgstr "بعض الأماكن غير متوفرة على هذا الجهاز."
+
+#: src/components/places/reference-photos.tsx
+msgid "Take photo"
+msgstr "التقط صورة"
+
+#: src/components/places/reference-photos.tsx
+msgid "Take reference photo"
+msgstr "التقط صورة مرجعية"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in Kept, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "طول أكبر ضلع في الصورة الملتقطة في Kept بالبكسل. تُرفع الصور الصغيرة أسرع. تُصغَّر صور مكتبتك التي يتجاوز أطول أضلاعها 4096 بكسل عند الرفع."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo changed. Review it before replacing it."
+msgstr "تغيّرت الصورة المرجعية. راجعها قبل استبدالها."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo is gone. Choose another photo to replace."
+msgstr "هذه الصورة المرجعية لم تعد موجودة. اختر صورة أخرى لاستبدالها."
+
+#: src/components/things/where-to-look.tsx
+msgid "Based on the most recent recorded placements."
+msgstr "استنادًا إلى أحدث سجلات أماكن الحفظ."
+
+#: src/components/things/where-to-look.tsx
+msgid "Connect to see location history."
+msgstr "اتصل لعرض سجل الأماكن."
+
+#: src/components/things/where-to-look.tsx
+msgid "Exact places"
+msgstr "الأماكن بالتحديد"
+
+#: src/components/things/where-to-look.tsx
+msgid "Group by"
+msgstr "جمّع حسب"
+
+#: src/components/things/where-to-look.tsx
+msgid "Last recorded <0>{date}</0>"
+msgstr "آخر تسجيل <0>{date}</0>"
+
+#: src/components/things/where-to-look.tsx
+msgid "Loading location history…"
+msgstr "جارٍ تحميل سجل الأماكن…"
+
+#: src/components/things/where-to-look.tsx
+msgid "No placement history yet."
+msgstr "لا يوجد سجل للأماكن بعد."
+
+#: src/components/things/where-to-look.tsx
+msgid "No recorded places in this group."
+msgstr "لا توجد أماكن مسجّلة في هذه المجموعة."
+
+#: src/components/things/where-to-look.tsx
+msgid "Recorded placements {count}"
+msgstr "مرّات تسجيل المكان {count}"
+
+#: src/components/things/where-to-look.tsx
+msgid "Rooms and areas"
+msgstr "الغرف والمناطق"
+
+#: src/components/things/where-to-look.tsx
+msgid "Show location history"
+msgstr "اعرض سجل الأماكن"
+
+#: src/components/things/where-to-look.tsx
+msgid "Where to look"
+msgstr "أين تبحث"
+
+#: src/native/destination.tsx
+msgid "Choose a different place."
+msgstr "اختر مكانًا آخر."
+
+#: src/native/destination.tsx
+msgid "Connect to check where this place belongs."
+msgstr "اتصل بالخادم للتحقق من موقع هذا المكان في التسلسل."
+
+#: src/native/label-panel.tsx
+msgid "Scan a place label."
+msgstr "امسح ملصق مكان."
+
+#: src/native/destination.tsx
+msgid "Scan place label"
+msgstr "مسح ملصق مكان"
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this place’s label. Reopen the place and try again."
+msgstr "تعذّر على الخادم تأكيد ملصق هذا المكان. افتح المكان مجددًا وحاول مرة أخرى."
+
+#: src/native/destination.tsx
+msgid "This place is outside the available destinations."
+msgstr "هذا المكان خارج الوجهات المتاحة."
+
+#: src/components/places/reference-photos.tsx
+msgid "Set as cover"
+msgstr "تعيين كصورة غلاف"

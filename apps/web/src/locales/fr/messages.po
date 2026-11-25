@@ -33265,3 +33265,183 @@ msgstr "Photographiez l’endroit où vous avez laissé cet objet. SheepKeep con
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Choisir un article ou un bac"
+
+#: src/components/places/reference-photos.tsx
+msgid "Add photo"
+msgstr "Ajouter une photo"
+
+#: src/native/record.tsx
+#: src/native/rooms.tsx
+msgid "Add sub-location"
+msgstr "Ajouter un sous-emplacement"
+
+#: src/components/display-prefs.tsx
+msgid "Camera photo size"
+msgstr "Taille des photos de l’appareil"
+
+#: src/native/claim-bin-label.tsx
+msgid "Choose existing box"
+msgstr "Choisir une boîte existante"
+
+#: src/components/places/reference-photos.tsx
+msgid "Choose reference photo"
+msgstr "Choisir une photo de référence"
+
+#: src/native/destination.tsx
+msgid "Choose this destination"
+msgstr "Choisir cette destination"
+
+#: src/native/rooms.tsx
+msgid "Create place"
+msgstr "Créer un emplacement"
+
+#: src/native/rooms.tsx
+msgid "Direct items {direct} · All levels {total}"
+msgstr "Ici {direct} · Tous niveaux {total}"
+
+#. placeholder {0}: nameOf(row)
+#: src/native/rooms.tsx
+msgid "Expand or collapse {0}"
+msgstr "Développer ou réduire {0}"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Loading places…"
+msgstr "Chargement des emplacements…"
+
+#: src/native/place-actions.tsx
+msgid "Move contents"
+msgstr "Déplacer le contenu"
+
+#: src/native/rooms.tsx
+msgid "No places to show."
+msgstr "Aucun emplacement à afficher."
+
+#: src/native/destination.tsx
+msgid "Recent destinations"
+msgstr "Destinations récentes"
+
+#: src/components/places/reference-photos.tsx
+msgid "Reference photos"
+msgstr "Photos de référence"
+
+#: src/components/places/reference-photos.tsx
+msgid "Remove photo?"
+msgstr "Supprimer la photo ?"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo"
+msgstr "Remplacer la photo"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo?"
+msgstr "Remplacer la photo ?"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace the current reference photo with your selection."
+msgstr "Remplacer la photo de référence actuelle par celle que vous avez choisie."
+
+#: src/components/places/reference-photos.tsx
+msgid "Review replacement"
+msgstr "Examiner le remplacement"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Some destinations are missing from this device."
+msgstr "Certaines destinations manquent sur cet appareil."
+
+#: src/components/places/reference-photos.tsx
+msgid "Take photo"
+msgstr "Prendre une photo"
+
+#: src/components/places/reference-photos.tsx
+msgid "Take reference photo"
+msgstr "Prendre une photo de référence"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in Kept, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Le côté le plus long d’une photo prise dans Kept, en pixels. Les petites photos se téléversent plus vite. Les photos de votre photothèque de plus de 4096 pixels sur le côté le plus long sont réduites lors de l’envoi."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo changed. Review it before replacing it."
+msgstr "Cette photo de référence a changé. Examinez-la avant de la remplacer."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo is gone. Choose another photo to replace."
+msgstr "Cette photo de référence a disparu. Choisissez une autre photo à remplacer."
+
+#: src/components/things/where-to-look.tsx
+msgid "Based on the most recent recorded placements."
+msgstr "D’après les derniers emplacements enregistrés."
+
+#: src/components/things/where-to-look.tsx
+msgid "Connect to see location history."
+msgstr "Connectez-vous pour consulter l’historique des emplacements."
+
+#: src/components/things/where-to-look.tsx
+msgid "Exact places"
+msgstr "Emplacements précis"
+
+#: src/components/things/where-to-look.tsx
+msgid "Group by"
+msgstr "Regrouper par"
+
+#: src/components/things/where-to-look.tsx
+msgid "Last recorded <0>{date}</0>"
+msgstr "Dernier enregistrement le <0>{date}</0>"
+
+#: src/components/things/where-to-look.tsx
+msgid "Loading location history…"
+msgstr "Chargement de l’historique des emplacements…"
+
+#: src/components/things/where-to-look.tsx
+msgid "No placement history yet."
+msgstr "Aucun historique d’emplacement pour le moment."
+
+#: src/components/things/where-to-look.tsx
+msgid "No recorded places in this group."
+msgstr "Aucun emplacement enregistré dans ce groupe."
+
+#: src/components/things/where-to-look.tsx
+msgid "Recorded placements {count}"
+msgstr "Emplacements enregistrés {count}"
+
+#: src/components/things/where-to-look.tsx
+msgid "Rooms and areas"
+msgstr "Pièces et zones"
+
+#: src/components/things/where-to-look.tsx
+msgid "Show location history"
+msgstr "Afficher l’historique des emplacements"
+
+#: src/components/things/where-to-look.tsx
+msgid "Where to look"
+msgstr "Où chercher"
+
+#: src/native/destination.tsx
+msgid "Choose a different place."
+msgstr "Choisissez un autre lieu."
+
+#: src/native/destination.tsx
+msgid "Connect to check where this place belongs."
+msgstr "Connectez-vous pour vérifier où se trouve ce lieu dans la hiérarchie."
+
+#: src/native/label-panel.tsx
+msgid "Scan a place label."
+msgstr "Scannez l’étiquette d’un lieu."
+
+#: src/native/destination.tsx
+msgid "Scan place label"
+msgstr "Scanner l’étiquette d’un lieu"
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this place’s label. Reopen the place and try again."
+msgstr "Le serveur n’a pas pu confirmer l’étiquette de ce lieu. Rouvrez le lieu et réessayez."
+
+#: src/native/destination.tsx
+msgid "This place is outside the available destinations."
+msgstr "Ce lieu ne fait pas partie des destinations disponibles."
+
+#: src/components/places/reference-photos.tsx
+msgid "Set as cover"
+msgstr "Définir comme photo de couverture"

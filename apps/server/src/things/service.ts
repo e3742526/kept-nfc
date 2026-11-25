@@ -26,7 +26,7 @@ import { notHidden } from '../locations/hidden.js';
 import { lastInCustomOrder, NATURAL, thingNameSql } from '../places/order.js';
 import { allocateShortId } from '../places/short-id.js';
 import { enqueueReindex } from '../search/jobs.js';
-import { STATE_SQL } from '../search/query.js';
+import { STATE_SQL, subtreeThingsCtes } from '../search/query.js';
 import { gateFor } from '../serialize/gates.js';
 import type { FileStorage } from '../storage/blob-store.js';
 import { rackWrite } from '../templates/racks.js';
@@ -477,13 +477,24 @@ export async function insertThing(
   const meterEvent = await createDefaultMeter(ctx, locationId, id, typeId);
 
   const after = await readImage(client, id);
+  // Keep the original breadcrumb if the enclosing box or place moves later.
+  const {
+    rows: [whereRecorded],
+  } = await client.query<{ path: (string | null)[] }>(
+    `SELECT ARRAY(
+       SELECT s.step->>'name'
+         FROM jsonb_array_elements(kept.path_of($1, $2)) WITH ORDINALITY s(step, n)
+        ORDER BY s.n
+     ) AS path`,
+    [where.placeId, where.containerId],
+  );
   for (const e of purchaseEvents) await audited(tx, e);
   await audited(tx, {
     locationId,
     actor: actor(scope),
     action: extras.audit?.action ?? 'thing.create',
     entity: { type: 'thing', id },
-    after: { ...after, ...extras.audit?.after },
+    after: { ...after, ...extras.audit?.after, path: whereRecorded?.path },
     fieldClasses: await classesFor(client, [typeId], [after]),
     rootThingId: id,
     subjects: [id],
@@ -1523,13 +1534,14 @@ export async function listThings(
   client: pg.ClientBase,
   files: FileStorage | null,
   q: ListQuery,
+  subtreeId?: string,
 ): Promise<{
   items: ThingRow[];
   next_cursor: string | null;
   total?: number;
   categoryInheritedIds?: string[];
 }> {
-  const { text, values, count } = await listThingsSql(client, q);
+  const { text, values, count } = await listThingsSql(client, q, subtreeId);
   const { rows } = await client.query<{ id: string; g: string; s: string; inherited?: boolean }>(
     text,
     values,
@@ -1557,6 +1569,7 @@ export async function listThings(
 export async function listThingsSql(
   client: pg.ClientBase,
   q: ListQuery,
+  subtreeId?: string,
 ): Promise<{ text: string; values: unknown[]; count?: { text: string; values: unknown[] } }> {
   const values: unknown[] = [];
   const p = (v: unknown) => {
@@ -1564,6 +1577,10 @@ export async function listThingsSql(
     return `$${values.length}`;
   };
   const where = await thingListWhere(client, q, p);
+  if (subtreeId) {
+    const roots = `${p([subtreeId])}::uuid[]`;
+    where.push(`t.id IN (WITH ${subtreeThingsCtes(roots)} SELECT id FROM inside)`);
+  }
   const { group, sort, desc } = thingListOrder(q);
   const sortCast =
     q.sort === 'name' || q.sort === 'location' ? `::text ${NATURAL}` : '::timestamptz';

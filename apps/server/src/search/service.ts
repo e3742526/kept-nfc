@@ -1,6 +1,7 @@
 import {
   type DerivedState,
   normalize,
+  type PlaceEvidence,
   type SemanticState,
   searchVariants,
   type VendorKind,
@@ -14,6 +15,7 @@ import { invalid } from '../http/errors.js';
 import { filterOf, lowerIds, type Many } from '../http/list-filters.js';
 import { requireMembership } from '../locations/access.js';
 import { shownFilter } from '../locations/hidden.js';
+import { placeEvidenceForPaths } from '../places/reference-evidence.js';
 import { gateFor } from '../serialize/gates.js';
 import type { FileStorage } from '../storage/blob-store.js';
 import { SIGNED_URL_TTL_SECONDS } from '../storage/signed-url.js';
@@ -76,6 +78,7 @@ export type ThingRow = {
   lifecycle: string;
   derivedState: DerivedState[];
   path: PathStep[];
+  placeEvidence?: PlaceEvidence;
   containerThumbUrl: string | null;
   thumbUrl: string | null;
   thumbnailAttachmentId?: string;
@@ -382,9 +385,20 @@ export async function search(
           items.flatMap((h) => [h.thumb_file_id, h.container_thumb_file_id]),
         )
       : new Map();
+    const evidence = await placeEvidenceForPaths(
+      client,
+      files,
+      items.map(({ path }) =>
+        (path ?? []).filter((step) => step.kind === 'place').map(({ id }) => id),
+      ),
+    );
     things = {
       items: await Promise.all(
-        items.map((h) => rowOf(files, keys, h, terms.raw, fused.meaning.has(h.id))),
+        items.map(async (h, index) => {
+          const row = await rowOf(files, keys, h, terms.raw, fused.meaning.has(h.id));
+          const placeEvidence = evidence[index];
+          return placeEvidence ? { ...row, placeEvidence } : row;
+        }),
       ),
       next_cursor: hits.length > limit && last ? encodeCursor({ s: last.s, id: last.id }) : null,
     };

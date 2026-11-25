@@ -1,4 +1,10 @@
-import { ATTACHMENT_ROLES, DERIVED_STATES, SEMANTIC_STATES, VENDOR_KINDS } from '@kept/shared';
+import {
+  ATTACHMENT_ROLES,
+  DERIVED_STATES,
+  PlaceEvidenceSchema,
+  SEMANTIC_STATES,
+  VENDOR_KINDS,
+} from '@kept/shared';
 import { z } from 'zod';
 import { requireScope } from '../auth/http.js';
 import type { KeptApp } from '../http/app.js';
@@ -71,6 +77,7 @@ const ThingRow = z.object({
   lifecycle: z.string(),
   derivedState: z.array(z.enum(DERIVED_STATES)),
   path: z.array(PathStep),
+  placeEvidence: PlaceEvidenceSchema.optional(),
   containerThumbUrl: z.string().nullable(),
   thumbUrl: z.string().nullable(),
   thumbnailAttachmentId: z.uuid().optional(),

@@ -1,6 +1,8 @@
 import {
+  CreateAreaPayload,
   CreateThingPayload,
   KEPT_VERSION,
+  NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
@@ -11,10 +13,12 @@ import {
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { AttachmentView, Page } from '@/api/inventory/types';
+import type { AttachmentView, Page, PlaceView } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import type { Capture, Connection, OriginalMeta, PendingCapture, StorageStats } from './bridge';
+import { forgetPlacePhotos } from './place-photo-cache';
+import { rememberDestination } from './recent-destinations';
 
 export type { Capture, OriginalMeta, PendingCapture, StorageStats };
 
@@ -48,6 +52,9 @@ export type DraftFields = {
   locationId: string;
   boxId?: string;
   placeId?: string;
+  placeCreation?: { parentId: string | null; kindKey: 'room' | 'zone'; description: string | null };
+  placePhoto?: { replaces?: { id: string; rowVersion: number } };
+  dependsOnPlace?: string;
   attachToThingId?: string;
   locationPhoto?: true;
   captureIntent?: 'record' | 'add';
@@ -74,6 +81,7 @@ export const mobileFileLimit = 25 * 1024 * 1024;
 
 /** Failures requiring user action (move target, discard, etc.) rather than silent auto-retry. */
 export const ACTION_REQUIRED_FAILURES = new Set([
+  'parent_dropped',
   'target_trashed',
   'target_missing',
   'not_permitted',
@@ -108,6 +116,8 @@ export const captureCapabilitiesPath = capturePaths.nativeCaptureCapabilities;
 export type CaptureCapabilities = {
   contractVersion: number;
   capturePayloadVersions: number[];
+  placeDescriptions?: true;
+  placeCreationPayloadVersion?: number;
   account: string;
   epoch: string;
 };
@@ -206,10 +216,13 @@ export function draftFields(capture: Capture): StoredFields {
 }
 
 export function canRetarget(entry: PendingCapture): boolean {
-  if (draftFields(entry.capture).review) return false;
+  const fields = draftFields(entry.capture);
+  if (fields.review || fields.placeCreation || fields.placePhoto) return false;
   return (
-    (entry.failure === 'target_trashed' || entry.failure === 'target_missing') &&
-    !draftFields(entry.capture).attachToThingId
+    (entry.failure === 'target_trashed' ||
+      entry.failure === 'target_missing' ||
+      entry.failure === 'parent_dropped') &&
+    !fields.attachToThingId
   );
 }
 
@@ -219,6 +232,20 @@ function base64(bytes: Uint8Array): string {
     binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
   }
   return btoa(binary);
+}
+
+export async function stageOriginal(
+  connection: Connection,
+  adapters: PlatformAdapters,
+  id: string,
+  fileId: string,
+  file: Blob,
+): Promise<void> {
+  if (file.size <= 0 || file.size > mobileFileLimit) throw new Error('Invalid file size');
+  for (let offset = 0; offset < file.size; offset += chunkBytes) {
+    const bytes = new Uint8Array(await file.slice(offset, offset + chunkBytes).arrayBuffer());
+    await adapters.outbox.stage(connection, { id, file: fileId, offset, data: base64(bytes) });
+  }
 }
 
 export async function saveOnPhone(
@@ -244,10 +271,7 @@ export async function saveOnPhone(
   try {
     for (const { file, role } of files) {
       const fileId = newId();
-      for (let offset = 0; offset < file.size; offset += chunkBytes) {
-        const bytes = new Uint8Array(await file.slice(offset, offset + chunkBytes).arrayBuffer());
-        await adapters.outbox.stage(connection, { id, file: fileId, offset, data: base64(bytes) });
-      }
+      await stageOriginal(connection, adapters, id, fileId, file);
       originals.push({
         id: fileId,
         mime: file.type || 'application/octet-stream',
@@ -275,6 +299,148 @@ export class ReplayError extends Error {
   }
 }
 
+async function waitForPlace(connection: Connection, adapters: PlatformAdapters, id: string) {
+  const completions = await getCompletions(connection, adapters);
+  if (completions[id] === 'synced') return;
+  if (completions[id] === 'discarded') throw new ReplayError('parent_dropped');
+  if ((await adapters.outbox.list(connection)).some(({ capture }) => capture.id === id)) {
+    throw new ReplayError('waiting_for_place');
+  }
+  // Terminal entries may age out. A scoped live read can still confirm the parent.
+  const place = await adapters.transport.request<{ id: string }>(
+    connection,
+    inventoryPaths.place(id),
+  );
+  if (place?.id !== id) throw new ReplayError('target_missing');
+}
+
+async function ensurePlaceQueueCompatible(connection: Connection, adapters: PlatformAdapters) {
+  const caps = await ensureCaptureCompatible(connection, adapters);
+  if (caps.placeCreationPayloadVersion !== NATIVE_CREATE_AREA_PAYLOAD_VERSION) {
+    throw new ReplayError('compatibility_hold');
+  }
+}
+
+async function replayPlace(
+  connection: Connection,
+  capture: Capture,
+  fields: StoredFields,
+  adapters: PlatformAdapters,
+) {
+  await ensurePlaceQueueCompatible(connection, adapters);
+  const response = await adapters.transport.request<SyncOpsResponse>(
+    connection,
+    capturePaths.syncOps,
+    {
+      method: 'POST',
+      body: {
+        clientVersion: KEPT_VERSION,
+        ops: [
+          {
+            clientVersion: KEPT_VERSION,
+            payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
+            clientId: capture.id,
+            idempotencyKey: capture.id,
+            op: 'create_area',
+            takenAt: capture.takenAt,
+            locationId: fields.locationId,
+            ...(fields.dependsOnPlace ? { dependsOn: [fields.dependsOnPlace] } : {}),
+            payload: CreateAreaPayload.parse({
+              id: capture.id,
+              name: fields.name,
+              ...fields.placeCreation,
+            }),
+          },
+        ],
+      },
+    },
+  );
+  const result = response.results.find(({ clientId }) => clientId === capture.id);
+  if (
+    result?.outcome !== 'applied' ||
+    result.idempotencyKey !== capture.id ||
+    result.entity?.type !== 'place' ||
+    result.entity.id !== capture.id
+  ) {
+    throw new ReplayError(result?.reason ?? 'needs_review');
+  }
+  await adapters.outbox.complete(connection, capture.id);
+}
+
+async function replayPlacePhoto(
+  connection: Connection,
+  capture: Capture,
+  fields: StoredFields,
+  adapters: PlatformAdapters,
+) {
+  await ensurePlaceQueueCompatible(connection, adapters);
+  const original = capture.files[0];
+  const placeId = fields.placeId;
+  if (!placeId || !original || capture.files.length !== 1) throw new ReplayError('validation');
+  const place = await adapters.transport
+    .request<PlaceView>(connection, inventoryPaths.place(placeId))
+    .catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 404)
+        throw new ReplayError('target_missing');
+      throw error;
+    });
+  if (place?.id !== placeId || place.locationId !== fields.locationId)
+    throw new ReplayError('target_missing');
+  const previous = fields.placePhoto?.replaces;
+  const existing = fields.attemptId && place.attachments.find(({ id }) => id === fields.attemptId);
+  if (existing) {
+    if (existing.file?.sha256 !== original.sha256) throw new ReplayError('checksum_mismatch');
+    await forgetPlacePhotos(connection, adapters, placeId).catch(() => {});
+    await adapters.outbox.complete(connection, capture.id);
+    return;
+  }
+  if (
+    previous &&
+    !place.attachments.some(
+      ({ id, rowVersion }) => id === previous.id && rowVersion === previous.rowVersion,
+    )
+  ) {
+    throw new ReplayError('precondition_failed');
+  }
+  const attemptId = fields.attemptId ?? newId();
+  if (!fields.attemptId)
+    await adapters.outbox.retarget(
+      connection,
+      capture.id,
+      JSON.stringify({ ...fields, attemptId }),
+    );
+  const uploaded = await adapters.transport.uploadOriginal(connection, {
+    id: capture.id,
+    file: original.file.id,
+    location: fields.locationId,
+    uploadId: attemptId,
+    placePhoto: true,
+  });
+  if (uploaded.sha256 !== original.sha256 || uploaded.bytes !== original.file.bytes)
+    throw new ReplayError('checksum_mismatch');
+  const attachment = await adapters.transport.request<AttachmentView>(
+    connection,
+    inventoryPaths.attachments,
+    {
+      method: 'POST',
+      idempotencyKey: attemptId,
+      ...(previous ? { ifMatch: previous.rowVersion } : {}),
+      body: {
+        id: attemptId,
+        locationId: fields.locationId,
+        subject: { placeId },
+        role: 'photo',
+        fileId: uploaded.id,
+        ...(previous ? { replacesAttachmentId: previous.id } : {}),
+      },
+    },
+  );
+  if (attachment?.id !== attemptId || attachment.file?.id !== uploaded.id)
+    throw new ReplayError('attachments_unconfirmed');
+  await forgetPlacePhotos(connection, adapters, placeId).catch(() => {});
+  await adapters.outbox.complete(connection, capture.id);
+}
+
 export async function replayCapture(
   connection: Connection,
   capture: Capture,
@@ -283,6 +449,9 @@ export async function replayCapture(
   // Contract v1: negotiate before uploading files or submitting capture mutations.
   const fields = draftFields(capture);
   if (fields.review && !fields.review.accepted) return;
+  if (fields.dependsOnPlace) await waitForPlace(connection, adapters, fields.dependsOnPlace);
+  if (fields.placeCreation) return replayPlace(connection, capture, fields, adapters);
+  if (fields.placePhoto) return replayPlacePhoto(connection, capture, fields, adapters);
   const reviewed = fields.review?.entries.filter((entry) => entry.include);
   if (reviewed && !reviewed.length) throw new ReplayError('validation');
   const required = fields.locationPhoto
@@ -352,6 +521,7 @@ export async function replayCapture(
     op: 'create_thing' as const,
     takenAt: fields.review?.acceptedAt ?? capture.takenAt,
     locationId: fields.locationId,
+    ...(fields.dependsOnPlace ? { dependsOn: [fields.dependsOnPlace] } : {}),
     payload: CreateThingPayload.parse({
       id: entry.id,
       batchId: fields.batchId,
@@ -472,6 +642,9 @@ export async function replayCapture(
   if (failed) throw new ReplayError(failed);
 
   await adapters.outbox.complete(connection, capture.id);
+  const destinationId = fields.boxId ?? fields.placeId;
+  if (destinationId && !fields.attachToThingId)
+    void rememberDestination(connection, adapters, destinationId);
 }
 
 function classifyFailure(error: unknown): string {
@@ -501,6 +674,7 @@ export async function syncOutbox(
       if (error instanceof ApiError && error.status === 0) throw error;
       if (isAuthRefusal(error) || isRestoreEpochMismatch(error)) throw error;
       const reason = classifyFailure(error);
+      if (reason === 'waiting_for_place') continue;
       await adapters.outbox.failed(connection, entry.capture.id, reason);
       if (error instanceof ApiError && (error.status >= 500 || error.status === 429)) {
         throw error;
@@ -551,6 +725,7 @@ export async function retargetCapture(
     ...fields,
     boxId: destination.id,
     placeId: undefined,
+    dependsOnPlace: undefined,
     locationId: destination.locationId,
     attemptId: newId(),
     uploadIds,

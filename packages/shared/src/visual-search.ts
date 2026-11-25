@@ -30,11 +30,22 @@ export const VisualSearchCoverageSchema = z.object({
 });
 export type VisualSearchCoverage = z.infer<typeof VisualSearchCoverageSchema>;
 
+const EvidencePlaceSchema = z.object({ placeId: z.uuid(), placeName: z.string() });
+export const PlaceEvidenceSchema = z.object({
+  description: EvidencePlaceSchema.extend({ text: z.string() }).optional(),
+  referencePhoto: EvidencePlaceSchema.extend({
+    thumbUrl: z.string(),
+    rotation: z.number(),
+  }).optional(),
+});
+export type PlaceEvidence = z.infer<typeof PlaceEvidenceSchema>;
+
 export const VisualSearchMatchSchema = z.object({
   thingId: z.uuid(),
   locationId: z.uuid(),
   name: z.string(),
   path: z.array(z.object({ id: z.uuid(), name: z.string() })),
+  placeEvidence: PlaceEvidenceSchema.optional(),
   attachmentId: z.uuid(),
   fileId: z.uuid(),
   capturedAt: z.iso.datetime(),

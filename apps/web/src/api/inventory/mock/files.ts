@@ -33,6 +33,8 @@ export function filesRoutes(state: MockState): MockRoute[] {
     return m;
   };
 
+  const applied = new Map<string, AttachmentView>();
+
   return [
     route('PUT', p.file(':id'), ({ params, query, headers }) => {
       const locationId = query.get('locationId') ?? '';
@@ -81,22 +83,51 @@ export function filesRoutes(state: MockState): MockRoute[] {
       return { url: PIXEL, expiresAt: new Date(Date.now() + 300_000).toISOString() };
     }),
 
-    route('POST', p.attachments, ({ body }) => {
+    route('POST', p.attachments, ({ body, headers }) => {
       const b = body as CreateAttachmentBody;
       if (!access().visible(b.locationId)) return notFound();
       if (!access().canWrite(b.locationId)) return forbidden();
+      const key = headers['idempotency-key'];
+      const replay = key ? applied.get(key) : undefined;
+      if (replay) return reply(201, replay);
+      const file = b.fileId ? (inv().files[b.fileId] ?? null) : null;
+      const placeId = 'placeId' in b.subject ? b.subject.placeId : undefined;
+      const replacement = b.replacesAttachmentId
+        ? inv().attachments.find((a) => a.id === b.replacesAttachmentId)
+        : undefined;
+      if (b.replacesAttachmentId) {
+        if (
+          !replacement ||
+          replacement.locationId !== b.locationId ||
+          !placeId ||
+          !('placeId' in replacement.subject) ||
+          replacement.subject.placeId !== placeId
+        )
+          return notFound();
+        const stale = versionError(headers, replacement, ['photo']);
+        if (stale) return reply(stale.status, stale.body);
+        if (
+          b.role !== 'photo' ||
+          !file?.mime.startsWith('image/') ||
+          replacement.role !== 'photo' ||
+          !replacement.file?.mime.startsWith('image/')
+        )
+          return err(400, 'validation', 'Only place reference photos can be replaced.');
+      }
       const view: AttachmentView & { locationId: string } = {
         id: b.id ?? newId(),
         role: b.role,
-        name: b.name?.trim() || null,
-        sort: b.sort ?? 0,
-        file: b.fileId ? (inv().files[b.fileId] ?? null) : null,
+        name: replacement ? (replacement.name ?? null) : b.name?.trim() || null,
+        sort: replacement?.sort ?? b.sort ?? 0,
+        file,
+        ...(placeId ? { canManage: true } : {}),
         url: b.url ?? null,
         subject: b.subject,
         createdBy: { displayName: state.me.user.displayName },
         rowVersion: 1,
         locationId: b.locationId,
       };
+      if (replacement) inv().attachments = inv().attachments.filter((a) => a.id !== replacement.id);
       inv().attachments.push(view);
       // A warranty's or claim's document, a loan's condition photo (step 4, T20).
       inv().step4?.attach(view);
@@ -120,6 +151,7 @@ export function filesRoutes(state: MockState): MockRoute[] {
           if (th.purchase?.purchaseId === purchaseId) th.purchase.receipts.push(plain);
       }
       const { locationId: _l, ...out } = view;
+      if (key) applied.set(key, out);
       return reply(201, out);
     }),
 

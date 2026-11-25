@@ -697,6 +697,82 @@ describe('search that changes data between cases', () => {
     expect((await find(ann, { q: 'fuse' })).things.items[0]?.containerThumbUrl).toBeNull();
   });
 
+  it('finds scoped place evidence independently along the path of an item inside a bin', async () => {
+    const vic = await person(t, db, 'vic');
+    await join(db, home.id, vic.userId, 'viewer');
+    const bob = await person(t, db, 'bob');
+    const garage = await place(home, 'Reference garage');
+    const shelf = await place(home, 'Reference shelf', garage);
+    await own('UPDATE public.places SET description = $2 WHERE id = $1', [
+      shelf,
+      'Second shelf from the floor',
+    ]);
+    const bin = await thing(home, { name: 'Fuse bin', placeId: shelf, typeKey: 'box_bin' });
+    const item = await thing(home, { name: 'Ceramic fuse', containerId: bin });
+    const file = newId();
+    const key = `d/${file}/thumb.jpg`;
+    await own(
+      `INSERT INTO public.files (id, location_id, storage_key, sha256, bytes, mime, class,
+                                 derivative_state, created_by)
+       VALUES ($1, $2, $3, $4, 10, 'image/jpeg', 'photo', 'ready', $5)`,
+      [file, home.id, `f/${home.id}/${file}`, '3'.repeat(64), ann.userId],
+    );
+    await own(
+      `INSERT INTO public.file_derivatives (file_id, variant, location_id, storage_key, width, height, bytes)
+       VALUES ($1, 'thumb', $2, $3, 10, 10, 5)`,
+      [file, home.id, key],
+    );
+    await own(
+      `INSERT INTO public.attachments (location_id, file_id, place_id, role, created_by, photo_rotation, photo_archived_at)
+       VALUES ($1, $2, $3, 'photo', $5, 90, NULL), ($1, $2, $4, 'photo', $5, 0, now())`,
+      [home.id, file, garage, shelf, ann.userId],
+    );
+    const storage = {
+      blobs: { signedUrl: async (name: string) => `https://files.test/${name}` },
+    } as unknown as FileStorage;
+    const load = (person: Person, filter: string) => {
+      const scope = { userId: person.userId, mfa: false };
+      return withScope(db.pools.app, scope, (tx, c) =>
+        search(tx, c, scope, storage, { placeId: [filter], q: 'ceramic fuse' }),
+      );
+    };
+    for (const filter of [garage, shelf, bin]) {
+      const rows = (await load(vic, filter)).things.items;
+      expect(rows).toMatchObject([
+        {
+          id: item,
+          path: [{ id: garage }, { id: shelf }, { id: bin }],
+          placeEvidence: {
+            description: {
+              placeId: shelf,
+              placeName: 'Reference shelf',
+              text: 'Second shelf from the floor',
+            },
+            referencePhoto: {
+              placeId: garage,
+              placeName: 'Reference garage',
+              thumbUrl: `https://files.test/${key}`,
+              rotation: 90,
+            },
+          },
+        },
+      ]);
+    }
+    expect((await load(bob, garage)).things.items).toEqual([]);
+    expect((await find(vic, { q: 'ceramic fuse', placeId: garage })).things.items).toMatchObject([
+      {
+        id: item,
+        placeEvidence: {
+          description: {
+            placeId: shelf,
+            placeName: 'Reference shelf',
+            text: 'Second shelf from the floor',
+          },
+        },
+      },
+    ]);
+  });
+
   it('signs the thumbnail the derivative row names: a copy shares its source blob, a PDF has none', async () => {
     // A photo a cross-account move copied here: the copy's rows name the source's blobs,
     // not keys made from the copy's own id.

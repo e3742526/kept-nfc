@@ -51,6 +51,7 @@ import {
   rowOf,
   type StoredThing,
   tagGroupKey,
+  thingPath,
   versionError,
   viewOf,
 } from './db';
@@ -648,16 +649,30 @@ export function thingsRoutes(state: MockState): MockRoute[] {
         if ('containerId' in b.to && isOwnDescendant(t.id, b.to.containerId))
           return err(409, 'conflict', "Something can't go inside itself.");
         const from = { placeId: t.placeId, containerId: t.containerId, locationId: t.locationId };
+        const oldPath = thingPath(inv(), t).map(({ name }) => name);
+        moveInto(t, b.to);
+        t.locationId = target;
+        t.lastSeenAt = now();
+        const path = thingPath(inv(), t).map(({ name }) => name);
         recordEvent(inv(), me(), {
           action: 'thing.move',
           entity: { type: 'thing', id: t.id },
           locationId: target,
           name: t.name ?? '',
+          diff: {
+            ...(from.placeId !== t.placeId
+              ? { place_id: { before: from.placeId, after: t.placeId, class: 'plain' } }
+              : {}),
+            ...(from.containerId !== t.containerId
+              ? { container_id: { before: from.containerId, after: t.containerId, class: 'plain' } }
+              : {}),
+            path: { before: oldPath, after: path, class: 'plain' },
+            ...(b.intent
+              ? { placement_intent: { before: null, after: b.intent, class: 'plain' } }
+              : {}),
+          },
           undo: () => Object.assign(t, from),
         });
-        moveInto(t, b.to);
-        t.locationId = target;
-        t.lastSeenAt = now();
         moved.push(t.id);
       }
       return { moved };

@@ -1,4 +1,4 @@
-import { newId } from '@kept/shared';
+import { newId, type SnapshotPage } from '@kept/shared';
 import type { LightMyRequestResponse } from 'fastify';
 import type pg from 'pg';
 import { v7 } from 'uuid';
@@ -15,6 +15,7 @@ import {
   type RecordedJob,
 } from '../../test/people.js';
 import { ownerTx } from '../../test/tenancy.js';
+import { builtinType, createThing } from '../../test/things.js';
 import { withScope } from '../db/scope.js';
 import { allocateShortId } from './short-id.js';
 
@@ -212,6 +213,7 @@ describe('GET /api/v1/locations/:locationId/places (the tree)', () => {
         id: study,
         parentId: null,
         name: 'Study',
+        description: null,
         kindKey: 'room',
         icon: null,
         sort: 0,
@@ -239,13 +241,117 @@ describe('GET /api/v1/locations/:locationId/places (the tree)', () => {
   });
 });
 
+describe('GET /api/v1/locations/:locationId/destinations', () => {
+  it('returns the live hierarchy, including boxes inside other boxes, to location members', async () => {
+    const garage = await place(home, 'Hierarchical garage');
+    const shelf = await place(home, 'Shelf 1', garage, 'zone');
+    const upper = await place(home, 'Upper shelf', shelf, 'zone');
+    const box = await thing(home, 'Electrical bin', { placeId: upper }, { typeKey: 'box_bin' });
+    const inner = await thing(home, 'Cable box', { containerId: box }, { typeKey: 'box_bin' });
+    await thing(home, 'USB cable', { containerId: inner });
+    const url = `/api/v1/locations/${home.id}/destinations`;
+    expect(await ok(api(vic, 'GET', url))).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: garage, parentId: null, kind: 'place' }),
+        expect.objectContaining({ id: shelf, parentId: garage, kind: 'place' }),
+        expect.objectContaining({ id: upper, parentId: shelf, kind: 'place' }),
+        expect.objectContaining({ id: box, parentId: upper, kind: 'box' }),
+        expect.objectContaining({ id: inner, parentId: box, kind: 'box' }),
+      ]),
+    );
+    expect((await api(bob, 'GET', url)).statusCode).toBe(404);
+  });
+
+  it('keeps the same descendants in the web inventory and native snapshot after moving a deep bin', async () => {
+    const location = await createLocation(ola, 'Hierarchy test location');
+    await join(db, location.id, max.userId, 'member');
+    await join(db, location.id, vic.userId, 'viewer');
+    const create = (name: string, parentId?: string) =>
+      ok<View>(
+        api(max, 'POST', `/api/v1/locations/${location.id}/places`, {
+          body: { name, kindKey: parentId ? 'zone' : 'room', ...(parentId ? { parentId } : {}) },
+        }),
+        201,
+      );
+    const garage = await create('Tool garage');
+    const shelf = await create('Tool shelf', garage.id);
+    const upper = await create('Upper tool shelf', shelf.id);
+    const shed = await create('Tool shed');
+    const mower = await createThing(t, max, location, { name: 'Mower', placeId: garage.id });
+    const drill = await createThing(t, max, location, { name: 'Drill', placeId: shelf.id });
+    const pliers = await createThing(t, max, location, { name: 'Pliers', placeId: upper.id });
+    const bin = await createThing(t, max, location, {
+      name: 'Electrical bin',
+      placeId: upper.id,
+      typeId: await builtinType(db, 'box_bin'),
+    });
+    const cable = await createThing(t, max, location, { name: 'USB cable', containerId: bin.id });
+
+    async function verify(cablePath: string[], garageIds: string[], shedIds: string[]) {
+      type Item = { id: string; path: { id: string }[] };
+      const detail = await ok<Item>(api(vic, 'GET', `/api/v1/things/${cable.id}`));
+      expect(detail.id).toBe(cable.id);
+      expect(detail.path.map(({ id }) => id)).toEqual(cablePath);
+      const snapshot = await ok<SnapshotPage>(api(vic, 'GET', '/api/v1/sync/snapshot?limit=1000'));
+      expect(snapshot.complete).toBe(true);
+      const parents = new Map([
+        ...snapshot.changes.places.map(({ id, parentId }) => [id, parentId] as const),
+        ...snapshot.changes.things.map(
+          ({ id, placeId, containerId }) => [id, containerId ?? placeId] as const,
+        ),
+      ]);
+      const nativePath: string[] = [];
+      let step = parents.get(cable.id);
+      while (step && !nativePath.includes(step)) {
+        nativePath.unshift(step);
+        step = parents.get(step);
+      }
+      expect(nativePath).toEqual(cablePath);
+      expect((await view(vic, garage.id)).counts).toEqual({ places: 1, things: 1 });
+      const direct = await ok<{ things: { items: Item[] } }>(
+        api(vic, 'GET', `/api/v1/places/${garage.id}/contents`),
+      );
+      expect(direct.things.items.map(({ id }) => id)).toEqual([mower.id]);
+      const recursive = async (id: string) => {
+        const { things } = await ok<{ things: { items: Item[] } }>(
+          api(vic, 'GET', `/api/v1/search?kind=things&placeId=${id}`),
+        );
+        return things.items.map(({ id: item }) => item).sort();
+      };
+      expect(await recursive(garage.id)).toEqual([...garageIds].sort());
+      expect(await recursive(shed.id)).toEqual([...shedIds].sort());
+      expect(await recursive(bin.id)).toEqual([cable.id]);
+    }
+
+    await verify(
+      [garage.id, shelf.id, upper.id, bin.id],
+      [mower.id, drill.id, pliers.id, bin.id, cable.id],
+      [],
+    );
+    await ok(
+      api(max, 'POST', '/api/v1/things/move', {
+        ifMatch: Number(bin.rowVersion),
+        body: { thingIds: [bin.id], to: { placeId: shed.id } },
+      }),
+    );
+    await verify([shed.id, bin.id], [mower.id, drill.id, pliers.id], [bin.id, cable.id]);
+    expect(await thingRow(cable.id)).toMatchObject({ id: cable.id, container_id: bin.id });
+  });
+});
+
 describe('POST /api/v1/locations/:locationId/places', () => {
   // catalogue: POST /api/v1/locations/:locationId/places
   it('creates a place as a member and audits it', async () => {
     const id = v7();
     const created = await ok<View>(
       api(max, 'POST', `/api/v1/locations/${home.id}/places`, {
-        body: { id, name: '  Garage  ', kindKey: 'room', icon: 'lucide:warehouse' },
+        body: {
+          id,
+          name: '  Garage  ',
+          description: '  Lawn equipment  ',
+          kindKey: 'room',
+          icon: 'lucide:warehouse',
+        },
       }),
       201,
     );
@@ -254,6 +360,7 @@ describe('POST /api/v1/locations/:locationId/places', () => {
       locationId: home.id,
       parentId: null,
       name: 'Garage',
+      description: 'Lawn equipment',
       kindKey: 'room',
       icon: 'lucide:warehouse',
       isUnplaced: false,
@@ -272,7 +379,10 @@ describe('POST /api/v1/locations/:locationId/places', () => {
     });
     const [event] = await auditEvents(home.id, 'place.create');
     expect(event).toMatchObject({ actor_type: 'user', actor_id: max.userId });
-    expect(event?.diff).toMatchObject({ name: { before: null, after: 'Garage', class: 'plain' } });
+    expect(event?.diff).toMatchObject({
+      name: { before: null, after: 'Garage', class: 'plain' },
+      description: { after: 'Lawn equipment' },
+    });
 
     const child = await ok<View>(
       api(max, 'POST', `/api/v1/locations/${home.id}/places`, {
@@ -281,6 +391,43 @@ describe('POST /api/v1/locations/:locationId/places', () => {
       201,
     );
     expect(child.path.map((s) => s.name)).toEqual(['Garage', 'Pegboard']);
+  });
+
+  it('round trips descriptions through tree search, versioned edits and undo', async () => {
+    const id = await place(home, 'Workshop');
+    const url = `/api/v1/places/${id}`;
+    const first = await view(max, id);
+    expect(first).toMatchObject({ description: null });
+    const edit = await api(max, 'PATCH', url, {
+      ifMatch: first.rowVersion,
+      body: { description: '  welding equipment  ' },
+    });
+    expect(edit.statusCode, edit.body).toBe(200);
+    expect(edit.json()).toMatchObject({ description: 'welding equipment' });
+    const renamed = await ok<View>(
+      api(max, 'PATCH', url, {
+        ifMatch: edit.json().rowVersion,
+        body: { name: 'Garage workshop' },
+      }),
+    );
+    expect(renamed).toMatchObject({ description: 'welding equipment' });
+    const tree = await ok<{ places: View[] }>(
+      api(max, 'GET', `/api/v1/locations/${home.id}/places`),
+    );
+    expect(tree.places).toContainEqual(
+      expect.objectContaining({ id, description: 'welding equipment' }),
+    );
+    const search = await ok<{ places: View[] }>(api(max, 'GET', '/api/v1/search?q=welding'));
+    expect(search.places).toContainEqual(expect.objectContaining({ id }));
+    const cleared = await api(max, 'PATCH', url, {
+      ifMatch: renamed.rowVersion,
+      body: { description: '   ' },
+    });
+    expect(cleared.statusCode, cleared.body).toBe(200);
+    expect(cleared.json()).toMatchObject({ description: null });
+    const event = cleared.headers['x-kept-audit-event'];
+    await ok(api(max, 'POST', `/api/v1/audit/${event}/undo`, { body: {} }));
+    expect(await view(max, id)).toMatchObject({ description: 'welding equipment' });
   });
 
   it('refuses viewers (403), outsiders (404), and bad input', async () => {
@@ -549,7 +696,7 @@ describe('PATCH /api/v1/places/:id', () => {
     );
     expect(after).toMatchObject({ name: 'Loft', icon: 'lucide:house' });
     expect(after.rowVersion).toBeGreaterThan(before.rowVersion);
-    const [event] = await auditEvents(home.id, 'place.update');
+    const event = (await auditEvents(home.id, 'place.update')).at(-1);
     expect(event?.diff).toMatchObject({
       name: { before: 'Attic', after: 'Loft' },
       icon: { before: null, after: 'lucide:house' },
@@ -1138,6 +1285,40 @@ describe('POST /api/v1/places/:id/label (labels module)', () => {
     );
     expect(labels).toHaveLength(1);
     expect((await view(vic, p)).shortCode).toBe(first.code);
+  });
+
+  it('resolves a place’s issued and registered legacy labels after rename and reparenting', async () => {
+    const room = await place(home, 'Label garage');
+    const shelf = await place(home, 'Label shelf');
+    const { code } = await ok<{ code: string }>(api(max, 'POST', `/api/v1/places/${shelf}/label`));
+    const url = `https://kept.example.com/l/${code}`;
+    const alias = 'GARAGE-SHELF-LABEL';
+    await own(
+      `INSERT INTO public.legacy_codes (location_id, source, source_collection, code, place_id)
+       VALUES ($1, 'csv', '', $2, $3)`,
+      [home.id, alias, shelf],
+    );
+    const target = { outcome: 'open', target: { kind: 'place', id: shelf, locationId: home.id } };
+    const scan = (as: Person, text: string) =>
+      ok(
+        api(as, 'POST', '/api/v1/scan/resolve', {
+          body: { text, format: 'qr_code' },
+        }),
+      );
+    expect(await scan(vic, url)).toEqual(target);
+    expect(await scan(vic, alias)).toEqual(target);
+    const before = await view(max, shelf);
+    const updated = await ok<View>(
+      api(max, 'PATCH', `/api/v1/places/${shelf}`, {
+        ifMatch: before.rowVersion,
+        body: { name: 'Upper shelf', parentId: room },
+      }),
+    );
+    expect(updated.path.map((step) => step.name)).toEqual(['Label garage', 'Upper shelf']);
+    expect(updated.shortCode).toBe(code);
+    expect(await scan(vic, url)).toEqual(target);
+    expect(await scan(vic, alias)).toEqual(target);
+    expect(await scan(bob, url)).toEqual({ outcome: 'not_in_your_kept' });
   });
 
   it('is 403 for a viewer, 404 for an outsider, and 409 module_off with labels off', async () => {

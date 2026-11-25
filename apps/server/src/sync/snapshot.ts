@@ -307,6 +307,7 @@ async function readPlaces({ client, out }: PageContext, q: Slice): Promise<Read>
     location_id: string;
     parent_id: string | null;
     name: string;
+    description: string | null;
     kind_key: string;
     icon: string | null;
     is_unplaced: boolean;
@@ -315,7 +316,7 @@ async function readPlaces({ client, out }: PageContext, q: Slice): Promise<Read>
     child_order: ChildOrder;
     deleted: boolean;
   }>(
-    `SELECT p.id, p.location_id, p.parent_id, p.name, p.kind_key, p.icon, p.is_unplaced, p.sort,
+    `SELECT p.id, p.location_id, p.parent_id, p.name, p.description, p.kind_key, p.icon, p.is_unplaced, p.sort,
             p.created_at, p.child_order, p.deleted_at IS NOT NULL AS deleted
        FROM public.places p
       WHERE ${w.where}
@@ -329,6 +330,7 @@ async function readPlaces({ client, out }: PageContext, q: Slice): Promise<Read>
       locationId: r.location_id,
       parentId: r.parent_id,
       name: r.name,
+      description: r.description,
       kindKey: r.kind_key,
       icon: r.icon,
       isUnplaced: r.is_unplaced,

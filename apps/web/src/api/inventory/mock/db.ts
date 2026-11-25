@@ -262,6 +262,7 @@ export function placeNodeOf(inv: InventoryState, p: StoredPlace): PlaceNode {
     id: p.id,
     parentId: p.parentId,
     name: p.name,
+    description: p.description ?? null,
     kindKey: p.kindKey,
     icon: p.icon,
     sort: p.sort,

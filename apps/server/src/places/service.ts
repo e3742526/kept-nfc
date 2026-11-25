@@ -56,6 +56,12 @@ const actor = (scope: Scope) => actorOf(scope);
 const undoableUntil = () => new Date(Date.now() + 7 * 24 * 3600_000 - 60_000);
 
 export const NAME = z.string().trim().min(1).max(120);
+const Description = z
+  .string()
+  .trim()
+  .max(500)
+  .transform((value) => value || null)
+  .nullable();
 export const KIND_KEY = z.string().regex(/^[a-z][a-z0-9_]{0,39}$/);
 export const ICON = z.string().regex(/^(lucide|tabler|kept):[a-z0-9-]+$/);
 
@@ -106,6 +112,7 @@ export const CreatePlaceBody = z.object({
   id: z.uuid().optional(),
   parentId: z.uuid().nullable().optional(),
   name: NAME,
+  description: Description.optional(),
   kindKey: KIND_KEY,
   icon: ICON.optional(),
   /** #372: a room's real size, in whole centimetres: it goes on the location's map with it, in
@@ -149,15 +156,24 @@ export async function createPlace(
   await c.client.query(
     // Siblings read A to Z (places/order.ts), so `sort` stays 0, except for a floor: floors
     // keep a position, and older ones hold 0, 1, 2…, so a new floor goes after its sibling floors.
-    `INSERT INTO public.places (id, location_id, parent_id, name, kind_key, icon, sort, created_by)
+    `INSERT INTO public.places (id, location_id, parent_id, name, kind_key, icon, sort, created_by, description)
      VALUES ($1, $2, $3, $4, $5, $6,
              CASE WHEN $5 = 'floor' THEN
                (SELECT coalesce(max(s.sort) + 1, 0) FROM public.places s
                  WHERE s.location_id = $2 AND s.parent_id IS NOT DISTINCT FROM $3::uuid
                    AND s.kind_key = 'floor' AND s.deleted_at IS NULL)
              ELSE 0 END,
-             $7)`,
-    [id, locationId, parentId, body.name, body.kindKey, body.icon ?? null, c.scope.userId],
+             $7, $8)`,
+    [
+      id,
+      locationId,
+      parentId,
+      body.name,
+      body.kindKey,
+      body.icon ?? null,
+      c.scope.userId,
+      body.description ?? null,
+    ],
   );
   await lastInCustomOrder(c.client, id);
   const created = await requirePlace(c.client, id);
@@ -171,6 +187,7 @@ export async function createPlace(
     entity: { type: 'place', id },
     after: {
       name: created.name,
+      description: created.description,
       parent_id: created.parentId,
       kind_key: created.kindKey,
       icon: created.icon,
@@ -189,6 +206,7 @@ export async function createPlace(
 export const UpdatePlaceBody = z
   .object({
     name: NAME.optional(),
+    description: Description.optional(),
     kindKey: KIND_KEY.optional(),
     icon: ICON.nullable().optional(),
     sort: z.number().int().min(0).max(1_000_000).optional(),
@@ -319,6 +337,7 @@ export async function updatePlace(
     sets.push(`${column} = $${values.length}${cast}`);
   };
   if (body.name !== undefined) put('name', body.name);
+  if (body.description !== undefined) put('description', body.description);
   if (body.kindKey !== undefined) put('kind_key', body.kindKey);
   if (body.icon !== undefined) put('icon', body.icon);
   if (body.sort !== undefined) put('sort', body.sort);
@@ -336,6 +355,7 @@ export async function updatePlace(
   const image = (p: PlaceRow) => {
     const out: Record<string, unknown> = {
       name: p.name,
+      description: p.description,
       kind_key: p.kindKey,
       icon: p.icon,
       sort: p.sort,

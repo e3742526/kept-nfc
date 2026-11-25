@@ -1,11 +1,13 @@
 import { createHash } from 'node:crypto';
 import {
+  CreateAreaPayload,
   CreateThingPayload,
   ErrorCode,
   idTimestamp,
   isV7,
   MIN_PAYLOAD_VERSION,
   NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
@@ -41,8 +43,9 @@ export const PAYLOAD_WINDOW: PayloadWindow = Object.freeze({
   upgraders: UPGRADERS,
 });
 
-/** Identifies a native capture envelope. `parsedPayload` checks its required flags. */
-export function usesNativeCaptureVersion(item: Pick<QueueItem, 'op' | 'payloadVersion'>): boolean {
+/** Identifies an operation that requires the native account and restore context. */
+export function usesNativePayloadVersion(item: Pick<QueueItem, 'op' | 'payloadVersion'>): boolean {
+  if (item.op === 'create_area') return item.payloadVersion === NATIVE_CREATE_AREA_PAYLOAD_VERSION;
   return (
     item.op === 'create_thing' &&
     [
@@ -69,7 +72,7 @@ export function batchRefusal(
       minPayloadVersion: window.min,
     });
   }
-  if (ops.some((op) => op.payloadVersion > PAYLOAD_VERSION && !usesNativeCaptureVersion(op))) {
+  if (ops.some((op) => op.payloadVersion > PAYLOAD_VERSION && !usesNativePayloadVersion(op))) {
     return new AppError(ErrorCode.server_outdated, 409, undefined, {
       payloadVersion: PAYLOAD_VERSION,
     });
@@ -77,14 +80,18 @@ export function batchRefusal(
   return null;
 }
 
-/** Upgrade and validate an ordinary payload, or validate native capture v2 directly. */
+/** Upgrade and validate an ordinary payload, or validate a negotiated native payload directly. */
 export function parsedPayload<K extends OpKind>(
   op: K,
   payloadVersion: number,
   payload: unknown,
   window: PayloadWindow = PAYLOAD_WINDOW,
 ): OpPayload<K> | null {
-  if (usesNativeCaptureVersion({ op, payloadVersion })) {
+  if (usesNativePayloadVersion({ op, payloadVersion })) {
+    if (op === 'create_area') {
+      const parsed = CreateAreaPayload.safeParse(payload);
+      return parsed.success ? (parsed.data as OpPayload<K>) : null;
+    }
     const parsed = CreateThingPayload.safeParse(payload);
     if (!parsed.success) return null;
     if (payloadVersion === NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION) {
@@ -114,6 +121,7 @@ export function parsedPayload<K extends OpKind>(
   }
   const parsed = parseOpPayload(op, current);
   return parsed.success &&
+    (op !== 'create_area' || !('description' in parsed.data)) &&
     (op !== 'create_thing' ||
       (!('captureIntent' in parsed.data) &&
         !('skipServerSuggestions' in parsed.data) &&

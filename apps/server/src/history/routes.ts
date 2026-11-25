@@ -1,7 +1,9 @@
+import { PlacementHistorySchema } from '@kept/shared';
 import { z } from 'zod';
 import type { KeptApp } from '../http/app.js';
 import type { InventoryDeps } from '../http/routes.js';
 import { scopedRead } from '../http/write.js';
+import { placementHistory } from './placement.js';
 import {
   ActivityQuery,
   ActorsSchema,
@@ -46,6 +48,15 @@ export async function historyRoutes(app: KeptApp, deps: InventoryDeps): Promise<
     (req) =>
       scopedRead(pools, req, (tx, client, scope) =>
         thingHistory(tx, client, scope, req.params.id.toLowerCase(), req.query),
+      ),
+  );
+
+  app.get(
+    '/api/v1/things/:id/placement-history',
+    { schema: { params: Params, response: { 200: PlacementHistorySchema } } },
+    (req) =>
+      scopedRead(pools, req, (_tx, client) =>
+        placementHistory(client, req.params.id.toLowerCase()),
       ),
   );
 

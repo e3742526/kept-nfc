@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url';
 import {
   CreateThingPayload,
   NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   NativeCaptureCapabilitiesSchema,
@@ -23,7 +24,7 @@ import {
 } from '../../test/files.js';
 import { connectNativeApple, nativeAppleKeys } from '../../test/native-apple.js';
 import { freshIp, type Person, peopleApp, person } from '../../test/people.js';
-import { CLIENT_VERSION, captureOp } from '../../test/sync-ops.js';
+import { CLIENT_VERSION, captureOp, op } from '../../test/sync-ops.js';
 import { builtinType, createLocation, createThing, type Loc, own } from '../../test/things.js';
 
 const capabilityUrl = '/api/v1/native/capture-capabilities';
@@ -53,6 +54,213 @@ async function nativeSession() {
   const { account, epoch, cookie } = await connectNativeApple(t, owner);
   return { cookie, 'x-kept-native-account': account, 'x-kept-native-epoch': epoch };
 }
+
+const placeRollbackBuild = process.env.KEPT_TEST_PLACE_ROLLBACK_SERVER;
+it.skipIf(!placeRollbackBuild)(
+  'preserves place descriptions through a real server rollback',
+  async () => {
+    if (!placeRollbackBuild) throw new Error('The pre-Places build is required for this check.');
+    const headers = { ...(await nativeSession()), origin: t.publicUrl };
+    const placeId = newId();
+    const created = await t.app.inject({
+      method: 'POST',
+      url: `/api/v1/locations/${home.id}/places`,
+      headers,
+      payload: {
+        id: placeId,
+        name: 'Rollback garage',
+        kindKey: 'room',
+        description: 'Next to the door',
+      },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const placeUrl = `/api/v1/places/${placeId}`;
+    const shelfId = newId();
+    const queued = op(
+      'create_area',
+      home.id,
+      {
+        id: shelfId,
+        name: 'Queued shelf',
+        kindKey: 'zone',
+        parentId: placeId,
+        description: 'Upper level',
+      },
+      { clientId: shelfId, payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION },
+    );
+    const send = (app: FastifyInstance) =>
+      app.inject({
+        method: 'POST',
+        url: syncUrl,
+        headers,
+        remoteAddress: freshIp(),
+        payload: { clientVersion: CLIENT_VERSION, ops: [queued] },
+      });
+
+    const old = await loadPreviousServer(placeRollbackBuild);
+    try {
+      const capability = await old.inject({ url: capabilityUrl, headers });
+      expect(capability.statusCode, capability.body).toBe(200);
+      expect(capability.json()).not.toHaveProperty('placeDescriptions');
+      expect(capability.json()).not.toHaveProperty('placeCreationPayloadVersion');
+      const read = await old.inject({ url: placeUrl, headers });
+      expect(read.statusCode, read.body).toBe(200);
+      expect(read.json()).toMatchObject({ id: placeId, name: 'Rollback garage' });
+      expect(read.json()).not.toHaveProperty('description');
+      const renamed = await old.inject({
+        method: 'PATCH',
+        url: placeUrl,
+        headers: { ...headers, 'if-match': String(read.json().rowVersion) },
+        payload: { name: 'Rollback garage renamed' },
+      });
+      expect(renamed.statusCode, renamed.body).toBe(200);
+      const refusal = await send(old);
+      expect(refusal.statusCode, refusal.body).toBe(409);
+      expect(refusal.json()).toMatchObject({ code: 'server_outdated' });
+      expect(
+        await own(db, 'SELECT outcome FROM public.sync_ops WHERE idempotency_key = $1', [
+          queued.idempotencyKey,
+        ]),
+      ).toEqual([]);
+    } finally {
+      await old.close();
+    }
+
+    const current = await t.app.inject({ url: placeUrl, headers });
+    expect(current.statusCode, current.body).toBe(200);
+    expect(current.json()).toMatchObject({
+      id: placeId,
+      name: 'Rollback garage renamed',
+      description: 'Next to the door',
+    });
+    const replay = await send(t.app);
+    expect(replay.statusCode, replay.body).toBe(200);
+    expect(replay.json().results).toMatchObject([{ outcome: 'applied', entity: { id: shelfId } }]);
+    expect(
+      await own(db, 'SELECT parent_id, description FROM public.places WHERE id = $1', [shelfId]),
+    ).toEqual([{ parent_id: placeId, description: 'Upper level' }]);
+  },
+);
+
+it('negotiates place creation and replays a described parent before its child or item', async () => {
+  const headers = { ...(await nativeSession()), origin: t.publicUrl };
+  const capability = await t.app.inject({ url: capabilityUrl, headers });
+  expect(capability.statusCode, capability.body).toBe(200);
+  expect(NativeCaptureCapabilitiesSchema.parse(capability.json()).placeCreationPayloadVersion).toBe(
+    NATIVE_CREATE_AREA_PAYLOAD_VERSION,
+  );
+  const parentId = newId();
+  const shelfId = newId();
+  const parent = op(
+    'create_area',
+    home.id,
+    {
+      id: parentId,
+      name: 'Offline garage',
+      kindKey: 'room',
+      parentId: null,
+      description: ' Beside the house ',
+    },
+    { clientId: parentId, payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION },
+  );
+  const child = op(
+    'create_area',
+    home.id,
+    {
+      id: shelfId,
+      name: 'Offline shelf',
+      kindKey: 'zone',
+      parentId,
+      description: 'Left wall',
+    },
+    {
+      clientId: shelfId,
+      payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
+      dependsOn: [parent.idempotencyKey],
+    },
+  );
+  const cable = captureOp(
+    home.id,
+    { placeId: shelfId },
+    { name: 'Offline cable' },
+    { dependsOn: [child.idempotencyKey] },
+  );
+  const send = (ops: (typeof parent)[], requestHeaders: Record<string, string> = headers) =>
+    t.app.inject({
+      method: 'POST',
+      url: syncUrl,
+      headers: requestHeaders,
+      remoteAddress: freshIp(),
+      payload: { clientVersion: CLIENT_VERSION, ops },
+    });
+  const noNativeContext = await send([parent], { cookie: headers.cookie, origin: t.publicUrl });
+  expect(noNativeContext.statusCode).toBe(400);
+  const oldPayload = await send([
+    { ...parent, payloadVersion: PAYLOAD_VERSION, idempotencyKey: `old:${parentId}` },
+  ]);
+  expect(oldPayload.json().results).toMatchObject([{ outcome: 'dropped', reason: 'invalid' }]);
+  const result = await send([parent, child, cable]);
+  expect(result.statusCode, result.body).toBe(200);
+  expect(result.json().results).toMatchObject(
+    [parentId, shelfId, cable.payload.id].map((id) => ({ outcome: 'applied', entity: { id } })),
+  );
+  expect((await send([parent, child, cable])).json()).toEqual(result.json());
+  expect(
+    await own(
+      db,
+      'SELECT id, parent_id, description FROM public.places WHERE id = ANY($1::uuid[]) ORDER BY id',
+      [[parentId, shelfId]],
+    ),
+  ).toEqual([
+    { id: parentId, parent_id: null, description: 'Beside the house' },
+    { id: shelfId, parent_id: parentId, description: 'Left wall' },
+  ]);
+
+  const removedId = newId();
+  const removed = op(
+    'create_area',
+    home.id,
+    {
+      id: removedId,
+      name: 'Temporary place',
+      kindKey: 'room',
+      parentId: null,
+      description: '  ',
+    },
+    { clientId: removedId, payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION },
+  );
+  expect((await send([removed])).json().results).toMatchObject([{ outcome: 'applied' }]);
+  expect(await own(db, 'SELECT description FROM public.places WHERE id = $1', [removedId])).toEqual(
+    [{ description: null }],
+  );
+  const trashed = await t.app.inject({
+    method: 'POST',
+    url: `/api/v1/places/${removedId}/trash`,
+    headers,
+    payload: {},
+  });
+  expect(trashed.statusCode, trashed.body).toBe(200);
+  const heldId = newId();
+  const held = op(
+    'create_area',
+    home.id,
+    {
+      id: heldId,
+      name: 'Late shelf',
+      kindKey: 'zone',
+      parentId: removedId,
+    },
+    {
+      clientId: heldId,
+      payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
+      dependsOn: [removed.idempotencyKey],
+    },
+  );
+  expect((await send([held])).json().results).toMatchObject([
+    { outcome: 'dropped', reason: 'target_trashed' },
+  ]);
+  expect(await own(db, 'SELECT id FROM public.places WHERE id = $1', [heldId])).toEqual([]);
+});
 
 it('replays versioned recording intent once and keeps the device capture time in history', async () => {
   const headers = { ...(await nativeSession()), origin: t.publicUrl };
@@ -238,15 +446,15 @@ const oldCreateThing = CreateThingPayload.omit({
   skipServerSuggestions: true,
 });
 
+async function loadPreviousServer(build: string): Promise<FastifyInstance> {
+  const { buildApp } = (await import(pathToFileURL(build).href)) as typeof import('../http/app.js');
+  return buildApp({ env: t.app.env, pools: t.app.pools, auth: t.auth, files });
+}
+
 async function rollbackServer(): Promise<FastifyInstance> {
   const build = process.env.KEPT_TEST_ROLLBACK_SERVER;
-  if (build) {
-    // The opt-in points at a compiled pre-native build in a separate worktree, with its own deps.
-    const { buildApp } = (await import(
-      pathToFileURL(build).href
-    )) as typeof import('../http/app.js');
-    return buildApp({ env: t.app.env, pools: t.app.pools, auth: t.auth, files });
-  }
+  // The opt-in points at a compiled pre-native build in a separate worktree, with its own deps.
+  if (build) return loadPreviousServer(build);
   // Focused fixture of the 8d890f96 boundaries: absent endpoint and v1-only batch guard.
   // The fixture never runs the previous revision's capture service or writes its ledger.
   const previous = Fastify();

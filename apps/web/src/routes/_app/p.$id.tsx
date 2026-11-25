@@ -14,11 +14,13 @@
  * map doesn't draw.
  */
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { type FormEvent, useState } from 'react';
-import { inventoryApi, usePlace } from '@/api/inventory/queries';
-import type { BuiltinPlaceKind, PlaceView } from '@/api/inventory/types';
+import { api } from '@/api/client';
+import { inventoryPaths } from '@/api/inventory/paths';
+import { inventoryApi, inventoryKeys, usePlace } from '@/api/inventory/queries';
+import type { AttachmentView, BuiltinPlaceKind, PlaceView } from '@/api/inventory/types';
 import { useLocation } from '@/api/queries';
 import type { LocationDetail } from '@/api/types';
 import { captureRoomSearch } from '@/components/capture/links';
@@ -74,6 +76,11 @@ import { type PickedPlace, PlacePicker } from '@/components/places/move-picker';
 import { OfflinePlacePage, useOfflinePage } from '@/components/places/offline-pages';
 import { PlaceFields } from '@/components/places/place-fields';
 import { RackSection } from '@/components/places/rack-lazy';
+import {
+  changedReferences,
+  isReferencePhoto,
+  ReferencePhotos,
+} from '@/components/places/reference-photos';
 import { PlaceCounts } from '@/components/places/rows';
 import { Sheet } from '@/components/places/sheet';
 import { BoxesSheet, OrderSheet } from '@/components/places/sub-places-lazy';
@@ -83,6 +90,7 @@ import { SortUnplaced } from '@/components/places/unplaced-sort';
 import { accessOf } from '@/components/schedules/access';
 import { ShareLinkSheet } from '@/components/sharelinks/share-sheet';
 import { useOriginalFile } from '@/components/things/original-file';
+import { putFile } from '@/components/things/upload';
 import { TypeIcon } from '@/components/type-icon';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
@@ -252,6 +260,11 @@ function PlaceBody({ place, location }: { place: PlaceView; location: LocationDe
         </div>
       </div>
 
+      {place.description && (
+        <p dir="auto" className="whitespace-pre-wrap wrap-anywhere">
+          {place.description}
+        </p>
+      )}
       {place.isUnplaced ? null : (
         <div className="flex justify-end">
           <LayoutSwitch table={false} />
@@ -409,6 +422,7 @@ function PlaceBody({ place, location }: { place: PlaceView; location: LocationDe
         />
       ) : null}
 
+      {!place.isUnplaced && <PlaceReferences place={place} editable={canEdit} />}
       <Attachments place={place} paperwork={paperwork} />
 
       {canEdit && !place.isUnplaced ? (
@@ -627,10 +641,56 @@ const PAPERWORK_ROLES: ReadonlySet<string> = new Set([
   'document',
 ]);
 
+function PlaceReferences({ place, editable }: { place: PlaceView; editable: boolean }) {
+  const client = useQueryClient();
+  const key = inventoryKeys.places.detail(place.id);
+  return (
+    <ReferencePhotos
+      key={place.id}
+      place={place}
+      editable={editable}
+      actions={{
+        upload: (file, fileId) => putFile({ file, fileId, locationId: place.locationId }),
+        attach: (body, id, version) =>
+          api.post(inventoryPaths.attachments, body, {
+            'idempotency-key': id,
+            ...(version === undefined ? {} : { 'if-match': String(version) }),
+          }),
+        remove: (id) => api.del(inventoryPaths.attachment(id)),
+        cover: async (photo) => ({
+          ...(await api.patch<AttachmentView>(
+            inventoryPaths.attachment(photo.id),
+            { selectThumbnail: true },
+            { 'if-match': String(photo.rowVersion) },
+          )),
+          canManage: photo.canManage === true,
+        }),
+        reload: async () => {
+          const latest = await inventoryApi.place(place.id);
+          client.setQueryData(key, latest);
+          return latest.attachments;
+        },
+      }}
+      onChange={(id, photo) => {
+        client.setQueryData<PlaceView>(
+          key,
+          (old) =>
+            old && {
+              ...old,
+              attachments: changedReferences(old.attachments, id, photo),
+            },
+        );
+        void client.invalidateQueries({ queryKey: key });
+      }}
+    />
+  );
+}
+
 function Attachments({ place, paperwork }: { place: PlaceView; paperwork: boolean }) {
-  const shown = paperwork
-    ? place.attachments.filter((a) => !PAPERWORK_ROLES.has(a.role))
-    : place.attachments;
+  const shown = place.attachments.filter(
+    (a) =>
+      (place.isUnplaced || !isReferencePhoto(a)) && (!paperwork || !PAPERWORK_ROLES.has(a.role)),
+  );
   if (shown.length === 0) return null;
   return (
     <Section title={<Trans>Attachments</Trans>}>
@@ -693,6 +753,8 @@ function RenameForm({ place, onDone }: { place: PlaceView; onDone: () => void })
   const invalidate = useInvalidateBrowse();
   const kinds = usePlaceKindLabels();
   const [name, setName] = useState(place.name);
+  const [description, setDescription] = useState(place.description ?? '');
+  const changedDescription = (description.trim() || null) !== (place.description ?? null);
   const builtin = (PLACE_KINDS as readonly string[]).includes(place.kindKey);
   const [kind, setKind] = useState(place.kindKey);
   const [error, setError] = useState<string>();
@@ -702,6 +764,7 @@ function RenameForm({ place, onDone }: { place: PlaceView; onDone: () => void })
         place.id,
         {
           ...(name.trim() !== place.name ? { name: name.trim() } : {}),
+          ...(changedDescription ? { description: description.trim() || null } : {}),
           ...(kind !== place.kindKey ? { kindKey: kind } : {}),
         },
         place.rowVersion,
@@ -717,7 +780,7 @@ function RenameForm({ place, onDone }: { place: PlaceView; onDone: () => void })
     const n = name.trim();
     if (!n) return setError(t`Give it a name, like Shelf A or Balcony.`);
     if (n.length > 120) return setError(t`Keep the name under 120 characters.`);
-    if (n === place.name && kind === place.kindKey) return onDone();
+    if (n === place.name && kind === place.kindKey && !changedDescription) return onDone();
     save.mutate();
   };
   return (
@@ -733,6 +796,13 @@ function RenameForm({ place, onDone }: { place: PlaceView; onDone: () => void })
         }}
         isInvalid={!!error}
         errorMessage={error}
+        inputProps={{ dir: 'auto' }}
+      />
+      <TextField
+        label={t`Description`}
+        value={description}
+        maxLength={500}
+        onChange={setDescription}
         inputProps={{ dir: 'auto' }}
       />
       {builtin ? (

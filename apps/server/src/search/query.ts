@@ -326,6 +326,21 @@ export function householdStateSql(t: string): string {
       WHERE o.thing_id = ${t}.id AND o.returned_at IS NULL LIMIT 1) AS loan_direction`;
 }
 
+/** The things inside the given places or containers, at any depth. */
+export const subtreeThingsCtes = (roots: string) => `RECURSIVE sub(id) AS (
+        SELECT pl.id FROM public.places pl WHERE pl.id = ANY (${roots}) AND pl.deleted_at IS NULL
+        UNION
+        SELECT c.id FROM public.places c JOIN sub ON c.parent_id = sub.id WHERE c.deleted_at IS NULL
+      ),
+      inside(id) AS (
+        SELECT x.id FROM public.things x
+         WHERE x.deleted_at IS NULL
+           AND (x.place_id IN (SELECT id FROM sub) OR x.container_id = ANY (${roots}))
+        UNION
+        SELECT x.id FROM public.things x JOIN inside i ON x.container_id = i.id
+         WHERE x.deleted_at IS NULL
+      )`;
+
 /** One page of things, `limit + 1` rows (the extra one says there is more). */
 export async function searchThings(
   client: pg.ClientBase,
@@ -359,18 +374,7 @@ export async function searchThings(
   if (f.place?.values.length) {
     // The whole subtree of each place (or of a container, given its id), and everything inside
     // the containers within it, however deep: in one of them, or in none.
-    const roots = p.add(f.place.values);
-    ctes.unshift(`RECURSIVE sub(id) AS (
-        SELECT pl.id FROM public.places pl WHERE pl.id = ANY (${roots}::uuid[])
-        UNION
-        SELECT c.id FROM public.places c JOIN sub ON c.parent_id = sub.id
-      ),
-      inside(id) AS (
-        SELECT x.id FROM public.things x
-         WHERE x.place_id IN (SELECT id FROM sub) OR x.container_id = ANY (${roots}::uuid[])
-        UNION
-        SELECT x.id FROM public.things x JOIN inside i ON x.container_id = i.id
-      )`);
+    ctes.unshift(subtreeThingsCtes(`${p.add(f.place.values)}::uuid[]`));
     where.push(
       f.place.not ? 't.id NOT IN (SELECT id FROM inside)' : 't.id IN (SELECT id FROM inside)',
     );
@@ -469,7 +473,7 @@ export type PlaceHit = {
   path: ThingHit['path'];
 };
 
-/** Places whose name matches (never the Unplaced area), best first. */
+/** Places whose name or description matches (never the Unplaced area), best first. */
 export async function searchPlaces(
   client: pg.ClientBase,
   terms: Terms,
@@ -478,7 +482,7 @@ export async function searchPlaces(
   if (terms.raw === '') return [];
   const p = new Params();
   const cte = termsCte(p, terms);
-  const doc = `to_tsvector('simple', kept.search_text(pl.name))`;
+  const doc = `to_tsvector('simple', kept.search_text(concat_ws(' ', pl.name, pl.description)))`;
   const loc = opts.location?.values.length
     ? `AND ${matchOf(`pl.location_id = ANY (${p.add(opts.location.values)}::uuid[])`, opts.location.not)}`
     : '';

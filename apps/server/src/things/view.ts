@@ -90,16 +90,23 @@ export type ThingRow = {
 };
 
 /** The columns of a row, over `public.things t LEFT JOIN public.types ty`. */
-export const ROW_COLUMNS = `t.id, t.location_id, t.name, t.quantity::text AS quantity, t.lifecycle,
+export const rowColumns = (
+  withThumbnails = true,
+) => `t.id, t.location_id, t.name, t.quantity::text AS quantity, t.lifecycle,
        t.location_uncertain, t.review_state, t.last_seen_at,
        ${pathSql('t.place_id', 't.container_id')} AS path,
        ${shownCodeSql('thing_id', 't.id')} AS short_code,
        ${labelPrintedSql('thing_id', 't.id')} AS label_printed,
        ty.id AS type_id, ty.icon AS type_icon, ty.name AS type_name,
        ${typeKeySql('ty')} AS type_builtin_key,
-       thumbnail.file_id AS thumb_file_id, thumbnail.id AS thumbnail_attachment_id,
-       thumbnail.photo_rotation AS thumbnail_rotation, container_thumbnail.file_id AS container_thumb_file_id,
-       container_thumbnail.photo_rotation AS container_thumbnail_rotation,
+       ${
+         withThumbnails
+           ? `thumbnail.file_id AS thumb_file_id, thumbnail.id AS thumbnail_attachment_id,
+            thumbnail.photo_rotation AS thumbnail_rotation, container_thumbnail.file_id AS container_thumb_file_id,
+            container_thumbnail.photo_rotation AS container_thumbnail_rotation`
+           : `NULL AS thumb_file_id, NULL AS thumbnail_attachment_id, NULL AS thumbnail_rotation,
+            NULL AS container_thumb_file_id, NULL AS container_thumbnail_rotation`
+       },
        ${isContainerSql('t.id', 't.type_id')} AS is_container,
        ${tagsSql('t.id')} AS tags,
        ${householdStateSql('t')}`;
@@ -207,7 +214,7 @@ export async function rowsOf(
 ): Promise<ThingRow[]> {
   if (ids.length === 0) return [];
   const { rows } = await client.query<RowRecord>(
-    `SELECT ${ROW_COLUMNS}
+    `SELECT ${rowColumns()}
        FROM public.things t LEFT JOIN public.types ty ON ty.id = t.type_id
        ${photoThumbnailJoin('t.id', 'thumbnail')}
        ${photoThumbnailJoin('t.container_id', 'container_thumbnail')}
@@ -372,7 +379,7 @@ export async function viewOf(
   thingId: string,
 ): Promise<ThingView> {
   const { rows } = await client.query<DetailRecord>(
-    `SELECT ${ROW_COLUMNS},
+    `SELECT ${rowColumns()},
             t.place_id, t.container_id, t.brand_id, b.name AS brand_name, t.model, t.serial,
             t.barcode, t.colour, t.condition, t.notes, t.aliases,
             t.belongs_to_person_id AS person_id, p.display_name AS person_name,

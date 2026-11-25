@@ -148,6 +148,7 @@ export function placesRoutes(state: MockState): MockRoute[] {
         locationId,
         parentId: b.parentId ?? null,
         name: b.name.trim(),
+        description: b.description?.trim() || null,
         kindKey: b.kindKey,
         icon: b.icon ?? null,
         isUnplaced: false,
@@ -188,7 +189,7 @@ export function placesRoutes(state: MockState): MockRoute[] {
       const q = query.get('q') ?? '';
       const children = inv()
         .places.filter((c) => c.parentId === pl.id && !c.deletedAt)
-        .filter((c) => !q || matches(c.name, q))
+        .filter((c) => !q || matches([c.name, c.description].filter(Boolean).join(' '), q))
         .map((c) => placeNodeOf(inv(), c))
         .sort(siblingOrder(pl.childOrder));
       let found = inv()
@@ -236,7 +237,8 @@ export function placesRoutes(state: MockState): MockRoute[] {
             'Nothing goes inside Unplaced.',
           );
       }
-      const { custom, ...rest } = b;
+      const { custom, description, ...rest } = b;
+      if (description !== undefined) pl.description = description?.trim() || null;
       Object.assign(pl, rest);
       if (custom) {
         for (const [key, value] of Object.entries(custom)) {

@@ -29,6 +29,19 @@ const match: VisualSearchMatch = {
     { id: IDS.home, name: 'Home' },
     { id: INV_IDS.place.office, name: 'Office' },
   ],
+  placeEvidence: {
+    description: {
+      placeId: INV_IDS.place.office,
+      placeName: 'Office',
+      text: 'Shelf beside the desk',
+    },
+    referencePhoto: {
+      placeId: INV_IDS.place.office,
+      placeName: 'Office',
+      thumbUrl: '/test/office-thumb.jpg',
+      rotation: 90,
+    },
+  },
   attachmentId: id,
   fileId: id,
   capturedAt: '2026-11-23T12:00:00.000Z',
@@ -58,6 +71,11 @@ describe('visual search in the search screen', () => {
       `/t/${match.thingId}`,
     );
     expect(results).toHaveTextContent(/Recorded location.*Home.*Office/);
+    expect(results).toHaveTextContent('Shelf beside the desk');
+    expect(within(results).getByRole('img', { name: 'Office' })).toHaveAttribute(
+      'src',
+      '/test/office-thumb.jpg',
+    );
     expect(mock.lastCall('POST', p.search)?.body).toEqual({
       text: 'hdmi',
       locationIds: [IDS.home],

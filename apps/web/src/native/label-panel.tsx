@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Keyboard,
+  MapPin,
   Nfc,
   Package,
   QrCode as QrCodeIcon,
@@ -44,6 +45,7 @@ import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
 
 export type LabelBox = {
   id: string;
+  kind?: Target['kind'];
   name: string;
   locationId: string;
   shortCode: string | null;
@@ -61,6 +63,7 @@ export function LabelPanel({
   action,
   box,
   canEnroll = false,
+  placeOnly = false,
   onOpen,
   onClose,
   onProgram,
@@ -72,7 +75,8 @@ export function LabelPanel({
   action: 'identify' | 'find' | 'enroll';
   box?: LabelBox;
   canEnroll?: boolean;
-  onOpen: (target: Target) => void;
+  placeOnly?: boolean;
+  onOpen: ((target: Target) => void) | ((target: Target) => Promise<string | undefined>);
   onClose: () => void;
   onProgram?: () => void;
   onClearFindTarget?: () => void;
@@ -223,12 +227,12 @@ export function LabelPanel({
     try {
       await operation();
     } catch (error) {
-      if (isAuthRefusal(error)) {
-        onAuthError?.('expired');
+      if (onAuthError && isAuthRefusal(error)) {
+        onAuthError('expired');
         return;
       }
-      if (isRestoreEpochMismatch(error)) {
-        onAuthError?.('restored');
+      if (onAuthError && isRestoreEpochMismatch(error)) {
+        onAuthError('restored');
         return;
       }
       if (live.current) setStatus(errorText(error));
@@ -273,6 +277,15 @@ export function LabelPanel({
     [adapters, box, connection, isCurrentFindSession, nonMatchText, t],
   );
 
+  async function chooseTarget(target: Target) {
+    if (placeOnly && target.kind !== 'place') {
+      setStatus(t`Scan a place label.`);
+      return;
+    }
+    const message = await onOpen(target);
+    if (message && live.current) setStatus(message);
+  }
+
   async function read(text: string, mode: 'qr' | 'nfc', format?: string, signal?: AbortSignal) {
     setClaim(undefined);
     const result = await resolveLabel(connection, cache, text, mode, format, false, adapters);
@@ -282,11 +295,23 @@ export function LabelPanel({
       return;
     }
     if (result.status === 'resolved') {
-      onOpen(result.target);
+      await chooseTarget(result.target);
       return;
     }
     if (result.status === 'ambiguous') {
-      setCandidates(result.candidates);
+      const choices = placeOnly
+        ? result.candidates.filter((candidate) => candidate.kind === 'place')
+        : result.candidates;
+      if (choices.length === 0) {
+        setStatus(t`Scan a place label.`);
+        return;
+      }
+      if (choices.length === 1 && choices[0]) {
+        const { id, kind, locationId } = choices[0];
+        await chooseTarget({ id, kind, locationId });
+        return;
+      }
+      setCandidates(choices);
       setStatus(t`Multiple records match this code. Choose one to open.`);
       return;
     }
@@ -429,7 +454,13 @@ export function LabelPanel({
   async function checkAssignment() {
     if (!box || !url) return false;
     const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
-    if (isTarget(result, box.id)) return true;
+    if (isTarget(result, box.id, box.kind)) return true;
+    if (box.kind === 'place') {
+      setStatus(
+        t`The server could not confirm this place’s label. Reopen the place and try again.`,
+      );
+      return false;
+    }
     setStatus(
       box.isContainer === false
         ? t`The server could not confirm this item’s label. Reopen the item and try again.`
@@ -524,25 +555,27 @@ export function LabelPanel({
 
   return (
     <section className="grid gap-4">
-      <ScreenHeader
-        title={heading}
-        onBack={onClose}
-        icon={headingIcon}
-        trailing={
-          action === 'find' &&
-          box && (
-            <Button variant="ghost" size="small" onPress={clearTarget}>
-              <X size={15} aria-hidden />
-              <Trans>Clear target</Trans>
-            </Button>
-          )
-        }
-      />
+      {!placeOnly && (
+        <ScreenHeader
+          title={heading}
+          onBack={onClose}
+          icon={headingIcon}
+          trailing={
+            action === 'find' &&
+            box && (
+              <Button variant="ghost" size="small" onPress={clearTarget}>
+                <X size={15} aria-hidden />
+                <Trans>Clear target</Trans>
+              </Button>
+            )
+          }
+        />
+      )}
       {box && (
         <div className="kept-card">
           <div className="flex items-center gap-3">
             <span className="kept-row-lead" aria-hidden>
-              <Package size={18} />
+              {box.kind === 'place' ? <MapPin size={18} /> : <Package size={18} />}
             </span>
             <div className="grid min-w-0 gap-0.5">
               <p className="font-semibold">
@@ -561,7 +594,7 @@ export function LabelPanel({
           </div>
         </div>
       )}
-      {action === 'identify' && cache && claim && (
+      {action === 'identify' && !placeOnly && cache && claim && (
         <ClaimBinLabel
           key={claim.code}
           connection={connection}
@@ -745,6 +778,7 @@ export function LabelPanel({
             className="kept-card"
             onSubmit={(event) => {
               event.preventDefault();
+              event.stopPropagation();
               if (typed.trim()) void run(() => read(typed.trim(), 'qr'));
             }}
           >
@@ -764,11 +798,13 @@ export function LabelPanel({
                 variant="secondary"
                 className="kept-phone-row"
                 onPress={() =>
-                  onOpen({
-                    id: candidate.id,
-                    kind: candidate.kind,
-                    locationId: candidate.locationId,
-                  })
+                  void run(() =>
+                    chooseTarget({
+                      id: candidate.id,
+                      kind: candidate.kind,
+                      locationId: candidate.locationId,
+                    }),
+                  )
                 }
               >
                 <span className="kept-row-lead" aria-hidden>

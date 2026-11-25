@@ -179,6 +179,132 @@ beforeAll(async () => {
 
 // ---------------------------------------------------------------------------------------------
 
+describe('GET /api/v1/things/:id/placement-history', () => {
+  it('keeps the original room when a box moves with its contents', async () => {
+    const originalRoom = await place(home, 'Utility room');
+    const nextRoom = await place(home, 'Laundry room');
+    const [type] = await own<{ id: string }>(
+      "SELECT id FROM public.types WHERE owner_account_id IS NULL AND builtin_key = 'box_bin'",
+    );
+    const make = (body: object) =>
+      ok<{ id: string }>(
+        call(t, '/api/v1/things', {
+          as: max,
+          body: { locationId: home.id, ...body },
+        }),
+        201,
+      );
+    const bin = await make({ name: 'Tools bin', placeId: originalRoom, typeId: type?.id });
+    const item = await make({ name: 'Wrench', containerId: bin.id });
+    await ok(
+      call(t, '/api/v1/things/move', {
+        as: max,
+        body: { thingIds: [bin.id], to: { placeId: nextRoom } },
+      }),
+    );
+    const summary = await ok(get(vic, `/api/v1/things/${item.id}/placement-history`));
+    expect(summary).toMatchObject({
+      rooms: [
+        { path: ['Laundry room'], count: 1 },
+        { path: ['Utility room'], count: 1 },
+      ],
+      destinations: [
+        { path: ['Laundry room', 'Tools bin'], count: 1 },
+        { path: ['Utility room', 'Tools bin'], count: 1 },
+      ],
+    });
+  });
+
+  it('counts a placement in a standalone location without requiring a room', async () => {
+    const mower = await ok<{ id: string }>(
+      call(t, '/api/v1/things', {
+        as: max,
+        body: { locationId: garage.id, placeId: garage.unplacedId, name: 'Lawn mower' },
+      }),
+      201,
+    );
+    const history = await ok(get(max, `/api/v1/things/${mower.id}/placement-history`));
+    expect(history).toMatchObject({
+      rooms: [],
+      destinations: [],
+      locations: [{ locationName: 'Garage', count: 1 }],
+    });
+  });
+
+  it('ranks recorded destinations, including trips with a box, under the caller’s location access', async () => {
+    const cable = await thing(home, 'USB cable');
+    const workshop = await place(home, 'Workshop');
+    const office = await place(home, 'Office');
+    const attic = await place(cabin, 'Private attic');
+    const bin = await thing(home, 'Electrical bin');
+    const change = (after: unknown) => ({ class: 'plain', after });
+    const save = (
+      loc: Loc,
+      diff: Record<string, Change>,
+      options: Partial<Parameters<typeof event>[0]> = {},
+    ) =>
+      event({
+        loc,
+        actor: ola,
+        action: 'thing.move',
+        entity: { type: 'thing', id: cable },
+        diff,
+        ...options,
+      });
+    await save(home, { place_id: change(workshop) }, { action: 'thing.create' });
+    await save(home, { place_id: change(office), path: change(['Office']) });
+    await save(
+      home,
+      { place_id: change(workshop), path: change(['Workshop']) },
+      {
+        entity: { type: 'thing', id: bin },
+        subjects: [cable],
+      },
+    );
+    await save(home, { place_id: change(workshop), path: change(['Workshop']) });
+    await save(home, { place_id: change(office), placement_intent: change('correct') });
+    await save(home, {
+      place_id: change(home.unplacedId),
+      path: change(['Unplaced']),
+      placement_intent: change('remove'),
+    });
+    const mistaken = await save(home, { place_id: change(office) }, { undoable: true });
+    await save(home, { place_id: change(workshop) }, { undoOf: mistaken });
+    await save(home, { captured_at: change('2026-10-01T00:00:00Z') }, { action: 'thing.capture' });
+    await save(cabin, { place_id: change(attic), path: change(['Private attic']) });
+    // A source-side copy of a cross-location event must never surface its destination.
+    await save(home, {
+      location_id: change(cabin.id),
+      place_id: change(attic),
+      path: change(['Private attic']),
+    });
+
+    const url = `/api/v1/things/${cable}/placement-history`;
+    const viewer = await ok<Record<string, unknown>>(get(vic, url));
+    expect(viewer).toMatchObject({
+      limited: false,
+      rooms: [
+        { locationName: 'Home', path: ['Workshop'], count: 3 },
+        { locationName: 'Home', path: ['Office'], count: 1 },
+      ],
+      destinations: [
+        { locationName: 'Home', path: ['Workshop'], count: 2 },
+        { locationName: 'Home', path: ['Workshop', 'Electrical bin'], count: 1 },
+        { locationName: 'Home', path: ['Office'], count: 1 },
+      ],
+      locations: [{ locationName: 'Home', path: [], count: 4 }],
+    });
+    expect(JSON.stringify(viewer)).not.toContain('Private attic');
+    expect(await ok(get(ola, url))).toMatchObject({
+      locations: [
+        { locationName: 'Home', count: 4 },
+        { locationName: 'Cabin', count: 1 },
+      ],
+    });
+    expect((await get(bob, url)).statusCode).toBe(404);
+  });
+});
+
 describe('GET /api/v1/things/:id/history: redaction per viewer', () => {
   let tv: string;
   let customType: string;

@@ -297,6 +297,8 @@ describe('SheepKeep for iPhone sign-in', () => {
     expect(capability.headers['cache-control']).toBe('no-store');
     expect(capability.json()).toEqual({
       contractVersion: 1,
+      placeDescriptions: true,
+      placeCreationPayloadVersion: 6,
       capturePayloadVersions: [2, 3, 4, 5],
       account,
       epoch,

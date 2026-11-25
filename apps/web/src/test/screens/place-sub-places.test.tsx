@@ -6,6 +6,7 @@
 import { newId } from '@kept/shared';
 import { screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { PIXEL } from '@/api/inventory/mock/files';
 import { INV_IDS } from '@/api/inventory/mock/fixtures';
 import { inventoryPaths as p } from '@/api/inventory/paths';
 import { type MockState, ownerScenario } from '@/api/mock/fixtures';
@@ -38,6 +39,70 @@ const moveName = (name: string, direction: 'up' | 'down') =>
   new RegExp(`^Move \\W?${name}\\W? ${direction}$`);
 
 const region = () => screen.getByRole('region', { name: 'Notifications' });
+
+describe('Place descriptions and reference photos', () => {
+  it('edits the description and uses the place page gallery to replace a photo', async () => {
+    const { state } = scenario();
+    const place = state.inventory.places.find((entry) => entry.id === P.toolWall);
+    if (!place) throw new Error('Missing Tool wall fixture');
+    const attachmentId = newId();
+    state.inventory.attachments.push({
+      id: attachmentId,
+      locationId: place.locationId,
+      name: 'Tool wall layout',
+      subject: { placeId: place.id },
+      role: 'photo',
+      sort: 10,
+      rowVersion: 4,
+      createdBy: { displayName: state.me.user.displayName },
+      url: null,
+      canManage: true,
+      file: {
+        id: newId(),
+        sha256: 'a'.repeat(64),
+        bytes: 10,
+        class: 'photo',
+        mime: 'image/jpeg',
+        hasGps: false,
+        width: 1,
+        height: 1,
+        thumbUrl: PIXEL,
+        displayUrl: PIXEL,
+        derivativeState: 'ready',
+      },
+    });
+    const { user, mock } = await renderApp(`/p/${place.id}`, { state });
+    await findHeading('Tool wall');
+    await user.click(screen.getByRole('button', { name: /^Rename/ }));
+    const form = await screen.findByRole('dialog', { name: /Rename/ });
+    await user.type(within(form).getByRole('textbox', { name: 'Description' }), '  Wall anchors  ');
+    await user.click(within(form).getByRole('button', { name: 'Save' }));
+    expect(await screen.findByText('Wall anchors')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Tool wall layout' }));
+    const viewer = await screen.findByRole('dialog', { name: 'Photos' });
+    await user.click(within(viewer).getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(viewer).not.toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Replace photo' }));
+    const current = mock.state.inventory.attachments.find((a) => a.id === attachmentId);
+    if (!current) throw new Error('Missing photo to edit concurrently');
+    current.rowVersion += 1;
+    current.name = 'Updated tool wall layout';
+    const input = screen.getByLabelText('Choose reference photo') as HTMLInputElement;
+    await user.upload(input, new File(['new image'], 'shelf.jpg', { type: 'image/jpeg' }));
+    await user.click(await screen.findByRole('button', { name: 'Review replacement' }));
+    const confirm = await screen.findByRole('alertdialog', { name: 'Replace photo?' });
+    expect(mock.state.inventory.attachments.some((a) => a.id === attachmentId)).toBe(true);
+    await user.click(within(confirm).getByRole('button', { name: 'Replace photo' }));
+    await waitFor(() => {
+      const photos = mock.state.inventory.attachments.filter(
+        (a) => 'placeId' in a.subject && a.subject.placeId === place.id && a.role === 'photo',
+      );
+      expect(photos).toHaveLength(1);
+      expect(photos[0]).toMatchObject({ name: 'Updated tool wall layout', sort: 10 });
+      expect(photos[0]?.id).not.toBe(attachmentId);
+    });
+  });
+});
 
 describe('Turn places into boxes', () => {
   it('turns every place without places inside into a box in one step, and one Undo brings them back', async () => {

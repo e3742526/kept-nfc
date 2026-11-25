@@ -1,3 +1,4 @@
+import { LocationDestinationSchema } from '@kept/shared';
 import { z } from 'zod';
 import type { KeptApp } from '../http/app.js';
 import { requireIfMatch } from '../http/conventions.js';
@@ -32,6 +33,7 @@ import {
   BoxNodeSchema,
   boxNodes,
   ContentsQuery,
+  locationDestinations,
   PlaceContentsSchema,
   PlaceNodeSchema,
   PlaceViewSchema,
@@ -46,11 +48,11 @@ import {
 // TrashResult, RestoreResult, ConvertToContainerResult, LabelResult).
 //
 // GET    /api/v1/locations/:locationId/places     → {places: PlaceNode[], boxes: BoxNode[]}
-// POST   /api/v1/locations/:locationId/places     {id?, parentId?, name, kindKey, icon?} → 201 PlaceView
+// POST   /api/v1/locations/:locationId/places     {id?, parentId?, name, description?, kindKey, icon?} → 201 PlaceView
 // GET    /api/v1/places/:id                       → PlaceView
 // GET    /api/v1/places/:id/contents?q&type*&tag*&state*&brand*&belongsTo*&not*&group&sort&dir
 //        &limit&cursor → PlaceContents (`*`: repeatable, "is any of"; `not` names those "none of", D205)
-// PATCH  /api/v1/places/:id (If-Match)            {name?, kindKey?, icon?, sort?, childOrder?,
+// PATCH  /api/v1/places/:id (If-Match)            {name?, description?, kindKey?, icon?, sort?, childOrder?,
 //                                                  parentId?, custom?}
 // POST   /api/v1/places/:id/trash                 {contents?, moveTo?} → TrashResult, or 409
 //                                                  contents_choice_required with {counts}
@@ -119,6 +121,17 @@ export async function placeRoutes(app: KeptApp, deps: InventoryDeps): Promise<vo
           places: await placeNodes(client, locationId),
           boxes: await boxNodes(client, locationId),
         };
+      }),
+  );
+
+  app.get(
+    '/api/v1/locations/:locationId/destinations',
+    { schema: { params: LocationParams, response: { 200: z.array(LocationDestinationSchema) } } },
+    (req) =>
+      scopedRead(pools, req, async (_tx, client) => {
+        const locationId = req.params.locationId.toLowerCase();
+        await requireMembership(client, locationId);
+        return locationDestinations(client, locationId);
       }),
   );
 

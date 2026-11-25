@@ -20,6 +20,7 @@ import {
   deleteOriginal,
   deleteUnreferencedBlobs,
   listAttachments,
+  replacePlacePhoto,
   updateAttachment,
 } from './attachments.js';
 import { fileUrl, serveToken } from './serve.js';
@@ -95,6 +96,7 @@ const AttachmentViewSchema = z.object({
   locationPhotoTakenAt: z.iso.datetime().optional(),
   photoRotation: z.number().optional(),
   photoArchivedAt: z.iso.datetime().optional(),
+  thumbnailSelectedAt: z.iso.datetime().optional(),
   rowVersion: z.number(),
 });
 
@@ -122,6 +124,7 @@ const CreateAttachmentBody = z
     role: z.enum(ATTACHMENT_ROLES),
     sort: Sort.optional(),
     name: AttachmentName.optional(),
+    replacesAttachmentId: Id.optional(),
   })
   .refine((b) => (b.fileId === undefined) !== (b.url === undefined), {
     message: 'exactly one of fileId and url',
@@ -302,17 +305,33 @@ export async function fileRoutes(app: KeptApp, deps: InventoryDeps): Promise<voi
     '/api/v1/attachments',
     { schema: { body: CreateAttachmentBody, response: { 201: AttachmentViewSchema } } },
     (req, reply) => {
-      const id = req.body.id ? assertClientId(req.body.id) : newId();
+      const { replacesAttachmentId, ...body } = req.body;
+      const expected = replacesAttachmentId ? requireIfMatch(req) : undefined;
+      const id = body.id ? assertClientId(body.id) : newId();
       return scopedWrite(pools, req, reply, async (tx, client, scope) => {
-        const attachment = await createAttachment(
-          tx,
-          client,
-          files,
-          (locationId) => gateFor(tx, locationId, scope),
-          scope.userId,
-          { ...req.body, id },
-          req.id,
-        );
+        const gateOf = (locationId: string) => gateFor(tx, locationId, scope);
+        const attachment =
+          replacesAttachmentId && expected !== undefined
+            ? await replacePlacePhoto(
+                tx,
+                client,
+                files,
+                gateOf,
+                scope.userId,
+                { ...body, id },
+                replacesAttachmentId.toLowerCase(),
+                expected,
+                req.id,
+              )
+            : await createAttachment(
+                tx,
+                client,
+                files,
+                gateOf,
+                scope.userId,
+                { ...body, id },
+                req.id,
+              );
         if (
           !scope.tokenId &&
           'thingId' in req.body.subject &&

@@ -445,7 +445,9 @@ export const TOOL_DEFS = Object.freeze({
       filters: z
         .object({
           type: z.string().max(120).optional(),
-          place_id: idOrCode.optional(),
+          place_id: idOrCode
+            .optional()
+            .describe('ID or label code of a place or box. Searches its descendants.'),
           status: z.enum([...LIFECYCLES, ...DERIVED_STATES]).optional(),
           tag: z.string().max(80).optional(),
           // 1.x (#209): several tags, any or all of them.

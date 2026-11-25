@@ -29,6 +29,38 @@ import { expectLogicalOnly } from '@/test/render';
 
 const T = INV_IDS.thing;
 
+it('ranks previous destinations from the web item page', async () => {
+  const state = ownerScenario();
+  const thing = state.inventory.things.find(({ id }) => id === T.drill);
+  const workshop = state.inventory.places.find(({ id }) => id === INV_IDS.place.toolWall);
+  if (!thing || !workshop) throw new Error('Missing history fixtures');
+  for (const day of [21, 23]) {
+    state.inventory.events.push({
+      id: `finding-${day}`,
+      at: `2026-11-${day}T10:00:00Z`,
+      location_id: workshop.locationId,
+      action: 'thing.move',
+      entity: { type: 'thing', id: thing.id, shortCode: null },
+      actor: { type: 'user', id: null, displayName: 'Ibrahim' },
+      root_thing_id: thing.id,
+      diff: {
+        place_id: { class: 'plain', before: null, after: workshop.id },
+        path: { class: 'plain', before: [], after: ['Tool wall'] },
+      },
+      undo_of: null,
+      undoable_until: null,
+      summary: '',
+      summaryKey: 'thing.move',
+      summaryParams: {},
+    });
+  }
+  const { user } = await renderApp(`/t/${thing.id}`, { state });
+  await user.click(await screen.findByRole('button', { name: 'Where to look' }));
+  await user.click(await screen.findByRole('radio', { name: 'Exact places' }));
+  const summary = screen.getByText('Recorded placements 2').closest('li');
+  expect(summary?.textContent).toContain('Garage › Tool wall');
+});
+
 function asRole(role: 'viewer' | 'member' | 'admin', state: MockState = ownerScenario()) {
   const home = state.locations.find((l) => l.id === IDS.home);
   if (home) home.role = role;

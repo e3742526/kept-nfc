@@ -215,7 +215,7 @@ export const searchThings: Handler<'search_things'> = {
     let placeId: string | undefined;
     if (f.place_id) {
       const found = await findRef(op.client, f.place_id);
-      if (found?.kind !== 'place' || !locationIds.includes(found.locationId)) return empty;
+      if (!found || !locationIds.includes(found.locationId)) return empty;
       placeId = found.id;
     }
     const status = f.status;
@@ -226,13 +226,12 @@ export const searchThings: Handler<'search_things'> = {
           locationId: locationIds,
           lifecycle: status,
           ...(input.query ? { q: input.query } : {}),
-          ...(placeId ? { placeId } : {}),
           ...(typeId ? { typeId } : {}),
           ...(tagId ? { tagId, ...tagAll } : {}),
           limit: size,
           ...(c ? { cursor: c } : {}),
         });
-        const res = await listThings(op.client, null, q);
+        const res = await listThings(op.client, null, q, placeId);
         return { items: res.items, next: res.next_cursor };
       });
       return { ...page, data: { items: await summaries(op, page.items) } };

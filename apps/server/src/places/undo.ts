@@ -40,7 +40,15 @@ import { findPlace, type PlaceRow, placeKindOf } from './view.js';
 // `place.trash` (T20): the trashed batch comes back, and what the trash moved out goes back in
 // (undoPlaceTrash below).
 
-const COLUMNS = ['name', 'kind_key', 'icon', 'sort', 'child_order', 'parent_id'] as const;
+const COLUMNS = [
+  'name',
+  'description',
+  'kind_key',
+  'icon',
+  'sort',
+  'child_order',
+  'parent_id',
+] as const;
 type Column = (typeof COLUMNS)[number];
 const IS_COLUMN = new Set<string>(COLUMNS);
 
@@ -48,6 +56,7 @@ const IS_COLUMN = new Set<string>(COLUMNS);
 function imageOf(p: PlaceRow, customKeys: readonly string[]): Record<string, unknown> {
   const out: Record<string, unknown> = {
     name: p.name,
+    description: p.description,
     kind_key: p.kindKey,
     icon: p.icon,
     sort: p.sort,

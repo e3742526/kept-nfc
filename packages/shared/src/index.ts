@@ -39,6 +39,7 @@ export * from './normalize.js';
 export * from './ops.js';
 export * from './order.js';
 export * from './place-templates.js';
+export * from './placement-history.js';
 export * from './portability.js';
 export * from './racks.js';
 export * from './reminders.js';

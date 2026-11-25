@@ -22,6 +22,7 @@ import type {
   LedgerTask,
   ListSurface,
   LoanDirection,
+  PlaceEvidence,
   SavedListQuery,
   DerivedState as SharedDerivedState,
   ValuationSource,
@@ -497,6 +498,7 @@ export type LinkPurchaseLineBody = { thingId: string };
 
 /** One node of GET /api/v1/locations/:locationId/places (the whole tree; trashed excluded). */
 export type PlaceNode = {
+  description?: string | null;
   id: string;
   parentId: string | null;
   name: string;
@@ -555,6 +557,7 @@ export type SecretSummary = {
 
 /** GET /api/v1/places/:id. */
 export type PlaceView = {
+  description?: string | null;
   id: string;
   locationId: string;
   parentId: string | null;
@@ -644,6 +647,7 @@ export type FurnitureCompartment = {
 export type TurnBody = { direction: 'right' | 'left'; renumber: boolean };
 
 export type CreatePlaceBody = {
+  description?: string | null;
   id?: string;
   parentId?: string | null;
   /** 1–120 characters. */
@@ -657,6 +661,7 @@ export type CreatePlaceBody = {
 
 /** PATCH /api/v1/places/:id (If-Match). Re-parenting stays within the location. */
 export type UpdatePlaceBody = {
+  description?: string | null;
   name?: string;
   kindKey?: string;
   icon?: IconRef | null;
@@ -731,6 +736,8 @@ export type ThingRow = {
   path: PathStep[];
   /** The container's first photo, beside the path (D195). */
   containerThumbUrl: string | null;
+  /** Search only: nearby places' storage directions and reference thumbnail. */
+  placeEvidence?: PlaceEvidence;
   thumbUrl: string | null;
   thumbnailAttachmentId?: string;
   thumbnailRotation?: number;
@@ -1266,12 +1273,16 @@ export type AttachmentView = {
   locationPhotoTakenAt?: string;
   photoRotation?: number;
   photoArchivedAt?: string;
+  thumbnailSelectedAt?: string;
+  canManage?: boolean;
   /** For PATCH /api/v1/attachments/:id (If-Match). */
   rowVersion: number;
 };
 
 /** POST /api/v1/attachments → 201 AttachmentView. Exactly one of `fileId` / `url`. */
 export type CreateAttachmentBody = {
+  /** Replace a reference photo using its version in If-Match. */
+  replacesAttachmentId?: string;
   id?: string;
   locationId: string;
   fileId?: string;

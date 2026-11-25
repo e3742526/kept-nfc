@@ -31,6 +31,7 @@ export const places = pgTable(
       .references(() => locations.id, { onDelete: 'cascade' }),
     parentId: uuid('parent_id'),
     name: text('name').notNull(),
+    description: text('description'),
     kindKey: text('kind_key').notNull().default('room'),
     isUnplaced: boolean('is_unplaced').notNull().default(false),
     /** `lucide:<name>` / `tabler:<name>` / `kept:<name>`; NULL shows the kind's icon. */
@@ -73,6 +74,7 @@ export const places = pgTable(
     // The Unplaced area is top level.
     check('places_unplaced_top_level_chk', sql`NOT is_unplaced OR parent_id IS NULL`),
     check('places_not_own_parent_chk', sql`parent_id IS NULL OR parent_id <> id`),
+    check('places_description_length_chk', sql`char_length(description) <= 500`),
     check('places_custom_chk', sql`jsonb_typeof(custom) = 'object'`),
     check('places_child_order_chk', sql`child_order IN ('name', 'custom')`),
     check('places_layout_chk', sql`layout IS NULL OR jsonb_typeof(layout) = 'object'`),

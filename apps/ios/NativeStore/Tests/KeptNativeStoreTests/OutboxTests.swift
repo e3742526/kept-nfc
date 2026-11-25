@@ -33,6 +33,26 @@ final class OutboxTests: XCTestCase {
                                  takenAt: takenAt, files: [file])
     }
 
+    func testStagedReferencePhotoDoesNotEnterCaptureQueue() throws {
+        let outbox = try Outbox(root: scratch())
+        let draft = UUID().uuidString
+        let file = UUID().uuidString
+        let data = Data("reference photo".utf8)
+        try outbox.stage(context: context, draft: draft, file: file, offset: 0, data: data)
+
+        let (url, original) = try outbox.stagedPhoto(context: context, draft: draft, file: file, mime: "image/jpeg")
+        XCTAssertEqual(try Data(contentsOf: url), data)
+        XCTAssertEqual(original.sha256, digest(data))
+        XCTAssertEqual(original.file.bytes, data.count)
+        XCTAssertTrue(try outbox.pending(context: context).isEmpty)
+        XCTAssertThrowsError(
+            try outbox.stagedPhoto(context: context + "-other", draft: draft, file: file, mime: "image/jpeg")
+        )
+
+        try outbox.abort(context: context, id: draft)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
+    }
+
     func testPersistsOriginalAndQueueAcrossReopenAndScopesEveryRead() throws {
         let root = try scratch()
         let saved = try preparedCapture(in: root)
@@ -113,8 +133,12 @@ final class OutboxTests: XCTestCase {
         let huge = String(repeating: "x", count: 32 * 1024 * 1024 + 1)
         XCTAssertThrowsError(try outbox.saveCache(context: context, contents: huge))
         try outbox.saveCache(context: context, contents: #"{"cached":true}"#)
+        try outbox.saveValue(context: context, key: "placePhotoCache", value: "cached cover")
+        try outbox.saveValue(context: "other-account", key: "placePhotoCache", value: "different cover")
         try outbox.clearCache(context: context)
         XCTAssertNil(try outbox.cache(context: context))
+        XCTAssertNil(try outbox.readValue(context: context, key: "placePhotoCache"))
+        XCTAssertEqual(try outbox.readValue(context: "other-account", key: "placePhotoCache"), "different cover")
         XCTAssertEqual(try outbox.pending(context: context).map(\.capture), [saved])
         let file = try XCTUnwrap(saved.files.first)
         let original = try outbox.original(context: context, draft: saved.id, file: file.file.id)

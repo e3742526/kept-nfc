@@ -1,4 +1,4 @@
-import { newId } from '@kept/shared';
+import { NATIVE_CREATE_AREA_PAYLOAD_VERSION, newId } from '@kept/shared';
 import { describe, expect, it, vi } from 'vitest';
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
@@ -35,6 +35,60 @@ const connection: Connection = {
   account: 'user-1',
   epoch: 'epoch-1',
 };
+
+it('preserves an offline replacement and its original when the cached version conflicts', async () => {
+  const placeId = newId();
+  const locationId = newId();
+  const previousId = newId();
+  const fileId = newId();
+  const request = vi.fn(async (_conn: Connection, path: string) => {
+    if (path === inventoryPaths.place(placeId)) {
+      return { id: placeId, locationId, attachments: [{ id: previousId, rowVersion: 3 }] };
+    }
+    if (path === inventoryPaths.attachments)
+      throw new ApiError(412, 'precondition_failed', 'Photo changed');
+    throw new Error(`Unexpected path ${path}`);
+  });
+  const upload = vi.fn().mockResolvedValue({ id: fileId, sha256: 'a'.repeat(64), bytes: 5 });
+  const { adapters } = makeInMemoryAdapters({
+    request: request as PlatformAdapters['transport']['request'],
+    uploadOriginal: upload,
+    capabilities: () => ({
+      contractVersion: 1,
+      capturePayloadVersions: [2],
+      placeCreationPayloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
+      account: connection.account,
+      epoch: connection.epoch,
+    }),
+  });
+  const id = await saveOnPhone(
+    connection,
+    {
+      locationId,
+      placeId,
+      name: 'Garage shelf',
+      placePhoto: { replaces: { id: previousId, rowVersion: 3 } },
+    },
+    [{ file: new File(['photo'], 'shelf.jpg', { type: 'image/jpeg' }), role: 'photo' }],
+    adapters,
+  );
+  expect(await syncOutbox(connection, adapters)).toBe(0);
+  expect(request).toHaveBeenCalledWith(
+    connection,
+    inventoryPaths.attachments,
+    expect.objectContaining({
+      ifMatch: 3,
+      body: expect.objectContaining({ replacesAttachmentId: previousId, fileId }),
+    }),
+  );
+  expect(await adapters.outbox.list(connection)).toMatchObject([
+    {
+      capture: { id, files: [{ file: { name: 'shelf.jpg', bytes: 5 } }] },
+      failure: 'precondition_failed',
+    },
+  ]);
+  expect(await adapters.outbox.completions(connection)).toEqual({});
+});
 
 function makeInMemoryAdapters(
   overrides: {

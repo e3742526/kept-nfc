@@ -54,7 +54,7 @@ async function reauthorize(req: FastifyRequest): Promise<void> {
 
 export async function visualSearchRoutes(app: KeptApp, deps: InventoryDeps): Promise<void> {
   const provider = deps.visualProvider === undefined ? localVisualProvider() : deps.visualProvider;
-  const queries = new VisualQueries(deps.pools.app, provider);
+  const queries = new VisualQueries(deps.pools.app, provider, deps.files);
   const publicUrl = deps.env.KEPT_PUBLIC_URL;
   const invalidEncoder =
     deps.visualProvider === undefined && provider === null && !!process.env.KEPT_VISUAL_ENCODER_URL;

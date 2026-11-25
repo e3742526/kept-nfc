@@ -9,6 +9,7 @@ import { inventoryApi } from '@/api/inventory/queries';
 import { visualSearchApi } from '@/api/visual-search';
 import { CameraIcon, ChevronEndIcon } from '@/components/icons';
 import { List, Section, useErrorText } from '@/components/page';
+import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
 import { Sheet } from '@/components/things/sheet';
 import { Button } from '@/components/ui/button';
 import { useFormat } from '@/lib/format';
@@ -207,6 +208,7 @@ function VisualActions({ text, locationIds }: { text: string; locationIds: strin
                     </span>
                   ))}
                 </p>
+                <PlaceEvidenceDetails evidence={match.placeEvidence} />
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <time dateTime={match.capturedAt} className="text-small text-ink-3">

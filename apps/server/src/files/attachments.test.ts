@@ -36,6 +36,7 @@ type AttachmentView = {
   url: string | null;
   subject: Record<string, unknown>;
   createdBy: { displayName: string };
+  thumbnailSelectedAt?: string;
   rowVersion: number;
 };
 
@@ -128,6 +129,70 @@ describe('POST /api/v1/attachments', () => {
       [view.id],
     );
     expect(subjects).toEqual([{ thing_id: thing }]);
+  });
+
+  it('atomically replaces a place reference and replays a lost response once', async () => {
+    const placeId = await seedPlace(db, home);
+    const subject = { placeId };
+    const original = await attach(ann, {
+      locationId: home,
+      subject,
+      role: 'photo',
+      name: 'Shelf layout',
+      sort: 20,
+      fileId: await uploaded(ann, home),
+    });
+    expect(original.statusCode, original.body).toBe(201);
+    const old = original.json() as AttachmentView;
+    const fileId = await uploaded(dan, home);
+    const body = { locationId: home, subject, role: 'photo', fileId, replacesAttachmentId: old.id };
+    const replace = (as: Person, version: number) =>
+      call(t, '/api/v1/attachments', {
+        as,
+        body,
+        headers: { 'if-match': String(version), 'idempotency-key': old.id },
+      });
+
+    expect((await attach(dan, body)).statusCode).toBe(428);
+    expect((await replace(bob, old.rowVersion)).statusCode).toBe(403);
+    const edit = await call(t, `/api/v1/attachments/${old.id}`, {
+      as: ann,
+      method: 'PATCH',
+      body: { name: 'Updated shelf layout', selectThumbnail: true },
+      headers: { 'if-match': String(old.rowVersion) },
+    });
+    expect(edit.statusCode, edit.body).toBe(200);
+    const current = edit.json() as AttachmentView;
+    expect(current.thumbnailSelectedAt).toBeTruthy();
+    expect((await replace(dan, old.rowVersion)).statusCode).toBe(412);
+    const gallery = async () =>
+      (await call(t, `/api/v1/places/${placeId}/attachments`, { as: vic })).json().items;
+    expect(await gallery()).toEqual([expect.objectContaining({ id: old.id })]);
+
+    const result = await replace(dan, current.rowVersion);
+    expect(result.statusCode, result.body).toBe(201);
+    expect(result.json()).toMatchObject({
+      name: 'Updated shelf layout',
+      sort: 20,
+      thumbnailSelectedAt: current.thumbnailSelectedAt,
+      file: { id: fileId },
+    });
+    const next = result.json() as AttachmentView;
+    expect(next.id).not.toBe(old.id);
+    const replay = await replace(dan, current.rowVersion);
+    expect(replay.statusCode, replay.body).toBe(201);
+    expect(replay.json()).toEqual(result.json());
+    expect(await gallery()).toEqual([expect.objectContaining({ id: next.id })]);
+    const events = await own<{ action: string; entity_id: string }>(
+      'SELECT action, entity_id FROM public.audit_events WHERE location_id = $1',
+      [home],
+    );
+    expect(
+      events.filter((e) => e.action === 'attachment.create' && e.entity_id === next.id),
+    ).toHaveLength(1);
+    expect(
+      events.filter((e) => e.action === 'attachment.delete' && e.entity_id === old.id),
+    ).toHaveLength(1);
   });
 
   it('keeps a link as a link: never fetched, file null', async () => {

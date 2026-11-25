@@ -64,11 +64,26 @@ Don't raise `PRECACHE_BUDGET` to fit a server-only screen.
 
 ## The snapshot on the phone
 
-The phone keeps, per location the person is a member of: places, things (name, short code, type,
+The snapshot includes issued SheepKeep place codes. A cached code can select a place while offline if the destination is available to the current account. Connected scans can also resolve registered legacy codes and check the live path. NFC label enrollment needs an authorized connection.
+
+The phone keeps, per location the person is a member of: places and their optional descriptions, things (name, short code, type,
 place or container, quantity, aliases, lifecycle, last seen, cover photo id, meters with their
 latest reading, open loan), short IDs and legacy codes. Never secrets or people's contact details.
 Money and documents come only for a location the device keeps offline, behind the app lock
 (D159, D181), through `GET /api/v1/sync/extras`.
+
+Old snapshots and Kept archives can omit the place description. The installed iPhone app enables
+description changes when its authenticated `GET /api/v1/native/capture-capabilities` response
+advertises `placeDescriptions: true`. Edits to saved places use the online place API.
+When a native snapshot is capped,
+`GET /api/v1/locations/:locationId/destinations` supplies the live place and box hierarchy for
+that location.
+
+Place reference photos use the attachment API. To replace one, upload the new image first,
+then POST an attachment with `replacesAttachmentId`, the old attachment's `If-Match` version
+and an idempotency key. One transaction creates the replacement and removes the old attachment.
+Retry an uncertain response with the same key and request. If the version has changed, reload the
+photo and confirm a new attempt. These first-release writes run online.
 
 A refresh stages encrypted documents and publishes the location's new copy and totals in one
 IndexedDB transaction. The last complete copy stays readable if a download fails. Reusing an
@@ -102,6 +117,19 @@ A queue item carries `clientVersion`, `payloadVersion`, a client-made UUIDv7 `cl
 the `op`, `takenAt` (device time), `locationId`, an optional `dependsOn` list and the `payload`.
 The op kinds are `OP_KINDS`: `create_thing`, `move`, `log_reading`, `claim_label`, `mark_seen`,
 `not_here`, `create_area`, `box_check`.
+
+The iPhone outbox uses the `placeCreationPayloadVersion` capability before sending offline
+place creation or reference photo work. Version 6 of `create_area` accepts a description and
+uses the native account and restore epoch. Version 1 retains its existing payload. Pending places
+have stable UUIDs. Children, item captures, and photo work wait for confirmation that the parent
+was created. An older server or rejected parent leaves the pending work on the device.
+
+Reference photos replay through the audited attachment route. The outbox stores the original
+and, for a replacement, the cached attachment ID and row version. Retries reuse the first
+attempt's attachment identity. An unsupported server, stale version, account change or restore
+holds the original for review. A bounded cache holds recently loaded reference metadata and
+cover JPEG bytes for the current connection. Scoped refreshes remove stale entries and sign-out
+clears the cache.
 
 The sync engine runs on app open, when the page becomes visible, when the network comes back,
 after each enqueue, and every 60 s while visible. Never in the background: Safari has no

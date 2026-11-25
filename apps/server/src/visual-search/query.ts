@@ -9,6 +9,7 @@ import {
 import type pg from 'pg';
 import { type Scope, withScope } from '../db/scope.js';
 import { AppError, invalid, notFound } from '../http/errors.js';
+import type { FileStorage } from '../storage/blob-store.js';
 import { InvalidVisualImage, prepareVisualImage } from './image.js';
 import type { VisualProvider } from './provider.js';
 import {
@@ -62,6 +63,7 @@ export class VisualQueries {
   constructor(
     private readonly pool: pg.Pool,
     private readonly provider: VisualProvider | null,
+    private readonly files: FileStorage | null = null,
   ) {}
 
   private reserve(userId: string): () => void {
@@ -267,6 +269,7 @@ export class VisualQueries {
           minimumScore,
           Math.max(limit, 2),
           AMBIGUITY_MARGIN,
+          this.files,
         );
         const lead = matches[0];
         const uncertain = !!lead && lead.score < minimumScore + AMBIGUITY_MARGIN;

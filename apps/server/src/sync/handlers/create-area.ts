@@ -23,6 +23,7 @@ export const createArea: Handler<'create_area'> = async (ctx, { locationId, payl
       parentId: payload.parentId,
       name: payload.name,
       kindKey: payload.kindKey,
+      ...(payload.description === undefined ? {} : { description: payload.description }),
     },
     { via: 'op' },
   );

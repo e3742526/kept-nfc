@@ -279,6 +279,7 @@ function AddPlaceForm({
   const kinds = usePlaceKindLabels();
   const sizeId = useId();
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   // A top-level place, or one on a floor, is usually a room; inside one, a spot (D33).
   const [kind, setKind] = useState<BuiltinPlaceKind>(room ? 'room' : 'zone');
   const [error, setError] = useState<string>();
@@ -288,7 +289,12 @@ function AddPlaceForm({
   const [sideErrors, setSideErrors] = useState<{ w?: string; d?: string }>({});
   const create = useMutation({
     mutationFn: async (map: { w: number; d: number } | null) => {
-      const body = { ...(parentId ? { parentId } : {}), name: name.trim(), kindKey: kind };
+      const body = {
+        ...(parentId ? { parentId } : {}),
+        name: name.trim(),
+        kindKey: kind,
+        ...(description.trim() ? { description: description.trim() } : {}),
+      };
       if (!map) return { place: await inventoryApi.createPlace(locationId, body), events: null };
       const made = await inventoryApi.createSizedRoom(locationId, { ...body, map });
       return { place: made.body, events: made.auditEvents };
@@ -344,6 +350,13 @@ function AddPlaceForm({
         }}
         isInvalid={!!error}
         errorMessage={error}
+        inputProps={{ dir: 'auto' }}
+      />
+      <TextField
+        label={t`Description`}
+        value={description}
+        maxLength={500}
+        onChange={setDescription}
         inputProps={{ dir: 'auto' }}
       />
       <Segmented

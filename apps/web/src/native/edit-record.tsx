@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
 import type {
@@ -42,6 +42,7 @@ import {
   isRestoreEpochMismatch,
   ReplayError,
 } from './outbox';
+import { rememberDestination } from './recent-destinations';
 
 export function EditRecord({
   connection,
@@ -77,6 +78,22 @@ export function EditRecord({
   const [customDraft, setCustomDraft] = useState<Record<string, unknown>>({});
   const fieldLabel = useFieldLabel();
   const [roomName, setRoomName] = useState(place?.name ?? '');
+  const [description, setDescription] = useState(place?.description ?? '');
+  const [descriptionSupported, setDescriptionSupported] = useState(false);
+  useEffect(() => {
+    if (!place) return;
+    let current = true;
+    void ensureCaptureCompatible(connection, adapters)
+      .then((caps) => {
+        if (current) setDescriptionSupported(caps.placeDescriptions === true);
+      })
+      .catch(() => {
+        if (current) setDescriptionSupported(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [adapters, connection, place]);
   const row = thing ?? place;
   const account = cache.locations.find(({ id }) => id === thing?.locationId)?.ownerAccountId;
   const [rowVersion] = useState(row?.rowVersion);
@@ -170,12 +187,24 @@ export function EditRecord({
             body,
           });
         }
-      } else if (place && roomName.trim() && roomName.trim() !== place.name) {
-        await adapters.transport.request(connection, inventoryPaths.place(place.id), {
-          method: 'PATCH',
-          ifMatch: rowVersion,
-          body: { name: roomName.trim() },
-        });
+      } else if (place && roomName.trim()) {
+        const text = description.trim() || null;
+        const descriptionChanged = text !== (place.description ?? null);
+        if (
+          descriptionChanged &&
+          !(await ensureCaptureCompatible(connection, adapters)).placeDescriptions
+        )
+          throw new ReplayError('compatibility_hold');
+        const body = {
+          ...(roomName.trim() !== place.name ? { name: roomName.trim() } : {}),
+          ...(descriptionChanged ? { description: text } : {}),
+        };
+        if (Object.keys(body).length)
+          await adapters.transport.request(connection, inventoryPaths.place(place.id), {
+            method: 'PATCH',
+            ifMatch: rowVersion,
+            body,
+          });
       }
       onChanged();
     });
@@ -218,6 +247,7 @@ export function EditRecord({
         idempotencyKey: moveKey,
         ifMatch: rowVersion,
       });
+      void rememberDestination(connection, adapters, to.id);
       if (amount !== undefined && amount < Number(thing.quantity)) onChanged();
       else onMoved(to);
     });
@@ -402,13 +432,24 @@ export function EditRecord({
               )}
             </>
           ) : (
-            <TextField
-              label={t`Room name`}
-              value={roomName}
-              onChange={setRoomName}
-              inputProps={{ maxLength: 120 }}
-              isDisabled={busy}
-            />
+            <>
+              <TextField
+                label={t`Name`}
+                value={roomName}
+                onChange={setRoomName}
+                maxLength={120}
+                isDisabled={busy}
+              />
+              {descriptionSupported && (
+                <TextField
+                  label={t`Description`}
+                  value={description}
+                  onChange={setDescription}
+                  maxLength={500}
+                  isDisabled={busy}
+                />
+              )}
+            </>
           )}
           <Button type="submit" isPending={busy} isDisabled={!(values?.name ?? roomName).trim()}>
             <Check size={16} aria-hidden />
@@ -419,6 +460,8 @@ export function EditRecord({
       {(mode === 'move' || correcting) && (
         <div className="grid gap-3">
           <DestinationPicker
+            connection={connection}
+            online={true}
             cache={cache}
             value={destination}
             onChange={(value) => {
@@ -428,6 +471,7 @@ export function EditRecord({
             disabled={busy}
             exclude={thing?.id}
             onlyLocation={correcting ? thing?.locationId : undefined}
+            onAuthError={onAuthError}
           />
           {!correcting &&
             thing &&

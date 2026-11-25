@@ -35,6 +35,7 @@ export const NATIVE_CAPTURE_PAYLOAD_VERSION = 2;
 export const NATIVE_INVENTORY_PAYLOAD_VERSION = 3;
 export const NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION = 4;
 export const NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION = 5;
+export const NATIVE_CREATE_AREA_PAYLOAD_VERSION = 6;
 
 export const DEVICE_PHOTO_PROPOSAL_LIMIT = 12;
 export const DevicePhotoProposals = z.strictObject({
@@ -54,6 +55,8 @@ export type DevicePhotoProposal = z.infer<typeof DevicePhotoProposals>['items'][
 export const NativeCaptureCapabilitiesSchema = z.object({
   contractVersion: z.literal(1),
   capturePayloadVersions: z.array(z.number().int().positive()),
+  placeDescriptions: z.literal(true).optional(),
+  placeCreationPayloadVersion: z.literal(NATIVE_CREATE_AREA_PAYLOAD_VERSION).optional(),
   account: z.uuid(),
   epoch: z.uuid(),
 });
@@ -228,6 +231,13 @@ export const CreateAreaPayload = z.strictObject({
   parentId: uuid.nullable(),
   name,
   kindKey: z.string().regex(REGISTRY_KEY),
+  description: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .transform((value) => value || null)
+    .optional(),
 });
 
 export const BoxCheckPayload = z.strictObject({
@@ -575,11 +585,25 @@ export type SnapType = {
   isContainer: boolean;
 };
 
+/** Scoped live fallback for the native Places browser and destination picker. */
+export const LocationDestinationSchema = z.object({
+  id: z.uuid(),
+  locationId: z.uuid(),
+  parentId: z.uuid().nullable(),
+  name: z.string().nullable(),
+  description: z.string().nullable().optional(),
+  kind: z.enum(['place', 'box']),
+  isUnplaced: z.boolean().optional(),
+});
+export type LocationDestination = z.infer<typeof LocationDestinationSchema>;
+
 export type SnapPlace = {
   id: string;
   locationId: string;
   parentId: string | null;
   name: string;
+  /** Absent from snapshots produced by older servers. */
+  description?: string | null;
   kindKey: string;
   icon: string | null;
   isUnplaced: boolean;

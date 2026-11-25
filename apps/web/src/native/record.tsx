@@ -1,4 +1,4 @@
-import { newId } from '@kept/shared';
+import { newId, type PlacementHistory } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Archive,
@@ -36,7 +36,9 @@ import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type {
   AttachmentView,
+  LabelResult,
   Page,
+  PlaceContents,
   PlaceView,
   ThingRow,
   ThingView,
@@ -44,6 +46,8 @@ import type {
 } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { PhotoImage } from '@/components/photo-image';
+import { changedReferences, isReferencePhoto } from '@/components/places/reference-photos';
+import { WhereToLook } from '@/components/things/where-to-look';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, Modal } from '@/components/ui/dialog';
@@ -68,7 +72,11 @@ import {
 import type { LabelBox } from './label-panel';
 import type { Target } from './labels';
 import { draftFields, isAuthRefusal, isRestoreEpochMismatch, type PendingCapture } from './outbox';
+import { PlaceActions } from './place-actions';
+import { forgetPlacePhotos, useOfflinePlacePhotos } from './place-photo-cache';
+import { NativePlacePhotos } from './place-photos';
 import { RecordHistory } from './record-history';
+import { PlaceCreateForm } from './rooms';
 
 export type OpenBox = Destination & LabelBox;
 
@@ -256,7 +264,7 @@ export function RecordScreen({
   online?: boolean;
   onClose: () => void;
   onOpen: (target: Target) => void;
-  onCreateBox: () => void;
+  onCreateBox: (place: Destination) => void;
   onCapture: (destination: Destination, location: string) => void;
   onLabel: (mode: 'find' | 'enroll', box: OpenBox) => void;
   onCache: (detail: RecordDetail) => void;
@@ -276,6 +284,7 @@ export function RecordScreen({
   const [openingMedia, setOpeningMedia] = useState<string>();
   const [editor, setEditor] = useState<'edit' | 'move' | 'correct' | 'actions'>();
   const [section, setSection] = useState<'all' | 'contents' | 'media' | 'history'>('all');
+  const [placeAction, setPlaceAction] = useState<'add' | 'move' | 'trash'>();
   const [editingFiles, setEditingFiles] = useState(false);
   const [photoDialog, setPhotoDialog] = useState<AttachmentView>();
   const [photoNotice, setPhotoNotice] = useState('');
@@ -286,6 +295,7 @@ export function RecordScreen({
   const [categorizing, setCategorizing] = useState(false);
   const [checkId, setCheckId] = useState(newId);
   const [childRows, setChildRows] = useState<ThingRow[]>([]);
+  const [liveContents, setLiveContents] = useState<PlaceContents>();
   const describe = useRef(errorText);
   const format = useFormat();
   describe.current = errorText;
@@ -295,11 +305,22 @@ export function RecordScreen({
     target.kind === 'thing'
       ? cache?.things.find((item) => item.id === target.id)
       : cache?.places.find((item) => item.id === target.id);
+  const pendingPlace = target.kind === 'place' && cache?.pendingPlaceIds?.includes(target.id);
+  const offlinePlacePhotos = useOfflinePlacePhotos(
+    connection,
+    target.id,
+    online || target.kind !== 'place',
+  );
 
   const boxPending = pendingForRecord(pending, target.id);
   const pendingCount = boxPending.length;
   // biome-ignore lint/correctness/useExhaustiveDependencies: reload after local writes and outbox completion.
   useEffect(() => {
+    if (pendingPlace) {
+      setUnavailable(false);
+      setStatus('');
+      return;
+    }
     let current = true;
     setCachedNotice(false);
     if (target.kind === 'thing') {
@@ -359,11 +380,12 @@ export function RecordScreen({
     return () => {
       current = false;
     };
-  }, [adapters, connection, onCache, online, pendingCount, request, target]);
+  }, [adapters, connection, onCache, online, pendingCount, pendingPlace, request, target]);
 
   const thing = detail?.thing;
   const row = thing ?? place ?? cached;
   const name = row?.name ?? t`Untitled`;
+  const availablePlace = target.kind === 'place' && row && 'isUnplaced' in row && !row.isUnplaced;
   const currentLocation = cache?.locations.find((location) => location.id === target.locationId);
   const locationName = currentLocation?.name;
   const path =
@@ -372,16 +394,23 @@ export function RecordScreen({
       : cached && cache
         ? inventoryPath(cache, cached).join(' › ')
         : '';
+  const destinationPath =
+    row && 'path' in row && row.path.at(-1)?.id === target.id
+      ? path
+      : [path, name].filter(Boolean).join(' › ');
   const children =
     cache?.things.filter((item) =>
       target.kind === 'thing'
         ? item.containerId === target.id
         : item.placeId === target.id && !item.containerId,
     ) ?? [];
+  const directContents = target.kind === 'place' && online ? liveContents : undefined;
+  const shownChildren = directContents?.things.items ?? children;
   const childPlaces =
-    target.kind === 'place'
+    directContents?.places ??
+    (target.kind === 'place'
       ? (cache?.places.filter((item) => item.parentId === target.id) ?? [])
-      : [];
+      : []);
   const categoryTags =
     thing?.tags ??
     (cached && 'tagIds' in cached
@@ -391,11 +420,36 @@ export function RecordScreen({
   const canEdit = cache?.locations.some(
     (location) => location.id === target.locationId && location.role !== 'viewer',
   );
+  const placeLabelCode =
+    target.kind === 'place'
+      ? (place?.shortCode ??
+        cache?.codes.find(
+          (code) =>
+            code.placeId === target.id &&
+            code.locationId === target.locationId &&
+            code.isPrimary &&
+            code.state === 'assigned',
+        )?.code)
+      : undefined;
+  const canIssuePlaceLabel = !!(
+    online &&
+    canEdit &&
+    place &&
+    !place.isUnplaced &&
+    currentLocation?.effectiveModules?.includes('labels')
+  );
   const card = cache?.details[target.id];
   const notes = detail ? thing?.notes : card?.notes;
+  const description = place
+    ? place.description
+    : cached && 'description' in cached
+      ? cached.description
+      : undefined;
   const remoteAttachments =
     detail?.attachments ??
-    place?.attachments.filter((attachment) => !attachment.locationPhotoTakenAt);
+    place?.attachments.filter(
+      (attachment) => !attachment.locationPhotoTakenAt && !isReferencePhoto(attachment),
+    );
   const attachments = remoteAttachments ?? card?.attachments ?? [];
   const locationPhotos =
     detail?.locationPhotos ??
@@ -422,11 +476,33 @@ export function RecordScreen({
   const browsable = !!box || target.kind === 'place';
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh thumbnails after record mutations.
   useEffect(() => {
-    if (!online || !browsable) return;
+    if (!online || !browsable || pendingPlace) return;
     let current = true;
-    const filter = target.kind === 'place' ? { placeId: target.id } : { containerId: target.id };
+    if (target.kind === 'place') {
+      void adapters.transport
+        .request<PlaceContents>(
+          connection,
+          inventoryPaths.placeContents(target.id) + qs({ limit: 100 }),
+        )
+        .then((contents) => {
+          if (current && Array.isArray(contents?.places) && Array.isArray(contents.things?.items))
+            setLiveContents(contents);
+        })
+        .catch((error: unknown) => {
+          if (!current) return;
+          setLiveContents(undefined);
+          if (isAuthRefusal(error)) authErrorRef.current?.('expired');
+          else if (isRestoreEpochMismatch(error)) authErrorRef.current?.('restored');
+        });
+      return () => {
+        current = false;
+      };
+    }
     void adapters.transport
-      .request<Page<ThingRow>>(connection, inventoryPaths.things + qs({ ...filter, limit: 100 }))
+      .request<Page<ThingRow>>(
+        connection,
+        inventoryPaths.things + qs({ containerId: target.id, limit: 100 }),
+      )
       .then((page) => {
         if (current) setChildRows(page.items);
       })
@@ -439,10 +515,11 @@ export function RecordScreen({
     return () => {
       current = false;
     };
-  }, [adapters, browsable, connection, online, request, target]);
+  }, [adapters, browsable, connection, online, pendingPlace, request, target]);
 
   function changed() {
     setEditor(undefined);
+    setPlaceAction(undefined);
     setRequest((value) => value + 1);
     onInventoryChanged();
   }
@@ -460,6 +537,27 @@ export function RecordScreen({
     } finally {
       setChanging(false);
     }
+  }
+
+  function openPlaceLabel() {
+    if (target.kind !== 'place') return;
+    const openLabel = (shortCode: string) =>
+      onLabel('enroll', { ...target, kind: 'place', name, shortCode, isContainer: false });
+    if (placeLabelCode) {
+      openLabel(placeLabelCode);
+      return;
+    }
+    if (!canIssuePlaceLabel) return;
+    void update(async () => {
+      const { code } = await adapters.transport.request<LabelResult>(
+        connection,
+        inventoryPaths.placeLabel(target.id),
+        { method: 'POST' },
+      );
+      setPlace((previous) => previous && { ...previous, shortCode: code });
+      onInventoryChanged();
+      openLabel(code);
+    });
   }
 
   function checkContents() {
@@ -674,6 +772,11 @@ export function RecordScreen({
                 </span>
               </p>
             )}
+            {description && (
+              <p dir="auto" className="whitespace-pre-wrap wrap-anywhere">
+                {description}
+              </p>
+            )}
             {unknown && !!thing?.lastKnownPath?.length && (
               <p className="text-small text-ink-2">
                 <Trans>Last known location</Trans>{' '}
@@ -709,12 +812,46 @@ export function RecordScreen({
               </p>
             )}
           </header>
+          {target.kind === 'thing' && (
+            <WhereToLook
+              key={`${target.id}:${thing?.rowVersion ?? 'cached'}`}
+              online={!!online}
+              load={() =>
+                adapters.transport.request<PlacementHistory>(
+                  connection,
+                  inventoryPaths.placementHistory(target.id),
+                )
+              }
+              onError={(error) => {
+                if (isAuthRefusal(error)) {
+                  onAuthError?.('expired');
+                  return true;
+                }
+                if (isRestoreEpochMismatch(error)) {
+                  onAuthError?.('restored');
+                  return true;
+                }
+                return false;
+              }}
+            />
+          )}
           {box && (
             <div className="flex flex-wrap gap-2">
               {canEdit && (
-                <Button onPress={() => onCapture(box, path)}>
+                <Button
+                  onPress={() => onCapture({ ...box, kind: 'box', path: destinationPath }, path)}
+                >
                   <Plus size={16} aria-hidden />
                   <Trans>Add to this box</Trans>
+                </Button>
+              )}
+              {online && canEdit && (
+                <Button
+                  variant="secondary"
+                  onPress={() => onCreateBox({ ...box, kind: 'box', path: destinationPath })}
+                >
+                  <Package size={16} aria-hidden />
+                  <Trans>Create box</Trans>
                 </Button>
               )}
               <Button variant="secondary" onPress={() => onLabel('find', box)}>
@@ -730,17 +867,63 @@ export function RecordScreen({
             </div>
           )}
           <div className="flex flex-wrap gap-2">
+            {pendingPlace && (
+              <span className="kept-badge kept-badge-warn">
+                <Trans>Waiting to sync</Trans>
+              </span>
+            )}
             {canEdit && target.kind === 'place' && (
-              <Button onPress={() => onCapture({ ...target, name, kind: 'place' }, path)}>
+              <Button
+                onPress={() =>
+                  onCapture({ ...target, name, path: destinationPath, kind: 'place' }, path)
+                }
+              >
                 <Plus size={16} aria-hidden />
-                <Trans>Add to this room</Trans>
+                <Trans>Add here</Trans>
+              </Button>
+            )}
+            {canEdit && availablePlace && (
+              <Button
+                variant="secondary"
+                onPress={() => {
+                  setEditor(undefined);
+                  setPlaceAction('add');
+                }}
+              >
+                <Plus size={16} aria-hidden />
+                <Trans>Add sub-location</Trans>
               </Button>
             )}
             {online && canEdit && place && !place.isUnplaced && (
-              <Button variant="secondary" onPress={onCreateBox}>
-                <Package size={16} aria-hidden />
-                <Trans>Create box</Trans>
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  onPress={() => onCreateBox({ ...target, name, path, kind: 'place' })}
+                >
+                  <Package size={16} aria-hidden />
+                  <Trans>Create box</Trans>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onPress={() => {
+                    setEditor(undefined);
+                    setPlaceAction('move');
+                  }}
+                >
+                  <ArrowRightLeft size={16} aria-hidden />
+                  <Trans>Move</Trans>
+                </Button>
+                <Button
+                  variant="secondary"
+                  onPress={() => {
+                    setEditor(undefined);
+                    setPlaceAction('trash');
+                  }}
+                >
+                  <Trash2 size={16} aria-hidden />
+                  <Trans>Move to Trash</Trans>
+                </Button>
+              </>
             )}
             {canEdit && target.kind === 'thing' && (
               <Button
@@ -760,6 +943,16 @@ export function RecordScreen({
                 <Trans>Add documents</Trans>
               </Button>
             )}
+            {(placeLabelCode || canIssuePlaceLabel) && (
+              <Button variant="secondary" isPending={changing} onPress={openPlaceLabel}>
+                <QrCode size={16} aria-hidden />
+                {canIssuePlaceLabel ? (
+                  <Trans>QR and NFC label</Trans>
+                ) : (
+                  <Trans>View QR label</Trans>
+                )}
+              </Button>
+            )}
             {labelledItem && (
               <Button variant="secondary" onPress={() => onLabel('enroll', labelledItem)}>
                 <QrCode size={16} aria-hidden />
@@ -768,7 +961,13 @@ export function RecordScreen({
             )}
             {online && canEdit && (thing || place) && (
               <>
-                <Button variant="secondary" onPress={() => setEditor('edit')}>
+                <Button
+                  variant="secondary"
+                  onPress={() => {
+                    setPlaceAction(undefined);
+                    setEditor('edit');
+                  }}
+                >
                   <Pencil size={16} aria-hidden />
                   <Trans>Edit</Trans>
                 </Button>
@@ -793,6 +992,35 @@ export function RecordScreen({
               </>
             )}
           </div>
+          {placeAction === 'add' && cache && availablePlace && canEdit && (
+            <PlaceCreateForm
+              cache={cache}
+              connection={connection}
+              online={online}
+              parent={target}
+              onClose={() => setPlaceAction(undefined)}
+              onCreated={(target) => {
+                onInventoryChanged();
+                onOpen(target);
+              }}
+              onAuthError={onAuthError}
+            />
+          )}
+          {placeAction && placeAction !== 'add' && place && cache && online && canEdit && (
+            <PlaceActions
+              cache={cache}
+              connection={connection}
+              place={place}
+              mode={placeAction}
+              onClose={() => setPlaceAction(undefined)}
+              onChanged={changed}
+              onTrashed={() => {
+                onInventoryChanged();
+                onClose();
+              }}
+              onAuthError={onAuthError}
+            />
+          )}
           {editor && online && canEdit && cache && (
             <EditRecord
               key={editor}
@@ -1002,6 +1230,35 @@ export function RecordScreen({
                 })}
               </ul>
             </section>
+          )}
+          {showMedia && availablePlace && (
+            <NativePlacePhotos
+              connection={connection}
+              place={{
+                id: target.id,
+                locationId: target.locationId,
+                name,
+                attachments: offlinePlacePhotos ?? place?.attachments ?? [],
+              }}
+              editable={!!canEdit}
+              online={online}
+              pendingPlace={pendingPlace}
+              onQueued={onInventoryChanged}
+              onAuthError={onAuthError}
+              onChange={(id, photo) => {
+                void forgetPlacePhotos(connection, adapters, target.id).catch(() => {});
+                setPlace(
+                  (old) =>
+                    old && { ...old, attachments: changedReferences(old.attachments, id, photo) },
+                );
+                setRequest((value) => value + 1);
+              }}
+              reload={async () => {
+                const latest = await loadPlace(connection, target.id, adapters);
+                setPlace(latest);
+                return latest.attachments;
+              }}
+            />
           )}
           {showMedia && online && canEdit && attachments.length > 0 && (
             <Button
@@ -1286,7 +1543,7 @@ export function RecordScreen({
                   </Button>
                 )}
               </div>
-              {children.length === 0 && childPlaces.length === 0 ? (
+              {shownChildren.length === 0 && childPlaces.length === 0 ? (
                 <p className="text-ink-2">
                   <Trans>No cached contents.</Trans>
                 </p>
@@ -1298,7 +1555,7 @@ export function RecordScreen({
                         variant="secondary"
                         className="kept-phone-row"
                         onPress={() =>
-                          onOpen({ id: child.id, kind: 'place', locationId: child.locationId })
+                          onOpen({ id: child.id, kind: 'place', locationId: target.locationId })
                         }
                       >
                         <span className="kept-row-lead" aria-hidden>
@@ -1315,8 +1572,9 @@ export function RecordScreen({
                       </Button>
                     </li>
                   ))}
-                  {children.map((child) => {
-                    const childRow = childRows.find((hit) => hit.id === child.id);
+                  {shownChildren.map((child) => {
+                    const childRow =
+                      'thumbUrl' in child ? child : childRows.find((hit) => hit.id === child.id);
                     const image = online && previewUrl(childRow?.thumbUrl, connection.origin);
                     return (
                       <li key={child.id}>
@@ -1356,6 +1614,34 @@ export function RecordScreen({
                     );
                   })}
                 </ul>
+              )}
+              {directContents?.things.next_cursor && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  isPending={changing}
+                  onPress={() =>
+                    void update(async () => {
+                      const page = await adapters.transport.request<PlaceContents>(
+                        connection,
+                        inventoryPaths.placeContents(target.id) +
+                          qs({
+                            limit: 100,
+                            cursor: directContents.things.next_cursor ?? undefined,
+                          }),
+                      );
+                      setLiveContents({
+                        ...page,
+                        things: {
+                          ...page.things,
+                          items: [...directContents.things.items, ...page.things.items],
+                        },
+                      });
+                    })
+                  }
+                >
+                  <Trans>Show more</Trans>
+                </Button>
               )}
             </section>
           )}

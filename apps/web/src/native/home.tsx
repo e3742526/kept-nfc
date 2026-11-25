@@ -42,8 +42,8 @@ function homeStats(cache: InventoryCache | undefined) {
     if (thing.isContainer) boxes += 1;
     if (thing.placeId && thing.placeId === unplacedPlaces.get(thing.locationId)) unplaced += 1;
   }
-  const rooms = cache?.places.filter((p) => p.kindKey === 'room' && !p.isUnplaced).length ?? 0;
-  return { items, boxes, rooms, unplaced, drafts };
+  const places = cache?.places.filter((p) => !p.isUnplaced).length ?? 0;
+  return { items, boxes, places, unplaced, drafts };
 }
 
 function StatTile({
@@ -53,20 +53,20 @@ function StatTile({
   isDisabled,
   onPress,
 }: {
-  value: number;
+  value: number | undefined;
   label: string;
   Icon: typeof Package;
   isDisabled?: boolean;
   onPress: () => void;
 }) {
   const fmt = useFormat();
-  const number = fmt.num(value);
+  const number = value === undefined ? '—' : fmt.num(value);
   return (
     <Button
       variant="secondary"
       className="kept-stat"
       isDisabled={isDisabled}
-      aria-label={`${number} ${label}`}
+      aria-label={value === undefined ? label : `${number} ${label}`}
       onPress={onPress}
     >
       <Icon size={16} className="kept-stat-icon" aria-hidden />
@@ -222,8 +222,8 @@ export function HomeDashboard({
           onPress={onBoxes}
         />
         <StatTile
-          value={stats.rooms}
-          label={t`Rooms`}
+          value={cache?.truncated ? undefined : stats.places}
+          label={t`Places`}
           Icon={MapPin}
           isDisabled={!ready}
           onPress={onRooms}

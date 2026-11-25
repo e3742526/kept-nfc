@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import {
   NATIVE_CAPTURE_PAYLOAD_VERSION,
+  NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
   NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
@@ -468,7 +469,9 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
       const context = requireNativeContext(req);
       reply.header('cache-control', 'no-store');
       return {
-        contractVersion: 1 as const,
+        contractVersion: 1,
+        placeDescriptions: true,
+        placeCreationPayloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
         capturePayloadVersions: [
           NATIVE_CAPTURE_PAYLOAD_VERSION,
           NATIVE_INVENTORY_PAYLOAD_VERSION,
@@ -476,7 +479,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
           NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
         ],
         ...context,
-      };
+      } satisfies z.infer<typeof NativeCaptureCapabilitiesSchema>;
     },
   );
 

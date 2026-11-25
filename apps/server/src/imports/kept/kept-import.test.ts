@@ -105,6 +105,7 @@ beforeAll(async () => {
     body: { parentId: null, name: 'Shelf', kindKey: 'room' },
   });
   shelf = ok(shelfRes, 201).id;
+  await own(db, `UPDATE public.places SET description = 'Travel documents' WHERE id = $1`, [shelf]);
   const safeType = await builtinType(db, 'safe');
   const safe = await createThing(t, ibrahim, home, {
     name: 'Safe',
@@ -275,6 +276,13 @@ describe('a Kept export imported on the server it came from', () => {
     expect(things.map((x) => x.name)).toEqual(['Drill', 'Passports', 'Safe']);
     expect(things.find((x) => x.id === passports)?.container_id).toBe(safe);
     expect(things.find((x) => x.id === safe)?.place_id).toBe(map.get(shelf));
+    const [importedPlace] = await own<{ description: string }>(
+      db,
+      'SELECT description FROM public.places WHERE id = $1',
+      [map.get(shelf)],
+    );
+    expect(importedPlace?.description).toBe('Travel documents');
+
     // The map travels too, a thing on a wall at its height (#138).
     const nodes = await own<{ thing_id: string | null; model: string | null; height_cm: number }>(
       db,
@@ -582,8 +590,8 @@ describe('resuming and refusing', () => {
       locationId: home.id,
       files,
       mutate: (m, entries) => {
-        // As Kept 1.0 to 1.5.0 wrote it: no condition reports, no counts for them, and the
-        // attachments and service lines without the columns added since.
+        // As Kept 1.0 to 1.5.0 wrote it: no condition reports or counts for them. Places,
+        // attachments and service lines omit columns added later.
         m.version = 1;
         const counts = m.counts as Partial<Record<ExportEntity, number>>;
         for (const e of ['condition-reports', 'condition-report-rooms'] as const) {
@@ -591,6 +599,7 @@ describe('resuming and refusing', () => {
           entries.delete(EXPORT_PATHS.data(e));
         }
         strip(entries, 'attachments', ['conditionRoomId']);
+        strip(entries, 'places', ['description']);
         strip(entries, 'service-lines', ['consumableThingId', 'consumedQuantity']);
       },
     });
@@ -609,6 +618,13 @@ describe('resuming and refusing', () => {
       expect(
         await count('SELECT count(*) AS n FROM public.things WHERE location_id = $1', [target.id]),
       ).toBe(3);
+      expect(
+        await own(
+          db,
+          `SELECT description FROM public.places WHERE location_id = $1 AND name = 'Shelf'`,
+          [target.id],
+        ),
+      ).toEqual([{ description: null }]);
       expect(
         await count('SELECT count(*) AS n FROM public.attachments WHERE location_id = $1', [
           target.id,

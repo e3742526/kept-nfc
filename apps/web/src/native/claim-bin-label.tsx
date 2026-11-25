@@ -6,7 +6,7 @@ import type { ClaimBody, ClaimResult, LabelClaimedDetails } from '@/api/capture/
 import { ApiError } from '@/api/client';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
-import { Select, SelectItem } from '@/components/ui/select';
+
 import { TextField } from '@/components/ui/text-field';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
@@ -14,6 +14,7 @@ import { type Destination, DestinationPicker } from './destination';
 import type { InventoryCache } from './inventory';
 import type { Target } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
+import { rememberDestination } from './recent-destinations';
 
 export function ClaimBinLabel({
   connection,
@@ -33,24 +34,29 @@ export function ClaimBinLabel({
   const { t } = useLingui();
   const adapters = usePlatform();
   const errorText = useErrorText();
-  const [existingId, setExistingId] = useState<string>();
+  const [existing, setExisting] = useState(false);
   const [destination, setDestination] = useState<Destination>();
   const [name, setName] = useState('');
   const [id, setId] = useState(newId);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [claimed, setClaimed] = useState<LabelClaimedDetails['claimedFor']>();
-  const boxes = cache.things.filter(
-    (thing) => thing.locationId === locationId && thing.isContainer,
-  );
 
   async function submit() {
     if (busy) return;
     let body: ClaimBody;
-    if (existingId) body = { thingId: existingId };
-    else if (destination)
-      body = { newContainer: { id, name: name.trim() || t`Box`, placeId: destination.id } };
-    else return;
+    if (!destination) return;
+    if (existing) body = { thingId: destination.id };
+    else
+      body = {
+        newContainer: {
+          id,
+          name: name.trim() || t`Box`,
+          ...(destination.kind === 'box'
+            ? { containerId: destination.id }
+            : { placeId: destination.id }),
+        },
+      };
     setBusy(true);
     setStatus('');
     try {
@@ -63,6 +69,7 @@ export function ClaimBinLabel({
           idempotencyKey: id,
         },
       );
+      void rememberDestination(connection, adapters, destination.id);
       onOpen({ ...result.target, locationId });
     } catch (error) {
       if (isAuthRefusal(error)) onAuthError?.('expired');
@@ -92,52 +99,45 @@ export function ClaimBinLabel({
         </Button>
       ) : (
         <>
-          <Select
-            label={t`Box`}
-            items={[{ id: 'new', name: t`Create box` }, ...boxes]}
-            selectedKey={existingId ?? 'new'}
+          <Button
+            variant="secondary"
             isDisabled={busy}
-            onSelectionChange={(key) => {
-              setExistingId(key && key !== 'new' ? String(key) : undefined);
+            onPress={() => {
+              setExisting(!existing);
+              setDestination(undefined);
               setId(newId());
             }}
           >
-            {(option) => (
-              <SelectItem id={option.id}>
-                <bdi>{option.name ?? t`Untitled`}</bdi>
-              </SelectItem>
-            )}
-          </Select>
-          {!existingId && (
-            <>
-              <TextField
-                label={t`Box name (optional)`}
-                value={name}
-                isDisabled={busy}
-                inputProps={{ maxLength: 200 }}
-                onChange={(value) => {
-                  setName(value);
-                  setId(newId());
-                }}
-              />
-              <DestinationPicker
-                cache={cache}
-                value={destination}
-                placesOnly
-                onlyLocation={locationId}
-                disabled={busy}
-                onChange={(value) => {
-                  setDestination(value);
-                  setId(newId());
-                }}
-              />
-            </>
+            {existing ? <Trans>Create box</Trans> : <Trans>Choose existing box</Trans>}
+          </Button>
+          {!existing && (
+            <TextField
+              label={t`Box name (optional)`}
+              value={name}
+              isDisabled={busy}
+              inputProps={{ maxLength: 200 }}
+              onChange={(value) => {
+                setName(value);
+                setId(newId());
+              }}
+            />
           )}
-          <Button
-            isPending={busy}
-            isDisabled={!existingId && !destination}
-            onPress={() => void submit()}
-          >
+          <DestinationPicker
+            key={String(existing)}
+            cache={cache}
+            connection={connection}
+            online={true}
+            value={destination}
+            boxesOnly={existing}
+            onlyLocation={locationId}
+            disabled={busy}
+            onAuthError={onAuthError}
+            onChange={(value) => {
+              setDestination(value);
+              setId(newId());
+            }}
+          />
+          <Button isPending={busy} isDisabled={!destination} onPress={() => void submit()}>
             <Trans>Assign label</Trans>
           </Button>
         </>

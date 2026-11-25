@@ -530,6 +530,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "nonMatchFeedback", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "takeLink", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openMedia", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readThumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareLabelPdf", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareLabelSheet", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openPendingMedia", returnType: CAPPluginReturnPromise),
@@ -819,11 +820,16 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             guard let id = call.getString("id"), let file = call.getString("file"),
                   let location = call.getString("location"), UUID(uuidString: location) != nil
             else { throw KeptNativeError.invalidRequest }
-            let (url, original) = try await self.store.use {
-                try $0.original(context: connection.id, draft: id, file: file)
+            let stagedPhotoMime = call.getString("stagedPhotoMime")
+            let (url, original) = try await self.store.use { store in
+                if let mime = stagedPhotoMime {
+                    return try store.stagedPhoto(context: connection.id, draft: id, file: file, mime: mime)
+                }
+                return try store.original(context: connection.id, draft: id, file: file)
             }
             guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
-            let fileClass = original.file.role == "photo" ? "evidence" : "document"
+            let isPlacePhoto = stagedPhotoMime != nil || call.getBool("placePhoto") == true
+            let fileClass = isPlacePhoto ? "photo" : (original.file.role == "photo" ? "evidence" : "document")
             let uploadId = call.getString("uploadId") ?? original.file.id
             guard UUID(uuidString: uploadId) != nil else { throw KeptNativeError.invalidRequest }
             let path = "/api/v1/files/\(uploadId)?locationId=\(location)&class=\(fileClass)"
@@ -1015,6 +1021,28 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                 throw error
             }
             call.resolve()
+        }
+    }
+
+    @objc func readThumbnail(_ call: CAPPluginCall) {
+        run(call) {
+            let connection = try self.requireConnection(call)
+            guard let raw = call.getString("url"),
+                  let url = URL(string: raw, relativeTo: connection.origin)?.absoluteURL,
+                  url.scheme == "https", url.user == nil, url.password == nil
+            else { throw KeptNativeError.invalidRequest }
+            let limit = 40 * 1024
+            let (bytes, response) = try await KeptHTTP.stream(URLRequest(url: url))
+            guard response.statusCode == 200, response.expectedContentLength <= Int64(limit)
+            else { throw KeptNativeError.invalidRequest }
+            var data = Data()
+            for try await byte in bytes {
+                guard data.count < limit else { throw KeptNativeError.invalidRequest }
+                data.append(byte)
+            }
+            guard data.starts(with: [0xff, 0xd8, 0xff]), try KeptKeychain.read() == connection
+            else { throw KeptNativeError.invalidRequest }
+            call.resolve(["data": data.base64EncodedString()])
         }
     }
 

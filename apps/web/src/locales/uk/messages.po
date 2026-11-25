@@ -33265,3 +33265,183 @@ msgstr "Сфотографуйте місце, де ви залишили цей
 #: src/native/main.tsx
 msgid "Choose an item or bin"
 msgstr "Виберіть предмет або контейнер"
+
+#: src/components/places/reference-photos.tsx
+msgid "Add photo"
+msgstr "Додати фото"
+
+#: src/native/record.tsx
+#: src/native/rooms.tsx
+msgid "Add sub-location"
+msgstr "Додати вкладене місце"
+
+#: src/components/display-prefs.tsx
+msgid "Camera photo size"
+msgstr "Розмір знімків камери"
+
+#: src/native/claim-bin-label.tsx
+msgid "Choose existing box"
+msgstr "Вибрати наявну коробку"
+
+#: src/components/places/reference-photos.tsx
+msgid "Choose reference photo"
+msgstr "Вибрати довідкове фото"
+
+#: src/native/destination.tsx
+msgid "Choose this destination"
+msgstr "Вибрати це місце"
+
+#: src/native/rooms.tsx
+msgid "Create place"
+msgstr "Створити місце"
+
+#: src/native/rooms.tsx
+msgid "Direct items {direct} · All levels {total}"
+msgstr "Тут {direct} · На всіх рівнях {total}"
+
+#. placeholder {0}: nameOf(row)
+#: src/native/rooms.tsx
+msgid "Expand or collapse {0}"
+msgstr "Розгорнути або згорнути {0}"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Loading places…"
+msgstr "Завантаження місць…"
+
+#: src/native/place-actions.tsx
+msgid "Move contents"
+msgstr "Перемістити вміст"
+
+#: src/native/rooms.tsx
+msgid "No places to show."
+msgstr "Немає місць для показу."
+
+#: src/native/destination.tsx
+msgid "Recent destinations"
+msgstr "Нещодавні місця"
+
+#: src/components/places/reference-photos.tsx
+msgid "Reference photos"
+msgstr "Довідкові фото"
+
+#: src/components/places/reference-photos.tsx
+msgid "Remove photo?"
+msgstr "Видалити фото?"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo"
+msgstr "Замінити фото"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace photo?"
+msgstr "Замінити фото?"
+
+#: src/components/places/reference-photos.tsx
+msgid "Replace the current reference photo with your selection."
+msgstr "Замініть поточне довідкове фото на вибране."
+
+#: src/components/places/reference-photos.tsx
+msgid "Review replacement"
+msgstr "Переглянути заміну"
+
+#: src/native/destination.tsx
+#: src/native/rooms.tsx
+msgid "Some destinations are missing from this device."
+msgstr "Деяких місць немає на цьому пристрої."
+
+#: src/components/places/reference-photos.tsx
+msgid "Take photo"
+msgstr "Зробити фото"
+
+#: src/components/places/reference-photos.tsx
+msgid "Take reference photo"
+msgstr "Зробити довідкове фото"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in Kept, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Довша сторона фото, зробленого в Kept, у пікселях. Менші фото завантажуються швидше. Фото з медіатеки з довшою стороною понад 4096 пікселів зменшуються під час завантаження."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo changed. Review it before replacing it."
+msgstr "Це довідкове фото змінилося. Перегляньте його перед заміною."
+
+#: src/components/places/reference-photos.tsx
+msgid "This reference photo is gone. Choose another photo to replace."
+msgstr "Цього довідкового фото вже немає. Виберіть інше фото для заміни."
+
+#: src/components/things/where-to-look.tsx
+msgid "Based on the most recent recorded placements."
+msgstr "За найсвіжішими записами про розміщення."
+
+#: src/components/things/where-to-look.tsx
+msgid "Connect to see location history."
+msgstr "Під’єднайтеся, щоб переглянути історію розміщення."
+
+#: src/components/things/where-to-look.tsx
+msgid "Exact places"
+msgstr "Точні місця"
+
+#: src/components/things/where-to-look.tsx
+msgid "Group by"
+msgstr "Групувати за"
+
+#: src/components/things/where-to-look.tsx
+msgid "Last recorded <0>{date}</0>"
+msgstr "Останній запис <0>{date}</0>"
+
+#: src/components/things/where-to-look.tsx
+msgid "Loading location history…"
+msgstr "Завантаження історії розміщення…"
+
+#: src/components/things/where-to-look.tsx
+msgid "No placement history yet."
+msgstr "Історії розміщення поки немає."
+
+#: src/components/things/where-to-look.tsx
+msgid "No recorded places in this group."
+msgstr "У цій групі немає записаних місць."
+
+#: src/components/things/where-to-look.tsx
+msgid "Recorded placements {count}"
+msgstr "Записів про розміщення {count}"
+
+#: src/components/things/where-to-look.tsx
+msgid "Rooms and areas"
+msgstr "Кімнати й зони"
+
+#: src/components/things/where-to-look.tsx
+msgid "Show location history"
+msgstr "Показати історію розміщення"
+
+#: src/components/things/where-to-look.tsx
+msgid "Where to look"
+msgstr "Де шукати"
+
+#: src/native/destination.tsx
+msgid "Choose a different place."
+msgstr "Виберіть інше місце."
+
+#: src/native/destination.tsx
+msgid "Connect to check where this place belongs."
+msgstr "Підключіться, щоб перевірити розташування цього місця в ієрархії."
+
+#: src/native/label-panel.tsx
+msgid "Scan a place label."
+msgstr "Відскануйте етикетку місця."
+
+#: src/native/destination.tsx
+msgid "Scan place label"
+msgstr "Сканувати етикетку місця"
+
+#: src/native/label-panel.tsx
+msgid "The server could not confirm this place’s label. Reopen the place and try again."
+msgstr "Сервер не зміг підтвердити етикетку цього місця. Відкрийте місце знову та повторіть спробу."
+
+#: src/native/destination.tsx
+msgid "This place is outside the available destinations."
+msgstr "Це місце не входить до доступних місць призначення."
+
+#: src/components/places/reference-photos.tsx
+msgid "Set as cover"
+msgstr "Зробити обкладинкою"

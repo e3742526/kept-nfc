@@ -481,9 +481,10 @@ describe('deltas', () => {
     expect(allOf(pages, 'things')).toEqual([]);
     expect(allOf(pages, 'places')).toEqual([]);
 
-    await own(`UPDATE public.places SET name = 'Top shelf', child_order = 'custom' WHERE id = $1`, [
-      shelf,
-    ]);
+    await own(
+      `UPDATE public.places SET name = 'Top shelf', description = 'Tall bottles', child_order = 'custom' WHERE id = $1`,
+      [shelf],
+    );
     await own('UPDATE public.things SET last_seen_at = $2 WHERE id = $1', [
       drill,
       '2026-09-20T10:00:00Z',
@@ -491,7 +492,12 @@ describe('deltas', () => {
     await own('UPDATE public.things SET deleted_at = now() WHERE id = $1', [box]);
     ({ pages } = await directPull(louis, state));
     expect(allOf(pages, 'places')).toEqual([
-      expect.objectContaining({ id: shelf, name: 'Top shelf', deleted: false }),
+      expect.objectContaining({
+        id: shelf,
+        name: 'Top shelf',
+        description: 'Tall bottles',
+        deleted: false,
+      }),
     ]);
     // When it was made: the phone orders floors among siblings by it, as the server does.
     const [made] = await own<{ created_at: Date }>(

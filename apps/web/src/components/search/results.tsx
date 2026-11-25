@@ -39,6 +39,7 @@ import { ListSurface } from '@/components/list-surface';
 import { EmptyState, List, Section } from '@/components/page';
 import { PhotoImage } from '@/components/photo-image';
 import { placeIcon, usePlaceName } from '@/components/places/labels';
+import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
 import { rowLink, Tile, TypeText } from '@/components/places/rows';
 import { StatusPill } from '@/components/status-pill';
 import { TagChips } from '@/components/tags/chip';
@@ -427,6 +428,7 @@ export function ThingResult({
           ) : null}
           <FullPath location={locationName} steps={thing.path} />
         </span>
+        <PlaceEvidenceDetails evidence={thing.placeEvidence} />
         {(thing.labelPrinted && thing.shortCode) || thing.derivedState.length || pending ? (
           <span className="flex flex-wrap items-center gap-1.5">
             <LabelTape code={thing.shortCode} printed={thing.labelPrinted} pending={pending} />

@@ -149,7 +149,18 @@ it('keeps visual search unavailable with no explicitly configured encoder', asyn
 // catalogue: POST /api/v1/admin/visual-search/reindex
 it('queues bounded scoped indexing, audits it once with an idempotency key, and keeps ranks evidence-linked', async () => {
   const loc = await createLocation(app, db, owner, 'household', 'Home');
-  const box = await makeBox(loc, 'Blue tote');
+  const room = ok(
+    await call(app, `/api/v1/locations/${loc.id}/places`, {
+      as: owner,
+      body: { name: 'Pantry', kindKey: 'room', description: 'Next to the kitchen door' },
+    }),
+    201,
+  );
+  const box = await createThing(app, owner, loc, {
+    name: 'Blue tote',
+    typeId: await builtinType(db, 'box_bin'),
+    placeId: room.id,
+  });
   const evidence = await attach(loc, await photo('red'), 'Kitchen spares', box.id);
   expect(sent).toContainEqual({
     name: 'visual-index',
@@ -187,7 +198,14 @@ it('queues bounded scoped indexing, audits it once with an idempotency key, and 
         attachmentId: evidence.attachment.id,
         locationId: loc.id,
         name: 'Kitchen spares',
-        path: expect.arrayContaining([{ id: box.id, name: 'Blue tote' }]),
+        path: [
+          { id: loc.id, name: 'Home' },
+          expect.objectContaining({ id: room.id, name: 'Pantry' }),
+          { id: box.id, name: 'Blue tote' },
+        ],
+        placeEvidence: {
+          description: { placeId: room.id, placeName: 'Pantry', text: 'Next to the kitchen door' },
+        },
       },
     ],
   });

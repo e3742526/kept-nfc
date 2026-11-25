@@ -34,7 +34,7 @@ import {
   type PayloadWindow,
   parsedPayload,
   requestHash,
-  usesNativeCaptureVersion,
+  usesNativePayloadVersion,
 } from './payload.js';
 
 // POST /api/v1/sync/ops (D17, D35, D36, D112, D148, D156,
@@ -229,7 +229,7 @@ async function applyOne(
   const drop = (reason: DropReason): SyncOpResult => ({ ...base, outcome: 'dropped', reason });
   // A key the ledger can't hold is answered, never recorded (there is nothing to replay).
   if (!LEDGER_KEY.test(item.idempotencyKey)) return drop('invalid');
-  const usesNativeVersion = usesNativeCaptureVersion(item);
+  const usesNativeVersion = usesNativePayloadVersion(item);
   const hash = requestHash(item);
   const now = opts.now();
 
@@ -381,7 +381,7 @@ export async function syncOpsRoutes(app: KeptApp, deps: InventoryDeps): Promise<
     '/api/v1/sync/ops',
     { schema: { body: SyncOpsRequestSchema, response: { 200: SyncOpsResponseSchema } } },
     (req) => {
-      if (req.body.ops.some(usesNativeCaptureVersion)) requireNativeContext(req);
+      if (req.body.ops.some(usesNativePayloadVersion)) requireNativeContext(req);
       return applyOps(
         { pools: deps.pools, jobs: deps.jobs, files: deps.files, log: req.log },
         requireScope(req),
