@@ -125,6 +125,7 @@ type Screen =
       location?: string;
       fromRecord?: boolean;
       name?: string;
+      initialPhoto?: File;
     }
   | { kind: 'identify' }
   | { kind: 'nfcTarget' }
@@ -712,6 +713,11 @@ export function Inventory({
     backStack.current = [];
     setScreen({ kind: 'home' });
   };
+  useEffect(() => {
+    if (screen.kind !== 'capture' || !screen.initialPhoto) return;
+    // The form owns the photo after mounting. Keep it out of subsequent Back navigation.
+    setScreen((current) => (current === screen ? { ...screen, initialPhoto: undefined } : current));
+  }, [screen]);
   const resetBrowseFilters = (mode: typeof browseDefaults.mode, q = '') => {
     setBrowseFilters((previous) => ({
       ...browseDefaults,
@@ -1594,8 +1600,8 @@ export function Inventory({
                 setUnplacedLocationFilter(null);
                 pushScreen({ kind: 'unplaced' });
               }}
-              onAdd={() => void goTab('capture')}
-              onScan={() => void goTab('scan')}
+              onAddManually={() => void goTab('capture')}
+              onAddWithCamera={(initialPhoto) => pushScreen({ kind: 'capture', initialPhoto })}
               onLabels={() => pushScreen({ kind: 'labelSheets' })}
               onReview={() => pushScreen({ kind: 'batches' })}
               onOpen={open}
@@ -1810,6 +1816,7 @@ export function Inventory({
           cache={cacheForLocation(screen.destination?.locationId)}
           location={screen.location}
           initialName={screen.name}
+          initialPhoto={screen.initialPhoto}
           suggested={suggestedDestination}
           pending={pending}
           completions={completions}

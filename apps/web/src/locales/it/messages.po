@@ -27131,6 +27131,14 @@ msgstr "Togliere {title} dal trasloco?"
 #: src/components/capture/capture-screen.tsx
 #: src/components/capture/file-fallback.tsx
 #: src/map/floor-plan/start-sheet.tsx
+#: src/native/home.tsx
+msgid "Add manually"
+msgstr "Aggiungi manualmente"
+
+#: src/native/home.tsx
+msgid "Add with camera"
+msgstr "Aggiungi con la fotocamera"
+
 #: src/native/capture-form.tsx
 msgid "Take a photo"
 msgstr "Scatta una foto"

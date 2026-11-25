@@ -27131,6 +27131,14 @@ msgstr "Retirer {title} du déménagement ?"
 #: src/components/capture/capture-screen.tsx
 #: src/components/capture/file-fallback.tsx
 #: src/map/floor-plan/start-sheet.tsx
+#: src/native/home.tsx
+msgid "Add manually"
+msgstr "Ajouter manuellement"
+
+#: src/native/home.tsx
+msgid "Add with camera"
+msgstr "Ajouter avec la caméra"
+
 #: src/native/capture-form.tsx
 msgid "Take a photo"
 msgstr "Prendre une photo"

@@ -1,7 +1,15 @@
 import { AMOUNT_STRING, newId, normalize } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
-import { type ReactNode, type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  type Ref,
+  useEffect,
+  useEffectEvent,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { TextField as AriaTextField, FileTrigger, Label, TextArea } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
@@ -61,6 +69,7 @@ export function CaptureForm({
   location,
   cache,
   initialName = '',
+  initialPhoto,
   suggested,
   pending = [],
   completions = {},
@@ -81,6 +90,7 @@ export function CaptureForm({
   cache?: InventoryCache;
   /** Description prefilled from a search that found nothing. */
   initialName?: string;
+  initialPhoto?: File;
   /** Where the next item most likely goes (the box used last); the picker changes it. */
   suggested?: Destination;
   pending?: readonly PendingCapture[];
@@ -182,8 +192,7 @@ export function CaptureForm({
     (id) => !pendingById.has(id) && completions[id] === 'discarded',
   ).length;
 
-  function choose(source: FileList | null, role: SelectedOriginal['role']) {
-    if (!source) return;
+  function prepareFiles(source: ArrayLike<File>, role: SelectedOriginal['role']) {
     const items = Array.from(source);
     if (
       items.some((file) => file.size === 0 || file.size > mobileFileLimit) ||
@@ -197,13 +206,26 @@ export function CaptureForm({
       return;
     }
     setStatus('');
-    const next: ChosenFile[] = items.map((file) => {
+    return items.map((file): ChosenFile => {
       const previewUrl = role === 'photo' ? createPreviewUrl(file) : undefined;
       if (previewUrl) previewUrlsRef.current.push(previewUrl);
       return { file, role, key: newId(), ...(previewUrl ? { previewUrl } : {}) };
     });
-    setFiles((current) => [...current, ...next]);
   }
+
+  function choose(source: FileList | null, role: SelectedOriginal['role']) {
+    if (!source) return;
+    const next = prepareFiles(source, role);
+    if (next) setFiles((current) => [...current, ...next]);
+  }
+
+  const attachInitialPhoto = useEffectEvent((photo: File) => {
+    const next = prepareFiles([photo], 'photo');
+    if (next) setFiles(next);
+  });
+  useEffect(() => {
+    if (initialPhoto) attachInitialPhoto(initialPhoto);
+  }, [initialPhoto]);
 
   function removeFile(key: string) {
     setFiles((current) => {

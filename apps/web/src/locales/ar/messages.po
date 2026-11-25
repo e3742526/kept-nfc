@@ -27131,6 +27131,14 @@ msgstr "إخراج {title} من الانتقال؟"
 #: src/components/capture/capture-screen.tsx
 #: src/components/capture/file-fallback.tsx
 #: src/map/floor-plan/start-sheet.tsx
+#: src/native/home.tsx
+msgid "Add manually"
+msgstr "إضافة يدويًا"
+
+#: src/native/home.tsx
+msgid "Add with camera"
+msgstr "إضافة بالكاميرا"
+
 #: src/native/capture-form.tsx
 msgid "Take a photo"
 msgstr "التقط صورة"

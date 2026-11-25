@@ -3,6 +3,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import {
   ArrowRightLeft,
   Boxes,
+  Camera,
   Eye,
   Image,
   Inbox,
@@ -11,7 +12,6 @@ import {
   Package,
   Pencil,
   Plus,
-  QrCode,
   Radar,
   RefreshCw,
   Settings,
@@ -20,6 +20,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { FileTrigger } from 'react-aria-components';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { HistoryEvent, Page } from '@/api/inventory/types';
 import { useSummary } from '@/components/history/labels';
@@ -181,7 +182,7 @@ function RecentActivity({
 }
 
 /**
- * The command center: counts that open their lists, the two jobs (Add, Scan), shortcuts, the
+ * The command center: counts that open their lists, capture actions, shortcuts, the
  * review bar, recent activity, and the sync status line with a way to Settings.
  */
 export function HomeDashboard({
@@ -196,8 +197,8 @@ export function HomeDashboard({
   onBoxes,
   onRooms,
   onUnplaced,
-  onAdd,
-  onScan,
+  onAddManually,
+  onAddWithCamera,
   onCategories,
   onLabels,
   onReview,
@@ -219,8 +220,8 @@ export function HomeDashboard({
   onBoxes: () => void;
   onRooms: () => void;
   onUnplaced: () => void;
-  onAdd: () => void;
-  onScan: () => void;
+  onAddManually: () => void;
+  onAddWithCamera: (photo: File) => void;
   onCategories: () => void;
   onLabels: () => void;
   onReview: () => void;
@@ -272,18 +273,27 @@ export function HomeDashboard({
         />
       </div>
       <div className={`kept-home-actions${findName ? ' kept-home-actions-3' : ''}`}>
-        <Button className="kept-action" isDisabled={!canWrite} onPress={onAdd}>
+        <Button className="kept-action" isDisabled={!canWrite} onPress={onAddManually}>
           <span className="kept-action-well kept-action-well-accent" aria-hidden>
             <Plus size={20} />
           </span>
-          <Trans>Add</Trans>
+          <Trans>Add manually</Trans>
         </Button>
-        <Button variant="secondary" className="kept-action" onPress={onScan}>
-          <span className="kept-action-well" aria-hidden>
-            <QrCode size={20} />
-          </span>
-          <Trans>Scan</Trans>
-        </Button>
+        <FileTrigger
+          acceptedFileTypes={['image/*']}
+          defaultCamera="environment"
+          onSelect={(files) => {
+            const photo = files?.[0];
+            if (canWrite && photo) onAddWithCamera(photo);
+          }}
+        >
+          <Button variant="secondary" className="kept-action" isDisabled={!canWrite}>
+            <span className="kept-action-well" aria-hidden>
+              <Camera size={20} />
+            </span>
+            <Trans>Add with camera</Trans>
+          </Button>
+        </FileTrigger>
         {findName && (
           <Button
             variant="secondary"

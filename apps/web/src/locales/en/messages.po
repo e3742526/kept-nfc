@@ -27131,6 +27131,14 @@ msgstr "Take {title} out of the move?"
 #: src/components/capture/capture-screen.tsx
 #: src/components/capture/file-fallback.tsx
 #: src/map/floor-plan/start-sheet.tsx
+#: src/native/home.tsx
+msgid "Add manually"
+msgstr "Add manually"
+
+#: src/native/home.tsx
+msgid "Add with camera"
+msgstr "Add with camera"
+
 #: src/native/capture-form.tsx
 msgid "Take a photo"
 msgstr "Take a photo"

@@ -3666,6 +3666,45 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: 'Items' })).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('adds manually or from the camera on Home and keeps Scan in the tab bar', async () => {
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: 'https://kept.example.com|ibrahim|epoch-1',
+        origin: 'https://kept.example.com',
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    const { container } = env.renderApp();
+
+    const manual = await screen.findByRole('button', { name: 'Add manually' });
+    await waitFor(() => expect(manual).toBeEnabled());
+    const scan = within(screen.getByRole('navigation')).getByRole('button', { name: 'Scan' });
+    expect(screen.getAllByRole('button', { name: 'Scan' })).toEqual([scan]);
+    await user.click(manual);
+    expect(await screen.findByLabelText('Description')).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    const picker = container.querySelector<HTMLInputElement>('input[capture="environment"]');
+    if (!picker) throw new Error('Expected a rear-camera input on Home');
+    expect(picker).toHaveAttribute('accept', 'image/*');
+    const openCamera = vi.fn();
+    picker.addEventListener('click', openCamera);
+    await user.click(screen.getByRole('button', { name: 'Add with camera' }));
+    expect(openCamera).toHaveBeenCalledTimes(1);
+    expect(screen.queryByLabelText('Description')).not.toBeInTheDocument();
+
+    await user.upload(picker, new File(['photo'], 'camera.jpg', { type: 'image/jpeg' }));
+    expect(await screen.findByLabelText('Description')).toHaveValue('');
+    expect(screen.getAllByText('camera.jpg')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Review multiple items' }));
+    await screen.findByRole('heading', { name: 'Photo review' });
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByLabelText('Description')).toHaveValue('');
+    expect(screen.queryByText('camera.jpg')).not.toBeInTheDocument();
+  });
+
   it('switches the Add tab between an item and a box', async () => {
     const env = createFakeEnvironment({
       initialConnection: {

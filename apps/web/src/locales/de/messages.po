@@ -27131,6 +27131,14 @@ msgstr "{title} aus dem Umzug nehmen?"
 #: src/components/capture/capture-screen.tsx
 #: src/components/capture/file-fallback.tsx
 #: src/map/floor-plan/start-sheet.tsx
+#: src/native/home.tsx
+msgid "Add manually"
+msgstr "Manuell hinzufügen"
+
+#: src/native/home.tsx
+msgid "Add with camera"
+msgstr "Mit Kamera hinzufügen"
+
 #: src/native/capture-form.tsx
 msgid "Take a photo"
 msgstr "Foto aufnehmen"
