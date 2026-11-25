@@ -6,7 +6,9 @@
  * The sheet margins and gaps were not checked against a maker's template: they are the common
  * layouts for these sizes, chosen so the cells add up to the page, and they vary a little
  * between makers. The device checklist prints a test sheet on real stock before release.
- * `letter_30_67x25` follows the Avery 5160 layout (1" × 2⅝", 3 × 10).
+ * `letter_30_67x25` follows the Avery 5160 layout (1" × 2⅝", 3 × 10). `letter_20_2x2in` follows
+ * the OL330 layout (2" squares, 4 × 5, ¼" margins, ⅛" between rows, none between columns), taken
+ * from a sheet laid out for that stock.
  *
  * Label-maker tape (#303: Brother TZe and the like, 9, 12, 18 and 24 mm wide) is continuous: each
  * label is its own page, the tape's width tall and a fixed length long, so every label of a batch
@@ -34,6 +36,13 @@ export type LabelStock = {
   readonly content: 'full' | 'compact' | 'tape';
   /** False on tape too narrow for a QR; every other stock prints one. */
   readonly qr?: boolean;
+  /**
+   * `stacked`: the QR on top and the code (and name) under it, for square and near-square labels
+   * whose QR beside a 13-character numbered-label code would leave the code too small to read.
+   * `ruled`: a write-in label: the code and the QR across the top, the QR at the end, and lines
+   * to write the contents on below them. Otherwise the QR is beside the text.
+   */
+  readonly arrange?: 'stacked' | 'ruled';
 };
 
 const roll = (key: string, w: number, h: number, en: string, ar: string): LabelStock => ({
@@ -46,6 +55,22 @@ const roll = (key: string, w: number, h: number, en: string, ar: string): LabelS
   gap: { x: 0, y: 0 },
   margin: { top: 0, left: 0 },
   content: 'full',
+});
+
+/** Direct-thermal rolls in inches, QR on top (`arrange: 'stacked'`), for small items, bins and
+ * the 20 × 10 mm NFC inlays stuck under a label. Each label is its own page, so the size is the
+ * label: no sheet geometry to get wrong. */
+const inchRoll = (
+  key: string,
+  wIn: number,
+  hIn: number,
+  content: 'full' | 'compact',
+  en: string,
+  ar: string,
+): LabelStock => ({
+  ...roll(key, Math.round(wIn * 254) / 10, Math.round(hIn * 254) / 10, en, ar),
+  content,
+  arrange: 'stacked',
 });
 
 /** Tape `width` mm wide, cut `length` mm long a label. */
@@ -82,6 +107,10 @@ export const LABEL_STOCKS: readonly LabelStock[] = Object.freeze([
   roll('thermal_50x30', 50, 30, 'Thermal 50 × 30 mm', 'حراري 50 × 30 مم'),
   roll('thermal_40x30', 40, 30, 'Thermal 40 × 30 mm', 'حراري 40 × 30 مم'),
   roll('thermal_62x29', 62, 29, 'Brother 62 × 29 mm', 'براذر 62 × 29 مم'),
+  inchRoll('thermal_1x1in', 1, 1, 'compact', 'Micro 1 × 1 in', 'صغير جدًا 1 × 1 بوصة'),
+  inchRoll('thermal_1_5x1in', 1.5, 1, 'compact', 'Compact 1.5 × 1 in', 'مدمج 1.5 × 1 بوصة'),
+  inchRoll('thermal_1_5x1_5in', 1.5, 1.5, 'full', 'Medium 1.5 × 1.5 in', 'متوسط 1.5 × 1.5 بوصة'),
+  inchRoll('thermal_2x2in', 2, 2, 'full', 'Square 2 × 2 in', 'مربع 2 × 2 بوصة'),
   tape(9, 40, false),
   tape(12, 50, false),
   tape(18, 50, true),
@@ -119,6 +148,21 @@ export const LABEL_STOCKS: readonly LabelStock[] = Object.freeze([
     margin: { top: 12.7, left: 4.7625 },
     content: 'full',
   },
+  {
+    key: 'letter_20_2x2in',
+    names: {
+      en: 'Letter, 20 write-in labels (OL330, 2 × 2 in)',
+      ar: 'Letter، ‏20 ملصقًا للكتابة (OL330، ‏2 × 2 بوصة)',
+    },
+    page: { w: 215.9, h: 279.4 },
+    cols: 4,
+    rows: 5,
+    cell: { w: 50.8, h: 50.8 },
+    gap: { x: 0, y: 3.175 },
+    margin: { top: 6.35, left: 6.35 },
+    content: 'full',
+    arrange: 'ruled',
+  },
   letterWritable(2, 4),
   letterWritable(2, 6),
   letterWritable(3, 8),
@@ -133,6 +177,16 @@ export function labelStock(key: string): LabelStock {
 /** A sheet has several labels per page; a roll has one, and no start cell. */
 export function isSheet(stock: LabelStock): boolean {
   return stock.cols * stock.rows > 1;
+}
+
+/** QR on top, text under it (square and near-square labels). */
+export function isStacked(stock: LabelStock): boolean {
+  return stock.arrange === 'stacked';
+}
+
+/** A write-in label: the code and QR across the top, lines to write on under them. */
+export function isRuled(stock: LabelStock): boolean {
+  return stock.arrange === 'ruled';
 }
 
 /** Label-maker tape: a roll whose label is the code, set large. */

@@ -102,6 +102,9 @@ export const NOT_IN_HA_APP = {
   KEPT_AI_MOCK: 'tests only',
   KEPT_EVAL_DIR: 'development only',
   KEPT_VISUAL_ENCODER_URL: 'the Home Assistant app does not ship a colocated visual encoder',
+  KEPT_LABEL_URL: "a label address and app links need a public HTTPS host, not Home Assistant's",
+  KEPT_APPLE_APP_IDS:
+    "a label address and app links need a public HTTPS host, not Home Assistant's",
   // Not offered in the app as of 1.14.4; decide when someone asks.
   ...Object.fromEntries(
     [

@@ -72,6 +72,10 @@ export type TestAppOptions = {
   httpSignInDays?: number;
   /** KEPT_EXTRA_ADDRESSES, as loadEnv leaves it; default none. */
   extraAddresses?: readonly string[];
+  /** KEPT_LABEL_URL, an origin; default unset. */
+  labelUrl?: string;
+  /** KEPT_APPLE_APP_IDS; default none. */
+  appleAppIds?: readonly string[];
 };
 
 export async function testApp(db: TestDb, opts: TestAppOptions = {}): Promise<TestApp> {
@@ -101,6 +105,8 @@ export async function testApp(db: TestDb, opts: TestAppOptions = {}): Promise<Te
       KEPT_HA_SUPERVISOR_VERSION:
         opts.haSupervisorVersion ?? (opts.haTrustGroups ? '2026.10.4' : undefined),
       ...(opts.signupOpenEnv !== undefined ? { KEPT_SIGNUP_OPEN: opts.signupOpenEnv } : {}),
+      ...(opts.labelUrl ? { KEPT_LABEL_URL: opts.labelUrl } : {}),
+      ...(opts.appleAppIds ? { KEPT_APPLE_APP_IDS: [...opts.appleAppIds] } : {}),
     },
     pools: db.pools as Pools,
     auth,

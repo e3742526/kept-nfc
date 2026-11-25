@@ -25704,8 +25704,8 @@ msgid "SheepKeep shows it only this once. Anyone with it can read the titles and
 msgstr "SheepKeep zeigt ihn nur dieses eine Mal. Wer ihn hat, kann die Titel und Daten lesen."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
-msgstr "SheepKeep zeigt es nur dieses eine Mal. Dein Empfänger prüft damit den SheepKeep-Signature-Header jeder Nachricht."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgstr "SheepKeep zeigt es nur dieses eine Mal. Dein Empfänger prüft damit den Kept-Signature-Header jeder Nachricht."
 
 #: src/components/webhooks/edit.tsx
 msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
@@ -33277,7 +33277,7 @@ msgstr "Untergeordneten Ort hinzufügen"
 
 #: src/components/display-prefs.tsx
 msgid "Camera photo size"
-msgstr "Kamerafotogröße"
+msgstr "Größe der Kamerafotos"
 
 #: src/native/claim-bin-label.tsx
 msgid "Choose existing box"
@@ -33445,3 +33445,35 @@ msgstr "Dieser Ort liegt außerhalb der verfügbaren Ziele."
 #: src/components/places/reference-photos.tsx
 msgid "Set as cover"
 msgstr "Als Titelbild festlegen"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Etikettencodes"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "Kurz-IDs"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Nummeriert"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Zweck"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Jedes Etikett bekommt seine eigene sechsstellige ID."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Jedes Etikett lautet etwa {example}: der gewählte Zweck, eine neue Serie und seine Nummer. Ein Etikett lässt sich trotzdem für alles verwenden."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}, je {cell} · Linien zum Beschriften"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Die längste Seite eines in SheepKeep aufgenommenen Fotos, in Pixeln. Kleinere Fotos werden schneller hochgeladen. Fotos aus deiner Mediathek über 4096 px werden beim Hochladen verkleinert."

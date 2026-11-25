@@ -1345,6 +1345,13 @@
       "when": 1795555258515,
       "tag": "0191_place_descriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 192,
+      "version": "7",
+      "when": 1795569829898,
+      "tag": "0192_label_series",
+      "breakpoints": true
     }
   ]
 }

@@ -81,7 +81,7 @@ describe('search', () => {
     if (box) box.thumbUrl = '/f/cable-box-thumb';
     await renderApp('/search?q=hdmi', { state });
     const cable = within(await things()).getByRole('link', { name: /HDMI cable, 2 m/ });
-    const photo = cable.querySelector('img[data-container-photo]');
+    const photo = cable.querySelector('[data-container-photo] img');
     expect(photo).toHaveAttribute('src', '/f/cable-box-thumb');
     expect(photo).toHaveAttribute('alt', '');
   });

@@ -114,6 +114,51 @@ enum KeptLinks {
     }
 }
 
+/// The origins a label of this server may carry: its own, and the label address it names
+/// (`GET /api/v1/labels/address`, KEPT_LABEL_URL on the server) when that is another https origin.
+/// Asked once per server while the app runs, and remembered for offline use; a server that can't
+/// be asked keeps the last answer, or only its own origin.
+enum KeptLabelAddress {
+    @MainActor private static var asked: [String: URL?] = [:]
+
+    private static func key(_ origin: URL) -> String { "kept.labelAddress|\(origin.absoluteString)" }
+
+    @MainActor static func origins(for connection: KeptConnection) async -> [URL] {
+        let server = connection.origin
+        var label: URL?
+        if let known = asked[server.absoluteString] {
+            label = known
+        } else {
+            do {
+                let answer = try await fetch(connection)
+                asked[server.absoluteString] = .some(answer)
+                if let answer { UserDefaults.standard.set(answer.absoluteString, forKey: key(server)) }
+                else { UserDefaults.standard.removeObject(forKey: key(server)) }
+                label = answer
+            } catch {
+                label = UserDefaults.standard.string(forKey: key(server))
+                    .flatMap(NFCLabelValidation.labelOrigin)
+            }
+        }
+        guard let label, label != server else { return [server] }
+        return [server, label]
+    }
+
+    /// The server's answer: its label address, nil when it has none of its own (the same origin, or
+    /// not https). Throws when the server can't be asked.
+    private static func fetch(_ connection: KeptConnection) async throws -> URL? {
+        let request = try KeptHTTP.request(
+            connection.origin, path: "/api/v1/labels/address", method: "GET", connection: connection
+        )
+        let (data, response) = try await KeptHTTP.send(request)
+        guard response.statusCode == 200 else { throw KeptNativeError.invalidRequest }
+        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let text = object["url"] as? String
+        else { return nil }
+        return NFCLabelValidation.labelOrigin(text)
+    }
+}
+
 enum KeptKeychain {
     private static var key: [String: Any] {
         [
@@ -873,12 +918,14 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         run(call) {
             let connection = try self.requireConnection(call)
             guard self.nfc == nil else { call.resolve(["status": "busy"]); return }
+            let origins = await KeptLabelAddress.origins(for: connection)
+            guard self.nfc == nil else { call.resolve(["status": "busy"]); return }
             let mode: KeptNFC.Mode
             switch call.getString("mode") {
             case "read": mode = .read
             case "inspect", "write":
                 guard let raw = call.getString("url"),
-                      case .approved = NFCLabelValidation.validate(urlText: raw, expectedOrigin: connection.origin),
+                      case .approved = NFCLabelValidation.validate(urlText: raw, expectedOrigins: origins),
                       let url = URL(string: raw)
                 else { throw KeptNativeError.invalidRequest }
                 if call.getString("mode") == "inspect" { mode = .inspect(url) }
@@ -1049,8 +1096,9 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func shareLabelPdf(_ call: CAPPluginCall) {
         run(call) {
             let connection = try self.requireConnection(call)
+            let origins = await KeptLabelAddress.origins(for: connection)
             guard let url = call.getString("url"), url.utf8.count <= 512,
-                  case .approved(let code) = NFCLabelValidation.validate(urlText: url, expectedOrigin: connection.origin),
+                  case .approved(let code) = NFCLabelValidation.validate(urlText: url, expectedOrigins: origins),
                   let name = call.getString("name"),
                   let controller = self.bridge?.viewController,
                   controller.viewIfLoaded?.window != nil, controller.presentedViewController == nil,
@@ -1094,6 +1142,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func shareLabelSheet(_ call: CAPPluginCall) {
         run(call) {
             let connection = try self.requireConnection(call)
+            let origins = await KeptLabelAddress.origins(for: connection)
             guard let columns = call.getInt("columns"), let rows = call.getInt("rows"),
                   (columns == 2 && (rows == 4 || rows == 6)) || (columns == 3 && rows == 8),
                   let entries = call.getArray("labels", JSObject.self), !entries.isEmpty,
@@ -1105,7 +1154,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             let ci = CIContext()
             let labels = try entries.map { entry -> (code: String, name: String, image: CGImage) in
                 guard let url = entry["url"] as? String, url.utf8.count <= 512,
-                      case .approved(let code) = NFCLabelValidation.validate(urlText: url, expectedOrigin: connection.origin),
+                      case .approved(let code) = NFCLabelValidation.validate(urlText: url, expectedOrigins: origins),
                       let filter = CIFilter(name: "CIQRCodeGenerator")
                 else { throw KeptNativeError.invalidRequest }
                 filter.setValue(Data(url.utf8), forKey: "inputMessage")

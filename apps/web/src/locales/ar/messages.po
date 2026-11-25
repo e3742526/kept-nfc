@@ -25704,8 +25704,8 @@ msgid "SheepKeep shows it only this once. Anyone with it can read the titles and
 msgstr "يعرضه SheepKeep هذه المرة فقط. ويستطيع كل من يملكه قراءة العناوين والتواريخ."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
-msgstr "يعرضه SheepKeep هذه المرة فقط. يتحقق به مستقبِلك من ترويسة SheepKeep-Signature في كل رسالة."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgstr "يعرضه SheepKeep هذه المرة فقط. يتحقق به مستقبِلك من ترويسة Kept-Signature في كل رسالة."
 
 #: src/components/webhooks/edit.tsx
 msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
@@ -33277,7 +33277,7 @@ msgstr "أضف مكانًا فرعيًا"
 
 #: src/components/display-prefs.tsx
 msgid "Camera photo size"
-msgstr "حجم صور الكاميرا"
+msgstr "حجم صورة الكاميرا"
 
 #: src/native/claim-bin-label.tsx
 msgid "Choose existing box"
@@ -33445,3 +33445,35 @@ msgstr "هذا المكان خارج الوجهات المتاحة."
 #: src/components/places/reference-photos.tsx
 msgid "Set as cover"
 msgstr "تعيين كصورة غلاف"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "رموز الملصقات"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "معرّفات قصيرة"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "مرقّمة"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "الغرض"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "يحصل كل ملصق على معرّف خاص به من ستة أحرف."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "يُقرأ كل ملصق مثل {example}: الغرض الذي تختاره، ثم سلسلة جديدة، ثم رقمه. ويظل بالإمكان ربط أي ملصق بأي شيء."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}، كل منها {cell} · أسطر للكتابة"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "أطول ضلع للصورة الملتقطة في SheepKeep، بالبكسل. الصور الأصغر تُرفع أسرع. صور مكتبتك التي تتجاوز 4096 بكسل تُصغَّر عند رفعها."

@@ -15,7 +15,7 @@
 import type { LabelStock } from '@kept/shared';
 import { useMemo, useSyncExternalStore } from 'react';
 import type { LabelCellContent } from '@/api/capture/types';
-import { cellMetrics, LABEL_SANS, NAME_MIN, PATH_MIN } from './layout';
+import { cellMetrics, codeChars, LABEL_SANS, NAME_MIN, PATH_MIN } from './layout';
 
 export { NAME_MIN, PATH_MIN };
 
@@ -84,15 +84,15 @@ const floor2 = (n: number) => Math.floor(n * 100 + 1e-6) / 100;
 /** The name's and place's lines and sizes for one label on `stock`. */
 export function fitLabel(
   stock: LabelStock,
-  text: { name?: string; path?: string },
+  text: { name?: string; path?: string; alias?: string },
   measure: TextMeasure,
 ): LabelFit {
-  const m = cellMetrics(stock);
+  const m = cellMetrics(stock, codeChars(text));
   const name = text.name?.trim() ?? '';
   const path = m.place ? (text.path?.trim() ?? '') : '';
   if (m.compact || (!name && !path)) return { name: null, path: null, fits: true };
   const width = m.text * SLACK;
-  const room = stock.cell.h - 2 * m.pad;
+  const room = m.room;
   const gap = m.pad * 0.6;
   // The code heads the text column, except on narrow tape, where it has a column of its own.
   const above = m.codeColumn ? 0 : m.code;

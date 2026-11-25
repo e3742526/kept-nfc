@@ -25704,8 +25704,8 @@ msgid "SheepKeep shows it only this once. Anyone with it can read the titles and
 msgstr "SheepKeep lo mostra solo questa volta. Chiunque lo abbia può leggere titoli e date."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
-msgstr "SheepKeep lo mostra solo questa volta. Il tuo ricevitore lo usa per verificare l’intestazione SheepKeep-Signature di ogni messaggio."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgstr "SheepKeep lo mostra solo questa volta. Il tuo ricevitore lo usa per verificare l’intestazione Kept-Signature di ogni messaggio."
 
 #: src/components/webhooks/edit.tsx
 msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
@@ -33277,7 +33277,7 @@ msgstr "Aggiungi un luogo al suo interno"
 
 #: src/components/display-prefs.tsx
 msgid "Camera photo size"
-msgstr "Dimensioni delle foto della fotocamera"
+msgstr "Dimensione delle foto della fotocamera"
 
 #: src/native/claim-bin-label.tsx
 msgid "Choose existing box"
@@ -33445,3 +33445,35 @@ msgstr "Questo luogo non rientra tra le destinazioni disponibili."
 #: src/components/places/reference-photos.tsx
 msgid "Set as cover"
 msgstr "Imposta come copertina"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Codici delle etichette"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "ID brevi"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Numerate"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Uso"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Ogni etichetta riceve il proprio ID di sei caratteri."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Ogni etichetta si legge come {example}: l'uso che scegli, una nuova serie e il suo numero. Un'etichetta si può comunque assegnare a qualsiasi cosa."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}, ciascuna {cell} · righe su cui scrivere"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Il lato più lungo di una foto scattata in SheepKeep, in pixel. Le foto più piccole si caricano più in fretta. Le foto della tua libreria oltre 4096 px vengono ridotte quando si caricano."

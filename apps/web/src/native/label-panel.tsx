@@ -34,6 +34,7 @@ import {
   describeTargetFromCache,
   inspectTagOwner,
   isTarget,
+  labelBase,
   labelUrl,
   type ReadResult,
   resolveLabel,
@@ -111,7 +112,7 @@ export function LabelPanel({
     (sessionId: string) => live.current && findSessionId.current === sessionId,
     [],
   );
-  const url = box?.shortCode ? labelUrl(connection.origin, box.shortCode) : null;
+  const url = box?.shortCode ? labelUrl(labelBase(connection), box.shortCode) : null;
   const messages = {
     scan: t`Hold the top of your iPhone near one NFC tag.`,
     multiple: t`Move other tags away and scan one tag.`,

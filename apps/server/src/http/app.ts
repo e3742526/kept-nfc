@@ -36,6 +36,7 @@ import { homeAssistantLinkRoutes } from '../homeassistant/routes.js';
 import { inviteRoutes } from '../invites/routes.js';
 import type { JobAdmin } from '../jobs/failed.js';
 import type { JobQueue } from '../jobs/queue.js';
+import { labelHostHook } from '../labels/label-host.js';
 import { memberRoutes } from '../locations/members.js';
 import { locationRoutes } from '../locations/routes.js';
 import { logMailer, type Mailer } from '../mail/mailer.js';
@@ -84,6 +85,8 @@ export type AppEnv = Pick<Env, 'KEPT_PUBLIC_URL'> &
       | 'KEPT_HSTS'
       | 'KEPT_HTTP_SIGN_IN_DAYS'
       | 'KEPT_EXTRA_ADDRESSES'
+      | 'KEPT_LABEL_URL'
+      | 'KEPT_APPLE_APP_IDS'
       | 'KEPT_SIGNUP_OPEN'
       | 'KEPT_BARCODE_LOOKUP'
       | 'KEPT_BARCODE_CONTACT'
@@ -243,6 +246,10 @@ export async function buildApp(opts: AppOptions): Promise<KeptApp> {
   // Home Assistant ingress (D273): decided once, from the socket and the Supervisor's headers,
   // before anything reads the request. Outside app mode (KEPT_HA) it is null for every request.
   app.addHook('onRequest', ingressHook(opts.env.KEPT_HA === true));
+  // The label address (KEPT_LABEL_URL): a label read there is sent on to the public address, and
+  // nothing else is served there, before sign-in or anything else reads the request.
+  const labelHost = labelHostHook(opts.env.KEPT_LABEL_URL, opts.env.KEPT_PUBLIC_URL);
+  if (labelHost) app.addHook('onRequest', labelHost);
   // SheepKeep on https behind a plain-http Home Assistant: its cookies went out without the __Secure-
   // prefix (http/ingress.ts scopeCookieToIngress); Better Auth reads them under their own names.
   if (opts.env.KEPT_HA === true && https) {

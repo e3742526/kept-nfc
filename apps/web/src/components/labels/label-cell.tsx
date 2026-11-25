@@ -7,7 +7,8 @@
  * language (D143); the name and place take their own direction (`dir=auto`) and the browser
  * shapes Arabic (D97). A compact stock prints the QR and code only; tape prints the code large and
  * the name, with a QR only where the tape is wide enough, the code in a column of its own where it
- * isn't (#303).
+ * isn't (#303). A write-in label (the OL330 sheet) prints the code and the QR across the top and
+ * grey lines to write on under them; with no name yet, "Contents" over a short line by the code.
  *
  * The name and place are never cut: fit.ts wraps them into lines and steps the font down to the
  * readable minimum, and each line is set as its own block, so the preview, the print and the
@@ -16,11 +17,25 @@
  * Sizes are millimetres from `cellMetrics`, set through React's style prop (the CSSOM, which the
  * CSP allows; a `style` attribute in markup it would not).
  */
-import { type LabelStock, printedCode } from '@kept/shared';
-import { useMemo } from 'react';
+import type { LabelStock } from '@kept/shared';
+import { useLingui } from '@lingui/react/macro';
+import { type ReactNode, useMemo } from 'react';
 import type { LabelCellContent } from '@/api/capture/types';
-import { FIT_LINE_HEIGHT, type FittedText, fitLabel, type TextMeasure } from './fit';
-import { CODE_TRACKING, cellMetrics, LABEL_MONO, LABEL_SANS, mm, PLACE_INK } from './layout';
+import { FIT_LINE_HEIGHT, type FittedText, fitLabel, type LabelFit, type TextMeasure } from './fit';
+import {
+  type CellMetrics,
+  CODE_TRACKING,
+  captionText,
+  cellMetrics,
+  codeChars,
+  LABEL_MONO,
+  LABEL_SANS,
+  mm,
+  PLACE_INK,
+  RULE_INK,
+  RULE_WIDTH,
+  shownCode,
+} from './layout';
 import { type Encode, qrMatrix, qrPath } from './qr';
 
 export function LabelCell({
@@ -36,16 +51,13 @@ export function LabelCell({
   /** How the name and place are measured (`useLabelMeasure`). */
   measure: TextMeasure;
 }) {
-  const m = cellMetrics(stock);
+  const m = cellMetrics(stock, codeChars(label));
   const qr = useMemo(() => {
     if (!encode || m.qr === 0) return null;
     const matrix = qrMatrix(encode, label.url);
     return { d: qrPath(matrix), n: matrix.length };
   }, [encode, label.url, m.qr]);
-  const fit = useMemo(
-    () => fitLabel(stock, { name: label.name, path: label.path }, measure),
-    [stock, label.name, label.path, measure],
-  );
+  const fit = useMemo(() => fitLabel(stock, label, measure), [stock, label, measure]);
   const code = (
     <bdi
       dir="ltr"
@@ -58,31 +70,44 @@ export function LabelCell({
         letterSpacing: `${CODE_TRACKING}em`,
       }}
     >
-      {printedCode(label.code)}
+      {shownCode(label)}
     </bdi>
   );
+  const qrSvg =
+    m.qr > 0 ? (
+      <svg
+        aria-hidden="true"
+        data-slot="label-qr"
+        viewBox={qr ? `0 0 ${qr.n} ${qr.n}` : '0 0 1 1'}
+        width={mm(m.qr)}
+        height={mm(m.qr)}
+        shapeRendering="crispEdges"
+        className={m.ruled ? 'absolute' : 'shrink-0'}
+        style={m.ruled ? { insetInlineEnd: mm(m.pad), insetBlockStart: mm(m.pad) } : undefined}
+      >
+        <rect width="100%" height="100%" fill="#FFFFFF" />
+        {qr ? <path d={qr.d} fill="#000000" /> : null}
+      </svg>
+    ) : null;
+  if (m.ruled) return <RuledLabel m={m} ruled={m.ruled} fit={fit} code={code} qr={qrSvg} />;
   return (
     <div
       dir="ltr"
       data-slot="label"
       data-fits={fit.fits ? undefined : 'false'}
-      className="flex size-full items-center overflow-hidden bg-white text-black"
-      style={{ padding: mm(m.pad), columnGap: mm(m.pad) }}
+      data-arrange={m.stacked ? 'stacked' : undefined}
+      className={
+        m.stacked
+          ? 'flex size-full flex-col items-center overflow-hidden bg-white text-center text-black'
+          : 'flex size-full items-center overflow-hidden bg-white text-black'
+      }
+      style={
+        m.stacked
+          ? { padding: mm(m.pad), rowGap: mm(m.pad * 0.6) }
+          : { padding: mm(m.pad), columnGap: mm(m.pad) }
+      }
     >
-      {m.qr > 0 ? (
-        <svg
-          aria-hidden="true"
-          data-slot="label-qr"
-          viewBox={qr ? `0 0 ${qr.n} ${qr.n}` : '0 0 1 1'}
-          width={mm(m.qr)}
-          height={mm(m.qr)}
-          shapeRendering="crispEdges"
-          className="shrink-0"
-        >
-          <rect width="100%" height="100%" fill="#FFFFFF" />
-          {qr ? <path d={qr.d} fill="#000000" /> : null}
-        </svg>
-      ) : null}
+      {qrSvg}
       {m.codeColumn > 0 ? (
         // Narrow tape: the code in a column of its own, as large as the tape allows.
         <div className="shrink-0" style={{ inlineSize: mm(m.codeColumn) }}>
@@ -90,10 +115,21 @@ export function LabelCell({
         </div>
       ) : null}
       <div
-        className="grid min-w-0 self-stretch"
+        className={
+          m.stacked ? 'grid min-h-0 min-w-0 justify-items-center' : 'grid min-w-0 self-stretch'
+        }
         // `safe`: a label too long even at the smallest size overflows at the bottom, never
-        // above the code.
-        style={{ inlineSize: mm(m.text), rowGap: mm(m.pad * 0.6), alignContent: 'safe center' }}
+        // above the code. Stacked, the text column is the room under the QR.
+        style={
+          m.stacked
+            ? {
+                inlineSize: mm(m.text),
+                blockSize: mm(m.room),
+                rowGap: mm(m.pad * 0.6),
+                alignContent: 'start',
+              }
+            : { inlineSize: mm(m.text), rowGap: mm(m.pad * 0.6), alignContent: 'safe center' }
+        }
       >
         {m.codeColumn > 0 ? null : code}
         {fit.name ? <Lines slot="label-name" part={fit.name} weight={600} color="#000000" /> : null}
@@ -101,6 +137,85 @@ export function LabelCell({
           <Lines slot="label-place" part={fit.path} weight={400} color={PLACE_INK} />
         ) : null}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A write-in label: everything placed in millimetres from the label's top-left corner, as the
+ * PNG draws it. The code heads the column beside the QR; under it the name and place, or, on a
+ * label with no name yet, "Contents" and a short line to write it on.
+ */
+function RuledLabel({
+  m,
+  ruled,
+  fit,
+  code,
+  qr,
+}: {
+  m: CellMetrics;
+  ruled: NonNullable<CellMetrics['ruled']>;
+  fit: LabelFit;
+  code: ReactNode;
+  qr: ReactNode;
+}) {
+  const { t } = useLingui();
+  const blank = !fit.name && !fit.path;
+  const line = (key: string, top: number, width: number | null) => (
+    <div
+      key={key}
+      data-slot="label-rule"
+      className="absolute"
+      style={{
+        insetInlineStart: mm(m.pad),
+        ...(width === null ? { insetInlineEnd: mm(m.pad) } : { inlineSize: mm(width) }),
+        insetBlockStart: mm(top),
+        borderBlockStart: `${mm(RULE_WIDTH)} solid ${RULE_INK}`,
+      }}
+    />
+  );
+  return (
+    <div
+      dir="ltr"
+      data-slot="label"
+      data-fits={fit.fits ? undefined : 'false'}
+      data-arrange="ruled"
+      className="relative size-full overflow-hidden bg-white text-black"
+    >
+      <div
+        className="absolute grid min-w-0"
+        style={{
+          insetInlineStart: mm(m.pad),
+          insetBlockStart: mm(m.pad),
+          inlineSize: mm(m.text),
+          blockSize: mm(m.room),
+          rowGap: mm(m.pad * 0.6),
+          alignContent: 'start',
+        }}
+      >
+        {code}
+        {fit.name ? <Lines slot="label-name" part={fit.name} weight={600} color="#000000" /> : null}
+        {fit.path ? (
+          <Lines slot="label-place" part={fit.path} weight={400} color={PLACE_INK} />
+        ) : null}
+        {blank ? (
+          <p
+            data-slot="label-caption"
+            className="m-0 whitespace-nowrap"
+            style={{
+              fontFamily: LABEL_SANS,
+              fontSize: mm(ruled.caption),
+              fontWeight: 400,
+              lineHeight: 1,
+            }}
+          >
+            {captionText(t`Contents`)}
+          </p>
+        ) : null}
+      </div>
+      {blank ? line('blank', ruled.blank, m.text) : null}
+      {qr}
+      {ruled.rules.map((y) => line(`rule-${y}`, y, null))}
     </div>
   );
 }

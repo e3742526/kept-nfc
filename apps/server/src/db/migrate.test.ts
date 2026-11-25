@@ -345,6 +345,17 @@ const KEPT_FUNCTION_EXECUTE: Record<string, string[]> = {
   'kept.visual_matches(uuid[],text,vector,real,integer)': APP_ONLY,
   'kept.visual_matches(uuid[],text,vector,real,integer,double precision)': APP_ONLY,
   'kept.visual_attachment_changed()': OWNER_ONLY,
+  // (0186) Photo renditions: the display-aware overloads, and the trigger that drops a photo's
+  // vectors made from a display it no longer has.
+  'kept.visual_photo_sources(uuid[],uuid)': APP_ONLY,
+  'kept.visual_backlog(uuid,text,integer,uuid)': APP_ONLY,
+  'kept.visual_store(uuid,uuid,uuid,text,text,vector,text)': APP_ONLY,
+  'kept.set_file_display(uuid,jsonb,uuid)': APP_ONLY,
+  'kept.visual_display_changed()': OWNER_ONLY,
+  // (0187) The assistant's model choices for a location.
+  'kept.assistant_models(uuid)': APP_ONLY,
+  // (0189) Keeps the three newest location photos (a trigger).
+  'kept.trim_location_photos()': OWNER_ONLY,
   // (0099) The backfill's mark (kept_system's alone since S4) and live locations; the editor's
   // job's one-thing backlog row.
   'kept.embedding_mark(uuid,text,text,integer,text,timestamp with time zone)': SYSTEM_ONLY,

@@ -207,6 +207,8 @@ export function readKey(text: string, format?: string): string {
   switch (s.kind) {
     case 'kept':
       return `k:${s.code}`;
+    case 'alias':
+      return `a:${s.alias}`;
     case 'homebox':
       return `h:${s.path}:${s.assetId ?? s.uuid ?? ''}`;
     case 'barcode':

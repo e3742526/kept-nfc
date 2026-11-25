@@ -59,7 +59,7 @@ export default function LabelPreview() {
   const [shareable] = useState(() => canShareType('kept-label.png', 'image/png'));
   const prepared = useQuery({
     queryKey: ['labels', 'pngs', 'thing', thing.id, stock.key, label?.code, label?.name],
-    queryFn: () => labelPngs(stock, label ? [label] : []),
+    queryFn: () => labelPngs(stock, label ? [label] : [], t`Contents`),
     enabled: shareable && !!label,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: 0,
@@ -70,7 +70,7 @@ export default function LabelPreview() {
     if (!label) return;
     setSaving(true);
     try {
-      const files = prepared.data ?? (await labelPngs(stock, [label]));
+      const files = prepared.data ?? (await labelPngs(stock, [label], t`Contents`));
       const how = await shareOrDownload(files, t`SheepKeep label`);
       if (how === 'downloaded') toast({ title: t`Saved the label image`, tone: 'ok' });
       if (how === 'refused')

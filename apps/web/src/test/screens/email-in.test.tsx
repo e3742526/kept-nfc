@@ -30,7 +30,7 @@ describe('Location settings → Email-in', () => {
       host: 'fail.example',
       port: 993,
       security: 'tls',
-      folder: 'SheepKeep',
+      folder: 'Kept',
       password: 'secret-pass',
       allowedSenders: [],
     });
@@ -65,7 +65,7 @@ describe('Location settings → Email-in', () => {
         port: 993,
         security: 'tls',
         username: 'receipts@home.example',
-        folder: 'SheepKeep',
+        folder: 'Kept',
         allowedSenders: [],
         active: false,
         disabledReason: 'auth_failed',

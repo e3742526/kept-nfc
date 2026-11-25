@@ -234,7 +234,8 @@ const isOffline = (e: unknown) => isApiError(e) && e.code === 'offline';
 
 /** The server's answer in the phone's terms. */
 export function fromServer(scan: ScanResult, o: ScanOutcome): Resolution {
-  const code = scan.kind === 'kept' ? scan.code : null;
+  // A numbered label is answered as the short ID it stands for, which `claim` carries.
+  const code = scan.kind === 'kept' ? scan.code : o.outcome === 'claim' ? (o.code ?? null) : null;
   // Several things carry a barcode or serial number: asked which, under the code. One opens at
   // once, as a Kept label does; only an old Homebox label stops to say what it was.
   const legacy =
@@ -276,6 +277,8 @@ export function offlineAnswer(scan: ScanResult, text: string): Resolution {
     case 'kept':
       return { outcome: 'not_on_phone', text, code: scan.code };
     case 'homebox':
+    case 'alias':
+      // A numbered label is looked up on the server: the phone holds no series (yet).
       return { outcome: 'not_on_phone', text, code: null };
     case 'barcode':
       return { outcome: 'barcode', code: scan.code, lookupEnabled: null, ...codeRead(scan) };

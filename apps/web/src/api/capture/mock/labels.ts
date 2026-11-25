@@ -79,6 +79,8 @@ export function labelsRoutes(state: MockState): MockRoute[] {
   const printedCodes = () => printedCodesOf(state);
 
   return [
+    // The label address: the mock has no label host, so labels carry the page's own origin.
+    route('GET', p.labelAddress, () => reply(200, { url: urlOf('').replace(/\/l\/$/, '') })),
     route('POST', p.labelBatches, ({ body }) => {
       const gate = sessionGate(state);
       if (gate) return gate;

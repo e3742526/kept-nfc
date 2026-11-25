@@ -57,6 +57,7 @@ let dbName: string;
 let ownerUrl: string;
 let previous: string; // the migrations folder without its last entry
 let older: string; // without its last two
+let beforePlaceDescriptions: string;
 
 async function superuser<T>(fn: (c: pg.Client) => Promise<T>): Promise<T> {
   const c = new pg.Client({ connectionString: SUPERUSER_URL });
@@ -91,11 +92,16 @@ async function cutJournal(drop: number): Promise<string> {
 beforeAll(async () => {
   previous = await cutJournal(1);
   older = await cutJournal(2);
+  const journal = imageJournal();
+  const places = journal.findIndex(({ tag }) => tag === '0191_place_descriptions');
+  if (places < 0) throw new Error('The place description migration is missing');
+  beforePlaceDescriptions = await cutJournal(journal.length - places);
 });
 
 afterAll(async () => {
   await rm(previous, { recursive: true, force: true });
   await rm(older, { recursive: true, force: true });
+  await rm(beforePlaceDescriptions, { recursive: true, force: true });
 });
 
 beforeEach(async () => {
@@ -146,7 +152,7 @@ describe('kept migrate', () => {
 
   it('upgrades populated places and keeps their descriptions through one release rollback', async () => {
     await runMigrations(ownerUrl, {
-      folder: previous,
+      folder: beforePlaceDescriptions,
       release: { version: '1.0.0', revision: null },
     });
     const id = newId();
@@ -170,7 +176,9 @@ describe('kept migrate', () => {
       await runMigrations(ownerUrl, {
         release: { version: '1.1.0', revision: null },
       }),
-    ).toMatchObject({ applied: 1 });
+    ).toMatchObject({
+      applied: imageJournal().length - imageJournal(beforePlaceDescriptions).length,
+    });
     await owner(async (client) => {
       const { rows } = await client.query(
         'SELECT name, description FROM public.places WHERE id = $1',
@@ -184,7 +192,7 @@ describe('kept migrate', () => {
     });
     expect(
       await runMigrations(ownerUrl, {
-        folder: previous,
+        folder: beforePlaceDescriptions,
         release: { version: '1.0.0', revision: null },
       }),
     ).toMatchObject({ applied: 0, rolledBackFrom: '1.1.0' });

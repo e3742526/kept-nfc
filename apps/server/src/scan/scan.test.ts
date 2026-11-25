@@ -115,7 +115,11 @@ describe('POST /api/v1/scan/resolve', () => {
       `INSERT INTO public.short_ids (code, location_id, state, is_primary) VALUES ($1, $2, 'blank', false)`,
       [code, home.id],
     );
-    expect(ok(await resolve(ibrahim, code))).toEqual({ outcome: 'claim', locationId: home.id });
+    expect(ok(await resolve(ibrahim, code))).toEqual({
+      outcome: 'claim',
+      locationId: home.id,
+      code,
+    });
     expect(ok(await resolve(talia, code))).toEqual({ outcome: 'not_in_your_kept' });
   });
 

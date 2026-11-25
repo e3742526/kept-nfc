@@ -136,7 +136,7 @@ describe("What's new", () => {
     expect(within(dialog).queryByRole('button', { name: 'Got it' })).toBeNull();
     expect(within(dialog).getByRole('link', { name: /Full release notes/ })).toHaveAttribute(
       'href',
-      'https://github.com/keptinventory/kept/releases/tag/v9.4.2',
+      'https://github.com/e3742526/kept-nfc/releases/tag/v9.4.2',
     );
     expectLogicalOnly();
 

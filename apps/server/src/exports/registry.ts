@@ -656,6 +656,10 @@ export const NOT_EXPORTED: Readonly<Record<string, string>> = Object.freeze({
   invites: 'pending invitations to this server',
   label_batches: 'print jobs; the codes travel in data/codes.ndjson',
   label_batch_codes: 'print jobs; the codes travel in data/codes.ndjson',
+  label_series:
+    "numbered series reserved on this server; their labels' short IDs travel in data/codes.ndjson",
+  label_aliases:
+    "numbered labels' aliases on this server; their short IDs travel in data/codes.ndjson",
   location_modules: "the location's modules, in the location row and the manifest",
   memberships: "members travel by name and role in the manifest (Q23); they're invited again",
   notification_preferences: "each member's own settings on this server",

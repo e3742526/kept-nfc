@@ -10,6 +10,7 @@ import { placeOrderSql, treeWalk } from '../places/order.js';
 import { allocateShortId, SHORT_ID_TRIES } from '../places/short-id.js';
 import { type Ctx, requireRole } from '../things/service.js';
 import { shownCodeSql } from './printed-sql.js';
+import { aliasOfSql, reserveSeries } from './series.js';
 
 // Label batches (D43, D44, D45, D97, D137, D172, D175, D185).
 // The web contract is apps/web/src/api/capture/types.ts "labels".
@@ -31,7 +32,11 @@ import { shownCodeSql } from './printed-sql.js';
 //   request's transaction and on a dry run too, so the preview shows the codes that print.
 // - `blank`: 1–500 new blank codes, each tried as `randomShortCode()` with INSERT … ON CONFLICT
 //   DO NOTHING (8 tries each, places/short-id.ts), under the 1,000-unclaimed cap per location
-//   (the 0042 trigger enforces it, this answers 409 `blank_cap_reached` first).
+//   (the 0042 trigger enforces it, this answers 409 `blank_cap_reached` first). With `series`
+//   (`{prefix: 'BIN'}`), the blanks are also a numbered series, `BIN-A09Z-0001`… in print order
+//   (labels/series.ts): each label prints its alias and the alias's link instead of its code.
+// - Any label whose code has an alias prints the alias, whatever the batch: a reprint of a
+//   numbered label, or of the thing or place it was claimed for, is the same label.
 // - "Printed OK?" (`printed`) sets `printed_at` on the batch's codes, keeping the first one, and
 //   the batch's `printed_confirmed_at`, once; a second confirmation changes and audits nothing.
 // - "Not printed" (`dismiss`) sets an unconfirmed batch aside (`dismissed_at`), once, so the
@@ -56,6 +61,15 @@ export const CreateBatchBody = z.strictObject({
   placeIds: Ids.optional(),
   unprinted: z.strictObject({ placeId: z.uuid().optional() }).optional(),
   blankCount: z.number().int().min(1).max(MAX_BLANKS).optional(),
+  /** A blank sheet only: number its labels as a series with this purpose prefix (`BIN`). */
+  series: z
+    .strictObject({
+      prefix: z
+        .string()
+        .regex(/^[A-Za-z]{3}$/, 'three letters')
+        .transform((p) => p.toUpperCase()),
+    })
+    .optional(),
   stock: z.string().refine((s) => LABEL_STOCKS.some((x) => x.key === s), 'an unknown stock'),
   startCell: z.number().int().min(1).max(200).optional(),
   /** The preview: 200 LabelBatchPreview, no batch saved and no blank code allocated (a place
@@ -66,6 +80,8 @@ export type CreateBatchBody = z.infer<typeof CreateBatchBody>;
 
 export const LabelCellSchema = z.object({
   code: z.string(),
+  /** A numbered label's alias (`BIN-A09Z-0001`): printed instead of the code, and in `url`. */
+  alias: z.string().optional(),
   url: z.string(),
   kind: z.enum(['thing', 'place', 'blank']),
   name: z.string().optional(),
@@ -112,9 +128,9 @@ export const SummarySchema = z.object({
   things: z.number(),
 });
 
-/** A label's link (D120): the host is only for the system camera; the app ignores it. */
-export const labelUrl = (publicUrl: string, code: string) =>
-  `${publicUrl.replace(/\/+$/, '')}/l/${code}`;
+/** A label's link (D120): the host is only for the system camera; the app ignores it. `base` is
+ * KEPT_LABEL_URL when set, else KEPT_PUBLIC_URL; `code` a short ID or a numbered alias. */
+export const labelUrl = (base: string, code: string) => `${base.replace(/\/+$/, '')}/l/${code}`;
 
 // ---------------------------------------------------------------------------------------------
 // Reading a batch
@@ -137,6 +153,7 @@ const BATCH_COLUMNS = `b.id, b.location_id, b.kind, b.stock, b.start_cell, b.cre
 type CellRow = {
   batch_id: string;
   code: string;
+  alias: string | null;
   thing_id: string | null;
   place_id: string | null;
   name: string | null;
@@ -185,7 +202,8 @@ async function previewCells(
 
 /** A cell's code, target, name and path (outermost first, " › "; a thing's place chain and
  * containers, `place_path`; a place's parent chain). */
-const CELL_COLUMNS = `c.code::text AS code, t.id AS thing_id, p.id AS place_id,
+const CELL_COLUMNS = `c.code::text AS code, ${aliasOfSql('c.code')} AS alias,
+       t.id AS thing_id, p.id AS place_id,
        coalesce(t.name, p.name) AS name,
        CASE WHEN t.id IS NOT NULL THEN t.place_path
             WHEN p.id IS NOT NULL THEN
@@ -205,7 +223,8 @@ function cellOf(
 ): LabelBatch['labels'][number] {
   const cell: LabelBatch['labels'][number] = {
     code: r.code,
-    url: labelUrl(publicUrl, r.code),
+    ...(r.alias ? { alias: r.alias } : {}),
+    url: labelUrl(publicUrl, r.alias ?? r.code),
     kind: batchKind === 'blank' ? 'blank' : batchKind === 'places' ? 'place' : 'thing',
   };
   if (batchKind !== 'blank') {
@@ -541,6 +560,8 @@ export async function createBatch(
     if (!body.blankCount || body.thingIds || body.placeIds || body.unprinted) {
       throw invalid('A blank sheet takes blankCount, and nothing else to label.');
     }
+  } else if (body.series) {
+    throw invalid('Only a blank sheet is numbered as a series.');
   } else {
     const other = body.kind === 'places' ? body.thingIds : body.placeIds;
     if (!!listed === !!body.unprinted || other || body.blankCount !== undefined) {
@@ -604,6 +625,9 @@ export async function createBatch(
      SELECT $1, $2, c, n::int FROM unnest($3::text[]) WITH ORDINALITY u(c, n)`,
     [id, locationId, picked.codes],
   );
+  const series = body.series
+    ? `${body.series.prefix}-${await reserveSeries(client, locationId, body.series.prefix, id, picked.codes)}`
+    : null;
   await audited(tx, {
     locationId,
     actor: actorOf(scope),
@@ -615,6 +639,7 @@ export async function createBatch(
       start_cell: startCell,
       code_count: picked.codes.length,
       ...(body.unprinted ? { unprinted: true } : {}),
+      ...(series ? { series } : {}),
     },
     requestId: ctx.requestId,
   });

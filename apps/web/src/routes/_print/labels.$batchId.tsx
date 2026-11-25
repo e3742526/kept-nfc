@@ -103,7 +103,7 @@ function PrintLabelsPage() {
   const [shareable] = useState(() => canShareType('kept-label.png', 'image/png'));
   const prepared = useQuery({
     queryKey: ['labels', 'pngs', batchId, stock.key, batch.dataUpdatedAt],
-    queryFn: () => labelPngs(stock, data?.labels ?? []),
+    queryFn: () => labelPngs(stock, data?.labels ?? [], t`Contents`),
     enabled: shareable && !!data && data.labels.length > 0,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: 0,
@@ -113,7 +113,7 @@ function PrintLabelsPage() {
   const shareImages = async () => {
     setSharing(true);
     try {
-      const files = prepared.data ?? (await labelPngs(stock, data?.labels ?? []));
+      const files = prepared.data ?? (await labelPngs(stock, data?.labels ?? [], t`Contents`));
       const how = await shareOrDownload(files, t`SheepKeep labels`);
       if (how === 'downloaded') toast({ title: t`Saved the label images`, tone: 'ok' });
       if (how === 'refused')

@@ -1,4 +1,10 @@
-import { normaliseInputCode, parseScan, SHORT_CODE, storedCodeOf } from '@kept/shared';
+import {
+  normaliseInputCode,
+  parseDeviceLabel,
+  parseScan,
+  SHORT_CODE,
+  storedCodeOf,
+} from '@kept/shared';
 import { capturePaths } from '@/api/capture/paths';
 import type { ReservedLabel, ScanOutcome } from '@/api/capture/types';
 import { ApiError } from '@/api/client';
@@ -20,7 +26,18 @@ export type ReadResult =
       status: 'malformed' | 'foreign' | 'unresolved' | 'not_in_your_kept' | 'not_kept';
     };
 
-export function approvedLabel(text: string, origin: string) {
+/** A label's code from its `/l/` path: a short ID folded onto Crockford base32, or a numbered
+ * label's alias (`BIN-A09Z-0001`, nothing folded); '' for anything else. */
+function labelCodeOf(pathname: string): string {
+  const part = /^\/l\/([a-z0-9-]{6,13})$/i.exec(pathname)?.[1] ?? '';
+  const alias = parseDeviceLabel(part);
+  if (alias && alias.code === part.toUpperCase()) return alias.code;
+  const code = normaliseInputCode(part);
+  return /^[a-z0-9]{6}$/i.test(part) && SHORT_CODE.test(code) ? code : '';
+}
+
+/** `origins`: the server's own, then its label address (`labelOrigins`). */
+export function approvedLabel(text: string, origins: string | readonly string[]) {
   let url: URL;
   try {
     url = new URL(text.trim());
@@ -30,15 +47,14 @@ export function approvedLabel(text: string, origin: string) {
   if (url.protocol !== 'https:' || url.username || url.password) {
     return { status: 'malformed' } as const;
   }
-  if (url.origin !== origin) return { status: 'foreign' } as const;
-  const part = /^\/l\/([a-z0-9]{6})$/i.exec(url.pathname)?.[1];
-  const code = part ? normaliseInputCode(part) : '';
-  if (url.search || url.hash || !SHORT_CODE.test(code)) return { status: 'malformed' } as const;
+  if (!([] as string[]).concat(origins).includes(url.origin)) return { status: 'foreign' } as const;
+  const code = labelCodeOf(url.pathname);
+  if (url.search || url.hash || !code) return { status: 'malformed' } as const;
   return { status: 'approved', code } as const;
 }
 
 /** Rejects `/l/...` URLs pointing at a different SheepKeep server even when scanned as QR codes. */
-function checkQrUrlOrigin(text: string, origin: string) {
+function checkQrUrlOrigin(text: string, origins: readonly string[]) {
   let url: URL;
   try {
     url = new URL(text.trim());
@@ -48,15 +64,78 @@ function checkQrUrlOrigin(text: string, origin: string) {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
   if (!/^\/l(?:\/|$)/i.test(url.pathname)) return null;
   if (url.username || url.password) return { status: 'malformed' } as const;
-  if (url.origin !== origin) return { status: 'foreign' } as const;
-  const part = /^\/l\/([a-z0-9]{6})$/i.exec(url.pathname)?.[1];
-  const code = part ? normaliseInputCode(part) : '';
-  if (url.search || url.hash || !SHORT_CODE.test(code)) return { status: 'malformed' } as const;
+  if (!origins.includes(url.origin)) return { status: 'foreign' } as const;
+  const code = labelCodeOf(url.pathname);
+  if (url.search || url.hash || !code) return { status: 'malformed' } as const;
   return { status: 'approved', code } as const;
 }
 
 export function labelUrl(origin: string, code: string): string {
   return `${origin}/l/${encodeURIComponent(code)}`;
+}
+
+// The label address (KEPT_LABEL_URL on the server): the origin new labels and NFC tags carry, so
+// they keep working while the server moves. Asked once per connection, remembered for offline
+// use; until it is known, and for a server with none, it is the server's own origin. Labels and
+// tags made under either origin are this server's.
+const LABEL_ADDRESS_KEY = 'labelAddressV1';
+const labelAddresses = new Map<string, string>();
+const labelAddressLoads = new Map<string, Promise<string>>();
+
+function httpsOrigin(text: unknown): string | null {
+  if (typeof text !== 'string') return null;
+  try {
+    const url = new URL(text);
+    return url.protocol === 'https:' && url.pathname === '/' && !url.search && !url.hash
+      ? url.origin
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The label address, asked of the server once per connection (then remembered). */
+export function loadLabelAddress(
+  connection: Connection,
+  adapters: PlatformAdapters = capacitorAdapters,
+): Promise<string> {
+  const known = labelAddressLoads.get(connection.id);
+  if (known) return known;
+  const load = (async () => {
+    let address: string | null = null;
+    try {
+      const out = await adapters.transport.request<{ url: string }>(
+        connection,
+        capturePaths.labelAddress,
+      );
+      address = httpsOrigin(out.url) ?? connection.origin;
+      await adapters.outbox.setValue(connection, LABEL_ADDRESS_KEY, address).catch(() => {});
+    } catch {
+      // Offline, or an older server: the last answer, else the server's own origin.
+      labelAddressLoads.delete(connection.id);
+      address = httpsOrigin(
+        await adapters.outbox.getValue(connection, LABEL_ADDRESS_KEY).catch(() => null),
+      );
+    }
+    const origin = address ?? connection.origin;
+    labelAddresses.set(connection.id, origin);
+    return origin;
+  })();
+  labelAddressLoads.set(connection.id, load);
+  return load;
+}
+
+/** The origin a new label or tag of this connection carries (its label address once known). */
+export function labelBase(connection: Connection): string {
+  return labelAddresses.get(connection.id) ?? connection.origin;
+}
+
+/** The origins a label of this server may carry: its own, and its label address. */
+export function labelOrigins(connection: Connection): string[] {
+  const address = labelAddresses.get(connection.id);
+  return address && address !== connection.origin
+    ? [connection.origin, address]
+    : [connection.origin];
 }
 
 // Older entries may already be on a tag whose readback failed. Leave them for a physical scan.
@@ -122,7 +201,7 @@ export async function takeShelvedCode(
     while (!found && held.length) {
       const code = held.shift() as string;
       try {
-        const url = labelUrl(connection.origin, code);
+        const url = labelUrl(await loadLabelAddress(connection, adapters), code);
         const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
         if (result.status === 'unassigned' && result.claim?.locationId === locationId) {
           found = { code, url, locationId };
@@ -291,10 +370,12 @@ export async function resolveLabel(
   onlineRequired = false,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<ReadResult> {
-  const nfcCheck = mode === 'nfc' ? approvedLabel(text, connection.origin) : undefined;
+  // The label address as known (main.tsx asks for it on start, and before a link is read).
+  const origins = labelOrigins(connection);
+  const nfcCheck = mode === 'nfc' ? approvedLabel(text, origins) : undefined;
   if (nfcCheck && nfcCheck.status !== 'approved') return nfcCheck;
 
-  const qrCheck = mode === 'qr' ? checkQrUrlOrigin(text, connection.origin) : null;
+  const qrCheck = mode === 'qr' ? checkQrUrlOrigin(text, origins) : null;
   if (qrCheck && qrCheck.status !== 'approved') return qrCheck;
 
   const parsed = parseScan(text, format);
@@ -314,8 +395,14 @@ export async function resolveLabel(
       case 'claim':
         return {
           status: 'unassigned',
-          ...(parsed.kind === 'kept'
-            ? { claim: { code: parsed.code, locationId: response.locationId } }
+          // A numbered label is claimed by the short ID the server names for it.
+          ...(response.code || parsed.kind === 'kept'
+            ? {
+                claim: {
+                  code: response.code ?? (parsed.kind === 'kept' ? parsed.code : ''),
+                  locationId: response.locationId,
+                },
+              }
             : {}),
         };
       case 'legacy_ambiguous':
@@ -350,7 +437,7 @@ export async function inspectTagOwner(
   existingUrl: string,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<string | null> {
-  const checked = approvedLabel(existingUrl, connection.origin);
+  const checked = approvedLabel(existingUrl, labelOrigins(connection));
   if (checked.status !== 'approved') return null;
   try {
     const resolved = await resolveLabel(

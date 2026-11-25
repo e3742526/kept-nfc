@@ -46,8 +46,8 @@ describe('manifest.webmanifest', () => {
       start_url: '/',
       scope: '/',
       display: 'standalone',
-      theme_color: '#F2F1EC',
-      background_color: '#F2F1EC',
+      theme_color: '#FFF9EB',
+      background_color: '#FFF9EB',
     });
   });
 

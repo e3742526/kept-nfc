@@ -184,7 +184,7 @@ describe('location webhooks', () => {
     const done = within(await screen.findByRole('dialog', { name: 'Signing secret' }));
     const secret = document.querySelector('[data-webhook-secret]')?.textContent ?? '';
     expect(secret.length).toBeGreaterThan(20);
-    expect(done.getByText(/SheepKeep-Signature/)).toBeInTheDocument();
+    expect(done.getByText(/Kept-Signature/)).toBeInTheDocument();
     await user.click(done.getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(document.body.textContent).not.toContain(secret);

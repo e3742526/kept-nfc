@@ -25704,8 +25704,8 @@ msgid "SheepKeep shows it only this once. Anyone with it can read the titles and
 msgstr "SheepKeep показує його лише один раз. Кожен, хто його має, може читати назви й дати."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
-msgstr "SheepKeep показує його лише один раз. Ваш отримувач перевіряє з ним заголовок SheepKeep-Signature кожного повідомлення."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgstr "SheepKeep показує його лише один раз. Ваш отримувач перевіряє з ним заголовок Kept-Signature кожного повідомлення."
 
 #: src/components/webhooks/edit.tsx
 msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
@@ -33277,7 +33277,7 @@ msgstr "Додати вкладене місце"
 
 #: src/components/display-prefs.tsx
 msgid "Camera photo size"
-msgstr "Розмір знімків камери"
+msgstr "Розмір фото з камери"
 
 #: src/native/claim-bin-label.tsx
 msgid "Choose existing box"
@@ -33445,3 +33445,35 @@ msgstr "Це місце не входить до доступних місць �
 #: src/components/places/reference-photos.tsx
 msgid "Set as cover"
 msgstr "Зробити обкладинкою"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Label codes"
+msgstr "Коди етикеток"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Short IDs"
+msgstr "Короткі ID"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Numbered"
+msgstr "Нумеровані"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Purpose"
+msgstr "Призначення"
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label gets its own six-character ID."
+msgstr "Кожна етикетка отримує власний шестисимвольний ID."
+
+#: src/components/labels/batch-builder.tsx
+msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+msgstr "Кожна етикетка має вигляд {example}: обране призначення, нова серія і її номер. Етикетку все одно можна прив'язати до будь-чого."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}, кожна {cell} · рядки для запису"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Довша сторона фото, знятого в SheepKeep, у пікселях. Менші фото завантажуються швидше. Фото з вашої бібліотеки, більші за 4096 px, зменшуються під час завантаження."

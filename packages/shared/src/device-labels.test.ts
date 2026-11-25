@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   createDeviceLabelBatch,
   deviceLabelCode,
+  isDeviceLabel,
+  normaliseDeviceLabel,
   parseDeviceLabel,
   randomDeviceBatchId,
 } from './device-labels.js';
@@ -17,6 +19,11 @@ describe('device labels', () => {
     expect(parseDeviceLabel('TMP-0110-0001')?.code).not.toBe('TMP-OIL0-0001');
     expect(parseDeviceLabel('TMP-A09Z-0000')).toBeNull();
     expect(parseDeviceLabel('7KQ4MZ')).toBeNull();
+  });
+  it('folds typed separators but not base36 letters', () => {
+    expect(normaliseDeviceLabel(' bin a09z\u20110001 ')).toBe('BIN-A09Z-0001');
+    expect(isDeviceLabel('LOC-OIL1-0001')).toBe(true);
+    expect(isDeviceLabel('LOC-OIL1-001')).toBe(false);
   });
   it('validates formatting and bounds', () => {
     expect(deviceLabelCode('TMP', 'A09Z', 1)).toBe('TMP-A09Z-0001');

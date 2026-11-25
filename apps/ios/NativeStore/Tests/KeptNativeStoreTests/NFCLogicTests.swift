@@ -47,6 +47,43 @@ final class NFCLogicTests: XCTestCase {
         )
     }
 
+    func testLabelValidationAcceptsNumberedAliasesAndTheLabelAddress() {
+        let labels = URL(string: "https://labels.example.org")!
+        XCTAssertEqual(
+            NFCLabelValidation.validate(
+                urlText: "https://labels.example.org/l/bin-a09z-0001", expectedOrigins: [origin, labels]
+            ),
+            .approved(code: "BIN-A09Z-0001")
+        )
+        // Base36 keeps O, I and L.
+        XCTAssertEqual(
+            NFCLabelValidation.validate(urlText: "https://kept.example.com/l/LOC-OIL1-0042", expectedOrigin: origin),
+            .approved(code: "LOC-OIL1-0042")
+        )
+        XCTAssertEqual(
+            NFCLabelValidation.validate(urlText: "https://kept.example.com/l/BIN-A09Z-0000", expectedOrigin: origin),
+            .malformed
+        )
+        XCTAssertEqual(
+            NFCLabelValidation.validate(urlText: "https://labels.example.org/l/7KQ4MZ", expectedOrigin: origin),
+            .foreign
+        )
+        XCTAssertEqual(
+            NFCLabelValidation.validate(urlText: "https://labels.example.org/l/7KQ4MZ", expectedOrigins: []),
+            .malformed
+        )
+    }
+
+    func testLabelOriginAcceptsOnlyAnHttpsOrigin() {
+        XCTAssertEqual(
+            NFCLabelValidation.labelOrigin("https://Labels.Example.org:443/"),
+            URL(string: "https://labels.example.org")
+        )
+        XCTAssertNil(NFCLabelValidation.labelOrigin("http://labels.example.org"))
+        XCTAssertNil(NFCLabelValidation.labelOrigin("https://labels.example.org/l"))
+        XCTAssertNil(NFCLabelValidation.labelOrigin("https://user@labels.example.org"))
+    }
+
     func testRepeatDebouncerSuppressesSameTagWithinWindowAndAllowsOthers() {
         var debouncer = NFCRepeatDebouncer(window: 2.5)
         let start = Date(timeIntervalSince1970: 1_700_000_000)

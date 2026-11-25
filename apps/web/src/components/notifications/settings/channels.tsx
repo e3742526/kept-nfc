@@ -595,8 +595,8 @@ function AddWebhookForm({ onDone }: { onDone: () => void }) {
       <div className="grid gap-4">
         <Notice tone="warn" title={<Trans>Copy the signing secret now</Trans>}>
           <Trans>
-            SheepKeep shows it only this once. Your receiver checks each message's
-            SheepKeep-Signature header with it.
+            SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature
+            header with it.
           </Trans>
         </Notice>
         <code className="ltr block rounded-lg border border-line bg-sunken p-3 text-start font-mono text-small break-all">

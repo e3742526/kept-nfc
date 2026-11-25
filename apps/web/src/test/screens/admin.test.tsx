@@ -131,7 +131,7 @@ describe('Instance admin', () => {
     await user.click(screen.getByRole('button', { name: 'Add' }));
     expect(screen.getByText("That is this server's own address.")).toBeInTheDocument();
     await user.clear(field);
-    await user.type(field, 'SheepKeep.Home.Example');
+    await user.type(field, 'Kept.Home.Example');
     await user.click(screen.getByRole('button', { name: 'Add' }));
     await waitFor(() =>
       expect(mock.lastCall('PUT', paths.admin.settings)?.body).toEqual({

@@ -67,6 +67,17 @@ const vapidSubjectUrl = () =>
       { message: 'an https: URL or a mailto: address' },
     );
 const httpUrl = () => z.url({ protocol: /^https?$/ });
+/** An Apple app ID: a 10-character team ID, a dot, the bundle ID. */
+const APPLE_APP_ID = /^[A-Z0-9]{10}\.[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*$/;
+/** A URL that is only an origin (a trailing `/` allowed): no path, query, fragment or user. */
+function isOrigin(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.pathname === '/' && !url.search && !url.hash && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
 // comma-separated lists, empty items dropped; empty or unset is [].
 const csvList = () =>
   z
@@ -273,6 +284,25 @@ const schema = z.object({
     })
     .describe(
       'comma-separated exact addresses (scheme, host, port) this Kept also answers on, like `http://192.0.2.20:8080`; no wildcards, and the same `http` or `https` as `KEPT_PUBLIC_URL`, or Kept stops at startup. Each signs in separately; links, mail, passkeys and AI apps stay on `KEPT_PUBLIC_URL` ([Staying on your network](/install/home-network/#staying-on-your-network))',
+    ),
+  // Labels' own address: the origin printed in every new label's QR code and written to NFC tags,
+  // kept for good while the server behind it moves (labels/label-host.ts). Unset, labels carry
+  // KEPT_PUBLIC_URL as before.
+  KEPT_LABEL_URL: httpUrl()
+    .optional()
+    .refine((value) => value === undefined || isOrigin(value), {
+      message: 'an origin only: scheme, host and port, no path',
+    })
+    .transform((value) => (value === undefined ? undefined : new URL(value).origin))
+    .describe(
+      "optional; the permanent address printed on new labels and written to NFC tags, like `https://labels.example.org`: point it at this server. On it, `/l/<code>` is sent on to `KEPT_PUBLIC_URL` and the phone app's link files are served; unset, labels carry `KEPT_PUBLIC_URL`. Labels printed before keep their own address",
+    ),
+  KEPT_APPLE_APP_IDS: csvList()
+    .refine((ids) => ids.every((id) => APPLE_APP_ID.test(id)), {
+      message: 'comma-separated `TEAMID.bundle.id` app IDs',
+    })
+    .describe(
+      'optional; comma-separated iPhone app IDs (`<TEAM_ID>.<bundle id>`) whose app opens label links (`/l/*`): served as `/.well-known/apple-app-site-association` on `KEPT_LABEL_URL` and `KEPT_PUBLIC_URL`; unset, no such file is served',
     ),
   KEPT_METRICS_TOKEN: z
     .string()
@@ -808,7 +838,7 @@ const SETTING_RULES: Record<string, string> = {
 
 /** Settings whose refusal says what is wrong with the value: their messages are written not to
  * repeat a secret. Other settings' messages are left out, as a value may be one. */
-const SAYS_WHY = new Set(['KEPT_EXTRA_ADDRESSES']);
+const SAYS_WHY = new Set(['KEPT_EXTRA_ADDRESSES', 'KEPT_LABEL_URL', 'KEPT_APPLE_APP_IDS']);
 
 function issuePaths(error: z.ZodError): string {
   const why = new Map(

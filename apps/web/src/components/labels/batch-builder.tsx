@@ -20,7 +20,7 @@
  * lands (the labels queries are refreshed, the preview left out), so a print is one dry run when
  * the builder opens and one create.
  */
-import { isSheet, labelStock } from '@kept/shared';
+import { DEVICE_LABEL_PREFIXES, isSheet, labelStock } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -140,6 +140,10 @@ export function BatchBuilder({
     return Math.min(MAX_BLANK, source.blankCount ?? (isSheet(first) ? perPage(first) : 10));
   });
   const blank = source.kind === 'blank';
+  // A blank sheet's labels: short IDs, or a numbered series (`BIN-A09Z-0001`, labels/series.ts).
+  const [numbering, setNumbering] = useState<'codes' | 'series'>('codes');
+  const [prefix, setPrefix] = useState<string>(DEVICE_LABEL_PREFIXES[0]);
+  const series = blank && numbering === 'series';
   const summary = useLabelSummary(location.id);
   const unclaimed = summary.data?.blankUnclaimed ?? 0;
 
@@ -150,6 +154,7 @@ export function BatchBuilder({
     ...(source.placeIds ? { placeIds: source.placeIds } : {}),
     ...(source.unprinted ? { unprinted: source.unprinted } : {}),
     ...(blank ? { blankCount } : {}),
+    ...(series ? { series: { prefix } } : {}),
     stock: stockKey,
     startCell,
   };
@@ -189,6 +194,7 @@ export function BatchBuilder({
   const tooLong = useMemo(() => labelsTooLong(stock, labels, measure), [stock, labels, measure]);
   const already = preview.data?.unconfirmed ?? null;
   const first = labels[0];
+  const sample = series ? seriesSample(prefix) : blankSample();
   const { title: stockTitle } = stockText(stock);
   const countText = fmt.num(count);
   const pendingText = plural(pending, {
@@ -221,6 +227,14 @@ export function BatchBuilder({
             onChange={setBlankCount}
             max={Math.max(1, Math.min(MAX_BLANK, 1000 - unclaimed))}
             unclaimed={unclaimed}
+          />
+        ) : null}
+        {blank ? (
+          <SeriesChoice
+            numbering={numbering}
+            onNumbering={setNumbering}
+            prefix={prefix}
+            onPrefix={setPrefix}
           />
         ) : (
           <section className="grid gap-2">
@@ -339,7 +353,7 @@ export function BatchBuilder({
               >
                 <div style={{ inlineSize: `${stock.cell.w}mm`, blockSize: `${stock.cell.h}mm` }}>
                   <LabelCell
-                    label={first ?? blankSample()}
+                    label={first ?? sample}
                     stock={stock}
                     encode={encode}
                     measure={measure}
@@ -439,6 +453,56 @@ function TooLong({ labels }: { labels: readonly LabelCellContent[] }) {
           })}
         </ul>
       </Notice>
+    </section>
+  );
+}
+
+/** A numbered series' preview label: its purpose, a series still to be reserved, label 1. */
+function seriesSample(prefix: string): LabelCellContent {
+  const base = blankSample();
+  const alias = `${prefix}-0000-0001`;
+  return { ...base, alias, url: base.url.replace(/\/l\/[^/]+$/, `/l/${alias}`) };
+}
+
+/** A blank sheet's codes: short IDs, or a numbered series with the purpose it is printed for. */
+function SeriesChoice({
+  numbering,
+  onNumbering,
+  prefix,
+  onPrefix,
+}: {
+  numbering: 'codes' | 'series';
+  onNumbering: (n: 'codes' | 'series') => void;
+  prefix: string;
+  onPrefix: (p: string) => void;
+}) {
+  const { t } = useLingui();
+  const example = isolate(`${prefix}-A09Z-0001`);
+  return (
+    <section className="grid gap-4">
+      <Segmented<'codes' | 'series'>
+        label={t`Label codes`}
+        value={numbering}
+        onChange={onNumbering}
+        options={[
+          { id: 'codes', label: t`Short IDs` },
+          { id: 'series', label: t`Numbered` },
+        ]}
+        description={
+          numbering === 'series'
+            ? t`Each label reads like ${example}: the purpose you pick, a new series and its number. A label can still be claimed for anything.`
+            : t`Each label gets its own six-character ID.`
+        }
+      />
+      {numbering === 'series' ? (
+        <Segmented<string>
+          label={t`Purpose`}
+          value={prefix}
+          onChange={onPrefix}
+          oneRow
+          options={DEVICE_LABEL_PREFIXES.map((p) => ({ id: p, label: p }))}
+        />
+      ) : null}
     </section>
   );
 }

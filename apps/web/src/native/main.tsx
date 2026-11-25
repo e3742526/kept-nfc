@@ -73,7 +73,7 @@ import {
 } from './inventory';
 import { FIND_TARGET_KEY, type LabelBox, LabelPanel } from './label-panel';
 import { LabelSheets } from './label-sheets';
-import { resolveLabel, type Target } from './labels';
+import { loadLabelAddress, resolveLabel, type Target } from './labels';
 import {
   canRetarget,
   discardCapture,
@@ -891,9 +891,12 @@ export function Inventory({
 
   useEffect(() => {
     let current = true;
+    // The label address first (labels.ts), so a link or tag under it is this server's.
+    void loadLabelAddress(connection, adapters).catch(() => {});
     const readLink = async () => {
       const linkUrl = await adapters.lifecycle.takeLink(connection);
       if (!linkUrl) return;
+      await loadLabelAddress(connection, adapters).catch(() => {});
       const resolved = await resolveLabel(
         connection,
         cacheRef.current,

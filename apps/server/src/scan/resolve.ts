@@ -11,6 +11,7 @@ import {
 import type pg from 'pg';
 import { z } from 'zod';
 import { legacyCodeOf } from '../imports/csv.js';
+import { codeOfAlias } from '../labels/series.js';
 import { callerMembership } from '../locations/access.js';
 
 // What a scan means (D120, D137, D146, D208). The web contract is
@@ -19,8 +20,11 @@ import { callerMembership } from '../locations/access.js';
 //
 // `parseScan()` (@kept/shared) classifies the text, then one resolver per kind answers:
 // - `kept` (a short ID, any host, D120): a live thing or place the caller sees → `open`; a blank
-//   in a location where the caller may use labels → `claim`; else the code as a `kept` legacy
-//   code, an imported export's label re-issued here;
+//   in a location where the caller may use labels → `claim` (with the code); else the code as a
+//   `kept` legacy code, an imported export's label re-issued here;
+// - `alias` (a numbered label, `BIN-A09Z-0001`, labels/series.ts): the short ID it stands for,
+//   answered as `kept` is, so a blank's `claim` carries the short ID to claim; an alias the caller
+//   can't see is the same miss as a code they can't see;
 // - `homebox` (`/a/<assetId>`, `/item/<uuid>`, `/location/<uuid>`, D146): the Homebox legacy
 //   codes the caller sees: one live target → `open`, several (an asset ID repeats per collection)
 //   → `legacy_ambiguous` with the candidates, each with its location (so the phone can queue
@@ -62,7 +66,12 @@ const Target = z.object({
 
 export const ScanOutcomeSchema = z.union([
   z.object({ outcome: z.literal('open'), target: Target }),
-  z.object({ outcome: z.literal('claim'), locationId: z.uuid() }),
+  z.object({
+    outcome: z.literal('claim'),
+    locationId: z.uuid(),
+    /** The short ID to claim: what a numbered label stands for, or the code read. */
+    code: z.string().optional(),
+  }),
   z.object({ outcome: z.literal('not_in_your_kept') }),
   z.object({
     outcome: z.literal('legacy_ambiguous'),
@@ -120,7 +129,7 @@ async function byShortCode(client: pg.ClientBase, code: string): Promise<ScanOut
   if (s.state === 'blank') {
     const member = await callerMembership(client, s.location_id);
     if (member && can(member.role, 'labels.use')) {
-      return { outcome: 'claim', locationId: s.location_id };
+      return { outcome: 'claim', locationId: s.location_id, code };
     }
   }
   return null;
@@ -257,6 +266,14 @@ const RESOLVERS: {
     (await byLegacy(client, scan.code, ['kept'])) ??
     (await anyLegacy(client, text)) ??
     MISS,
+  // A numbered label: the short ID it stands for, answered as that code; else, as typed, a
+  // household's own code that happens to look like one.
+  alias: async (client, scan, text) => {
+    const code = await codeOfAlias(client, scan.alias);
+    return (
+      (code ? await byShortCode(client, code) : null) ?? (await anyLegacy(client, text)) ?? MISS
+    );
+  },
   homebox: async (client, scan) =>
     (await byLegacy(client, legacyCodeOf(scan.assetId ?? scan.uuid ?? ''), ['homebox'])) ?? MISS,
   barcode: async (client, scan, text, deps, format) =>

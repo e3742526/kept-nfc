@@ -156,6 +156,9 @@ export function scanRoutes(state: MockState): MockRoute[] {
             barcode: { code: scan.code, lookupEnabled: cap().barcodeLookup },
           }
         );
+      case 'alias':
+        // The mock server holds no numbered series.
+        return miss;
       default:
         return byThingCode([scan.text], [scan.text]) ?? { outcome: 'not_kept', text: scan.text };
     }
