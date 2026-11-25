@@ -4,6 +4,7 @@ SheepKeep is a modified work based on [Kept](https://github.com/keptinventory/ke
 [Ibrahim Roshdy](https://github.com/ibrahimroshdy) with the
 [Kept contributors](https://github.com/keptinventory/kept/graphs/contributors).
 The fork descends from [Kept revision `52a19f0`](https://github.com/keptinventory/kept/commit/52a19f0c9060f6db3f6250a6b46d7cd9032aae66).
+Upstream changes through [Kept revision `c0a205bf`](https://github.com/keptinventory/kept/commit/c0a205bf195a626b910b9cc03aa5f933ad29d13b) were merged on November 25, 2026.
 The fork's changes began on November 22, 2026 and include the iPhone client, NFC and QR workflows,
 capture and recovery changes, inventory provenance, visual retrieval, and security fixes.
 The SheepKeep rebrand and v2 identity integration are dated November 23, 2026.

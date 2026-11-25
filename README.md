@@ -15,6 +15,10 @@ you own, where you keep it, and when it moved.
 - Print QR labels or use NFC tags to open the linked record on iPhone.
 - Capture inventory, photos, and documents offline on iPhone and sync when you reconnect.
 - Search photos by text or by example image with the opt-in visual index.
+- Map rooms in 3D with shapes such as adjustable shelving and water purifiers.
+  [Map shapes](apps/docs/src/content/docs/users/map-shapes.mdx)
+- Use a personal token to manage warranties, vendors, tags, and item lifecycle through MCP.
+  [MCP clients](apps/docs/src/content/docs/users/mcp-clients.md)
 
 ## Run from source
 

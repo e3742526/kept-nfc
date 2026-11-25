@@ -5869,7 +5869,7 @@ msgstr "Revisión de caja de {name}"
 
 #: src/components/counts/counts-list.tsx
 msgid "Box checks"
-msgstr "Verificaciones de caja"
+msgstr "Revisiones de caja"
 
 #: src/components/boxcheck/checklist.tsx
 msgid "Box inside · not opened"
@@ -7424,7 +7424,7 @@ msgstr "Cerrar"
 
 #: src/components/boxcheck/box-check-screen.tsx
 msgid "Close box check"
-msgstr "Cerrar verificación de caja"
+msgstr "Cerrar revisión de caja"
 
 #: src/native/label-panel.tsx
 msgid "Close camera"
@@ -8703,7 +8703,7 @@ msgstr "Contar {name}"
 
 #: src/components/counts/counts-list.tsx
 msgid "Count a place or a box from Scan: every count and box check is kept here, with what was found and what was missing."
-msgstr "Cuenta un lugar o una caja desde Escanear: aquí se guardan todos los conteos y verificaciones de caja, con lo que se encontró y lo que faltaba."
+msgstr "Cuenta un lugar o una caja desde Escanear: aquí se guardan todos los conteos y revisiones de caja, con lo que se encontró y lo que faltaba."
 
 #: src/components/hints/hint-copy.ts
 msgid "Count checks what's there. Pack into and Move to put everything you scan in one box or place."
@@ -33609,3 +33609,7 @@ msgstr "Guardado en este iPhone: {0} · Pendientes: {1}"
 #: src/native/record.tsx
 msgid "Photo library"
 msgstr "Fototeca"
+
+#: src/components/scan/session/session-screen.tsx
+msgid "Counts are off there"
+msgstr "Los conteos están desactivados allí"

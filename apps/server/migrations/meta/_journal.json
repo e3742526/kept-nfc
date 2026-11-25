@@ -1352,6 +1352,13 @@
       "when": 1795569829898,
       "tag": "0192_label_series",
       "breakpoints": true
+    },
+    {
+      "idx": 193,
+      "version": "7",
+      "when": 1795615577888,
+      "tag": "0193_split_keeps_purchase_line",
+      "breakpoints": true
     }
   ]
 }

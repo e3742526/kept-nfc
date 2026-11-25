@@ -33609,3 +33609,7 @@ msgstr "Enregistré sur cet iPhone : {0} · En attente : {1}"
 #: src/native/record.tsx
 msgid "Photo library"
 msgstr "Photothèque"
+
+#: src/components/scan/session/session-screen.tsx
+msgid "Counts are off there"
+msgstr "Les comptages sont désactivés là-bas"

@@ -33609,3 +33609,7 @@ msgstr "Збережено на цьому iPhone: {0} · Очікують: {1}"
 #: src/native/record.tsx
 msgid "Photo library"
 msgstr "Фототека"
+
+#: src/components/scan/session/session-screen.tsx
+msgid "Counts are off there"
+msgstr "Підрахунки там вимкнено"

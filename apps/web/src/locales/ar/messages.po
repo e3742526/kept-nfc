@@ -33609,3 +33609,7 @@ msgstr "محفوظ على هذا الـ iPhone: {0} · بانتظار المزا
 #: src/native/record.tsx
 msgid "Photo library"
 msgstr "مكتبة الصور"
+
+#: src/components/scan/session/session-screen.tsx
+msgid "Counts are off there"
+msgstr "العدّ متوقف هناك"
