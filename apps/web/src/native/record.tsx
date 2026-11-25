@@ -47,6 +47,7 @@ import type {
 } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { PhotoImage } from '@/components/photo-image';
+import { usePlaceKindName } from '@/components/places/labels';
 import { changedReferences, isReferencePhoto } from '@/components/places/reference-photos';
 import { WhereToLook } from '@/components/things/where-to-look';
 import { Button } from '@/components/ui/button';
@@ -281,6 +282,7 @@ export function RecordScreen({
   const errorText = useErrorText();
   const confirm = useConfirm();
   const [detail, setDetail] = useState<Awaited<ReturnType<typeof loadDetail>>>();
+  const placeKindName = usePlaceKindName();
   const [place, setPlace] = useState<PlaceView>();
   const [unavailable, setUnavailable] = useState(false);
   const [cachedNotice, setCachedNotice] = useState(false);
@@ -787,9 +789,24 @@ export function RecordScreen({
                   loading="eager"
                 />
               ))}
-            <h2 className="text-display font-semibold">
-              <bdi>{name}</bdi>
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-display font-semibold">
+                <bdi>{name}</bdi>
+              </h2>
+              {online && canEdit && place && !place.isUnplaced && (
+                <Button
+                  variant="secondary"
+                  aria-expanded={editor === 'edit'}
+                  onPress={() => {
+                    setPlaceAction(undefined);
+                    setEditor('edit');
+                  }}
+                >
+                  <Pencil size={16} aria-hidden />
+                  <Trans>Edit</Trans>
+                </Button>
+              )}
+            </div>
             {path && (
               <p className="flex items-start gap-1.5 text-small text-ink-2">
                 <MapPin size={15} className="mt-0.5 shrink-0" aria-hidden />
@@ -822,6 +839,11 @@ export function RecordScreen({
               </p>
             )}
             <div className="kept-chips">
+              {'kindKey' in row && !row.isUnplaced && (
+                <span className="kept-chip">
+                  <bdi>{placeKindName(row.kindKey)}</bdi>
+                </span>
+              )}
               {'shortCode' in row && row.shortCode && (
                 <span className="kept-chip">
                   <QrCode size={13} aria-hidden />
@@ -1003,36 +1025,26 @@ export function RecordScreen({
                 {canEdit ? <Trans>QR and NFC label</Trans> : <Trans>View QR label</Trans>}
               </Button>
             )}
-            {online && canEdit && (thing || place) && (
+            {online && canEdit && thing && (
               <>
-                <Button
-                  variant="secondary"
-                  onPress={() => {
-                    setPlaceAction(undefined);
-                    setEditor('edit');
-                  }}
-                >
+                <Button variant="secondary" onPress={() => setEditor('edit')}>
                   <Pencil size={16} aria-hidden />
                   <Trans>Edit</Trans>
                 </Button>
-                {thing && (
-                  <>
-                    <Button variant="secondary" onPress={() => setEditor('move')}>
-                      <ArrowRightLeft size={16} aria-hidden />
-                      <Trans>Move</Trans>
-                    </Button>
-                    {editor === 'actions' && (
-                      <Button variant="secondary" onPress={() => setEditor('correct')}>
-                        <Compass size={16} aria-hidden />
-                        <Trans>Correct location</Trans>
-                      </Button>
-                    )}
-                    <Button variant="secondary" onPress={() => setEditor('actions')}>
-                      <Ellipsis size={16} aria-hidden />
-                      <Trans>More actions</Trans>
-                    </Button>
-                  </>
+                <Button variant="secondary" onPress={() => setEditor('move')}>
+                  <ArrowRightLeft size={16} aria-hidden />
+                  <Trans>Move</Trans>
+                </Button>
+                {editor === 'actions' && (
+                  <Button variant="secondary" onPress={() => setEditor('correct')}>
+                    <Compass size={16} aria-hidden />
+                    <Trans>Correct location</Trans>
+                  </Button>
                 )}
+                <Button variant="secondary" onPress={() => setEditor('actions')}>
+                  <Ellipsis size={16} aria-hidden />
+                  <Trans>More actions</Trans>
+                </Button>
               </>
             )}
           </div>
@@ -1052,7 +1064,7 @@ export function RecordScreen({
               cache={cache}
               connection={connection}
               online={online}
-              parent={target}
+              parent={{ ...target, kindKey: row.kindKey }}
               onClose={() => setPlaceAction(undefined)}
               onCreated={(target) => {
                 onInventoryChanged();

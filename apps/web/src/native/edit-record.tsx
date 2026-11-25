@@ -4,8 +4,16 @@ import { ArrowRightLeft, Check, CheckCircle2, Compass, Inbox, MapPinOff, X } fro
 import { useEffect, useState } from 'react';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
-import type { Condition, MoveBody, MovePreview, PlaceView, ThingView } from '@/api/inventory/types';
+import type {
+  Condition,
+  MoveBody,
+  MovePreview,
+  PlaceView,
+  ThingView,
+  UpdatePlaceBody,
+} from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
+import { PLACE_KINDS } from '@/components/places/labels';
 import { formValues, isEmptyPatch, toPatch, validate } from '@/components/things/form-model';
 import { useConditionLabels } from '@/components/things/labels';
 import { useFieldLabel } from '@/components/things/names';
@@ -26,6 +34,7 @@ import {
   isRestoreEpochMismatch,
   ReplayError,
 } from './outbox';
+import { PlaceKindSelect } from './place-kind-select';
 import { rememberDestination } from './recent-destinations';
 
 export function EditRecord({
@@ -60,6 +69,7 @@ export function EditRecord({
   const [customDraft, setCustomDraft] = useState<Record<string, unknown>>({});
   const fieldLabel = useFieldLabel();
   const [roomName, setRoomName] = useState(place?.name ?? '');
+  const [placeKind, setPlaceKind] = useState(place?.kindKey ?? '');
   const [description, setDescription] = useState(place?.description ?? '');
   const [descriptionSupported, setDescriptionSupported] = useState(false);
   useEffect(() => {
@@ -177,9 +187,10 @@ export function EditRecord({
           !(await ensureCaptureCompatible(connection, adapters)).placeDescriptions
         )
           throw new ReplayError('compatibility_hold');
-        const body = {
+        const body: UpdatePlaceBody = {
           ...(roomName.trim() !== place.name ? { name: roomName.trim() } : {}),
           ...(descriptionChanged ? { description: text } : {}),
+          ...(placeKind !== place.kindKey ? { kindKey: placeKind } : {}),
         };
         if (Object.keys(body).length)
           await adapters.transport.request(connection, inventoryPaths.place(place.id), {
@@ -399,7 +410,11 @@ export function EditRecord({
                 onChange={setRoomName}
                 maxLength={120}
                 isDisabled={busy}
+                autoFocus
               />
+              {place && PLACE_KINDS.some((kind) => kind === place.kindKey) && (
+                <PlaceKindSelect value={placeKind} onChange={setPlaceKind} disabled={busy} />
+              )}
               {descriptionSupported && (
                 <TextField
                   label={t`Description`}

@@ -13,7 +13,7 @@ import {
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { AttachmentView, Page, PlaceView } from '@/api/inventory/types';
+import type { AttachmentView, BuiltinPlaceKind, Page, PlaceView } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import type { Capture, Connection, OriginalMeta, PendingCapture, StorageStats } from './bridge';
@@ -52,7 +52,11 @@ export type DraftFields = {
   locationId: string;
   boxId?: string;
   placeId?: string;
-  placeCreation?: { parentId: string | null; kindKey: 'room' | 'zone'; description: string | null };
+  placeCreation?: {
+    parentId: string | null;
+    kindKey: BuiltinPlaceKind;
+    description: string | null;
+  };
   placePhoto?: { replaces?: { id: string; rowVersion: number } };
   dependsOnPlace?: string;
   attachToThingId?: string;

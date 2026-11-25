@@ -3,7 +3,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ChevronDown, ChevronRight, MapPin, Package, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { inventoryPaths } from '@/api/inventory/paths';
-import type { CreatePlaceBody, PlaceView } from '@/api/inventory/types';
+import type { BuiltinPlaceKind, CreatePlaceBody, PlaceView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -28,6 +28,7 @@ import {
   ReplayError,
   saveOnPhone,
 } from './outbox';
+import { PlaceKindSelect } from './place-kind-select';
 
 type AuthHandler = (reason: 'expired' | 'restored') => void;
 
@@ -43,7 +44,7 @@ export function PlaceCreateForm({
   cache: InventoryCache;
   connection: Connection;
   online: boolean;
-  parent?: { id: string; locationId: string } | undefined;
+  parent?: { id: string; locationId: string; kindKey: string } | undefined;
   onCreated: (target: Target) => void;
   onClose: () => void;
   onAuthError?: AuthHandler | undefined;
@@ -53,6 +54,9 @@ export function PlaceCreateForm({
   const errorText = useErrorText();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [kind, setKind] = useState<BuiltinPlaceKind>(
+    parent && parent.kindKey !== 'floor' ? 'zone' : 'room',
+  );
   const [descriptionSupported, setDescriptionSupported] = useState(false);
   const [id, setId] = useState(newId);
   const locations = writableLocations(cache);
@@ -89,7 +93,7 @@ export function PlaceCreateForm({
             name: name.trim(),
             placeCreation: {
               parentId: parent?.id ?? null,
-              kindKey: parent ? 'zone' : 'room',
+              kindKey: kind,
               description: text || null,
             },
             ...(pendingParent ? { dependsOnPlace: parent.id } : {}),
@@ -105,7 +109,7 @@ export function PlaceCreateForm({
       const body: CreatePlaceBody = {
         id,
         name: name.trim(),
-        kindKey: parent ? 'zone' : 'room',
+        kindKey: kind,
         ...(parent ? { parentId: parent.id } : {}),
         ...(text ? { description: text } : {}),
       };
@@ -141,6 +145,14 @@ export function PlaceCreateForm({
         isDisabled={busy}
         onChange={(value) => {
           setName(value);
+          setId(newId());
+        }}
+      />
+      <PlaceKindSelect
+        value={kind}
+        disabled={busy}
+        onChange={(value) => {
+          setKind(value);
           setId(newId());
         }}
       />

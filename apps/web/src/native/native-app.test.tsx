@@ -1882,6 +1882,52 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByRole('button', { name: 'Winter gloves' })).toBeInTheDocument();
   });
 
+  it('chooses a place kind when adding, then changes the name, description, and kind in place', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Back storage');
+    await user.click(screen.getByRole('button', { name: 'Room Kind' }));
+    await user.click(await screen.findByRole('option', { name: 'Closet' }));
+    await user.click(screen.getByRole('button', { name: 'Create place' }));
+    expect(await screen.findByRole('heading', { name: 'Back storage' })).toBeVisible();
+    expect(screen.getByText('Closet')).toBeVisible();
+    const created = env.rooms.find(({ name }) => name === 'Back storage');
+    expect(created?.kindKey).toBe('closet');
+    if (!created) throw new Error('Missing place');
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    const name = screen.getByRole('textbox', { name: 'Name' });
+    await user.clear(name);
+    await user.type(name, 'Mudroom');
+    await user.type(
+      await screen.findByRole('textbox', { name: 'Description' }),
+      'By the back door',
+    );
+    await user.click(screen.getByRole('button', { name: 'Closet Kind' }));
+    await user.click(await screen.findByRole('option', { name: 'Room' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByRole('heading', { name: 'Mudroom' })).toBeVisible();
+    expect(screen.getByText('By the back door')).toBeVisible();
+    expect(screen.getByText('Room')).toBeVisible();
+    expect(request).toHaveBeenCalledWith(expect.anything(), inventoryPaths.place(created.id), {
+      method: 'PATCH',
+      ifMatch: 1,
+      body: { name: 'Mudroom', description: 'By the back door', kindKey: 'room' },
+    });
+  });
+
   it('moves a deep bin through Places and updates the same item path and counts', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
@@ -2078,6 +2124,8 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Create place' }));
     await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Offline garage');
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Beside the house');
+    await user.click(screen.getByRole('button', { name: 'Room Kind' }));
+    await user.click(await screen.findByRole('option', { name: 'Floor' }));
     await user.click(screen.getByRole('button', { name: 'Create place' }));
     await screen.findByRole('heading', { name: 'Offline garage' });
     await user.click(screen.getByRole('button', { name: 'Add sub-location' }));
@@ -2128,8 +2176,17 @@ describe('KeptPhone mobile workflows', () => {
       .filter(([, path]) => path === capturePaths.syncOps)
       .flatMap(([, , options]) => (options?.body as { ops: unknown[] } | undefined)?.ops ?? []);
     expect(ops).toMatchObject([
-      { op: 'create_area', clientId: parent, payload: { description: 'Beside the house' } },
-      { op: 'create_area', clientId: shelf, dependsOn: [parent], payload: { parentId: parent } },
+      {
+        op: 'create_area',
+        clientId: parent,
+        payload: { kindKey: 'floor', description: 'Beside the house' },
+      },
+      {
+        op: 'create_area',
+        clientId: shelf,
+        dependsOn: [parent],
+        payload: { parentId: parent, kindKey: 'room' },
+      },
       { op: 'create_thing', dependsOn: [shelf], payload: { target: { placeId: shelf } } },
     ]);
     expect(
