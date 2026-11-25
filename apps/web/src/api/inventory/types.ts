@@ -1260,6 +1260,8 @@ export type AttachmentView = {
   alsoInPaperwork?: true;
   createdBy: ActorRef;
   createdAt?: string;
+  /** When it was archived (a photo set aside); null or absent while it is current. */
+  archivedAt?: string | null;
   /** For PATCH /api/v1/attachments/:id (If-Match). */
   rowVersion: number;
 };

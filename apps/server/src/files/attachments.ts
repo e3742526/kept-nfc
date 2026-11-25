@@ -240,7 +240,12 @@ export async function updateAttachment(
   userId: string,
   id: string,
   expected: number,
-  patch: { role?: string | undefined; sort?: number | undefined; name?: string | null | undefined },
+  patch: {
+    role?: string | undefined;
+    sort?: number | undefined;
+    name?: string | null | undefined;
+    archived?: boolean | undefined;
+  },
   requestId: string,
 ): Promise<AttachmentView> {
   const seen = await readAttachment(client, id);
@@ -267,9 +272,18 @@ export async function updateAttachment(
   // A name is set or cleared (null) only when the PATCH names it (#183).
   await client.query(
     `UPDATE public.attachments SET role = coalesce($2, role), sort = coalesce($3, sort),
-            name = CASE WHEN $4 THEN $5 ELSE name END
+            name = CASE WHEN $4 THEN $5 ELSE name END,
+            archived_at = CASE WHEN $6::boolean IS NULL THEN archived_at
+                               WHEN $6 THEN coalesce(archived_at, now()) ELSE NULL END
       WHERE id = $1`,
-    [id, patch.role ?? null, patch.sort ?? null, patch.name !== undefined, patch.name ?? null],
+    [
+      id,
+      patch.role ?? null,
+      patch.sort ?? null,
+      patch.name !== undefined,
+      patch.name ?? null,
+      patch.archived ?? null,
+    ],
   );
   const after = await readAttachment(client, id);
   await audited(tx, {
@@ -277,8 +291,18 @@ export async function updateAttachment(
     actor: { type: 'user', id: userId },
     action: 'attachment.update',
     entity: { type: 'attachment', id },
-    before: { role: before.role, sort: before.sort, name: before.name },
-    after: { role: after.role, sort: after.sort, name: after.name },
+    before: {
+      role: before.role,
+      sort: before.sort,
+      name: before.name,
+      archived: before.archived_at != null,
+    },
+    after: {
+      role: after.role,
+      sort: after.sort,
+      name: after.name,
+      archived: after.archived_at != null,
+    },
     subjects: thingSubjects(after),
     rootThingId: after.thing_id,
     requestId,
@@ -347,7 +371,12 @@ export async function listAttachments(
   gateOf: GateOf,
   owner: AttachmentOwner,
   id: string,
-  opts: { role?: string | undefined; limit: number; after: ListKey | null },
+  opts: {
+    role?: string | undefined;
+    archived?: 'exclude' | 'only' | 'include' | undefined;
+    limit: number;
+    after: ListKey | null;
+  },
 ): Promise<{ items: AttachmentView[]; next_cursor: string | null }> {
   const q = OWNER_SQL[owner];
   const { rows: found } = await client.query<{ location_id: string }>(q.exists, [id]);
@@ -362,9 +391,20 @@ export async function listAttachments(
         AND ($2::text IS NULL OR a.role = $2)
         AND ($3::int IS NULL OR (a.sort, a.id) > ($3::int, $4::uuid))
         AND a.role <> ALL ($6::text[])
+        AND ($7::text = 'include'
+             OR ($7 = 'only' AND a.archived_at IS NOT NULL)
+             OR ($7 = 'exclude' AND a.archived_at IS NULL))
       ORDER BY a.sort, a.id
       LIMIT $5`,
-    [id, opts.role ?? null, after?.[0] ?? null, after?.[1] ?? null, opts.limit + 1, hidden],
+    [
+      id,
+      opts.role ?? null,
+      after?.[0] ?? null,
+      after?.[1] ?? null,
+      opts.limit + 1,
+      hidden,
+      opts.archived ?? 'exclude',
+    ],
   );
   const page = pageOf(rows, opts.limit, (r): ListKey => [r.sort, r.id]);
   return { items: await attachmentViews(client, files, page.items), next_cursor: page.next_cursor };

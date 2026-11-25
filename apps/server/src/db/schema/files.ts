@@ -158,6 +158,8 @@ export const attachments = pgTable(
      * an ordinary photo; it never goes back under review (the custom migration's guard).
      */
     inReview: boolean('in_review').notNull().default(false),
+    /** 1.x: a photo set aside (not a cover, not indexed); null while it is current. */
+    archivedAt: tstz('archived_at'),
     createdBy: uuid('created_by').notNull(),
     ...mutable(),
   },

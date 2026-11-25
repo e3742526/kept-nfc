@@ -92,6 +92,7 @@ const AttachmentViewSchema = z.object({
   name: z.string().nullable(),
   createdBy: z.object({ displayName: z.string() }),
   createdAt: z.iso.datetime().optional(),
+  archivedAt: z.iso.datetime().nullable().optional(),
   rowVersion: z.number(),
 });
 
@@ -129,9 +130,15 @@ const UpdateAttachmentBody = z.strictObject({
   role: z.enum(ATTACHMENT_ROLES).optional(),
   sort: Sort.optional(),
   name: AttachmentName.optional(),
+  /** Set a photo aside (true) or bring it back (false). */
+  archived: z.boolean().optional(),
 });
 
-const ListQuery = paginationQuery.extend({ role: z.enum(ATTACHMENT_ROLES).optional() });
+const ListQuery = paginationQuery.extend({
+  role: z.enum(ATTACHMENT_ROLES).optional(),
+  /** `exclude` (default): current only; `only`: the archive; `include`: both. */
+  archived: z.enum(['exclude', 'only', 'include']).optional(),
+});
 
 const ListResponse = z.object({
   items: z.array(AttachmentViewSchema),
@@ -392,6 +399,7 @@ export async function fileRoutes(app: KeptApp, deps: InventoryDeps): Promise<voi
             req.params.id.toLowerCase(),
             {
               role: req.query.role,
+              archived: req.query.archived,
               limit: page.limit,
               after,
             },

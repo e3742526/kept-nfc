@@ -314,6 +314,31 @@ describe('PATCH and DELETE /api/v1/attachments/:id', () => {
     expect(event?.diff).toMatchObject({ name: { after: 'Boiler manual' } });
   });
 
+  it('archives and restores a photo: out of the default list, in the archive, audited', async () => {
+    const a = await bobsLink();
+    const list = (query: string) =>
+      call(t, `/api/v1/things/${thing}/attachments${query}`, { as: vic, method: 'GET' }).then(
+        (res) => (res.json() as { items: { id: string; archivedAt?: string | null }[] }).items,
+      );
+    expect(await list('')).toContainEqual(expect.objectContaining({ id: a.id }));
+
+    const archived = await patch(bob, a, { archived: true }, a.rowVersion);
+    expect(archived.statusCode, archived.body).toBe(200);
+    const view = archived.json() as AttachmentView & { archivedAt: string | null };
+    expect(view.archivedAt).not.toBeNull();
+    expect(await list('')).not.toContainEqual(expect.objectContaining({ id: a.id }));
+    expect(await list('?archived=only')).toContainEqual(expect.objectContaining({ id: a.id }));
+    expect(await list('?archived=include')).toContainEqual(expect.objectContaining({ id: a.id }));
+    const [event] = (await auditActions(home, 'attachment.update')).slice(-1);
+    expect(event?.diff).toMatchObject({ archived: { before: false, after: true } });
+
+    const restored = await patch(bob, view, { archived: false }, view.rowVersion);
+    expect(restored.statusCode, restored.body).toBe(200);
+    expect((restored.json() as { archivedAt: string | null }).archivedAt).toBeNull();
+    expect(await list('')).toContainEqual(expect.objectContaining({ id: a.id }));
+    expect(await list('?archived=only')).not.toContainEqual(expect.objectContaining({ id: a.id }));
+  });
+
   it('names a file, clears the name, and audits both (#183)', async () => {
     const a = await bobsLink();
     expect(a).toMatchObject({ name: null });
