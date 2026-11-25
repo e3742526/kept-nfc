@@ -622,6 +622,19 @@ describe('one run at a time', () => {
         runSnapshot(depsFor(new FakeRestic(), path.join(scratch, 'locked')), { kind: 'manual' }),
       ).rejects.toBeInstanceOf(BackupRunningError);
       expect((await runsOf()).length).toBe(before);
+      const { rows } = await holder.query<{ id: string }>('SELECT uuidv7() AS id');
+      const runId = rows[0]?.id as string;
+      await expect(
+        runSnapshot(depsFor(new FakeRestic(), path.join(scratch, 'locked')), {
+          kind: 'manual',
+          runId,
+        }),
+      ).rejects.toBeInstanceOf(BackupRunningError);
+      const { rows: recorded } = await holder.query(
+        'SELECT status, error, finished_at IS NOT NULL AS finished FROM public.backup_runs WHERE id = $1',
+        [runId],
+      );
+      expect(recorded).toEqual([{ status: 'failed', error: 'backup_running', finished: true }]);
     } finally {
       await holder.end();
     }

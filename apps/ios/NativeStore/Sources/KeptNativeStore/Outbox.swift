@@ -500,12 +500,21 @@ public final class Outbox {
             for folder in folders where try folder.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true {
                 if folder.lastPathComponent.hasPrefix("staged-") {
                     guard let capture = try? readManifest(folder), matches(capture, folder: folder, staged: true) else {
-                        try fs.removeItem(at: folder)
+                        // An unreadable manifest or original is not proof that the capture is
+                        // incomplete. Only discard empty stages; retry the rest on reopening.
+                        if try fs.contentsOfDirectory(atPath: folder.path).isEmpty {
+                            try fs.removeItem(at: folder)
+                        }
                         continue
                     }
                     let final = try captureFolder(context: capture.context, id: capture.id, staged: false)
-                    if fs.fileExists(atPath: final.path) { try fs.removeItem(at: folder) }
-                    else { try fs.moveItem(at: folder, to: final) }
+                    if fs.fileExists(atPath: final.path) {
+                        guard let existing = try? readManifest(final), existing == capture,
+                              matches(existing, folder: final) else { continue }
+                        try fs.removeItem(at: folder)
+                    } else {
+                        try fs.moveItem(at: folder, to: final)
+                    }
                     try insert(capture)
                 } else if let capture = try? readManifest(folder), matches(capture, folder: folder) {
                     try insert(capture)

@@ -100,6 +100,32 @@ final class OutboxTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: partial.path))
     }
 
+    func testRepairPreservesStageUntilManifestCanBeRead() throws {
+        let root = try scratch()
+        let saved = try preparedCapture(in: root)
+        let account = root.appendingPathComponent(digest(Data(context.utf8)))
+        let final = account.appendingPathComponent(saved.id)
+        let stage = account.appendingPathComponent("staged-" + saved.id)
+        let fs = FileManager.default
+        try fs.moveItem(at: final, to: stage)
+        let manifest = stage.appendingPathComponent("capture.json")
+        let contents = try Data(contentsOf: manifest)
+        try fs.removeItem(at: manifest)
+        try fs.createDirectory(at: manifest, withIntermediateDirectories: false)
+
+        _ = try Outbox(root: root)
+        XCTAssertTrue(fs.fileExists(atPath: stage.path))
+        try fs.removeItem(at: manifest)
+        try contents.write(to: manifest)
+
+        let reopened = try Outbox(root: root)
+        XCTAssertEqual(try reopened.pending(context: context).map(\.capture), [saved])
+        let file = try XCTUnwrap(saved.files.first)
+        let (url, _) = try reopened.original(context: context, draft: saved.id, file: file.file.id)
+        XCTAssertEqual(try Data(contentsOf: url), Data("%PDF-1".utf8))
+        XCTAssertFalse(fs.fileExists(atPath: stage.path))
+    }
+
     func testRepairCompletesFinishedCapturesWithoutResurrecting() throws {
         let root = try scratch()
         let saved = try preparedCapture(in: root)

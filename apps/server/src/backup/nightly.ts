@@ -205,8 +205,8 @@ const FAILED: Omit<Figures, 'error'> = {
 
 /**
  * One snapshot, recorded. Returns the finished row (`ok` or `warning`); throws (after recording
- * the failure) when it fails, and BackupRunningError, recording nothing, when another run holds
- * the lock.
+ * the failure) when it fails. Lock contention records a failure for an accepted manual run ID
+ * and throws BackupRunningError; scheduled and ad hoc runs without an ID leave no row.
  */
 export async function runSnapshot(deps: SnapshotDeps, opts: SnapshotOptions): Promise<BackupRun> {
   const lock = await connect(deps.ownerUrl, 'kept-backup');
@@ -214,7 +214,18 @@ export async function runSnapshot(deps: SnapshotDeps, opts: SnapshotOptions): Pr
     const { rows } = await lock.query<{ ok: boolean }>('SELECT pg_try_advisory_lock($1) AS ok', [
       BACKUP_LOCK_KEY,
     ]);
-    if (!rows[0]?.ok) throw new BackupRunningError();
+    if (!rows[0]?.ok) {
+      if (opts.kind === 'manual' && opts.runId) {
+        // Never overwrite another attempt for this ID, which might itself own the lock.
+        await lock.query(
+          `INSERT INTO public.backup_runs (id, kind, status, storage_mode, target, finished_at, error)
+           VALUES ($1, 'manual', 'failed', $2, $3, now(), 'backup_running')
+           ON CONFLICT (id) DO NOTHING`,
+          [opts.runId, deps.storage, deps.settings.description],
+        );
+      }
+      throw new BackupRunningError();
+    }
     try {
       return await recorded(deps, opts, lock);
     } finally {
