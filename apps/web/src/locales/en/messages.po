@@ -33289,3 +33289,7 @@ msgstr "Each label gets its own six-character ID."
 #: src/components/labels/batch-builder.tsx
 msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
 msgstr "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}, each {cell} · lines to write on"

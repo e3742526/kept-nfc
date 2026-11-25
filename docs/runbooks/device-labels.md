@@ -26,6 +26,11 @@ made, how to deploy the address it uses, and what still has to be checked on rea
 - **Printing.** A label whose code has an alias prints the alias and its link, so a replacement
   label (a reprint of the batch, or of the thing it was claimed for) is the same label. The QR is
   vector, error correction M, a four-module quiet zone, its version chosen by the encoder.
+- **Write-in sheet.** `letter_20_2x2in` is the OL330 layout: 2-inch squares, 4 × 5 on Letter,
+  ¼-inch margins, ⅛ inch between rows and none between columns, measured from a sheet laid out for
+  that stock. Each label prints the code and the QR across the top and four grey lines to write
+  on; a label with no name yet prints "Contents" over a short line by the code. It suits `TMP`
+  series.
 
 ## Deploying the label address
 
@@ -57,6 +62,7 @@ None of these has been run yet; they need an iPhone, signing and the label host 
 | Write a tag, then read it back in the app | Verified; the tag and the label's QR carry the same URL |
 | Remove the tag during a write | `write_unverified`; a rescan reads what is on it, nothing is registered twice |
 | Print a series on 1 × 1, 1.5 × 1, 1.5 × 1.5 and 2 × 2 inch rolls | The QR reads from 20 cm; the alias is legible; nothing is cut off |
+| Print a test page on plain paper, hold it over an OL330 sheet against the light, then print a `TMP` series on the sheet | Every label inside its square, including the bottom row; the lines take a pen |
 | Scan a tag under a paper label, on plastic, and on metal | Reliable on paper and plastic; record what metal needs (a ferrite-backed tag) |
 | Scan a label printed before this change | Opens as before |
 
@@ -69,9 +75,6 @@ None of these has been run yet; they need an iPhone, signing and the label host 
 - **Offline numbered labels.** The phone's snapshot carries no series, so offline a numbered
   label is "Not on this phone" and is checked again online. Adding aliases to the sync snapshot is
   the next step.
-- **A sheet template for 2 × 2 inch OL330 stock.** The inch labels are rolls (one label a page). A
-  sheet stock needs the maker's published margins and pitch; add it to `label-stocks.ts` with
-  them, and print a test sheet before relying on it.
 - **NFC hardware registry.** Tags are written through Core NFC's NDEF session, which doesn't give
   the chip's UID or type. Recording the UID and chip (NTAG213/215/216) needs an ISO 14443 tag
   session and a table of its own; until then a tag is identified by what it holds, which is enough

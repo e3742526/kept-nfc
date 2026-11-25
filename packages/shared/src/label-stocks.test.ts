@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   cellsFor,
   hasQr,
+  isRuled,
   isSheet,
   isStacked,
   isTape,
   LABEL_STOCKS,
+  type LabelStock,
   labelStock,
 } from './label-stocks.js';
 
@@ -26,10 +28,32 @@ describe('LABEL_STOCKS', () => {
       'a4_24_70x37',
       'a4_65_38x21',
       'letter_30_67x25',
+      'letter_20_2x2in',
       'letter_writable_8',
       'letter_writable_12',
       'letter_writable_24',
     ]);
+  });
+
+  it('has the OL330 write-in sheet: 2-inch squares that add up to Letter', () => {
+    const s = LABEL_STOCKS.filter(isRuled);
+    expect(s.map((x) => x.key)).toEqual(['letter_20_2x2in']);
+    const [ol330] = s as [LabelStock];
+    expect([ol330.cols, ol330.rows, ol330.cell, ol330.gap, ol330.margin]).toEqual([
+      4,
+      5,
+      { w: 50.8, h: 50.8 },
+      { x: 0, y: 3.175 },
+      { top: 6.35, left: 6.35 },
+    ]);
+    const across = 2 * ol330.margin.left + ol330.cols * ol330.cell.w;
+    const down = 2 * ol330.margin.top + ol330.rows * ol330.cell.h + (ol330.rows - 1) * ol330.gap.y;
+    expect(across).toBeCloseTo(ol330.page.w, 6);
+    expect(down).toBeCloseTo(ol330.page.h, 6);
+    // Cell 20 starts 6 inches across and 8.5 inches down, as the template's last label.
+    const last = cellsFor(ol330, 20).cells[19];
+    expect([last?.x, last?.y]).toEqual([6.35 + 3 * 50.8, 6.35 + 4 * (50.8 + 3.175)]);
+    expect(isStacked(ol330)).toBe(false);
   });
 
   it('has inch rolls that stack the QR over the code, each label its own page', () => {

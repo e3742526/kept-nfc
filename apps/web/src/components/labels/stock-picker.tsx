@@ -5,7 +5,15 @@
  * never a maker's logo (D172). The last stock used is remembered on this
  * browser, since a household has one printer.
  */
-import { hasQr, isSheet, isTape, LABEL_STOCKS, type LabelStock, labelSize } from '@kept/shared';
+import {
+  hasQr,
+  isRuled,
+  isSheet,
+  isTape,
+  LABEL_STOCKS,
+  type LabelStock,
+  labelSize,
+} from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react/macro';
 import { ChoiceCards } from '@/components/ui/segmented';
@@ -67,7 +75,9 @@ export function useStockText() {
       detail:
         stock.content === 'compact'
           ? t`${cols} × ${rows}, each ${cell} · QR and code only`
-          : t`${cols} × ${rows}, each ${cell} · any office printer`,
+          : isRuled(stock)
+            ? t`${cols} × ${rows}, each ${cell} · lines to write on`
+            : t`${cols} × ${rows}, each ${cell} · any office printer`,
     };
   };
 }

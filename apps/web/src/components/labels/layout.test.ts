@@ -141,6 +141,31 @@ describe('cellMetrics', () => {
     },
   );
 
+  it('letter_20_2x2in: a write-in label, the code and QR across the top, four lines under them', () => {
+    const stock = labelStock('letter_20_2x2in');
+    for (const chars of [7, 13]) {
+      const m = cellMetrics(stock, chars);
+      expect(m.code * chars * 0.66).toBeLessThanOrEqual(m.text + 1e-9);
+      expect(m.room).toBe(m.qr);
+    }
+    const m = cellMetrics(stock, 13);
+    const ruled = m.ruled as NonNullable<typeof m.ruled>;
+    // Where the template draws them: 26.8, 33.5, 40.2 and 46.9 mm down a 50.8 mm label.
+    expect(ruled.rules.map((r) => Math.round(r * 10) / 10)).toEqual([26.8, 33.5, 40.2, 46.9]);
+    expect(ruled.rules[0]).toBeGreaterThan(m.pad + m.qr);
+    expect(ruled.rules.at(-1)).toBeLessThan(stock.cell.h - m.pad);
+    // The short line beside the QR sits under the code and "Contents", above the QR's foot.
+    expect(ruled.blank).toBeGreaterThan(m.pad + m.code + m.pad * 0.6 + ruled.caption);
+    expect(ruled.blank).toBeLessThan(m.pad + m.qr);
+    // A numbered label's capitals stay about 7 pt; a short ID's are larger.
+    expect(m.code).toBeGreaterThanOrEqual(2.4);
+    expect(cellMetrics(stock).code).toBeGreaterThan(m.code);
+    // No other stock is ruled.
+    expect(LABEL_STOCKS.filter((s) => cellMetrics(s).ruled).map((s) => s.key)).toEqual([
+      'letter_20_2x2in',
+    ]);
+  });
+
   it('prints a numbered label as its alias, a short ID 3 + 3, neither ever wrapping', () => {
     expect(shownCode({ code: '7KQ4MZ' })).toBe('7KQ\u20114MZ');
     expect(shownCode({ code: '7KQ4MZ', alias: 'BIN-A09Z-0001' })).toBe('BIN\u2011A09Z\u20110001');

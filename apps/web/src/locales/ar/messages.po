@@ -33289,3 +33289,7 @@ msgstr "يحصل كل ملصق على معرّف خاص به من ستة أحر�
 #: src/components/labels/batch-builder.tsx
 msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
 msgstr "يُقرأ كل ملصق مثل {example}: الغرض الذي تختاره، ثم سلسلة جديدة، ثم رقمه. ويظل بالإمكان ربط أي ملصق بأي شيء."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}، كل منها {cell} · أسطر للكتابة"

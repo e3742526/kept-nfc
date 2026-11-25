@@ -6,7 +6,9 @@
  * The sheet margins and gaps were not checked against a maker's template: they are the common
  * layouts for these sizes, chosen so the cells add up to the page, and they vary a little
  * between makers. The device checklist prints a test sheet on real stock before release.
- * `letter_30_67x25` follows the Avery 5160 layout (1" × 2⅝", 3 × 10).
+ * `letter_30_67x25` follows the Avery 5160 layout (1" × 2⅝", 3 × 10). `letter_20_2x2in` follows
+ * the OL330 layout (2" squares, 4 × 5, ¼" margins, ⅛" between rows, none between columns), taken
+ * from a sheet laid out for that stock.
  *
  * Label-maker tape (#303: Brother TZe and the like, 9, 12, 18 and 24 mm wide) is continuous: each
  * label is its own page, the tape's width tall and a fixed length long, so every label of a batch
@@ -37,9 +39,10 @@ export type LabelStock = {
   /**
    * `stacked`: the QR on top and the code (and name) under it, for square and near-square labels
    * whose QR beside a 13-character numbered-label code would leave the code too small to read.
-   * Otherwise the QR is beside the text.
+   * `ruled`: a write-in label: the code and the QR across the top, the QR at the end, and lines
+   * to write the contents on below them. Otherwise the QR is beside the text.
    */
-  readonly arrange?: 'stacked';
+  readonly arrange?: 'stacked' | 'ruled';
 };
 
 const roll = (key: string, w: number, h: number, en: string, ar: string): LabelStock => ({
@@ -145,6 +148,21 @@ export const LABEL_STOCKS: readonly LabelStock[] = Object.freeze([
     margin: { top: 12.7, left: 4.7625 },
     content: 'full',
   },
+  {
+    key: 'letter_20_2x2in',
+    names: {
+      en: 'Letter, 20 write-in labels (OL330, 2 × 2 in)',
+      ar: 'Letter، ‏20 ملصقًا للكتابة (OL330، ‏2 × 2 بوصة)',
+    },
+    page: { w: 215.9, h: 279.4 },
+    cols: 4,
+    rows: 5,
+    cell: { w: 50.8, h: 50.8 },
+    gap: { x: 0, y: 3.175 },
+    margin: { top: 6.35, left: 6.35 },
+    content: 'full',
+    arrange: 'ruled',
+  },
   letterWritable(2, 4),
   letterWritable(2, 6),
   letterWritable(3, 8),
@@ -164,6 +182,11 @@ export function isSheet(stock: LabelStock): boolean {
 /** QR on top, text under it (square and near-square labels). */
 export function isStacked(stock: LabelStock): boolean {
   return stock.arrange === 'stacked';
+}
+
+/** A write-in label: the code and QR across the top, lines to write on under them. */
+export function isRuled(stock: LabelStock): boolean {
+  return stock.arrange === 'ruled';
 }
 
 /** Label-maker tape: a roll whose label is the code, set large. */

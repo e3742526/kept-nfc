@@ -10,6 +10,7 @@
 import {
   cellsFor,
   hasQr,
+  isRuled,
   isSheet,
   isStacked,
   isTape,
@@ -107,8 +108,18 @@ export type CellMetrics = {
   place: boolean;
   /** The QR on top, the code and text centred under it (`arrange: 'stacked'`). */
   stacked: boolean;
-  /** The text column's height: the label's, less the padding, and less the QR when stacked. */
+  /**
+   * The text column's height: the label's, less the padding, and less the QR when stacked; on a
+   * write-in label, the QR's (the column beside it).
+   */
   room: number;
+  /**
+   * A write-in label (`arrange: 'ruled'`): the code at the top of the text column, the QR at the
+   * end of the label, and full-width lines under them. `rules`: the lines' distances from the
+   * label's top. A label with no name yet prints the "Contents" word under the code, `caption`
+   * large, over a short line `blank` from the top, the text column wide. Null on other stocks.
+   */
+  ruled: { rules: readonly number[]; caption: number; blank: number } | null;
 };
 
 /**
@@ -150,6 +161,7 @@ const floor2 = (n: number) => Math.floor(n * 100 + 1e-6) / 100;
 export function cellMetrics(stock: LabelStock, codeChars = 7): CellMetrics {
   if (isTape(stock)) return tapeMetrics(stock, codeChars);
   if (isStacked(stock)) return stackedMetrics(stock, codeChars);
+  if (isRuled(stock)) return ruledMetrics(stock, codeChars);
   const { w, h } = stock.cell;
   const pad = Math.max(1.5, h * 0.06);
   const qr = Math.min(h - 2 * pad, w * 0.48);
@@ -168,6 +180,7 @@ export function cellMetrics(stock: LabelStock, codeChars = 7): CellMetrics {
     compact,
     place: !compact,
     stacked: false,
+    ruled: null,
     room: h - 2 * pad,
   };
 }
@@ -199,7 +212,48 @@ function stackedMetrics(stock: LabelStock, codeChars: number): CellMetrics {
     compact,
     place: !compact,
     stacked: true,
+    ruled: null,
     room: h - 2 * pad - qr - gap,
+  };
+}
+
+/** The write-in lines' ink and weight (0.45 pt): grey, so handwriting reads over them. */
+export const RULE_INK = '#8C8C8C';
+export const RULE_WIDTH = 0.16;
+
+/** The "Contents" word as a write-in label prints it: in capitals, where the script has them. */
+export const captionText = (caption: string) => caption.toLocaleUpperCase();
+
+/**
+ * A write-in label (the OL330 sheet's 2-inch squares): the code at the top left, the QR at the top
+ * right (two fifths of the label, quiet zone included), and under them lines a hand-width apart
+ * (6.7 mm on 2 inches, a little under college ruling) down to the label's foot. Taken from a sheet
+ * laid out for the stock. With no name, "Contents" and a short line sit under the code; with
+ * one, the name and place take their place, fitted beside the QR.
+ */
+function ruledMetrics(stock: LabelStock, codeChars: number): CellMetrics {
+  const { w, h } = stock.cell;
+  const pad = Math.max(1.5, w * 0.055);
+  const qr = w * 0.4;
+  const text = Math.max(0, w - qr - 3 * pad);
+  const code = Math.min(h * 0.073, text / codeEm(codeChars));
+  const name = floor2(Math.max(NAME_MIN, Math.min(h * 0.06, code * 0.8)));
+  const step = h * 0.132;
+  const rules: number[] = [];
+  for (let y = h - 1.4 * pad; y >= pad + qr + step / 2; y -= step) rules.unshift(floor2(y));
+  return {
+    pad,
+    qr,
+    codeColumn: 0,
+    text,
+    code,
+    name,
+    path: floor2(Math.max(PATH_MIN, name * 0.8)),
+    compact: false,
+    place: true,
+    stacked: false,
+    room: qr,
+    ruled: { rules, caption: floor2(h * 0.0486), blank: floor2(pad + qr * 0.77) },
   };
 }
 
@@ -231,6 +285,7 @@ function tapeMetrics(stock: LabelStock, codeChars: number): CellMetrics {
       compact: false,
       place: false,
       stacked: false,
+      ruled: null,
       room: h - 2 * pad,
     };
   }
@@ -249,6 +304,7 @@ function tapeMetrics(stock: LabelStock, codeChars: number): CellMetrics {
     compact: false,
     place: false,
     stacked: false,
+    ruled: null,
     room: h - 2 * pad,
   };
 }

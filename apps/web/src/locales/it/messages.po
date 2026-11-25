@@ -33289,3 +33289,7 @@ msgstr "Ogni etichetta riceve il proprio ID di sei caratteri."
 #: src/components/labels/batch-builder.tsx
 msgid "Each label reads like {example}: the purpose you pick, a new series and its number. A label can still be claimed for anything."
 msgstr "Ogni etichetta si legge come {example}: l'uso che scegli, una nuova serie e il suo numero. Un'etichetta si può comunque assegnare a qualsiasi cosa."
+
+#: src/components/labels/stock-picker.tsx
+msgid "{cols} × {rows}, each {cell} · lines to write on"
+msgstr "{cols} × {rows}, ciascuna {cell} · righe su cui scrivere"

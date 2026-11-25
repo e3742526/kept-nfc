@@ -56,6 +56,34 @@ exports[`placeLabels per stock > a4_65_38x21: the first page, cell by cell 1`] =
 }
 `;
 
+exports[`placeLabels per stock > letter_20_2x2in: the first page, cell by cell 1`] = `
+{
+  "cells": 20,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 6.35,
+    "y": 6.35,
+  },
+  "last": {
+    "cell": 19,
+    "col": 3,
+    "row": 4,
+    "x": 158.75,
+    "y": 222.25,
+  },
+  "page": "@page { size: letter; margin: 0; }",
+  "second": {
+    "cell": 1,
+    "col": 1,
+    "row": 0,
+    "x": 57.15,
+    "y": 6.35,
+  },
+}
+`;
+
 exports[`placeLabels per stock > letter_30_67x25: the first page, cell by cell 1`] = `
 {
   "cells": 30,

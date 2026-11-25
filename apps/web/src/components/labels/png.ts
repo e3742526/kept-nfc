@@ -13,13 +13,17 @@ import type { LabelCellContent } from '@/api/capture/types';
 import { canShareFiles, downloadsWork, saveFile, shareFiles } from '@/lib/files';
 import { FIT_LINE_HEIGHT, fitLabel, loadLabelFaces, type TextMeasure } from './fit';
 import {
+  type CellMetrics,
   CODE_TRACKING,
+  captionText,
   cellMetrics,
   codeChars,
   directionOfText,
   LABEL_MONO,
   LABEL_SANS,
   PLACE_INK,
+  RULE_INK,
+  RULE_WIDTH,
   shownCode,
 } from './layout';
 import { loadQr, qrMatrix } from './qr';
@@ -58,15 +62,21 @@ function fillCode(ctx: LabelContext, text: string, x: number, y: number, size: n
 }
 
 /** Draws one label: white ground, the QR (if the stock has one), the code, and the name and
- * place where the stock prints them. */
+ * place where the stock prints them. `caption` is the "Contents" word a write-in label with no
+ * name prints, in the person's language. */
 export function drawLabel(
   ctx: LabelContext,
   stock: LabelStock,
   label: LabelCellContent,
   matrix: readonly (readonly boolean[])[],
+  caption = 'Contents',
 ) {
   const { width, height } = labelPixelSize(stock);
   const m = cellMetrics(stock, codeChars(label));
+  if (m.ruled) {
+    drawRuled(ctx, stock, label, matrix, m, m.ruled, captionText(caption));
+    return;
+  }
   const pad = pxOf(m.pad);
   const shown = shownCode(label);
   ctx.fillStyle = '#FFFFFF';
@@ -169,10 +179,97 @@ export function drawLabel(
   }
 }
 
-/** One PNG file per label, named by its code. */
+/** The QR on whole pixels per module, centred in its `side`-pixel square at (x, y). */
+function drawQr(
+  ctx: LabelContext,
+  matrix: readonly (readonly boolean[])[],
+  x: number,
+  y: number,
+  side: number,
+) {
+  const n = matrix.length;
+  if (n === 0) return;
+  const unit = Math.max(1, Math.floor(side / n));
+  const qx = x + Math.floor((side - unit * n) / 2);
+  const qy = y + Math.floor((side - unit * n) / 2);
+  ctx.fillStyle = '#000000';
+  matrix.forEach((row, my) => {
+    row.forEach((on, mx) => {
+      if (on) ctx.fillRect(qx + mx * unit, qy + my * unit, unit, unit);
+    });
+  });
+}
+
+/** A write-in label, as `LabelCell` places it: the code, then the name and place or "Contents"
+ * over a short line, the QR at the top right, and the lines to write on. */
+function drawRuled(
+  ctx: LabelContext,
+  stock: LabelStock,
+  label: LabelCellContent,
+  matrix: readonly (readonly boolean[])[],
+  m: CellMetrics,
+  ruled: NonNullable<CellMetrics['ruled']>,
+  caption: string,
+) {
+  const { width, height } = labelPixelSize(stock);
+  const pad = pxOf(m.pad);
+  const side = pxOf(m.qr);
+  const textWidth = pxOf(m.text);
+  const gap = Math.round(pad * 0.6);
+  const stroke = Math.max(1, pxOf(RULE_WIDTH));
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, width, height);
+  drawQr(ctx, matrix, width - pad - side, pad, side);
+
+  ctx.textBaseline = 'top';
+  ctx.direction = 'ltr';
+  ctx.textAlign = 'left';
+  const code = pxOf(m.code);
+  ctx.font = `600 ${code}px ${LABEL_MONO}`;
+  ctx.fillStyle = '#000000';
+  fillCode(ctx, shownCode(label), pad, pad, code);
+  let y = pad + code + gap;
+
+  const measure: TextMeasure = (text, size, weight = 600) => {
+    ctx.font = `${weight} 100px ${LABEL_SANS}`;
+    return (ctx.measureText(text).width / 100) * size;
+  };
+  const fit = fitLabel(stock, label, measure);
+  for (const [part, text, weight, color] of [
+    [fit.name, label.name, 600, '#000000'],
+    [fit.path, label.path, 400, PLACE_INK],
+  ] as const) {
+    if (!part || !text) continue;
+    const size = pxOf(part.size);
+    const rtl = directionOfText(text) === 'rtl';
+    ctx.font = `${weight} ${size}px ${LABEL_SANS}`;
+    ctx.fillStyle = color;
+    ctx.direction = rtl ? 'rtl' : 'ltr';
+    ctx.textAlign = rtl ? 'right' : 'left';
+    for (const line of part.lines) {
+      ctx.fillText(line, rtl ? pad + textWidth : pad, y);
+      y += Math.round(size * FIT_LINE_HEIGHT);
+    }
+    y += gap;
+  }
+  if (!fit.name && !fit.path) {
+    ctx.font = `400 ${pxOf(ruled.caption)}px ${LABEL_SANS}`;
+    ctx.fillStyle = '#000000';
+    ctx.direction = 'ltr';
+    ctx.textAlign = 'left';
+    ctx.fillText(caption, pad, y);
+    ctx.fillStyle = RULE_INK;
+    ctx.fillRect(pad, pxOf(ruled.blank), textWidth, stroke);
+  }
+  ctx.fillStyle = RULE_INK;
+  for (const r of ruled.rules) ctx.fillRect(pad, pxOf(r), width - 2 * pad, stroke);
+}
+
+/** One PNG file per label, named by its code; `caption` as `drawLabel` takes it. */
 export async function labelPngs(
   stock: LabelStock,
   labels: readonly LabelCellContent[],
+  caption?: string,
 ): Promise<File[]> {
   const [encode] = await Promise.all([loadQr(), loadLabelFaces()]);
   const { width, height } = labelPixelSize(stock);
@@ -183,7 +280,7 @@ export async function labelPngs(
     canvas.height = height;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('no 2d canvas');
-    drawLabel(ctx, stock, label, qrMatrix(encode, label.url));
+    drawLabel(ctx, stock, label, qrMatrix(encode, label.url), caption);
     const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, 'image/png'));
     if (!blob) throw new Error('canvas.toBlob gave nothing');
     files.push(new File([blob], `kept-${label.alias ?? label.code}.png`, { type: 'image/png' }));
