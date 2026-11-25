@@ -33,6 +33,7 @@ import { ApiError } from '@/api/client';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Page, SearchResponse, ThingRow } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
+import type { Me } from '@/api/types';
 import { AppMark, BrandLockup } from '@/components/brand';
 import { PhotoImage } from '@/components/photo-image';
 import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
@@ -70,11 +71,14 @@ import {
   previewUrl,
   type RecordDetail,
   readInventory,
+  shownInventory,
+  withoutLocation,
   withPendingPlaces,
 } from './inventory';
 import { FIND_TARGET_KEY, type LabelBox, LabelPanel } from './label-panel';
 import { LabelSheets } from './label-sheets';
 import { loadLabelAddress, resolveLabel, type Target } from './labels';
+import { LocationSettings } from './location-settings';
 import {
   canRetarget,
   discardCapture,
@@ -131,6 +135,7 @@ type Screen =
   | { kind: 'photoReview'; id: string }
   | { kind: 'photoLibrary'; target: Target; name: string; location: string }
   | { kind: 'settings' }
+  | { kind: 'locationSettings' }
   | { kind: 'ai' }
   | { kind: 'history' }
   | { kind: 'logs' }
@@ -150,6 +155,7 @@ function tabFor(screen: Screen): TabKey {
       return 'scan';
     case 'more':
     case 'settings':
+    case 'locationSettings':
     case 'ai':
     case 'history':
     case 'logs':
@@ -651,10 +657,13 @@ export function Inventory({
   const [authoritativeCache, setCache] = useState<InventoryCache>();
   const cacheRef = useRef<InventoryCache | undefined>(undefined);
   const [pending, setPending] = useState<PendingCapture[]>([]);
-  const cache = useMemo(
+  const allInventory = useMemo(
     () => withPendingPlaces(authoritativeCache, pending),
     [authoritativeCache, pending],
   );
+  const cache = useMemo(() => shownInventory(allInventory), [allInventory]);
+  const hiddenPersonalId = cache !== allInventory ? allInventory?.personal?.id : undefined;
+  const cacheForLocation = (id?: string) => (id && id === hiddenPersonalId ? allInventory : cache);
   const [completions, setCompletions] = useState<Record<string, CompletionState>>({});
   const [held, setHeld] = useState<PendingCapture[]>([]);
   const [stats, setStats] = useState<StorageStats>();
@@ -834,11 +843,15 @@ export function Inventory({
         setWorking(true);
         try {
           await refreshPendingState();
-          await adapters.transport.request(connection, paths.me);
+          const me = await adapters.transport.request<Me>(connection, paths.me);
           setOnline(true);
           const count = await syncOutbox(connection, adapters, { includeFailed });
           await refreshPendingState();
-          display(await loadInventory(connection, adapters));
+          const personal =
+            me.personalLocationId && typeof me.profile?.hidePersonal === 'boolean'
+              ? { id: me.personalLocationId, hide: me.profile.hidePersonal }
+              : null;
+          display(await loadInventory(connection, adapters, personal));
           if (mounted.current) {
             setStatus(count ? t`Synced entries: ${count}` : '');
           }
@@ -869,6 +882,18 @@ export function Inventory({
     },
     [adapters, connection, display, onSignOut, refreshPendingState, t],
   );
+
+  async function updateLocationCache(update: (current: InventoryCache) => InventoryCache) {
+    // A refresh that started before the write might still deliver the previous snapshot.
+    await running.current;
+    const current = cacheRef.current;
+    if (current) {
+      const next = update(current);
+      display(next);
+      await adapters.outbox.saveCache(connection, JSON.stringify(next)).catch(() => {});
+    }
+    await refresh();
+  }
 
   useEffect(() => {
     mounted.current = true;
@@ -1688,7 +1713,7 @@ export function Inventory({
         <RecordScreen
           key={screen.target.id}
           connection={connection}
-          cache={cache}
+          cache={cacheForLocation(screen.target.locationId)}
           target={screen.target}
           pending={pending}
           syncing={working}
@@ -1728,8 +1753,11 @@ export function Inventory({
         <NewBoxForm
           headerExtra={addTabs}
           connection={connection}
-          cache={cache}
-          place={screen.destination ?? cache.places.find((entry) => entry.id === screen.place?.id)}
+          cache={cacheForLocation(screen.place?.locationId) ?? cache}
+          place={
+            screen.destination ??
+            authoritativeCache?.places.find((entry) => entry.id === screen.place?.id)
+          }
           onClose={() => (screen.place ? open(screen.place, true) : goHome())}
           onCreated={(id, locationId) => {
             open({ id, locationId, kind: 'thing' });
@@ -1756,7 +1784,7 @@ export function Inventory({
           headerExtra={addTabs}
           connection={connection}
           box={screen.destination}
-          cache={cache}
+          cache={cacheForLocation(screen.destination?.locationId)}
           location={screen.location}
           initialName={screen.name}
           suggested={suggestedDestination}
@@ -1778,7 +1806,7 @@ export function Inventory({
         <PhotoReview
           key={screen.id}
           entry={pending.find((item) => item.capture.id === screen.id) as PendingCapture}
-          cache={cache}
+          cache={allInventory}
           connection={connection}
           online={online}
           onBack={goBack}
@@ -1812,12 +1840,12 @@ export function Inventory({
       {(screen.kind === 'find' || screen.kind === 'enroll') && (
         <LabelPanel
           connection={connection}
-          cache={cache}
+          cache={cacheForLocation(screen.box.locationId)}
           action={screen.kind}
           box={screen.box}
           onOpen={open}
           canEnroll={
-            cache?.locations.some(
+            authoritativeCache?.locations.some(
               (location) =>
                 location.id === screen.box.locationId &&
                 location.role !== 'viewer' &&
@@ -2011,7 +2039,7 @@ export function Inventory({
           name={screen.name}
           online={online}
           canEdit={
-            cache?.locations.some(
+            authoritativeCache?.locations.some(
               (location) => location.id === screen.target.locationId && location.role !== 'viewer',
             ) ?? false
           }
@@ -2067,6 +2095,22 @@ export function Inventory({
           onAuthError={onSignOut}
         />
       )}
+      {screen.kind === 'locationSettings' && authoritativeCache && (
+        <LocationSettings
+          cache={authoritativeCache}
+          connection={connection}
+          online={online}
+          syncing={working}
+          onBack={goBack}
+          onVisibilityChanged={(hide) =>
+            updateLocationCache((current) =>
+              current.personal ? { ...current, personal: { ...current.personal, hide } } : current,
+            )
+          }
+          onDeleted={(id) => updateLocationCache((current) => withoutLocation(current, id))}
+          onAuthError={onSignOut}
+        />
+      )}
       {screen.kind === 'settings' && (
         <section className="grid gap-4">
           <ScreenHeader
@@ -2099,6 +2143,12 @@ export function Inventory({
             )}
           </section>
           <section className="kept-rows" aria-label={t`Advanced`}>
+            <MoreRow
+              label={t`Locations`}
+              Icon={MapPin}
+              isDisabled={!authoritativeCache}
+              onPress={() => pushScreen({ kind: 'locationSettings' })}
+            />
             <MoreRow
               label={t`AI and photo suggestions`}
               Icon={MessageSquare}

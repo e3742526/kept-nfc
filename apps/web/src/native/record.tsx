@@ -42,6 +42,7 @@ import type {
   PlaceView,
   ThingRow,
   ThingView,
+  TrashBody,
   UpdateAttachmentBody,
 } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
@@ -52,6 +53,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { Dialog, Modal } from '@/components/ui/dialog';
 import { TextField } from '@/components/ui/text-field';
+import { bdi } from '@/lib/bidi';
 import { useFormat } from '@/lib/format';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
@@ -542,6 +544,39 @@ export function RecordScreen({
     }
   }
 
+  function trashRecord() {
+    if (!thing) return;
+    return update(async () => {
+      const approved = await confirm({
+        title: <Trans>Move {bdi(thing.name ?? t`Untitled`)} to Trash?</Trans>,
+        body: (
+          <>
+            <p>
+              <Trans>You can restore it from Trash for 30 days.</Trans>
+            </p>
+            {thing.isContainer && (
+              <p>
+                <Trans>
+                  Any contents will stay in inventory and move to this box’s current location.
+                </Trans>
+              </p>
+            )}
+          </>
+        ),
+        confirmLabel: t`Move to Trash`,
+        destructive: true,
+      });
+      if (!approved) return;
+      const body: TrashBody = thing.isContainer ? { contents: 'move' } : {};
+      await adapters.transport.request(connection, inventoryPaths.thingTrash(thing.id), {
+        method: 'POST',
+        body,
+      });
+      onInventoryChanged();
+      onClose();
+    });
+  }
+
   function openPlaceLabel() {
     if (target.kind !== 'place') return;
     const openLabel = (shortCode: string) =>
@@ -1001,6 +1036,17 @@ export function RecordScreen({
               </>
             )}
           </div>
+          {online && canEdit && thing && (
+            <Button
+              variant="secondary"
+              className="justify-self-start text-danger"
+              isPending={changing}
+              onPress={() => void trashRecord()}
+            >
+              <Trash2 size={16} aria-hidden />
+              <Trans>Move to Trash</Trans>
+            </Button>
+          )}
           {placeAction === 'add' && cache && availablePlace && canEdit && (
             <PlaceCreateForm
               cache={cache}
@@ -1043,10 +1089,6 @@ export function RecordScreen({
               onMoved={(destination) => {
                 changed();
                 onOpen({ ...target, locationId: destination.locationId });
-              }}
-              onTrashed={() => {
-                onInventoryChanged();
-                onClose();
               }}
               onAuthError={onAuthError}
             />

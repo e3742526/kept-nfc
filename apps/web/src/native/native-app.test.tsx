@@ -1,3 +1,4 @@
+import type { SnapshotPage } from '@kept/shared';
 import { I18nProvider } from '@lingui/react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -2456,6 +2457,147 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await within(location).findByRole('button', { name: 'photo.jpg' }));
     expect(env.events.openedRemote.at(-1)).toMatchObject({ thing: env.boxId, variant: 'display' });
     expect(screen.queryByRole('heading', { name: 'Photos' })).not.toBeInTheDocument();
+  });
+
+  it('hides Personal from Places and deletes only an owned location after typed confirmation', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection, cabinLocation: true });
+    const home = env.rooms[0];
+    if (!home) throw new Error('Missing Garage');
+    const personalId = '77777777-7777-7777-8777-777777777777';
+    let hidePersonal = false;
+    let homeDeleted = false;
+    const deleteHome = vi.fn();
+    const updateVisibility = vi.fn();
+    const request = env.adapters.transport.request;
+    env.adapters.transport.request = async <T,>(
+      conn: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path === paths.me) {
+        if (options?.method === 'PATCH') {
+          updateVisibility(options.body);
+          hidePersonal = (options.body as { hidePersonal: boolean }).hidePersonal;
+        }
+        return { personalLocationId: personalId, profile: { hidePersonal } } as T;
+      }
+      if (path === paths.location(home.locationId) && options?.method === 'DELETE') {
+        deleteHome(options);
+        homeDeleted = true;
+        return { id: home.locationId, purgeAfter: '2026-12-25T12:00:00Z' } as T;
+      }
+      if (path.startsWith(capturePaths.syncSnapshot)) {
+        const page = await request<SnapshotPage>(conn, path, options);
+        const first = page.locations[0];
+        if (!first) throw new Error('Missing Home location');
+        return {
+          ...page,
+          locations: [
+            ...page.locations.flatMap((location) =>
+              location.id !== home.locationId
+                ? [{ ...location, kind: 'vacation_home' }]
+                : homeDeleted
+                  ? []
+                  : [{ ...location, kind: 'home' }],
+            ),
+            { ...first, id: personalId, kind: 'personal', name: 'Personal' },
+          ],
+        } as T;
+      }
+      return request<T>(conn, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await openSettings(user);
+    await user.click(await screen.findByRole('button', { name: 'Locations' }));
+    const toggle = await screen.findByRole('switch', { name: 'Hide Personal' });
+    expect(screen.queryByRole('button', { name: /^Delete (Personal|Cabin)/ })).toBeNull();
+    await waitFor(() => expect(toggle).toBeEnabled());
+    await user.click(toggle);
+    expect(updateVisibility).toHaveBeenCalledExactlyOnceWith({ hidePersonal: true });
+    await waitFor(() => expect(toggle).toBeChecked());
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Home' }));
+    await user.click(await screen.findByRole('button', { name: /Places$/ }));
+    expect(await screen.findByRole('heading', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Personal' })).toBeNull();
+
+    await openSettings(user);
+    await user.click(await screen.findByRole('button', { name: 'Locations' }));
+    const openDelete = await screen.findByRole('button', { name: 'Delete Home…' });
+    await waitFor(() => expect(openDelete).toBeEnabled());
+    await user.click(openDelete);
+    const dialog = within(await screen.findByRole('dialog', { name: 'Delete Home?' }));
+    const submit = dialog.getByRole('button', { name: 'Delete Home' });
+    expect(submit).toBeDisabled();
+    const typed = dialog.getByRole('textbox', { name: 'Type Home to confirm' });
+    await user.type(typed, 'Cabin');
+    expect(submit).toBeDisabled();
+    expect(deleteHome).not.toHaveBeenCalled();
+    await user.clear(typed);
+    await user.type(typed, 'Home');
+    await user.click(submit);
+    await waitFor(() => expect(deleteHome).toHaveBeenCalledExactlyOnceWith({ method: 'DELETE' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Delete Home…' })).toBeNull());
+
+    env.revokeCabinLocation();
+    act(() => env.emitAppState(true));
+    expect(await screen.findByText(/showing because it's your only location/)).toBeVisible();
+  });
+
+  it('moves an item to Trash directly from its record after confirmation', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const itemId = env.spareBoxId;
+    env.serverThings.set(itemId, {
+      ...env.serverThings.get(itemId),
+      name: 'USB cable',
+      isContainer: false,
+    });
+    const request = env.adapters.transport.request;
+    const trash = vi.fn();
+    vi.spyOn(env.adapters.transport, 'request').mockImplementation(
+      async <T,>(conn: Connection, path: string, options?: NativeRequestOptions): Promise<T> => {
+        if (path !== inventoryPaths.thingTrash(itemId)) return request<T>(conn, path, options);
+        trash(options);
+        env.serverThings.delete(itemId);
+        return { trashed: [itemId], moved: [], trashBatchId: 'fixture-batch' } as T;
+      },
+    );
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: /Items$/ }));
+    await user.click(await screen.findByRole('button', { name: /USB cable/ }));
+    const moveToTrash = await screen.findByRole('button', { name: 'Move to Trash' });
+    await user.click(moveToTrash);
+    const dialog = await screen.findByRole('alertdialog', { name: /Move USB cable to Trash\?/ });
+    expect(dialog).toHaveTextContent('You can restore it from Trash for 30 days.');
+    expect(trash).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(trash).not.toHaveBeenCalled();
+
+    await user.click(moveToTrash);
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Move to Trash' }),
+    );
+    await waitFor(() =>
+      expect(trash).toHaveBeenCalledExactlyOnceWith({ method: 'POST', body: {} }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'USB cable' })).not.toBeInTheDocument(),
+    );
   });
 
   it('edits a bin in place and shows the last known location and photo history', async () => {

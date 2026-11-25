@@ -1,26 +1,10 @@
 import { AMOUNT_STRING, CONDITIONS, NATIVE_INVENTORY_PAYLOAD_VERSION, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import {
-  ArrowRightLeft,
-  Check,
-  CheckCircle2,
-  Compass,
-  Inbox,
-  MapPinOff,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { ArrowRightLeft, Check, CheckCircle2, Compass, Inbox, MapPinOff, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
-import type {
-  Condition,
-  MoveBody,
-  MovePreview,
-  PlaceView,
-  ThingView,
-  TrashBody,
-} from '@/api/inventory/types';
+import type { Condition, MoveBody, MovePreview, PlaceView, ThingView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { formValues, isEmptyPatch, toPatch, validate } from '@/components/things/form-model';
 import { useConditionLabels } from '@/components/things/labels';
@@ -53,7 +37,6 @@ export function EditRecord({
   onClose,
   onChanged,
   onMoved,
-  onTrashed,
   onAuthError,
 }: {
   connection: Connection;
@@ -64,7 +47,6 @@ export function EditRecord({
   onClose: () => void;
   onChanged: () => void;
   onMoved: (destination: Destination) => void;
-  onTrashed: () => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
   const { t } = useLingui();
@@ -285,28 +267,6 @@ export function EditRecord({
         ifMatch: rowVersion,
       });
       onChanged();
-    });
-  }
-
-  function trash() {
-    if (!thing) return;
-    return run(async () => {
-      if (
-        !(await confirm({
-          title: t`Move to Trash?`,
-          body: t`Any contents will stay in inventory and move to this box’s current location.`,
-          confirmLabel: t`Move to Trash`,
-          cancelLabel: t`Cancel`,
-          destructive: true,
-        }))
-      )
-        return;
-      const body: TrashBody = { contents: 'move' };
-      await adapters.transport.request(connection, inventoryPaths.thingTrash(thing.id), {
-        method: 'POST',
-        body,
-      });
-      onTrashed();
     });
   }
 
@@ -535,15 +495,6 @@ export function EditRecord({
                 <Trans>Remove without a destination</Trans>
               </Button>
             )}
-          <Button
-            variant="danger"
-            className="col-span-2"
-            isDisabled={busy}
-            onPress={() => void trash()}
-          >
-            <Trash2 size={16} aria-hidden />
-            <Trans>Move to Trash</Trans>
-          </Button>
         </div>
       )}
       <Button variant="ghost" isDisabled={busy} onPress={onClose}>

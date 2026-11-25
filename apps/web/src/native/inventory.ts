@@ -31,6 +31,7 @@ export type RecordDetail = {
 export type InventoryCache = {
   asOf: string;
   truncated: boolean;
+  personal?: { id: string; hide: boolean };
   locations: SnapLocation[];
   types: SnapType[];
   tags?: SnapTag[];
@@ -41,6 +42,33 @@ export type InventoryCache = {
   legacyCodes: SnapLegacyCode[];
   details: Record<string, RecordDetail>;
 };
+
+export function withoutLocation(cache: InventoryCache, id: string): InventoryCache {
+  const inOtherLocations = <T extends { locationId: string }>(rows: readonly T[]) =>
+    rows.filter(({ locationId }) => locationId !== id);
+  const places = inOtherLocations(cache.places);
+  const things = inOtherLocations(cache.things);
+  const remaining = new Set(things.map((thing) => thing.id));
+  return {
+    ...cache,
+    locations: cache.locations.filter((location) => location.id !== id),
+    places,
+    pendingPlaceIds: cache.pendingPlaceIds?.filter((id) => places.some((place) => place.id === id)),
+    things,
+    codes: inOtherLocations(cache.codes),
+    legacyCodes: inOtherLocations(cache.legacyCodes),
+    details: Object.fromEntries(
+      Object.entries(cache.details).filter(([key]) => remaining.has(key)),
+    ),
+  };
+}
+
+export function shownInventory(cache: InventoryCache | undefined) {
+  const personal = cache?.personal;
+  if (!cache || !personal?.hide || !cache.locations.some(({ id }) => id !== personal.id))
+    return cache;
+  return withoutLocation(cache, personal.id);
+}
 
 export function previewUrl(url: string | null | undefined, origin: string): string | undefined {
   if (!url) return;
@@ -168,6 +196,7 @@ export async function readInventory(
 export async function loadInventory(
   connection: Connection,
   adapters: PlatformAdapters = capacitorAdapters,
+  personal?: InventoryCache['personal'] | null,
 ): Promise<InventoryCache> {
   const old = await readInventory(connection, adapters);
   const places = new Map<string, SnapPlace>();
@@ -224,6 +253,7 @@ export async function loadInventory(
       const next: InventoryCache = {
         asOf: page.asOf,
         truncated: page.truncated === true,
+        personal: personal === undefined ? old?.personal : (personal ?? undefined),
         locations: page.locations,
         types: page.types.items ?? old?.types ?? [],
         tags: page.tags?.items ?? old?.tags ?? [],
