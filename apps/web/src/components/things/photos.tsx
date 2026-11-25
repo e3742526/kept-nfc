@@ -118,7 +118,8 @@ export function PhotoCarousel({ className }: { className?: string }) {
           subject={{ thingId: thing.id }}
           attachAs="photo"
           accept={['image/*']}
-          label={photos.length ? t`Add a photo` : t`Add the first photo`}
+          cameraLabel={t`Take a photo`}
+          label={t`Gallery`}
           onUploaded={() => void refresh()}
         />
       ) : null}
