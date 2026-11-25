@@ -33477,3 +33477,135 @@ msgstr "{cols} × {rows}، كل منها {cell} · أسطر للكتابة"
 #: src/components/display-prefs.tsx
 msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
 msgstr "أطول ضلع للصورة الملتقطة في SheepKeep، بالبكسل. الصور الأصغر تُرفع أسرع. صور مكتبتك التي تتجاوز 4096 بكسل تُصغَّر عند رفعها."
+
+#: src/native/activity.tsx
+msgid "Connect to SheepKeep to see history."
+msgstr "اتصل بـ SheepKeep لعرض السجل."
+
+#: src/native/activity.tsx
+msgid "Copied to the clipboard."
+msgstr "نُسخ إلى الحافظة."
+
+#: src/native/activity.tsx
+msgid "Logs"
+msgstr "سجلات النظام"
+
+#: src/native/activity.tsx
+msgid "Share logs"
+msgstr "مشاركة سجلات النظام"
+
+#: src/native/activity.tsx
+msgid "This iPhone"
+msgstr "هذا الـ iPhone"
+
+#: src/native/activity.tsx
+msgid "Captures"
+msgstr "عمليات التسجيل"
+
+#: src/native/activity.tsx
+msgid "On this iPhone"
+msgstr "على هذا الـ iPhone"
+
+#: src/native/activity.tsx
+msgid "Nothing is waiting to sync."
+msgstr "لا توجد عناصر بانتظار المزامنة."
+
+#: src/native/activity.tsx
+msgid "Captured"
+msgstr "وقت التسجيل"
+
+#: src/native/activity.tsx
+msgid "Reason"
+msgstr "السبب"
+
+#: src/native/activity.tsx
+msgid "Capture ID"
+msgstr "معرّف عملية التسجيل"
+
+#: src/native/activity.tsx
+msgid "Files"
+msgstr "الملفات"
+
+#: src/native/activity.tsx
+msgid "Server log"
+msgstr "سجل الخادم"
+
+#: src/native/activity.tsx
+msgid "Connect to SheepKeep to see the server log."
+msgstr "اتصل بـ SheepKeep لعرض سجل الخادم."
+
+#: src/native/activity.tsx
+msgid "Who"
+msgstr "بواسطة"
+
+#: src/native/activity.tsx
+msgid "Server logged"
+msgstr "وقت التسجيل على الخادم"
+
+#: src/native/activity.tsx
+msgid "Event ID"
+msgstr "معرّف الحدث"
+
+#: src/native/box-photos.tsx
+msgid "Delete this photo permanently?"
+msgstr "هل تريد حذف هذه الصورة نهائيًا؟"
+
+#: src/native/box-photos.tsx
+msgid "Delete {count} photos permanently?"
+msgstr "هل تريد حذف الصور المحددة نهائيًا؟ (العدد: {count})"
+
+#: src/native/box-photos.tsx
+msgid "This cannot be undone. Archive them instead to keep them."
+msgstr "لا يمكن التراجع عن الحذف. انقل الصور إلى الأرشيف إذا أردت الاحتفاظ بها."
+
+#: src/native/box-photos.tsx
+msgid "Current ({0})"
+msgstr "الحالية ({0})"
+
+#: src/native/box-photos.tsx
+msgid "Archived ({0})"
+msgstr "المؤرشفة ({0})"
+
+#: src/native/box-photos.tsx
+msgid "Connect to SheepKeep to manage photos."
+msgstr "اتصل بـ SheepKeep لإدارة الصور."
+
+#: src/native/box-photos.tsx
+msgid "No photos yet."
+msgstr "لا توجد صور بعد."
+
+#: src/native/box-photos.tsx
+msgid "Nothing archived."
+msgstr "لا توجد صور في الأرشيف."
+
+#: src/native/box-photos.tsx
+msgid "Photo {0}"
+msgstr "الصورة {0}"
+
+#: src/native/box-photos.tsx
+msgid "Selected photos"
+msgstr "الصور المحددة"
+
+#: src/native/browse.tsx
+msgid "Search now"
+msgstr "ابحث الآن"
+
+#: src/native/home.tsx
+msgid "Continue finding {findName}"
+msgstr "متابعة البحث عن {findName}"
+
+#: src/native/main.tsx
+msgid "Waiting to sync."
+msgstr "بانتظار المزامنة."
+
+#: src/native/main.tsx
+msgid "AI and photo suggestions"
+msgstr "الذكاء الاصطناعي واقتراحات الصور"
+
+#: src/native/main.tsx
+msgid "Saved on this iPhone: {0} · {1} waiting"
+msgstr "محفوظ على هذا الـ iPhone: {0} · بانتظار المزامنة: {1}"
+
+#: src/native/record.tsx
+msgid "Photo library"
+msgstr "مكتبة الصور"

@@ -600,6 +600,25 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           if (box) box.locationUncertain = true;
           return box as T;
         }
+        if (path.startsWith(inventoryPaths.activity)) {
+          return {
+            items: [
+              {
+                id: 'activity-1',
+                at: '2026-11-22T20:00:00Z',
+                location_id: locId,
+                entity: { type: 'thing', id: boxId },
+                actor: { type: 'user', id: 'u1', displayName: 'Ibrahim' },
+                action: 'thing.create',
+                summaryKey: 'event',
+                summaryParams: { name: 'Fixture ladder', action: 'thing.create' },
+                summary: 'Fixture ladder added',
+                diff: { name: { before: null, after: 'Fixture ladder', class: 'plain' } },
+              },
+            ],
+            next_cursor: null,
+          } as T;
+        }
         if (path.startsWith(inventoryPaths.thingHistory(boxId))) {
           return {
             items: [
@@ -647,11 +666,33 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
             next_cursor: null,
           } as T;
         }
+        const attachmentMatch = /^\/api\/v1\/attachments\/([^/?]+)$/.exec(path);
+        if (attachmentMatch?.[1] && options?.method === 'PATCH') {
+          for (const entries of attachmentsByThing.values()) {
+            const found = entries.find(
+              (entry) => (entry as { id: string }).id === attachmentMatch[1],
+            );
+            if (found) {
+              Object.assign(found, {
+                photoArchivedAt: (options.body as { photoArchived: boolean }).photoArchived
+                  ? '2026-11-23T10:00:00Z'
+                  : undefined,
+              });
+              return found as T;
+            }
+          }
+          throw new ApiError(404, 'not_found', 'Not found');
+        }
         if (path.startsWith('/api/v1/things/')) {
           const attMatch = /^\/api\/v1\/things\/([^/]+)\/attachments/.exec(path);
           if (attMatch?.[1]) {
+            const archived = new URL(path, origin).searchParams.get('archivedPhotos') === 'true';
+            const items = (attachmentsByThing.get(attMatch[1]) ?? []).filter(
+              (entry) =>
+                Boolean((entry as { photoArchivedAt?: string }).photoArchivedAt) === archived,
+            );
             return {
-              items: attachmentsByThing.get(attMatch[1]) ?? [],
+              items,
               next_cursor: null,
               locationPhotos: locationPhotosByThing.get(attMatch[1]) ?? [],
             } as T;
@@ -1576,6 +1617,7 @@ describe('KeptPhone mobile workflows', () => {
     await openSettings(user);
     await user.click(await screen.findByRole('button', { name: /Default location/ }));
     await user.click(await screen.findByRole('option', { name: 'Home' }));
+    await user.click(await screen.findByRole('button', { name: 'AI and photo suggestions' }));
     await user.click(await screen.findByRole('button', { name: /Default photo AI/ }));
     await user.click(await screen.findByRole('option', { name: 'ChatGPT plan' }));
     expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBeUndefined();
@@ -2842,8 +2884,7 @@ describe('KeptPhone mobile workflows', () => {
 
     view.unmount();
     env.renderApp();
-    expect(await screen.findByText('Resumable Find target')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Continue finding' }));
+    await user.click(await screen.findByRole('button', { name: /Continue finding/ }));
 
     // Typed QR fallback in Find mode also triggers match feedback!
     await user.type(screen.getByLabelText('Type the code'), '7KQ4MZ');
@@ -3378,7 +3419,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Discard draft' }));
     expect(await screen.findByRole('button', { name: 'Add to this box' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(await screen.findByRole('heading', { name: 'Browse' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Boxes' })).toBeInTheDocument();
     expect(env.events.uploadedFiles).toHaveLength(0);
   });
 
@@ -3399,14 +3440,14 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: '1 Places' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '0 Unplaced' })).toBeInTheDocument();
     // Find shows only when a target is saved; Assistant is the header button, not a tab.
-    expect(screen.queryByText('Resumable Find target')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Continue finding/ })).not.toBeInTheDocument();
     expect(
       within(screen.getByRole('navigation')).queryByRole('button', { name: 'Assistant' }),
     ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Assistant' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
     await user.click(boxes);
-    expect(await screen.findByRole('button', { name: 'Bins' })).toHaveAttribute(
+    expect(await screen.findByRole('button', { name: 'Boxes' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -3423,10 +3464,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.queryByRole('button', { name: /Boxes$/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open in Browse' }));
     expect(await screen.findByRole('textbox', { name: 'Search' })).toHaveValue('Winter');
-    expect(screen.getByRole('button', { name: 'All inventory' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'Items' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('switches the Add tab between an item and a box', async () => {
@@ -3463,13 +3501,13 @@ describe('KeptPhone mobile workflows', () => {
 
   it('shows remaining places when the selected location is revoked', async () => {
     const env = createFakeEnvironment({
+      cabinLocation: true,
       initialConnection: {
         id: 'https://kept.example.com|ibrahim|epoch-1',
         origin: 'https://kept.example.com',
         account: 'ibrahim',
         epoch: 'epoch-1',
       },
-      cabinLocation: true,
     });
     const user = userEvent.setup();
     env.renderApp();
@@ -3482,6 +3520,69 @@ describe('KeptPhone mobile workflows', () => {
     act(() => env.emitAppState(true));
     expect(await screen.findByRole('button', { name: /^Garage/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Location/ })).not.toBeInTheDocument();
+  });
+
+  it('archives a box photo from its photo library and restores it', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(screen.getByRole('button', { name: 'Add photos' }));
+    const picker = document.querySelectorAll<HTMLInputElement>('input[type="file"]')[1];
+    if (!picker) throw new Error('Expected photo picker');
+    await user.upload(picker, new File(['image bytes'], 'bin.jpg', { type: 'image/jpeg' }));
+    await user.click(screen.getByRole('button', { name: 'Save photos' }));
+    expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    await user.click(await screen.findByRole('button', { name: 'Photo library' }));
+    expect(await screen.findByRole('button', { name: /Current \(1\)/ })).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'photo.jpg' }));
+    await user.click(screen.getByRole('button', { name: 'Archive' }));
+    expect(await screen.findByRole('button', { name: /Archived \(1\)/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Current \(0\)/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Archived/ }));
+    await user.click(await screen.findByRole('button', { name: 'photo.jpg' }));
+    await user.click(screen.getByRole('button', { name: 'Restore' }));
+    expect(await screen.findByRole('button', { name: /Current \(1\)/ })).toBeInTheDocument();
+  });
+
+  it('shows recent activity on Home and the full History and Logs with provenance', async () => {
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: 'https://kept.example.com|ibrahim|epoch-1',
+        origin: 'https://kept.example.com',
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    const recent = await screen.findByRole('region', { name: 'Recent activity' });
+    expect(within(recent).getByText(/Fixture ladder/)).toBeInTheDocument();
+
+    await user.click(within(recent).getByRole('button', { name: 'History' }));
+    expect(await screen.findByRole('heading', { name: 'History' })).toBeInTheDocument();
+    expect(await screen.findByText(/Fixture ladder/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    await openSettings(user);
+    await user.click(await screen.findByRole('button', { name: 'Logs' }));
+    const entry = await screen.findByRole('button', { name: /Fixture ladder/ });
+    expect(screen.queryByText('Event ID')).not.toBeInTheDocument();
+    await user.click(entry);
+    expect(screen.getByText('Who')).toBeInTheDocument();
+    expect(screen.getByText('Server logged')).toBeInTheDocument();
+    expect(screen.getByText('activity-1')).toBeInTheDocument();
   });
 
   it('navigates by tabs, switches appearance, and keeps overlap destinations reachable', async () => {

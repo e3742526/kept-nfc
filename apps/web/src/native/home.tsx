@@ -1,14 +1,18 @@
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
+  ArrowRightLeft,
   Boxes,
-  ChevronRight,
-  ClipboardCheck,
+  Eye,
+  Image,
   Inbox,
   MapPin,
+  Minus,
   Package,
+  Pencil,
   Plus,
   QrCode,
+  Radar,
   RefreshCw,
   Settings,
   Tag,
@@ -69,11 +73,22 @@ function StatTile({
       aria-label={value === undefined ? label : `${number} ${label}`}
       onPress={onPress}
     >
-      <Icon size={16} className="kept-stat-icon" aria-hidden />
-      <span className="kept-stat-value">{number}</span>
+      <span className="kept-stat-top">
+        <Icon size={15} className="kept-stat-icon" aria-hidden />
+        <span className="kept-stat-value">{number}</span>
+      </span>
       <span className="kept-stat-label">{label}</span>
     </Button>
   );
+}
+
+export function eventIcon(action: string) {
+  if (action.includes('create') || action.includes('capture')) return Plus;
+  if (action.includes('move')) return ArrowRightLeft;
+  if (action.includes('check') || action.includes('seen')) return Eye;
+  if (action.includes('remove') || action.includes('delete') || action.includes('trash'))
+    return Minus;
+  return Pencil;
 }
 
 function RecentActivity({
@@ -81,11 +96,13 @@ function RecentActivity({
   cache,
   online,
   onOpen,
+  onHistory,
 }: {
   connection: Connection;
   cache: InventoryCache | undefined;
   online: boolean;
   onOpen: (target: Target) => void;
+  onHistory?: () => void;
 }) {
   const { t } = useLingui();
   const { transport } = usePlatform();
@@ -98,7 +115,7 @@ function RecentActivity({
     if (!online || !asOf) return;
     let live = true;
     transport
-      .request<Page<HistoryEvent>>(connection, inventoryPaths.activity + qs({ limit: 3 }))
+      .request<Page<HistoryEvent>>(connection, inventoryPaths.activity + qs({ limit: 4 }))
       .then((page) => {
         if (live) setEvents(page.items);
       })
@@ -113,11 +130,19 @@ function RecentActivity({
   if (!events.length) return null;
   return (
     <section className="kept-recent" aria-label={t`Recent activity`}>
-      <h2 className="kept-recent-title">
-        <Trans>Recent activity</Trans>
-      </h2>
+      <div className="kept-recent-head">
+        <h2 className="kept-recent-title">
+          <Trans>Recent activity</Trans>
+        </h2>
+        {onHistory && (
+          <Button variant="ghost" size="small" className="kept-recent-link" onPress={onHistory}>
+            <Trans>History</Trans>
+          </Button>
+        )}
+      </div>
       <ul className="kept-recent-list">
         {events.map((event) => {
+          const Icon = eventIcon(event.action);
           const { type, id } = event.entity;
           const locationId = event.location_id;
           const records =
@@ -131,6 +156,9 @@ function RecentActivity({
               : undefined;
           const body = (
             <>
+              <span className="kept-recent-icon" aria-hidden>
+                <Icon size={15} />
+              </span>
               <span className="kept-recent-text">{summary(event)}</span>
               <span className="kept-recent-when">{fmt.relative(event.at)}</span>
             </>
@@ -176,6 +204,9 @@ export function HomeDashboard({
   onOpen,
   onRetry,
   onSettings,
+  findName,
+  onFind,
+  onHistory,
 }: {
   connection: Connection;
   cache: InventoryCache | undefined;
@@ -196,6 +227,10 @@ export function HomeDashboard({
   onOpen: (target: Target) => void;
   onRetry: () => void;
   onSettings: () => void;
+  /** The saved Find target's name; the Find action shows only while one is saved. */
+  findName?: string;
+  onFind: () => void;
+  onHistory?: () => void;
 }) {
   const { t } = useLingui();
   const fmt = useFormat();
@@ -236,55 +271,75 @@ export function HomeDashboard({
           onPress={onUnplaced}
         />
       </div>
-      <div className="kept-home-actions">
-        <Button className="kept-home-action" isDisabled={!canWrite} onPress={onAdd}>
-          <Plus size={18} aria-hidden />
+      <div className={`kept-home-actions${findName ? ' kept-home-actions-3' : ''}`}>
+        <Button className="kept-action" isDisabled={!canWrite} onPress={onAdd}>
+          <span className="kept-action-well kept-action-well-accent" aria-hidden>
+            <Plus size={20} />
+          </span>
           <Trans>Add</Trans>
         </Button>
-        <Button variant="secondary" className="kept-home-action" onPress={onScan}>
-          <QrCode size={18} aria-hidden />
+        <Button variant="secondary" className="kept-action" onPress={onScan}>
+          <span className="kept-action-well" aria-hidden>
+            <QrCode size={20} />
+          </span>
           <Trans>Scan</Trans>
         </Button>
+        {findName && (
+          <Button
+            variant="secondary"
+            className="kept-action"
+            aria-label={t`Continue finding ${findName}`}
+            onPress={onFind}
+          >
+            <span className="kept-action-well" aria-hidden>
+              <Radar size={20} />
+            </span>
+            <Trans>Find</Trans>
+          </Button>
+        )}
       </div>
-      <div className="kept-home-actions">
+      <div className="kept-shortcuts">
         <Button
-          variant="secondary"
-          className="kept-home-action"
+          variant="ghost"
+          className="kept-shortcut"
           isDisabled={!ready}
           onPress={onCategories}
         >
-          <Tag size={16} aria-hidden />
+          <span className="kept-shortcut-well" aria-hidden>
+            <Tag size={18} />
+          </span>
           <Trans>Categories</Trans>
         </Button>
         <Button
-          variant="secondary"
-          className="kept-home-action"
+          variant="ghost"
+          className="kept-shortcut"
           isDisabled={!ready || !online}
           onPress={onLabels}
         >
-          <Tags size={16} aria-hidden />
+          <span className="kept-shortcut-well" aria-hidden>
+            <Tags size={18} />
+          </span>
           <Trans>Labels</Trans>
         </Button>
       </div>
       {drafts > 0 && (
-        <Button
-          variant="secondary"
-          className="kept-phone-row kept-review-bar"
-          isDisabled={!online}
-          onPress={onReview}
-        >
-          <span className="kept-row-lead kept-row-lead-accent" aria-hidden>
-            <ClipboardCheck size={18} />
-          </span>
-          <span className="kept-row-body">
-            <span className="font-semibold">
-              {plural(drafts, { one: '# item to review', other: '# items to review' })}
-            </span>
-          </span>
-          <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-        </Button>
+        <section className="kept-review-bar" aria-label={t`Needs attention`}>
+          <Image size={18} className="kept-review-icon" aria-hidden />
+          <p className="kept-review-text">
+            {plural(drafts, { one: '# item to review', other: '# items to review' })}
+          </p>
+          <Button variant="secondary" size="small" isDisabled={!online} onPress={onReview}>
+            <Trans>Review</Trans>
+          </Button>
+        </section>
       )}
-      <RecentActivity connection={connection} cache={cache} online={online} onOpen={onOpen} />
+      <RecentActivity
+        connection={connection}
+        cache={cache}
+        online={online}
+        onOpen={onOpen}
+        onHistory={onHistory}
+      />
       <div className="kept-statusline">
         <Button
           variant="ghost"

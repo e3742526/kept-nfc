@@ -33477,3 +33477,135 @@ msgstr "{cols} × {rows}, mỗi ô {cell} · có dòng kẻ để viết"
 #: src/components/display-prefs.tsx
 msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
 msgstr "Cạnh dài nhất của ảnh chụp trong SheepKeep, tính bằng pixel. Ảnh nhỏ hơn tải lên nhanh hơn. Ảnh trong thư viện lớn hơn 4096 px sẽ được thu nhỏ khi tải lên."
+
+#: src/native/activity.tsx
+msgid "Connect to SheepKeep to see history."
+msgstr "Kết nối với SheepKeep để xem lịch sử."
+
+#: src/native/activity.tsx
+msgid "Copied to the clipboard."
+msgstr "Đã sao chép vào bảng nhớ tạm."
+
+#: src/native/activity.tsx
+msgid "Logs"
+msgstr "Nhật ký"
+
+#: src/native/activity.tsx
+msgid "Share logs"
+msgstr "Chia sẻ nhật ký"
+
+#: src/native/activity.tsx
+msgid "This iPhone"
+msgstr "iPhone này"
+
+#: src/native/activity.tsx
+msgid "Captures"
+msgstr "Lượt ghi nhận"
+
+#: src/native/activity.tsx
+msgid "On this iPhone"
+msgstr "Trên iPhone này"
+
+#: src/native/activity.tsx
+msgid "Nothing is waiting to sync."
+msgstr "Không có mục nào chờ đồng bộ."
+
+#: src/native/activity.tsx
+msgid "Captured"
+msgstr "Thời điểm ghi nhận"
+
+#: src/native/activity.tsx
+msgid "Reason"
+msgstr "Lý do"
+
+#: src/native/activity.tsx
+msgid "Capture ID"
+msgstr "Mã lượt ghi nhận"
+
+#: src/native/activity.tsx
+msgid "Files"
+msgstr "Tệp"
+
+#: src/native/activity.tsx
+msgid "Server log"
+msgstr "Nhật ký máy chủ"
+
+#: src/native/activity.tsx
+msgid "Connect to SheepKeep to see the server log."
+msgstr "Kết nối với SheepKeep để xem nhật ký máy chủ."
+
+#: src/native/activity.tsx
+msgid "Who"
+msgstr "Người thực hiện"
+
+#: src/native/activity.tsx
+msgid "Server logged"
+msgstr "Thời điểm máy chủ ghi nhật ký"
+
+#: src/native/activity.tsx
+msgid "Event ID"
+msgstr "Mã sự kiện"
+
+#: src/native/box-photos.tsx
+msgid "Delete this photo permanently?"
+msgstr "Xóa vĩnh viễn ảnh này?"
+
+#: src/native/box-photos.tsx
+msgid "Delete {count} photos permanently?"
+msgstr "Xóa vĩnh viễn {count} ảnh?"
+
+#: src/native/box-photos.tsx
+msgid "This cannot be undone. Archive them instead to keep them."
+msgstr "Không thể hoàn tác thao tác xóa. Hãy lưu trữ ảnh nếu bạn muốn giữ lại."
+
+#: src/native/box-photos.tsx
+msgid "Current ({0})"
+msgstr "Hiện tại ({0})"
+
+#: src/native/box-photos.tsx
+msgid "Archived ({0})"
+msgstr "Đã lưu trữ ({0})"
+
+#: src/native/box-photos.tsx
+msgid "Connect to SheepKeep to manage photos."
+msgstr "Kết nối với SheepKeep để quản lý ảnh."
+
+#: src/native/box-photos.tsx
+msgid "No photos yet."
+msgstr "Chưa có ảnh."
+
+#: src/native/box-photos.tsx
+msgid "Nothing archived."
+msgstr "Chưa có ảnh nào được lưu trữ."
+
+#: src/native/box-photos.tsx
+msgid "Photo {0}"
+msgstr "Ảnh {0}"
+
+#: src/native/box-photos.tsx
+msgid "Selected photos"
+msgstr "Ảnh đã chọn"
+
+#: src/native/browse.tsx
+msgid "Search now"
+msgstr "Tìm ngay"
+
+#: src/native/home.tsx
+msgid "Continue finding {findName}"
+msgstr "Tiếp tục tìm {findName}"
+
+#: src/native/main.tsx
+msgid "Waiting to sync."
+msgstr "Đang chờ đồng bộ."
+
+#: src/native/main.tsx
+msgid "AI and photo suggestions"
+msgstr "AI và gợi ý ảnh"
+
+#: src/native/main.tsx
+msgid "Saved on this iPhone: {0} · {1} waiting"
+msgstr "Đã lưu trên iPhone này: {0} · Đang chờ: {1}"
+
+#: src/native/record.tsx
+msgid "Photo library"
+msgstr "Thư viện ảnh"

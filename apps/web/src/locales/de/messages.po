@@ -33477,3 +33477,135 @@ msgstr "{cols} × {rows}, je {cell} · Linien zum Beschriften"
 #: src/components/display-prefs.tsx
 msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
 msgstr "Die längste Seite eines in SheepKeep aufgenommenen Fotos, in Pixeln. Kleinere Fotos werden schneller hochgeladen. Fotos aus deiner Mediathek über 4096 px werden beim Hochladen verkleinert."
+
+#: src/native/activity.tsx
+msgid "Connect to SheepKeep to see history."
+msgstr "Verbinde dich mit SheepKeep, um den Verlauf zu sehen."
+
+#: src/native/activity.tsx
+msgid "Copied to the clipboard."
+msgstr "In die Zwischenablage kopiert."
+
+#: src/native/activity.tsx
+msgid "Logs"
+msgstr "Protokolle"
+
+#: src/native/activity.tsx
+msgid "Share logs"
+msgstr "Protokolle teilen"
+
+#: src/native/activity.tsx
+msgid "This iPhone"
+msgstr "Dieses iPhone"
+
+#: src/native/activity.tsx
+msgid "Captures"
+msgstr "Erfassungen"
+
+#: src/native/activity.tsx
+msgid "On this iPhone"
+msgstr "Auf diesem iPhone"
+
+#: src/native/activity.tsx
+msgid "Nothing is waiting to sync."
+msgstr "Es steht keine Synchronisierung aus."
+
+#: src/native/activity.tsx
+msgid "Captured"
+msgstr "Erfasst am"
+
+#: src/native/activity.tsx
+msgid "Reason"
+msgstr "Grund"
+
+#: src/native/activity.tsx
+msgid "Capture ID"
+msgstr "Erfassungs-ID"
+
+#: src/native/activity.tsx
+msgid "Files"
+msgstr "Dateien"
+
+#: src/native/activity.tsx
+msgid "Server log"
+msgstr "Serverprotokoll"
+
+#: src/native/activity.tsx
+msgid "Connect to SheepKeep to see the server log."
+msgstr "Verbinde dich mit SheepKeep, um das Serverprotokoll zu sehen."
+
+#: src/native/activity.tsx
+msgid "Who"
+msgstr "Wer"
+
+#: src/native/activity.tsx
+msgid "Server logged"
+msgstr "Im Serverprotokoll seit"
+
+#: src/native/activity.tsx
+msgid "Event ID"
+msgstr "Ereignis-ID"
+
+#: src/native/box-photos.tsx
+msgid "Delete this photo permanently?"
+msgstr "Dieses Foto endgültig löschen?"
+
+#: src/native/box-photos.tsx
+msgid "Delete {count} photos permanently?"
+msgstr "{count} Fotos endgültig löschen?"
+
+#: src/native/box-photos.tsx
+msgid "This cannot be undone. Archive them instead to keep them."
+msgstr "Das Löschen lässt sich nicht rückgängig machen. Archiviere die Fotos, wenn du sie behalten möchtest."
+
+#: src/native/box-photos.tsx
+msgid "Current ({0})"
+msgstr "Aktuell ({0})"
+
+#: src/native/box-photos.tsx
+msgid "Archived ({0})"
+msgstr "Archiviert ({0})"
+
+#: src/native/box-photos.tsx
+msgid "Connect to SheepKeep to manage photos."
+msgstr "Verbinde dich mit SheepKeep, um Fotos zu verwalten."
+
+#: src/native/box-photos.tsx
+msgid "No photos yet."
+msgstr "Noch keine Fotos."
+
+#: src/native/box-photos.tsx
+msgid "Nothing archived."
+msgstr "Keine archivierten Fotos."
+
+#: src/native/box-photos.tsx
+msgid "Photo {0}"
+msgstr "Foto {0}"
+
+#: src/native/box-photos.tsx
+msgid "Selected photos"
+msgstr "Ausgewählte Fotos"
+
+#: src/native/browse.tsx
+msgid "Search now"
+msgstr "Jetzt suchen"
+
+#: src/native/home.tsx
+msgid "Continue finding {findName}"
+msgstr "Suche nach {findName} fortsetzen"
+
+#: src/native/main.tsx
+msgid "Waiting to sync."
+msgstr "Wartet auf Synchronisierung."
+
+#: src/native/main.tsx
+msgid "AI and photo suggestions"
+msgstr "KI und Fotovorschläge"
+
+#: src/native/main.tsx
+msgid "Saved on this iPhone: {0} · {1} waiting"
+msgstr "Auf diesem iPhone gespeichert: {0} · Ausstehend: {1}"
+
+#: src/native/record.tsx
+msgid "Photo library"
+msgstr "Fotomediathek"

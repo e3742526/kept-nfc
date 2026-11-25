@@ -4,6 +4,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Camera,
   ChevronRight,
+  Clock,
   CornerDownLeft,
   Ellipsis,
   FileText,
@@ -19,12 +20,10 @@ import {
   Palette,
   Plus,
   QrCode,
-  Radar,
   Settings,
   Sun,
   Tags,
   Trash2,
-  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -46,9 +45,11 @@ import { i18n, startLocale } from '@/i18n/i18n';
 import { isolate } from '@/lib/bidi';
 import { sep, useBytes } from '@/lib/format';
 import { setThemePref, type ThemePref, usePrefs, watchSystemTheme } from '@/lib/prefs';
+import { HistoryScreen, type LocalLogEntry, LogsScreen } from './activity';
 import { NativePlatformProvider, usePlatform } from './adapters';
 import { AssistantScreen } from './assistant';
 import { ScreenHeader } from './back-button';
+import { BoxPhotos } from './box-photos';
 import {
   type CaptureAIProvider,
   type CompletionState,
@@ -128,7 +129,11 @@ type Screen =
   | { kind: 'browse' }
   | { kind: 'visualSearch'; intent: VisualSearchIntent }
   | { kind: 'photoReview'; id: string }
+  | { kind: 'photoLibrary'; target: Target; name: string; location: string }
   | { kind: 'settings' }
+  | { kind: 'ai' }
+  | { kind: 'history' }
+  | { kind: 'logs' }
   | { kind: 'more' };
 
 type TabKey = 'home' | 'capture' | 'scan' | 'more';
@@ -145,6 +150,9 @@ function tabFor(screen: Screen): TabKey {
       return 'scan';
     case 'more':
     case 'settings':
+    case 'ai':
+    case 'history':
+    case 'logs':
     case 'trash':
     case 'unplaced':
     case 'labelSheets':
@@ -195,33 +203,36 @@ function TabBar({
   );
 }
 
-type TileTone = 'amber' | 'info' | 'ok' | 'violet' | 'danger' | 'neutral';
-
-/** Icon tile for the compartmentalized home and More grids. */
-function ActionTile({
+/** One row of a More or Settings group: icon, label, chevron. */
+function MoreRow({
   label,
-  onPress,
-  isDisabled,
+  hint,
   Icon,
-  tone = 'neutral',
+  isDisabled,
+  onPress,
 }: {
   label: string;
-  onPress: () => void;
-  isDisabled?: boolean;
+  hint?: string;
   Icon: typeof Home;
-  tone?: TileTone;
+  isDisabled?: boolean;
+  onPress: () => void;
 }) {
   return (
     <Button
-      variant="secondary"
-      className={`kept-tile kept-tile-${tone}`}
+      variant="ghost"
+      className="kept-more-row"
       isDisabled={isDisabled}
+      aria-label={label}
       onPress={onPress}
     >
-      <span className="kept-tile-icon" aria-hidden>
-        <Icon size={20} />
+      <span className="kept-recent-icon" aria-hidden>
+        <Icon size={16} />
       </span>
-      <span className="kept-tile-label">{label}</span>
+      <span className="kept-more-row-body">
+        <span className="kept-more-row-label">{label}</span>
+        {hint && <span className="kept-more-row-hint">{hint}</span>}
+      </span>
+      <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
     </Button>
   );
 }
@@ -799,6 +810,22 @@ export function Inventory({
     },
     [t],
   );
+
+  const logEntries: LocalLogEntry[] = pending.map((entry) => {
+    const fields = draftFields(entry.capture);
+    return {
+      id: entry.capture.id,
+      name: fields.name?.trim() || t`Untitled`,
+      takenAt: entry.capture.takenAt,
+      reason: entry.failure ?? 'waiting',
+      message: entry.failure ? failureText(entry.failure, fields) : t`Waiting to sync.`,
+      destination:
+        cache?.things.find((item) => item.id === (fields.attachToThingId ?? fields.boxId))?.name ??
+        cache?.places.find((item) => item.id === fields.placeId)?.name ??
+        t`Destination`,
+      files: entry.capture.files.length,
+    };
+  });
 
   const refresh = useCallback(
     (includeFailed = false) => {
@@ -1431,22 +1458,24 @@ export function Inventory({
 
   return (
     <>
-      <header className="kept-appbar">
-        <div className="kept-appbar-brand">
-          <AppMark size={28} />
-          <h1 className="kept-appbar-name m-0">SheepKeep</h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="small"
-          className="kept-appbar-assistant"
-          aria-label={t`Assistant`}
-          aria-current={screen.kind === 'assistant' ? 'page' : undefined}
-          onPress={() => void goTab('assistant')}
-        >
-          <MessageSquare size={20} aria-hidden />
-        </Button>
-      </header>
+      {(screen.kind === 'home' || screen.kind === 'assistant') && (
+        <header className="kept-appbar">
+          <div className="kept-appbar-brand">
+            <AppMark size={28} />
+            <h1 className="kept-appbar-name m-0">SheepKeep</h1>
+          </div>
+          <Button
+            variant="ghost"
+            size="small"
+            className="kept-appbar-assistant"
+            aria-label={t`Assistant`}
+            aria-current={screen.kind === 'assistant' ? 'page' : undefined}
+            onPress={() => void goTab('assistant')}
+          >
+            <MessageSquare size={20} aria-hidden />
+          </Button>
+        </header>
+      )}
       {screen.kind === 'home' && (
         <div className="kept-search" ref={searchRef}>
           <TextField
@@ -1496,46 +1525,6 @@ export function Inventory({
             {status}
           </p>
         )}
-        {screen.kind === 'home' && savedFindTarget && (
-          <section
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface p-3"
-            aria-label={t`Saved Find target`}
-          >
-            <div className="flex min-w-0 items-center gap-2.5">
-              <span className="kept-row-lead" aria-hidden>
-                <Radar size={18} />
-              </span>
-              <div className="grid min-w-0 gap-0.5">
-                <span className="text-small text-ink-2">
-                  <Trans>Resumable Find target</Trans>
-                </span>
-                <strong className="font-semibold">
-                  <bdi>{savedFindTarget.name}</bdi>
-                </strong>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="small"
-                onPress={() => setScreen({ kind: 'find', box: savedFindTarget })}
-              >
-                <Radar size={15} aria-hidden />
-                <Trans>Continue finding</Trans>
-              </Button>
-              <Button
-                size="small"
-                variant="ghost"
-                onPress={() => {
-                  void adapters.outbox.deleteValue(connection, FIND_TARGET_KEY).catch(() => {});
-                  setSavedFindTarget(undefined);
-                }}
-              >
-                <X size={15} aria-hidden />
-                <Trans>Clear</Trans>
-              </Button>
-            </div>
-          </section>
-        )}
         {screen.kind !== 'capture' && queuePanels}
       </div>
       {screen.kind === 'home' && (
@@ -1564,6 +1553,9 @@ export function Inventory({
               onOpen={open}
               onRetry={() => void refresh(true)}
               onSettings={() => pushScreen({ kind: 'settings' })}
+              findName={savedFindTarget?.name}
+              onHistory={() => pushScreen({ kind: 'history' })}
+              onFind={() => savedFindTarget && pushScreen({ kind: 'find', box: savedFindTarget })}
             />
           )}
           {searchingHome && (
@@ -1722,6 +1714,9 @@ export function Inventory({
           onCapture={(destination, location) =>
             pushScreen({ kind: 'capture', destination, location, fromRecord: true })
           }
+          onPhotoLibrary={(name, location) =>
+            pushScreen({ kind: 'photoLibrary', target: screen.target, name, location })
+          }
           onInventoryChanged={() => {
             void refresh();
           }}
@@ -1729,9 +1724,9 @@ export function Inventory({
           onAuthError={onSignOut}
         />
       )}
-      {screen.kind === 'new' && addTabs}
       {screen.kind === 'new' && cache && (
         <NewBoxForm
+          headerExtra={addTabs}
           connection={connection}
           cache={cache}
           place={screen.destination ?? cache.places.find((entry) => entry.id === screen.place?.id)}
@@ -1756,9 +1751,9 @@ export function Inventory({
           onAuthError={onSignOut}
         />
       )}
-      {screen.kind === 'capture' && addTabs}
       {screen.kind === 'capture' && (
         <CaptureForm
+          headerExtra={addTabs}
           connection={connection}
           box={screen.destination}
           cache={cache}
@@ -1935,6 +1930,7 @@ export function Inventory({
           onPhotoSearch={(mode) =>
             pushScreen({ kind: 'visualSearch', intent: { mode, text: browseFilters.q } })
           }
+          onAssistant={() => pushScreen({ kind: 'assistant' })}
           onRooms={() => pushScreen({ kind: 'rooms' })}
           onInventoryChanged={() => {
             void refresh();
@@ -1964,55 +1960,112 @@ export function Inventory({
             <Settings size={18} aria-hidden />
             <Trans>More</Trans>
           </h2>
-          <Button
-            variant="secondary"
-            className="kept-phone-row"
-            onPress={() => pushScreen({ kind: 'settings' })}
-          >
-            <span className="kept-row-lead" aria-hidden>
-              <Settings size={18} />
-            </span>
-            <span className="kept-row-body">
-              <span className="font-semibold">
-                <Trans>Settings</Trans>
-              </span>
-            </span>
-            <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-          </Button>
-          <div className="kept-tiles">
-            <ActionTile
+          <div className="kept-rows">
+            <MoreRow
+              label={t`Settings`}
+              Icon={Settings}
+              onPress={() => pushScreen({ kind: 'settings' })}
+            />
+          </div>
+          <div className="kept-rows">
+            <MoreRow
               label={t`Print label sheets`}
               Icon={Tags}
-              tone="amber"
               isDisabled={!cache || !online}
               onPress={() => pushScreen({ kind: 'labelSheets' })}
             />
-            <ActionTile
+            <MoreRow
               label={t`Recent capture batches`}
-              Icon={History}
-              tone="violet"
+              Icon={Inbox}
               isDisabled={!online}
               onPress={() => pushScreen({ kind: 'batches' })}
             />
-            <ActionTile
+            <MoreRow
               label={t`Unplaced`}
-              Icon={Inbox}
-              tone="neutral"
+              Icon={MapPin}
               isDisabled={!cache}
               onPress={() => pushScreen({ kind: 'unplaced' })}
             />
-            <ActionTile
+            <MoreRow
               label={t`Trash`}
               Icon={Trash2}
-              tone="danger"
               isDisabled={!online}
               onPress={() => pushScreen({ kind: 'trash' })}
+            />
+            <MoreRow
+              label={t`History`}
+              Icon={Clock}
+              isDisabled={!online}
+              onPress={() => pushScreen({ kind: 'history' })}
             />
           </div>
           <footer className="pt-2">
             <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
           </footer>
         </section>
+      )}
+      {screen.kind === 'photoLibrary' && (
+        <BoxPhotos
+          connection={connection}
+          target={screen.target}
+          name={screen.name}
+          online={online}
+          canEdit={
+            cache?.locations.some(
+              (location) => location.id === screen.target.locationId && location.role !== 'viewer',
+            ) ?? false
+          }
+          onBack={goBack}
+          onAdd={() =>
+            pushScreen({
+              kind: 'capture',
+              destination: { ...screen.target, name: screen.name, kind: 'photos' },
+              location: screen.location,
+              fromRecord: true,
+            })
+          }
+          onChanged={() => void refresh()}
+          onAuthError={onSignOut}
+        />
+      )}
+      {screen.kind === 'ai' && (
+        <section className="grid gap-4">
+          <ScreenHeader
+            title={<Trans>AI and photo suggestions</Trans>}
+            onBack={goBack}
+            icon={<MessageSquare size={18} aria-hidden />}
+          />
+          <CaptureAISettings
+            connection={connection}
+            preferred={preferredAI}
+            preferenceLoaded={photoPreferenceLoaded}
+            onPreferred={savePhotoDefault}
+          />
+          {preferenceError && (
+            <p role="alert">
+              <Trans>Could not save settings.</Trans>
+            </p>
+          )}
+        </section>
+      )}
+      {screen.kind === 'history' && (
+        <HistoryScreen
+          connection={connection}
+          online={online}
+          onBack={goBack}
+          onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onAuthError={onSignOut}
+        />
+      )}
+      {screen.kind === 'logs' && (
+        <LogsScreen
+          connection={connection}
+          online={online}
+          local={logEntries}
+          onBack={goBack}
+          onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onAuthError={onSignOut}
+        />
       )}
       {screen.kind === 'settings' && (
         <section className="grid gap-4">
@@ -2045,12 +2098,14 @@ export function Inventory({
               </Select>
             )}
           </section>
-          <CaptureAISettings
-            connection={connection}
-            preferred={preferredAI}
-            preferenceLoaded={photoPreferenceLoaded}
-            onPreferred={savePhotoDefault}
-          />
+          <section className="kept-rows" aria-label={t`Advanced`}>
+            <MoreRow
+              label={t`AI and photo suggestions`}
+              Icon={MessageSquare}
+              onPress={() => pushScreen({ kind: 'ai' })}
+            />
+            <MoreRow label={t`Logs`} Icon={FileText} onPress={() => pushScreen({ kind: 'logs' })} />
+          </section>
           {preferenceError && (
             <p role="alert">
               <Trans>Could not save settings.</Trans>
@@ -2063,6 +2118,11 @@ export function Inventory({
             <p className="break-all text-small text-ink-2">
               <bdi>{connection.origin}</bdi>
             </p>
+            {stats && (
+              <p className="text-small text-ink-2">
+                {t`Saved on this iPhone: ${formatBytes(stats.pendingBytes + stats.cacheBytes)} · ${stats.pendingCount} waiting`}
+              </p>
+            )}
             <Button
               variant="secondary"
               size="small"
