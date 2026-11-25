@@ -173,3 +173,13 @@ describe('a photo full screen', () => {
     expect(shown()).not.toBe(first);
   });
 });
+
+describe('the header frame', () => {
+  it('shows the whole photo in a square frame, not a crop of it', async () => {
+    await render();
+    const img = await screen.findByRole('img', { name: 'Photo 1 of 3' });
+    expect(img).toHaveClass('object-contain');
+    expect(img).not.toHaveClass('object-cover');
+    expect(screen.getByRole('region', { name: 'Photos' })).toHaveClass('aspect-square');
+  });
+});

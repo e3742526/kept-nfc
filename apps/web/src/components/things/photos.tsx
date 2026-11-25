@@ -4,6 +4,9 @@
  * In Arabic the buttons and the swipe mirror. Tapping the photo opens it full screen on the same
  * photo (./photo-viewer, #295). Without photos it shows the type's icon, and a writer gets
  * "Add photo". A HEIC photo has no preview yet (D36): it says so, never an error.
+ *
+ * The frame is square at every width, and the photo is shown whole in it, never cropped: a phone
+ * takes portrait 3:4 or landscape 4:3, and a crop would cut off what was photographed.
  */
 import { Trans, useLingui } from '@lingui/react/macro';
 import { lazy, Suspense, type TouchEvent, useRef, useState } from 'react';
@@ -74,7 +77,7 @@ export function PhotoCarousel({ className }: { className?: string }) {
         onTouchEnd={steps.onTouchEnd}
         className={cn(
           'relative grid place-items-center overflow-hidden rounded-[10px] bg-sunken outline-none focus-visible:outline-2 focus-visible:outline-info',
-          photos.length ? 'aspect-[4/3] max-h-80 md:aspect-square md:max-h-none' : 'h-32 md:h-40',
+          photos.length ? 'aspect-square' : 'h-32 md:h-40',
         )}
       >
         {photos.length === 0 ? (
@@ -175,7 +178,13 @@ function Slide({
       onClick={onOpen}
       className="size-full cursor-zoom-in outline-none focus-visible:outline-2 focus-visible:outline-info"
     >
-      <PhotoImage src={src} alt={label} rotation={photo.photoRotation} className="size-full" />
+      <PhotoImage
+        src={src}
+        alt={label}
+        rotation={photo.photoRotation}
+        contain
+        className="size-full"
+      />
     </button>
   );
 }
