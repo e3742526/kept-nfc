@@ -90,8 +90,7 @@ tmp/
 # project names that must never be published): local only, by design
 .private-terms
 
-# Build notes, specs and research stay with the maintainer, outside the repo. The repo keeps
-# docs/releases, docs/runbooks and docs/assets.
+# Local notes and working drafts. See docs/README.md for versioned documentation.
 /docs/plans/
 /docs/spikes/
 /docs/research/

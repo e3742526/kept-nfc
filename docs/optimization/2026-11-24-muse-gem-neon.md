@@ -1,8 +1,8 @@
 # SheepKeep (`kept-nfc`) Optimization Opportunity Audit
 
-- **Report file:** `muse-gem-neon-opt-24NOV2026-SheepKeep.md`
+- **Report file:** `docs/optimization/2026-11-24-muse-gem-neon.md`
 - **Date:** 2026-11-24
-- **Repository:** `/Users/eric/Work/vscode/kept-nfc`
+- **Repository:** `e3742526/kept-nfc`
 - **Branch / Commit:** `main` @ `89b5f65ef7d9cd01654d297228bd170d2cd951c9`
 - **Mode:** Read-only optimization audit (**no code modified**)
 - **Methodology:** `audit-optimization-opportunities` (`OPT-001`..`OPT-020` coverage taxonomy + `audit-base` evidence discipline and confidence calibration)
@@ -685,7 +685,7 @@ Retaining checked-and-clean seams prevents future wasted passes and protects del
 
 ### Deterministic Static Reproduction Script (Read-Only)
 
-Run from `/Users/eric/Work/vscode/kept-nfc` to reproduce all static counts in this report:
+Run from the repository root to reproduce all static counts in this report:
 
 ```sh
 # 1. Server: 12 idle_in_transaction_session_timeout workarounds & 44 job queues

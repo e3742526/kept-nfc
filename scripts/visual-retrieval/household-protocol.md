@@ -1,7 +1,7 @@
 # Household retrieval qualification protocol
 
 Use this protocol before looking at retrieval results. The provisional criteria come from the
-[approved design](../../docs/kept_nfc_software_design.docx). Preserve the distinction between a
+[approved design](../../docs/mvp1/design/nfc-software-design.docx). Preserve the distinction between a
 public household-photo benchmark, an approved pilot inventory and physical iPhone acceptance.
 
 | Cohort or measure | Provisional target |
