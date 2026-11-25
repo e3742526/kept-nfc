@@ -25704,8 +25704,8 @@ msgid "SheepKeep shows it only this once. Anyone with it can read the titles and
 msgstr "SheepKeep lo muestra solo esta vez. Cualquiera que lo tenga puede leer los títulos y las fechas."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
-msgstr "SheepKeep lo muestra solo esta vez. Tu receptor comprueba el encabezado SheepKeep-Signature de cada mensaje con él."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgstr "SheepKeep lo muestra solo esta vez. Tu receptor comprueba el encabezado Kept-Signature de cada mensaje con él."
 
 #: src/components/webhooks/edit.tsx
 msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
@@ -33293,3 +33293,11 @@ msgstr "Cada etiqueta se lee como {example}: el uso que elijas, una serie nueva 
 #: src/components/labels/stock-picker.tsx
 msgid "{cols} × {rows}, each {cell} · lines to write on"
 msgstr "{cols} × {rows}, cada {cell} · líneas para escribir"
+
+#: src/components/display-prefs.tsx
+msgid "Camera photo size"
+msgstr "Tamaño de las fotos de la cámara"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "El lado más largo de una foto hecha en SheepKeep, en píxeles. Las fotos más pequeñas se suben más rápido. Las fotos de tu biblioteca de más de 4096 px se reducen al subirlas."

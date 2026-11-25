@@ -198,7 +198,7 @@ function CameraSizeChoice() {
       }}
       description={
         <Trans>
-          The longest side of a photo taken in Kept, in pixels. Smaller photos upload faster. Photos
+          The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos
           from your library over 4096 px are made smaller when they upload.
         </Trans>
       }

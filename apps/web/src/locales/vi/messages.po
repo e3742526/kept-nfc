@@ -25704,8 +25704,8 @@ msgid "SheepKeep shows it only this once. Anyone with it can read the titles and
 msgstr "SheepKeep chỉ hiển thị nó một lần duy nhất này. Bất kỳ ai có nó đều có thể đọc tiêu đề và ngày."
 
 #: src/components/notifications/settings/channels.tsx
-msgid "SheepKeep shows it only this once. Your receiver checks each message's SheepKeep-Signature header with it."
-msgstr "SheepKeep chỉ hiển thị nó một lần duy nhất này. Bộ nhận của bạn kiểm tra tiêu đề SheepKeep-Signature của mỗi thông báo bằng nó."
+msgid "SheepKeep shows it only this once. Your receiver checks each message's Kept-Signature header with it."
+msgstr "SheepKeep chỉ hiển thị nó một lần duy nhất này. Bộ nhận của bạn kiểm tra tiêu đề Kept-Signature của mỗi thông báo bằng nó."
 
 #: src/components/webhooks/edit.tsx
 msgid "SheepKeep signs every delivery with this secret, so your server can tell it came from SheepKeep."
@@ -33293,3 +33293,11 @@ msgstr "Mỗi nhãn có dạng {example}: mục đích bạn chọn, một loạ
 #: src/components/labels/stock-picker.tsx
 msgid "{cols} × {rows}, each {cell} · lines to write on"
 msgstr "{cols} × {rows}, mỗi ô {cell} · có dòng kẻ để viết"
+
+#: src/components/display-prefs.tsx
+msgid "Camera photo size"
+msgstr "Kích thước ảnh chụp"
+
+#: src/components/display-prefs.tsx
+msgid "The longest side of a photo taken in SheepKeep, in pixels. Smaller photos upload faster. Photos from your library over 4096 px are made smaller when they upload."
+msgstr "Cạnh dài nhất của ảnh chụp trong SheepKeep, tính bằng pixel. Ảnh nhỏ hơn tải lên nhanh hơn. Ảnh trong thư viện lớn hơn 4096 px sẽ được thu nhỏ khi tải lên."
