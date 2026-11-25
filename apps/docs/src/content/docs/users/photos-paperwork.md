@@ -18,6 +18,9 @@ by its name; leave the name empty to show its kind again. Members name the files
 owners and admins any file. A car's papers, a home's lease and a room's manuals are named the
 same way.
 
+- **Adding photos:** on a thing's page, **Take a photo** opens the back camera for one photo,
+  and **Gallery** picks one or more from the album or your files. A phone's photo picker may have
+  no camera of its own, so use **Take a photo** for a new one.
 - **A photo full screen:** tap the photo at the top of a thing's page. It opens fitted to the
   screen, the whole photo however tall or wide. Swipe, the arrow keys, or
   **Previous photo** and **Next photo** go through its photos. **+** (Zoom in) or a double-click

@@ -135,6 +135,8 @@ export function LocationSettings({
         {cache.locations
           .filter(({ id }) => id !== ownPersonal?.id)
           .map((location) => {
+            // Keep the binding `name`: Trans names its placeholder after it, and the catalogues
+            // translate "Delete <0>{name}</0>…".
             const name = location.name;
             return (
               <li

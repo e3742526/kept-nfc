@@ -18,6 +18,9 @@ par son nom ; laissez le nom vide pour afficher à nouveau son type. Les membres
 ajoutés, les propriétaires et les administrateurs n'importe quel fichier. Les papiers d'une voiture, le bail d'un
 logement et les manuels d'une pièce se nomment de la même façon.
 
+- **Ajouter des photos :** sur la page de l'article, **Prendre une photo** ouvre l'appareil photo arrière pour
+  une photo, et **Galerie** en choisit une ou plusieurs dans l'album ou vos fichiers. Le sélecteur de photos d'un
+  téléphone peut ne pas avoir d'appareil photo à lui, donc utilisez **Prendre une photo** pour une nouvelle.
 - **Une photo en plein écran :** appuyez sur la photo en haut de la page de l'article. Elle s'ouvre adaptée à
   l'écran, la photo entière quelle que soit sa hauteur ou sa largeur. Balayez, utilisez les touches fléchées, ou
   **Photo précédente** et **Photo suivante** pour parcourir ses photos. **+** (Zoom avant) ou un double-clic

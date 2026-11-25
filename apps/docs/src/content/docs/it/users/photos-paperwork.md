@@ -19,6 +19,9 @@ nome ai file che hanno aggiunto, i proprietari e gli amministratori a qualsiasi 
 di un'auto, il contratto d'affitto di una casa e i manuali di una stanza sono nominati allo stesso
 modo.
 
+- **Aggiungere foto:** nella pagina di un oggetto, **Scatta una foto** apre la fotocamera posteriore per una
+  foto, e **Galleria** ne sceglie una o più dall'album o dai tuoi file. Il selettore di foto di un telefono può
+  non avere una fotocamera propria, quindi usa **Scatta una foto** per una nuova.
 - **Una foto a tutto schermo:** tocca la foto in alto nella pagina di un oggetto. Si apre adattata
   allo schermo, tutta la foto, per quanto alta o larga. Scorri, usa i tasti freccia oppure
   **Foto precedente** e **Foto successiva** per passare tra le foto. **+** (Ingrandisci) oppure un

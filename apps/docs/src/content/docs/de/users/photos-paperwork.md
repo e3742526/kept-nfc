@@ -18,6 +18,9 @@ an seinem Namen; lass das Namensfeld leer, um seine Art erneut anzuzeigen. Mitgl
 hingefügt haben, Besitzer und Administratoren jede Datei. Die Papiere eines Autos, der Mietvertrag eines Hauses und
 die Handbücher eines Zimmers werden gleich benannt.
 
+- **Fotos hinzufügen:** auf der Seite eines Gegenstands öffnet **Foto aufnehmen** die Rückkamera für ein Foto,
+  und **Galerie** wählt eines oder mehrere aus dem Album oder deinen Dateien. Die Fotoauswahl eines Handys
+  hat womöglich keine eigene Kamera, nimm für ein neues Foto also **Foto aufnehmen**.
 - **Ein Foto im Vollbild:** tippe auf das Foto oben auf der Seite eines Gegenstands. Es passt sich dem Bildschirm an,
   das gesamte Foto jedoch hoch oder breit. Wische, benutze die Pfeiltasten, oder
   **Vorheriges Foto** und **Nächstes Foto** blättern durch seine Fotos. **+** (Hereinzoomen) oder ein Doppelklick

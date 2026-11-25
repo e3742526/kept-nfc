@@ -17,7 +17,8 @@ you own, where you keep it, and when it moved.
 - Search photos by text or by example image with the opt-in visual index.
 - Map rooms in 3D with shapes such as adjustable shelving and water purifiers.
   [Map shapes](apps/docs/src/content/docs/users/map-shapes.mdx)
-- Use a personal token to manage warranties, vendors, tags, and item lifecycle through MCP.
+- Use a personal token to manage warranties, vendors, tags, and item lifecycle through MCP, or
+  to read a location's map and arrange its rooms.
   [MCP clients](apps/docs/src/content/docs/users/mcp-clients.md)
 
 ## Run from source
@@ -28,18 +29,19 @@ the instance.
 ```sh
 git clone https://github.com/e3742526/kept-nfc.git sheepkeep
 cd sheepkeep
-docker buildx build --load --build-arg REVISION="$(git rev-parse HEAD)" -t sheepkeep:local .
+docker build --build-arg REVISION="$(git rev-parse HEAD)" -t sheepkeep:local .
+echo KEPT_IMAGE=sheepkeep:local >> .env
 docker compose run --rm init
-docker compose up -d
+KEPT_IMAGE=sheepkeep:local docker compose up -d
 ```
 
 Choose the address people will use to open SheepKeep. The initializer writes it to `.env` and
 prints a setup code. Once the stack is up, open that address and enter the code to create the
-first admin account.
+first admin account. `KEPT_IMAGE` in `.env` keeps later starts on the image you built.
 
 Use HTTPS for the iPhone app and browser camera features. For an existing installation, keep its
-Compose project name, volumes, and public URL. [HTTPS setup](apps/docs/src/content/docs/install/home-network.md) ·
-[Upgrade runbook](docs/runbooks/upgrade.md)
+Compose project name, volumes, and public URL. See [HTTPS setup](apps/docs/src/content/docs/install/home-network.md)
+and the [upgrade runbook](docs/runbooks/upgrade.md).
 
 ## Documentation
 
@@ -62,7 +64,7 @@ Compose project name, volumes, and public URL. [HTTPS setup](apps/docs/src/conte
 
 SheepKeep, formerly Kept NFC, is an independent fork of [Kept](https://github.com/keptinventory/kept),
 created by [Ibrahim Roshdy](https://github.com/ibrahimroshdy) and developed with its contributors.
-[Upstream credits and compatibility](UPSTREAM.md) · [Citation](CITATION.cff)
+See [upstream credits and compatibility](UPSTREAM.md) and the [citation](CITATION.cff).
 
 SheepKeep is licensed under the [GNU Affero General Public License, version 3](LICENSE). The app's
 **Source code** link points to the corresponding source, and the image serves third-party notices at

@@ -3795,15 +3795,16 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
 
-    // The tab bar is the main navigation: Home, Add, Scan, More.
     const tabbar = await screen.findByRole('navigation');
+    expect(within(tabbar).getAllByRole('button')).toEqual(
+      ['Home', 'Search', 'Scan', 'Add', 'More'].map((name) =>
+        within(tabbar).getByRole('button', { name }),
+      ),
+    );
     expect(within(tabbar).getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    expect(within(tabbar).getByRole('button', { name: 'Add' })).toBeInTheDocument();
-    expect(within(tabbar).getByRole('button', { name: 'Scan' })).toBeInTheDocument();
-    expect(within(tabbar).getByRole('button', { name: 'More' })).toBeInTheDocument();
 
     // The Scan tab opens label identification with a back button.
     await user.click(within(tabbar).getByRole('button', { name: 'Scan' }));
@@ -3812,6 +3813,15 @@ describe('KeptPhone mobile workflows', () => {
       'aria-current',
       'page',
     );
+
+    // Search opens Browse directly and reselecting the tab keeps the current query.
+    const searchTab = within(tabbar).getByRole('button', { name: 'Search' });
+    await user.click(searchTab);
+    const browseSearch = await screen.findByRole('textbox', { name: 'Search' });
+    expect(searchTab).toHaveAttribute('aria-current', 'page');
+    await user.type(browseSearch, 'ladder');
+    await user.click(searchTab);
+    expect(browseSearch).toHaveValue('ladder');
 
     // The Capture tab opens the capture form with a back button.
     await user.click(within(tabbar).getByRole('button', { name: 'Add' }));

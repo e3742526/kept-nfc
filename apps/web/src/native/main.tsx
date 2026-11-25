@@ -20,6 +20,7 @@ import {
   Palette,
   Plus,
   QrCode,
+  Search,
   Settings,
   Sun,
   Tags,
@@ -141,10 +142,12 @@ type Screen =
   | { kind: 'logs' }
   | { kind: 'more' };
 
-type TabKey = 'home' | 'capture' | 'scan' | 'more';
+type TabKey = 'home' | 'search' | 'scan' | 'capture' | 'more';
 
 function tabFor(screen: Screen): TabKey {
   switch (screen.kind) {
+    case 'browse':
+      return 'search';
     case 'capture':
     case 'new':
       return 'capture';
@@ -172,18 +175,21 @@ function tabFor(screen: Screen): TabKey {
 /** The pending captures badge links back to Home, where the queue is shown. */
 function TabBar({
   tab,
+  canSearch,
   pendingCount = 0,
   onTab,
 }: {
   tab?: TabKey;
+  canSearch: boolean;
   pendingCount?: number;
   onTab: (tab: TabKey) => void;
 }) {
   const { t } = useLingui();
   const tabs = [
     { key: 'home', label: t`Home`, Icon: Home },
-    { key: 'capture', label: t`Add`, Icon: Plus },
+    { key: 'search', label: t`Search`, Icon: Search },
     { key: 'scan', label: t`Scan`, Icon: QrCode },
+    { key: 'capture', label: t`Add`, Icon: Plus },
     { key: 'more', label: t`More`, Icon: Ellipsis },
   ] as const;
   return (
@@ -192,11 +198,18 @@ function TabBar({
         <Button
           key={key}
           variant="ghost"
-          className={`kept-tabbar-button${key === 'capture' ? ' kept-tabbar-add' : ''}`}
+          className={`kept-tabbar-button${key === 'scan' ? ' kept-tabbar-scan' : ''}`}
           aria-current={tab === key ? 'page' : undefined}
+          isDisabled={key === 'search' && !canSearch}
           onPress={() => onTab(key)}
         >
-          <Icon size={22} aria-hidden />
+          {key === 'scan' ? (
+            <span className="kept-tabbar-scan-icon" aria-hidden>
+              <Icon size={26} />
+            </span>
+          ) : (
+            <Icon size={22} aria-hidden />
+          )}
           <span className="kept-tabbar-label">{label}</span>
           {key === 'home' && pendingCount > 0 && (
             <span className="kept-tabbar-badge" aria-hidden>
@@ -663,6 +676,8 @@ export function Inventory({
   );
   const cache = useMemo(() => shownInventory(allInventory), [allInventory]);
   const hiddenPersonalId = cache !== allInventory ? allInventory?.personal?.id : undefined;
+  // Hiding Personal takes it out of lists and search only: a screen opened for something in it
+  // (a scanned label, a link) still reads the whole cache.
   const cacheForLocation = (id?: string) => (id && id === hiddenPersonalId ? allInventory : cache);
   const [completions, setCompletions] = useState<Record<string, CompletionState>>({});
   const [held, setHeld] = useState<PendingCapture[]>([]);
@@ -697,6 +712,15 @@ export function Inventory({
     backStack.current = [];
     setScreen({ kind: 'home' });
   };
+  const resetBrowseFilters = (mode: typeof browseDefaults.mode, q = '') => {
+    setBrowseFilters((previous) => ({
+      ...browseDefaults,
+      mode,
+      q,
+      grid: previous.grid,
+      sort: previous.sort,
+    }));
+  };
   const goTab = async (tab: TabKey | 'assistant') => {
     if (tab === 'assistant' && screen.kind === 'assistant') return;
     if (tab === 'home' && screen.kind === 'home') {
@@ -709,7 +733,11 @@ export function Inventory({
       if (tab === 'capture' || !(await canLeaveCapture.current?.())) return;
     }
     if (screen.kind === 'new' && tab === 'capture') return;
-    const kind = tab === 'scan' ? 'identify' : tab;
+    if (tab === 'search') {
+      if (screen.kind === 'browse' && backStack.current.length === 0) return;
+      resetBrowseFilters('all', screen.kind === 'home' ? query.trim() : '');
+    }
+    const kind = tab === 'scan' ? 'identify' : tab === 'search' ? 'browse' : tab;
     backStack.current = [];
     setScreen((current) => (current === screen ? { kind } : current));
   };
@@ -726,13 +754,7 @@ export function Inventory({
   const openPhotoSearch = (mode: VisualSearchIntent['mode']) =>
     pushScreen({ kind: 'visualSearch', intent: { mode, text: query.trim() } });
   const openBrowse = (mode: typeof browseDefaults.mode, q = '') => {
-    setBrowseFilters((previous) => ({
-      ...browseDefaults,
-      mode,
-      q,
-      grid: previous.grid,
-      sort: previous.sort,
-    }));
+    resetBrowseFilters(mode, q);
     pushScreen({ kind: 'browse' });
   };
   const rememberBox = (target: Target) => {
@@ -890,6 +912,7 @@ export function Inventory({
     if (current) {
       const next = update(current);
       display(next);
+      // Best effort: the server already has the change, and the refresh below saves its snapshot.
       await adapters.outbox.saveCache(connection, JSON.stringify(next)).catch(() => {});
     }
     await refresh();
@@ -2194,6 +2217,7 @@ export function Inventory({
                 ? 'capture'
                 : tabFor(backStack.current[0] ?? screen)
           }
+          canSearch={!!cache}
           pendingCount={pending.length}
           onTab={goTab}
         />

@@ -43,6 +43,10 @@ export type InventoryCache = {
   details: Record<string, RecordDetail>;
 };
 
+/**
+ * The cache without one location and everything in it: its places, things, codes and the record
+ * details of its things. Used for a location deleted on the phone and to hide Personal.
+ */
 export function withoutLocation(cache: InventoryCache, id: string): InventoryCache {
   const inOtherLocations = <T extends { locationId: string }>(rows: readonly T[]) =>
     rows.filter(({ locationId }) => locationId !== id);
@@ -53,7 +57,9 @@ export function withoutLocation(cache: InventoryCache, id: string): InventoryCac
     ...cache,
     locations: cache.locations.filter((location) => location.id !== id),
     places,
-    pendingPlaceIds: cache.pendingPlaceIds?.filter((id) => places.some((place) => place.id === id)),
+    pendingPlaceIds: cache.pendingPlaceIds?.filter((placeId) =>
+      places.some((place) => place.id === placeId),
+    ),
     things,
     codes: inOtherLocations(cache.codes),
     legacyCodes: inOtherLocations(cache.legacyCodes),
@@ -63,6 +69,10 @@ export function withoutLocation(cache: InventoryCache, id: string): InventoryCac
   };
 }
 
+/**
+ * What the lists, Home and search show: the cache without Personal when the person chose to hide
+ * it. Personal stays while it is their only location, as Settings → Locations explains.
+ */
 export function shownInventory(cache: InventoryCache | undefined) {
   const personal = cache?.personal;
   if (!cache || !personal?.hide || !cache.locations.some(({ id }) => id !== personal.id))
@@ -196,6 +206,7 @@ export async function readInventory(
 export async function loadInventory(
   connection: Connection,
   adapters: PlatformAdapters = capacitorAdapters,
+  // From /me: undefined keeps the cached Personal setting, null clears it.
   personal?: InventoryCache['personal'] | null,
 ): Promise<InventoryCache> {
   const old = await readInventory(connection, adapters);

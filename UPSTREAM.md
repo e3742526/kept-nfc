@@ -8,6 +8,10 @@ Upstream changes through [Kept revision `c0a205bf`](https://github.com/keptinven
 The fork's changes began on November 22, 2026 and include the iPhone client, NFC and QR workflows,
 capture and recovery changes, inventory provenance, visual retrieval, and security fixes.
 The SheepKeep rebrand and v2 identity integration are dated November 23, 2026.
+On November 25, 2026 the fork also took changes from other Kept forks: the camera button and
+square photo frame, the viewfinder crop, the `get_map` and `arrange_rooms` MCP tools, and the
+combobox and AI picker fixes on phones. Those commits keep their original authors and name the
+commit each was cherry-picked or ported from.
 Kept's copyright notices, commit authorship and [release history](CHANGELOG.md) are retained.
 [CITATION.cff](CITATION.cff) records the project and its upstream reference.
 
@@ -36,4 +40,4 @@ to set `KEPT_SOURCE_URL` to that version's corresponding source. See [AGPL §5, 
 
 The display name and icons change independently of these identifiers. The fork retains inherited
 Kept release and integration references for compatibility and provenance. Upstream binaries and
-documents describe Kept. Build SheepKeep from this checkout using its [source instructions](README.md#build-and-run-from-source).
+documents describe Kept. Build SheepKeep from this checkout using its [source instructions](README.md#run-from-source).
