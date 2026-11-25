@@ -231,6 +231,7 @@ export function RecordScreen({
   onOpen,
   onCreateBox,
   onCapture,
+  onPhotoLibrary,
   onLabel,
   onCache,
   onInventoryChanged,
@@ -246,6 +247,8 @@ export function RecordScreen({
   onOpen: (target: Target) => void;
   onCreateBox: () => void;
   onCapture: (destination: Destination, location: string) => void;
+  /** Opens the box's photo library (current and archived photos). */
+  onPhotoLibrary?: (name: string, location: string) => void;
   onLabel: (mode: 'find' | 'enroll', box: OpenBox) => void;
   onCache: (detail: RecordDetail) => void;
   onInventoryChanged: () => void;
@@ -660,6 +663,12 @@ export function RecordScreen({
               >
                 <Camera size={16} aria-hidden />
                 <Trans>Add photos</Trans>
+              </Button>
+            )}
+            {online && target.kind === 'thing' && onPhotoLibrary && (
+              <Button variant="secondary" onPress={() => onPhotoLibrary(name, path)}>
+                <Image size={16} aria-hidden />
+                <Trans>Photo library</Trans>
               </Button>
             )}
             {canEdit && thing && (

@@ -1,7 +1,7 @@
 import { AMOUNT_STRING, newId, normalize } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
-import { type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { type ReactNode, type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { TextField as AriaTextField, FileTrigger, Label, TextArea } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
@@ -64,6 +64,7 @@ export function CaptureForm({
   onClose,
   onSave,
   onReview,
+  headerExtra,
 }: {
   connection: Connection;
   box?: Destination;
@@ -83,6 +84,8 @@ export function CaptureForm({
   onClose: () => void;
   onSave: () => void;
   onReview?: (id: string) => void;
+  /** Shown right under the header (the Add tab's Item | Box switch). */
+  headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
@@ -319,6 +322,7 @@ export function CaptureForm({
           )
         }
       />
+      {headerExtra}
       {box && (
         <header className="kept-card">
           <div className="flex items-start gap-3">
@@ -620,12 +624,14 @@ export function NewBoxForm({
   place,
   onClose,
   onCreated,
+  headerExtra,
 }: {
   connection: Connection;
   cache: InventoryCache;
   place?: { id: string; name: string; locationId: string };
   onClose: () => void;
   onCreated: (id: string, locationId: string) => void;
+  headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
@@ -658,6 +664,7 @@ export function NewBoxForm({
         backDisabled={busy}
         icon={<Package size={18} aria-hidden />}
       />
+      {headerExtra}
       <form
         className="kept-card"
         onSubmit={(event) => {

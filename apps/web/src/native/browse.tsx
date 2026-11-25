@@ -1,6 +1,6 @@
 import type { SnapThing } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Package } from 'lucide-react';
+import { CornerDownLeft, MessageSquare, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Brand, Page, ThingRow } from '@/api/inventory/types';
@@ -165,6 +165,7 @@ export function Browse({
   onOpen,
   onPhotoSearch,
   onRooms,
+  onAssistant,
   onAuthError,
   onInventoryChanged,
 }: {
@@ -177,6 +178,7 @@ export function Browse({
   onOpen: (target: Target) => void;
   onPhotoSearch: (mode: VisualSearchIntent['mode']) => void;
   onRooms: () => void;
+  onAssistant: () => void;
   onAuthError: (reason: 'expired' | 'restored') => void;
   onInventoryChanged: () => void;
 }) {
@@ -304,16 +306,27 @@ export function Browse({
   ];
   return (
     <section className="grid gap-3">
-      <ScreenHeader title={<Trans>Browse</Trans>} onBack={onBack} />
+      <ScreenHeader
+        title={
+          f.mode === 'bins' ? (
+            <Trans>Boxes</Trans>
+          ) : f.mode === 'categories' ? (
+            <Trans>Categories</Trans>
+          ) : (
+            <Trans>Items</Trans>
+          )
+        }
+        onBack={onBack}
+      />
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" onPress={onRooms}>
           <Trans>Rooms</Trans>
         </Button>
         {(
           [
-            { id: 'all', name: t`All inventory` },
+            { id: 'all', name: t`Items` },
             { id: 'categories', name: t`Categories` },
-            { id: 'bins', name: t`Bins` },
+            { id: 'bins', name: t`Boxes` },
           ] as const
         ).map((mode) => (
           <Button
@@ -326,12 +339,31 @@ export function Browse({
           </Button>
         ))}
       </div>
-      <TextField
-        label={t`Search`}
-        value={f.q}
-        onChange={(q) => update({ q })}
-        inputProps={{ maxLength: 200 }}
-      />
+      <div className="kept-search-line">
+        <TextField
+          className="kept-search-field"
+          label={t`Search`}
+          value={f.q}
+          onChange={(q) => update({ q })}
+          inputProps={{ maxLength: 200, enterKeyHint: 'search' }}
+        />
+        <Button
+          variant="secondary"
+          className="kept-search-enter"
+          aria-label={t`Search now`}
+          onPress={() => (document.activeElement as HTMLElement | null)?.blur()}
+        >
+          <CornerDownLeft size={18} className="rtl:-scale-x-100" aria-hidden />
+        </Button>
+        <Button
+          variant="secondary"
+          className="kept-search-enter"
+          aria-label={t`Ask the assistant`}
+          onPress={onAssistant}
+        >
+          <MessageSquare size={18} aria-hidden />
+        </Button>
+      </div>
       <PhotoSearchActions onOpen={onPhotoSearch} />
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" aria-expanded={advanced} onPress={() => setAdvanced(!advanced)}>

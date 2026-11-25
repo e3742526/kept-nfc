@@ -1,10 +1,13 @@
 import { I18nProvider } from '@lingui/react';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
+  Camera,
   ChevronRight,
+  Clock,
+  CornerDownLeft,
   FileText,
   History,
-  type Home,
+  Home,
   Inbox,
   LogOut,
   MapPin,
@@ -15,15 +18,10 @@ import {
   Palette,
   Plus,
   QrCode,
-  Radar,
-  RefreshCw,
-  Search,
   Settings,
   Sun,
   Tags,
   Trash2,
-  WifiOff,
-  X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -43,9 +41,11 @@ import { i18n, startLocale } from '@/i18n/i18n';
 import { isolate } from '@/lib/bidi';
 import { sep, useBytes } from '@/lib/format';
 import { setThemePref, type ThemePref, usePrefs, watchSystemTheme } from '@/lib/prefs';
+import { HistoryScreen, type LocalLogEntry, LogsScreen } from './activity';
 import { NativePlatformProvider, usePlatform } from './adapters';
 import { AssistantScreen } from './assistant';
 import { ScreenHeader } from './back-button';
+import { BoxPhotos } from './box-photos';
 import {
   type CaptureAIProvider,
   type CompletionState,
@@ -57,6 +57,7 @@ import { Browse, browseDefaults } from './browse';
 import { CaptureAISettings } from './capture-ai';
 import { CaptureForm, NewBoxForm } from './capture-form';
 import { type Destination, defaultDestination, writableLocations } from './destination';
+import { HomeDashboard } from './home';
 import {
   type InventoryCache,
   inventoryPath,
@@ -122,21 +123,29 @@ type Screen =
   | { kind: 'browse' }
   | { kind: 'visualSearch'; intent: VisualSearchIntent }
   | { kind: 'photoReview'; id: string }
+  | { kind: 'photoLibrary'; target: Target; name: string; location: string }
+  | { kind: 'settings' }
+  | { kind: 'ai' }
+  | { kind: 'history' }
+  | { kind: 'logs' }
   | { kind: 'more' };
 
-type TabKey = 'home' | 'capture' | 'scan' | 'more' | 'assistant';
+type TabKey = 'home' | 'capture' | 'scan' | 'more';
 
 function tabFor(screen: Screen): TabKey {
   switch (screen.kind) {
     case 'capture':
+    case 'new':
       return 'capture';
     case 'photoReview':
       return 'capture';
     case 'identify':
       return 'scan';
-    case 'assistant':
-      return 'assistant';
     case 'more':
+    case 'settings':
+    case 'ai':
+    case 'history':
+    case 'logs':
     case 'trash':
     case 'unplaced':
     case 'labelSheets':
@@ -163,11 +172,10 @@ function TabBar({
 }) {
   const { t } = useLingui();
   const tabs = [
-    { key: 'home', label: t`Search`, Icon: Search },
+    { key: 'home', label: t`Home`, Icon: Home },
     { key: 'capture', label: t`Add`, Icon: Plus },
     { key: 'scan', label: t`Scan`, Icon: QrCode },
     { key: 'more', label: t`More`, Icon: Settings },
-    { key: 'assistant', label: t`Assistant`, Icon: MessageSquare },
   ] as const;
   return (
     <nav className="kept-tabbar">
@@ -192,33 +200,36 @@ function TabBar({
   );
 }
 
-type TileTone = 'amber' | 'info' | 'ok' | 'violet' | 'danger' | 'neutral';
-
-/** Icon tile for the compartmentalized home and More grids. */
-function ActionTile({
+/** One row of a More or Settings group: icon, label, chevron. */
+function MoreRow({
   label,
-  onPress,
-  isDisabled,
+  hint,
   Icon,
-  tone = 'neutral',
+  isDisabled,
+  onPress,
 }: {
   label: string;
-  onPress: () => void;
-  isDisabled?: boolean;
+  hint?: string;
   Icon: typeof Home;
-  tone?: TileTone;
+  isDisabled?: boolean;
+  onPress: () => void;
 }) {
   return (
     <Button
-      variant="secondary"
-      className={`kept-tile kept-tile-${tone}`}
+      variant="ghost"
+      className="kept-more-row"
       isDisabled={isDisabled}
+      aria-label={label}
       onPress={onPress}
     >
-      <span className="kept-tile-icon" aria-hidden>
-        <Icon size={20} />
+      <span className="kept-recent-icon" aria-hidden>
+        <Icon size={16} />
       </span>
-      <span className="kept-tile-label">{label}</span>
+      <span className="kept-more-row-body">
+        <span className="kept-more-row-label">{label}</span>
+        {hint && <span className="kept-more-row-hint">{hint}</span>}
+      </span>
+      <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
     </Button>
   );
 }
@@ -553,8 +564,6 @@ export function Inventory({
   const [retargetBoxId, setRetargetBoxId] = useState<string | null>(null);
   const [openingPendingMedia, setOpeningPendingMedia] = useState<string>();
   const [query, setQuery] = useState('');
-  const [locationFilter, setLocationFilter] = useState<string | null>(null);
-  const [roomFilter, setRoomFilter] = useState<string | null>(null);
   const [unplacedLocationFilter, setUnplacedLocationFilter] = useState<string | null>(null);
   const [found, setFound] = useState<SearchResponse>();
   const [cachedSearch, setCachedSearch] = useState(false);
@@ -577,7 +586,8 @@ export function Inventory({
     backStack.current = [];
     setScreen({ kind: 'home' });
   };
-  const goTab = async (tab: TabKey) => {
+  const goTab = async (tab: TabKey | 'assistant') => {
+    if (tab === 'assistant' && screen.kind === 'assistant') return;
     if (tab === 'home' && screen.kind === 'home') {
       // Re-tapping the active Search tab jumps straight into the search field.
       window.scrollTo?.({ top: 0 });
@@ -601,8 +611,7 @@ export function Inventory({
         );
   const openVisualRecord = (target: Target) =>
     pushScreen({ kind: 'record', target, backToVisual: true });
-  const open = (target: Target, backToRooms = false) => {
-    setScreen({ kind: 'record', target, backToRooms });
+  const rememberBox = (target: Target) => {
     if (
       target.kind !== 'thing' ||
       !cacheRef.current?.things.find((item) => item.id === target.id)?.isContainer
@@ -613,17 +622,15 @@ export function Inventory({
     setRecentBoxes(next);
     void adapters.outbox.setValue(connection, 'recentBoxes', JSON.stringify(next)).catch(() => {});
   };
+  const open = (target: Target, backToRooms = false) => {
+    setScreen({ kind: 'record', target, backToRooms });
+    rememberBox(target);
+  };
 
   const display = useCallback((next: InventoryCache | undefined) => {
     cacheRef.current = next;
     if (mounted.current) {
       setCache(next);
-      setLocationFilter((selected) =>
-        next?.locations.some((location) => location.id === selected) ? selected : null,
-      );
-      setRoomFilter((selected) =>
-        next?.places.some((place) => place.id === selected) ? selected : null,
-      );
       setUnplacedLocationFilter((selected) =>
         next?.locations.some((location) => location.id === selected) ? selected : null,
       );
@@ -686,6 +693,22 @@ export function Inventory({
     },
     [t],
   );
+
+  const logEntries: LocalLogEntry[] = pending.map((entry) => {
+    const fields = draftFields(entry.capture);
+    return {
+      id: entry.capture.id,
+      name: fields.name?.trim() || t`Untitled`,
+      takenAt: entry.capture.takenAt,
+      reason: entry.failure ?? 'waiting',
+      message: entry.failure ? failureText(entry.failure, fields) : t`Waiting to sync.`,
+      destination:
+        cache?.things.find((item) => item.id === (fields.attachToThingId ?? fields.boxId))?.name ??
+        cache?.places.find((item) => item.id === fields.placeId)?.name ??
+        t`Destination`,
+      files: entry.capture.files.length,
+    };
+  });
 
   const refresh = useCallback(
     (includeFailed = false) => {
@@ -995,17 +1018,6 @@ export function Inventory({
         kind: 'box',
       }
     : cache && defaultDestination(cache, defaultLocationId);
-  const filterableRooms =
-    cache?.places.filter(
-      (place) => !place.isUnplaced && (!locationFilter || place.locationId === locationFilter),
-    ) ?? [];
-  const visibleBoxes = query.trim()
-    ? currentBoxes
-    : currentBoxes.filter((thing) => {
-        if (locationFilter && thing.locationId !== locationFilter) return false;
-        if (roomFilter && thing.placeId !== roomFilter) return false;
-        return true;
-      });
   const localResults = cache && cachedSearch ? localInventorySearch(cache, query) : [];
   const things = query.trim()
     ? (found?.things.items.map((thing) => ({
@@ -1021,10 +1033,7 @@ export function Inventory({
         ...thing,
         path: cache ? inventoryPath(cache, thing).join(' › ') : '',
       })))
-    : visibleBoxes.map((thing) => ({
-        ...thing,
-        path: cache ? inventoryPath(cache, thing).join(' › ') : '',
-      }));
+    : [];
 
   // Unsynced and held captures: above the content everywhere except the add form, where they
   // sit below it so the description field stays the first thing on screen.
@@ -1292,40 +1301,65 @@ export function Inventory({
     </>
   );
 
+  // Item | Box: the Add tab makes either. Hidden when adding into a given box or room.
+  const addTabs =
+    (screen.kind === 'capture' && !screen.destination && !screen.back) ||
+    (screen.kind === 'new' && !screen.place) ? (
+      <div className="kept-add-tabs">
+        <Button
+          variant="secondary"
+          size="small"
+          className="kept-add-tab"
+          aria-pressed={screen.kind === 'capture'}
+          onPress={() => {
+            if (screen.kind === 'new') setScreen({ kind: 'capture' });
+          }}
+        >
+          <Plus size={16} aria-hidden />
+          <Trans>Add item</Trans>
+        </Button>
+        <Button
+          variant="secondary"
+          size="small"
+          className="kept-add-tab"
+          aria-pressed={screen.kind === 'new'}
+          isDisabled={!online || !canWrite}
+          onPress={async () => {
+            if (screen.kind !== 'capture') return;
+            if (!(await canLeaveCapture.current?.())) return;
+            setScreen({ kind: 'new' });
+          }}
+        >
+          <Package size={16} aria-hidden />
+          <Trans>Add box</Trans>
+        </Button>
+      </div>
+    ) : null;
+
   return (
     <>
-      <header className="kept-appbar">
-        <div className="kept-appbar-brand">
-          <AppMark size={28} />
-          <h1 className="kept-appbar-name m-0">SheepKeep</h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="small"
-          className="kept-sync-pill"
-          isDisabled={working}
-          aria-label={online ? t`Refresh` : t`Offline`}
-          onPress={() => void refresh()}
-        >
-          <span
-            className={`kept-sync-dot ${online ? 'kept-sync-dot-ok' : 'kept-sync-dot-warn'}`}
-            aria-hidden
-          />
-          {online ? (
-            <RefreshCw size={14} className={working ? 'kept-spin' : undefined} aria-hidden />
-          ) : (
-            <>
-              <WifiOff size={14} aria-hidden />
-              <span>
-                <Trans>Offline</Trans>
-              </span>
-            </>
-          )}
-        </Button>
-      </header>
+      {(screen.kind === 'home' || screen.kind === 'assistant') && (
+        <header className="kept-appbar">
+          <div className="kept-appbar-brand">
+            <AppMark size={28} />
+            <h1 className="kept-appbar-name m-0">SheepKeep</h1>
+          </div>
+          <Button
+            variant="ghost"
+            size="small"
+            className="kept-appbar-assistant"
+            aria-label={t`Assistant`}
+            aria-current={screen.kind === 'assistant' ? 'page' : undefined}
+            onPress={() => void goTab('assistant')}
+          >
+            <MessageSquare size={20} aria-hidden />
+          </Button>
+        </header>
+      )}
       {screen.kind === 'home' && (
         <div className="kept-search" ref={searchRef}>
           <TextField
+            className="kept-search-field"
             aria-label={t`Search inventory`}
             placeholder={t`Search inventory`}
             value={query}
@@ -1338,6 +1372,30 @@ export function Inventory({
               autoCorrect: 'off',
             }}
           />
+          {adapters.visualSearch && (
+            <Button
+              variant="secondary"
+              className="kept-search-enter"
+              aria-label={t`Photo search`}
+              onPress={() =>
+                pushScreen({ kind: 'visualSearch', intent: { mode: 'photo', text: query } })
+              }
+            >
+              <Camera size={18} aria-hidden />
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            className="kept-search-enter"
+            aria-label={t`Open in Browse`}
+            isDisabled={!cache}
+            onPress={() => {
+              setBrowseFilters({ ...browseFilters, q: query.trim() });
+              pushScreen({ kind: 'browse' });
+            }}
+          >
+            <CornerDownLeft size={18} className="rtl:-scale-x-100" aria-hidden />
+          </Button>
         </div>
       )}
       <div className="mb-4 grid gap-2">
@@ -1346,158 +1404,88 @@ export function Inventory({
             {status}
           </p>
         )}
-        {screen.kind === 'home' && savedFindTarget && (
-          <section
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface p-3"
-            aria-label={t`Saved Find target`}
-          >
-            <div className="flex min-w-0 items-center gap-2.5">
-              <span className="kept-row-lead" aria-hidden>
-                <Radar size={18} />
-              </span>
-              <div className="grid min-w-0 gap-0.5">
-                <span className="text-small text-ink-2">
-                  <Trans>Resumable Find target</Trans>
-                </span>
-                <strong className="font-semibold">
-                  <bdi>{savedFindTarget.name}</bdi>
-                </strong>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="small"
-                onPress={() => setScreen({ kind: 'find', box: savedFindTarget })}
-              >
-                <Radar size={15} aria-hidden />
-                <Trans>Continue finding</Trans>
-              </Button>
-              <Button
-                size="small"
-                variant="ghost"
-                onPress={() => {
-                  void adapters.outbox.deleteValue(connection, FIND_TARGET_KEY).catch(() => {});
-                  setSavedFindTarget(undefined);
-                }}
-              >
-                <X size={15} aria-hidden />
-                <Trans>Clear</Trans>
-              </Button>
-            </div>
-          </section>
-        )}
         {screen.kind !== 'capture' && queuePanels}
       </div>
       {screen.kind === 'home' && (
         <section className="grid gap-4">
-          <PhotoSearchActions
-            onOpen={(mode) =>
-              pushScreen({
-                kind: 'visualSearch',
-                intent: {
-                  mode,
-                  text: query,
-                  ...(locationFilter ? { locationId: locationFilter } : {}),
-                },
-              })
-            }
-          />
-          {query.trim() ? (
-            canWrite && (
-              <Button
-                variant="secondary"
-                className="kept-phone-row kept-add-row"
-                onPress={() => pushScreen({ kind: 'capture', name: query.trim() })}
-              >
-                <span className="kept-row-lead kept-row-lead-accent" aria-hidden>
-                  <Plus size={18} />
-                </span>
-                <span className="kept-row-body">
-                  <bdi className="font-semibold">{t`Add “${isolate(query.trim())}”`}</bdi>
-                </span>
-                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-              </Button>
-            )
-          ) : (
-            <div className="kept-quick">
-              <Button
-                variant="secondary"
-                size="small"
-                isDisabled={!cache}
-                onPress={() => pushScreen({ kind: 'browse' })}
-              >
-                <Trans>Browse</Trans>
-              </Button>
-              <Button
-                variant="secondary"
-                size="small"
-                className="kept-quick-button"
-                isDisabled={!cache}
-                onPress={() => pushScreen({ kind: 'rooms' })}
-              >
-                <MapPin size={16} aria-hidden />
-                <Trans>Rooms</Trans>
-              </Button>
-              <Button
-                variant="secondary"
-                size="small"
-                className="kept-quick-button"
-                isDisabled={!online || !canWrite}
-                onPress={() => pushScreen({ kind: 'new' })}
-              >
-                <Package size={16} aria-hidden />
-                <Trans>Create box</Trans>
-              </Button>
-            </div>
+          {!query.trim() && (
+            <HomeDashboard
+              connection={connection}
+              cache={cache}
+              online={online}
+              working={working}
+              pendingCount={pending.length}
+              failedCount={pending.filter((entry) => entry.failure).length}
+              canWrite={canWrite}
+              onItems={() => {
+                setBrowseFilters({
+                  ...browseDefaults,
+                  grid: browseFilters.grid,
+                  sort: browseFilters.sort,
+                });
+                pushScreen({ kind: 'browse' });
+              }}
+              onBoxes={() => {
+                setBrowseFilters({
+                  ...browseDefaults,
+                  mode: 'bins',
+                  grid: browseFilters.grid,
+                  sort: browseFilters.sort,
+                });
+                pushScreen({ kind: 'browse' });
+              }}
+              onCategories={() => {
+                setBrowseFilters({
+                  ...browseDefaults,
+                  mode: 'categories',
+                  grid: browseFilters.grid,
+                  sort: browseFilters.sort,
+                });
+                pushScreen({ kind: 'browse' });
+              }}
+              onRooms={() => pushScreen({ kind: 'rooms' })}
+              onUnplaced={() => pushScreen({ kind: 'unplaced' })}
+              onAdd={() => void goTab('capture')}
+              onScan={() => void goTab('scan')}
+              onLabels={() => pushScreen({ kind: 'labelSheets' })}
+              onReview={() => pushScreen({ kind: 'batches' })}
+              onOpen={open}
+              onRetry={() => void refresh(true)}
+              onSettings={() => pushScreen({ kind: 'settings' })}
+              findName={savedFindTarget?.name ?? undefined}
+              onHistory={() => pushScreen({ kind: 'history' })}
+              onFind={() => savedFindTarget && setScreen({ kind: 'find', box: savedFindTarget })}
+            />
           )}
-          {!query.trim() && ((cache?.locations.length ?? 0) > 1 || filterableRooms.length > 1) && (
-            <div className="kept-filters">
-              {(cache?.locations.length ?? 0) > 1 && (
-                <Select
-                  label={t`Location`}
-                  items={[
-                    { id: 'all', name: t`All` },
-                    ...(cache?.locations ?? []).map((location) => ({
-                      id: location.id,
-                      name: location.name,
-                    })),
-                  ]}
-                  selectedKey={locationFilter ?? 'all'}
-                  onSelectionChange={(key) => {
-                    setLocationFilter(key === null || key === 'all' ? null : String(key));
-                    setRoomFilter(null);
-                  }}
+          {query.trim() && (
+            <>
+              <PhotoSearchActions
+                onOpen={(mode) =>
+                  pushScreen({
+                    kind: 'visualSearch',
+                    intent: {
+                      mode,
+                      text: query,
+                    },
+                  })
+                }
+              />
+              {canWrite && (
+                <Button
+                  variant="secondary"
+                  className="kept-phone-row kept-add-row"
+                  onPress={() => pushScreen({ kind: 'capture', name: query.trim() })}
                 >
-                  {(item) => (
-                    <SelectItem id={item.id} textValue={item.name}>
-                      <bdi>{item.name}</bdi>
-                    </SelectItem>
-                  )}
-                </Select>
+                  <span className="kept-row-lead kept-row-lead-accent" aria-hidden>
+                    <Plus size={18} />
+                  </span>
+                  <span className="kept-row-body">
+                    <bdi className="font-semibold">{t`Add “${isolate(query.trim())}”`}</bdi>
+                  </span>
+                  <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
+                </Button>
               )}
-              {filterableRooms.length > 1 && (
-                <Select
-                  label={t`Room`}
-                  items={[
-                    { id: 'all', name: t`All` },
-                    ...filterableRooms.map((place) => ({
-                      id: place.id,
-                      name: place.name,
-                    })),
-                  ]}
-                  selectedKey={roomFilter ?? 'all'}
-                  onSelectionChange={(key) =>
-                    setRoomFilter(key === null || key === 'all' ? null : String(key))
-                  }
-                >
-                  {(item) => (
-                    <SelectItem id={item.id} textValue={item.name}>
-                      <bdi>{item.name}</bdi>
-                    </SelectItem>
-                  )}
-                </Select>
-              )}
-            </div>
+            </>
           )}
           {cache && !online && (
             <p className="text-small text-ink-2">
@@ -1509,74 +1497,83 @@ export function Inventory({
               <Trans>Only part of your inventory is cached.</Trans>
             </p>
           )}
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="kept-card-title text-title">
-              <Package size={18} aria-hidden />
-              <span>{query.trim() ? t`Search results` : t`Boxes`}</span>
-            </h2>
-            {!query.trim() && things.length > 0 && (
-              <span className="kept-badge kept-badge-neutral">{things.length}</span>
-            )}
-          </div>
-          <ThingList items={things} onOpen={open} origin={online ? connection.origin : undefined} />
-          {(
-            found?.places ??
-            (query.trim() && cachedSearch
-              ? (cache?.places.filter(
-                  (place) =>
-                    !place.isUnplaced &&
-                    place.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
-                ) ?? [])
-              : [])
-          ).map((place) => (
-            <Button
-              key={place.id}
-              variant="secondary"
-              className="kept-phone-row"
-              onPress={() => open({ id: place.id, locationId: place.locationId, kind: 'place' })}
-            >
-              <span className="kept-row-lead" aria-hidden>
-                <MapPin size={18} />
-              </span>
-              <span className="kept-row-body">
-                <bdi className="font-semibold">{place.name}</bdi>
-              </span>
-              <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-            </Button>
-          ))}
-          {found?.documents.items
-            .filter((entry) => entry.subject.kind === 'thing' || entry.subject.kind === 'place')
-            .map((doc) => (
-              <Button
-                key={doc.attachmentId}
-                variant="secondary"
-                className="kept-phone-row"
-                onPress={() =>
-                  open({
-                    id: doc.subject.id,
-                    locationId: doc.locationId,
-                    kind: doc.subject.kind === 'place' ? 'place' : 'thing',
-                  })
-                }
-              >
-                <span className="kept-row-lead" aria-hidden>
-                  <FileText size={18} />
-                </span>
-                <span className="kept-row-body">
-                  <bdi className="font-semibold">{doc.subject.name ?? t`Document`}</bdi>
-                  {doc.snippet && (
-                    <span className="text-small font-normal text-ink-2">
-                      <bdi>{doc.snippet}</bdi>
+          {query.trim() && (
+            <>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="kept-card-title text-title">
+                  <Package size={18} aria-hidden />
+                  <span>{query.trim() ? t`Search results` : t`Boxes`}</span>
+                </h2>
+                {!query.trim() && things.length > 0 && (
+                  <span className="kept-badge kept-badge-neutral">{things.length}</span>
+                )}
+              </div>
+              <ThingList
+                items={things}
+                onOpen={open}
+                origin={online ? connection.origin : undefined}
+              />
+              {(
+                found?.places ??
+                (query.trim() && cachedSearch
+                  ? (cache?.places.filter(
+                      (place) =>
+                        !place.isUnplaced &&
+                        place.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+                    ) ?? [])
+                  : [])
+              ).map((place) => (
+                <Button
+                  key={place.id}
+                  variant="secondary"
+                  className="kept-phone-row"
+                  onPress={() =>
+                    open({ id: place.id, locationId: place.locationId, kind: 'place' })
+                  }
+                >
+                  <span className="kept-row-lead" aria-hidden>
+                    <MapPin size={18} />
+                  </span>
+                  <span className="kept-row-body">
+                    <bdi className="font-semibold">{place.name}</bdi>
+                  </span>
+                  <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
+                </Button>
+              ))}
+              {found?.documents.items
+                .filter((entry) => entry.subject.kind === 'thing' || entry.subject.kind === 'place')
+                .map((doc) => (
+                  <Button
+                    key={doc.attachmentId}
+                    variant="secondary"
+                    className="kept-phone-row"
+                    onPress={() =>
+                      open({
+                        id: doc.subject.id,
+                        locationId: doc.locationId,
+                        kind: doc.subject.kind === 'place' ? 'place' : 'thing',
+                      })
+                    }
+                  >
+                    <span className="kept-row-lead" aria-hidden>
+                      <FileText size={18} />
                     </span>
-                  )}
-                </span>
-                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-              </Button>
-            ))}
-          {!query.trim() && cache && things.length === 0 && (
-            <p className="text-ink-2">
-              <Trans>No boxes yet.</Trans>
-            </p>
+                    <span className="kept-row-body">
+                      <bdi className="font-semibold">{doc.subject.name ?? t`Document`}</bdi>
+                      {doc.snippet && (
+                        <span className="text-small font-normal text-ink-2">
+                          <bdi>{doc.snippet}</bdi>
+                        </span>
+                      )}
+                    </span>
+                    <ChevronRight
+                      size={18}
+                      className="kept-row-chevron rtl:rotate-180"
+                      aria-hidden
+                    />
+                  </Button>
+                ))}
+            </>
           )}
           {query.trim() &&
             (cachedSearch || found) &&
@@ -1623,6 +1620,9 @@ export function Inventory({
           onCapture={(destination, location) =>
             setScreen({ kind: 'capture', destination, location, back: screen.target })
           }
+          onPhotoLibrary={(name, location) =>
+            pushScreen({ kind: 'photoLibrary', target: screen.target, name, location })
+          }
           onInventoryChanged={() => {
             void refresh();
           }}
@@ -1634,6 +1634,7 @@ export function Inventory({
       )}
       {screen.kind === 'new' && cache && (
         <NewBoxForm
+          headerExtra={addTabs}
           connection={connection}
           cache={cache}
           place={cache.places.find((entry) => entry.id === screen.place?.id)}
@@ -1661,6 +1662,7 @@ export function Inventory({
       )}
       {screen.kind === 'capture' && (
         <CaptureForm
+          headerExtra={addTabs}
           connection={connection}
           box={screen.destination}
           cache={cache}
@@ -1810,10 +1812,14 @@ export function Inventory({
             setBrowseFilters(next);
           }}
           onBack={goBack}
-          onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onOpen={(target) => {
+            pushScreen({ kind: 'record', target, backToBrowse: true });
+            rememberBox(target);
+          }}
           onPhotoSearch={(mode) =>
             pushScreen({ kind: 'visualSearch', intent: { mode, text: browseFilters.q } })
           }
+          onAssistant={() => pushScreen({ kind: 'assistant' })}
           onRooms={() => pushScreen({ kind: 'rooms' })}
           onInventoryChanged={() => {
             void refresh();
@@ -1843,10 +1849,122 @@ export function Inventory({
             <Settings size={18} aria-hidden />
             <Trans>More</Trans>
           </h2>
-          <section className="kept-card" aria-label={t`Settings`}>
+          <div className="kept-rows">
+            <MoreRow
+              label={t`Settings`}
+              Icon={Settings}
+              onPress={() => pushScreen({ kind: 'settings' })}
+            />
+          </div>
+          <div className="kept-rows">
+            <MoreRow
+              label={t`Print label sheets`}
+              Icon={Tags}
+              isDisabled={!cache || !online}
+              onPress={() => pushScreen({ kind: 'labelSheets' })}
+            />
+            <MoreRow
+              label={t`Recent capture batches`}
+              Icon={Inbox}
+              isDisabled={!online}
+              onPress={() => pushScreen({ kind: 'batches' })}
+            />
+            <MoreRow
+              label={t`Unplaced`}
+              Icon={MapPin}
+              isDisabled={!cache}
+              onPress={() => pushScreen({ kind: 'unplaced' })}
+            />
+            <MoreRow
+              label={t`Trash`}
+              Icon={Trash2}
+              isDisabled={!online}
+              onPress={() => pushScreen({ kind: 'trash' })}
+            />
+            <MoreRow
+              label={t`History`}
+              Icon={Clock}
+              isDisabled={!online}
+              onPress={() => pushScreen({ kind: 'history' })}
+            />
+          </div>
+          <footer className="pt-2">
+            <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
+          </footer>
+        </section>
+      )}
+      {screen.kind === 'photoLibrary' && (
+        <BoxPhotos
+          connection={connection}
+          target={screen.target}
+          name={screen.name}
+          online={online}
+          canEdit={
+            cache?.locations.find((location) => location.id === screen.target.locationId)?.role !==
+            'viewer'
+          }
+          onBack={goBack}
+          onAdd={() =>
+            setScreen({
+              kind: 'capture',
+              destination: { ...screen.target, name: screen.name, kind: 'photos' },
+              location: screen.location,
+              back: screen.target,
+            })
+          }
+          onChanged={() => void refresh()}
+          onAuthError={onSignOut}
+        />
+      )}
+      {screen.kind === 'ai' && (
+        <section className="grid gap-4">
+          <ScreenHeader
+            title={<Trans>AI and photo suggestions</Trans>}
+            onBack={goBack}
+            icon={<MessageSquare size={18} aria-hidden />}
+          />
+          <CaptureAISettings
+            connection={connection}
+            preferred={preferredAI}
+            onPreferred={(provider) => void saveDefault('defaultPhotoAI', provider)}
+          />
+          {preferenceError && (
+            <p role="alert">
+              <Trans>Could not save settings.</Trans>
+            </p>
+          )}
+        </section>
+      )}
+      {screen.kind === 'history' && (
+        <HistoryScreen
+          connection={connection}
+          online={online}
+          onBack={goBack}
+          onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onAuthError={onSignOut}
+        />
+      )}
+      {screen.kind === 'logs' && (
+        <LogsScreen
+          connection={connection}
+          online={online}
+          local={logEntries}
+          onBack={goBack}
+          onOpen={(target) => pushScreen({ kind: 'record', target, backToBrowse: true })}
+          onAuthError={onSignOut}
+        />
+      )}
+      {screen.kind === 'settings' && (
+        <section className="grid gap-4">
+          <ScreenHeader
+            title={<Trans>Settings</Trans>}
+            onBack={goBack}
+            icon={<Settings size={18} aria-hidden />}
+          />
+          <section className="kept-card" aria-label={t`Appearance`}>
             <h3 className="kept-card-title text-small text-ink-2">
               <Palette size={15} aria-hidden />
-              <Trans>Settings</Trans>
+              <Trans>Appearance</Trans>
             </h3>
             <ThemeSwitch />
             <PaletteSwitch />
@@ -1868,46 +1986,19 @@ export function Inventory({
               </Select>
             )}
           </section>
-          <CaptureAISettings
-            connection={connection}
-            preferred={preferredAI}
-            onPreferred={(provider) => void saveDefault('defaultPhotoAI', provider)}
-          />
+          <section className="kept-rows" aria-label={t`Advanced`}>
+            <MoreRow
+              label={t`AI and photo suggestions`}
+              Icon={MessageSquare}
+              onPress={() => pushScreen({ kind: 'ai' })}
+            />
+            <MoreRow label={t`Logs`} Icon={FileText} onPress={() => pushScreen({ kind: 'logs' })} />
+          </section>
           {preferenceError && (
             <p role="alert">
               <Trans>Could not save settings.</Trans>
             </p>
           )}
-          <div className="kept-tiles">
-            <ActionTile
-              label={t`Print label sheets`}
-              Icon={Tags}
-              tone="amber"
-              isDisabled={!cache || !online}
-              onPress={() => pushScreen({ kind: 'labelSheets' })}
-            />
-            <ActionTile
-              label={t`Recent capture batches`}
-              Icon={History}
-              tone="violet"
-              isDisabled={!online}
-              onPress={() => pushScreen({ kind: 'batches' })}
-            />
-            <ActionTile
-              label={t`Unplaced`}
-              Icon={Inbox}
-              tone="neutral"
-              isDisabled={!cache}
-              onPress={() => pushScreen({ kind: 'unplaced' })}
-            />
-            <ActionTile
-              label={t`Trash`}
-              Icon={Trash2}
-              tone="danger"
-              isDisabled={!online}
-              onPress={() => pushScreen({ kind: 'trash' })}
-            />
-          </div>
           <section className="kept-card" aria-label={t`Account`}>
             <h3 className="kept-card-title text-small text-ink-2">
               <Trans>Account</Trans>
@@ -1915,6 +2006,11 @@ export function Inventory({
             <p className="break-all text-small text-ink-2">
               <bdi>{connection.origin}</bdi>
             </p>
+            {stats && (
+              <p className="text-small text-ink-2">
+                {t`Saved on this iPhone: ${formatBytes(stats.pendingBytes + stats.cacheBytes)} · ${stats.pendingCount} waiting`}
+              </p>
+            )}
             <Button
               variant="secondary"
               size="small"
@@ -1925,9 +2021,6 @@ export function Inventory({
               <Trans>Sign out</Trans>
             </Button>
           </section>
-          <footer className="pt-2">
-            <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
-          </footer>
         </section>
       )}
       {showTabs && <TabBar tab={tabFor(screen)} pendingCount={pending.length} onTab={goTab} />}
