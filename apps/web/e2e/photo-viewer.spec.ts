@@ -42,7 +42,7 @@ async function storageFor(browser: Browser): Promise<string> {
 }
 
 /** The TV's page, signed in, in a context shaped like the running project. */
-async function tvPage(browser: Browser): Promise<Page> {
+async function tvPage(browser: Browser, tallPhoto = false): Promise<Page> {
   const use = test.info().project.use;
   const context = await browser.newContext({
     baseURL: BASE,
@@ -52,7 +52,19 @@ async function tvPage(browser: Browser): Promise<Page> {
     hasTouch: use.hasTouch ?? false,
     timezoneId: 'Africa/Cairo',
     locale: 'en-GB',
+    serviceWorkers: tallPhoto ? 'block' : 'allow',
   });
+  if (tallPhoto) {
+    // Both the fitted and zoomed views load the same image, even when the viewer remounts it.
+    await context.route('**/f/**', (route) =>
+      route.request().resourceType() === 'image'
+        ? route.fulfill({
+            contentType: 'image/svg+xml',
+            body: '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="2400"><rect width="600" height="2400" fill="#c33"/></svg>',
+          })
+        : route.continue(),
+    );
+  }
   const page = await context.newPage();
   await page.goto(`/t/${TV.code}`);
   await expect(page.getByRole('heading', { name: TV.name, level: 1 })).toBeVisible();
@@ -102,32 +114,12 @@ test('the photo opens full screen, zooms, and Escape and Back close it', async (
 });
 
 test('a tall photo fits the screen whole, top to bottom (#183)', async ({ browser }) => {
-  const page = await tvPage(browser);
+  const page = await tvPage(browser, true);
   await page.getByRole('button', { name: 'Photo 1 of 1' }).click();
   const viewer = page.getByRole('dialog', { name: 'Photos' });
   const image = viewer.getByRole('img', { name: 'Photo 1 of 1' });
   await expect(image).toBeVisible();
-  // The seed's photo is wide: a 600 × 2400 picture, drawn in the page, takes its place. A blob:
-  // URL, as the CSP's img-src allows blob: and not data:.
-  await image.evaluate(
-    (img: HTMLImageElement) =>
-      new Promise<void>((done, fail) => {
-        const c = document.createElement('canvas');
-        c.width = 600;
-        c.height = 2400;
-        const g = c.getContext('2d');
-        if (g) {
-          g.fillStyle = '#c33';
-          g.fillRect(0, 0, 600, 2400);
-        }
-        img.onload = () => done();
-        img.onerror = () => fail(new Error('the tall photo did not load'));
-        c.toBlob((blob) => {
-          if (blob) img.src = URL.createObjectURL(blob);
-          else fail(new Error('no blob'));
-        }, 'image/png');
-      }),
-  );
+  await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.naturalHeight)).toBe(2400);
   // Fitted, its box is the screen's (object-fit: contain draws it whole inside): before the fix
   // it grew with the photo's width, 375 × 1500 on a phone, and only its top showed.
   const box = await image.boundingBox();

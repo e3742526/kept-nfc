@@ -84,6 +84,7 @@ async function refusal(who: Person | ToolContext, name: ToolName, args: Record<s
 
 type Row = {
   name: string;
+  description: string | null;
   kind_key: string;
   parent_id: string | null;
   child_order: string;
@@ -94,7 +95,7 @@ const row = async (id: string) =>
   (
     await own<Row>(
       db,
-      'SELECT name, kind_key, parent_id, child_order, sort, row_version FROM public.places WHERE id = $1',
+      'SELECT name, description, kind_key, parent_id, child_order, sort, row_version FROM public.places WHERE id = $1',
       [id],
     )
   )[0];
@@ -143,6 +144,23 @@ describe('update_place', () => {
     // The app's Undo puts it back.
     ok(await call(t, `/api/v1/audit/${d.audit_event_id}/undo`, { as: louis, body: {} }));
     expect(await row(study)).toMatchObject({ name: 'Study', kind_key: 'room' });
+  });
+
+  it('edits and clears the description through the existing audited place update', async () => {
+    const id = await place(db, home, 'Parts cabinet');
+    const set = await data(louis, 'update_place', {
+      place_id: id,
+      fields: { description: '  Top shelf  ' },
+    });
+    expect(set.changed_fields).toEqual(['description']);
+    expect(await row(id)).toMatchObject({ description: 'Top shelf' });
+    const cleared = await data(louis, 'update_place', {
+      place_id: id,
+      fields: { description: null },
+    });
+    expect(await row(id)).toMatchObject({ description: null });
+    ok(await call(t, `/api/v1/audit/${cleared.audit_event_id}/undo`, { as: louis, body: {} }));
+    expect(await row(id)).toMatchObject({ description: 'Top shelf' });
   });
 
   it('moves a place into another, or to the top of the location (place.move, undoable)', async () => {

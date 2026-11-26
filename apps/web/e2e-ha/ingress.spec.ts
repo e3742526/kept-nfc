@@ -91,7 +91,9 @@ test.describe
       await kept.getByLabel('Email').fill('owner@example.com');
       await kept.getByLabel('Password', { exact: true }).fill('correct horse battery');
       await kept.getByRole('button', { name: 'Create account' }).click();
-      await expect(kept.getByRole('heading', { name: 'How should this Kept work?' })).toBeVisible();
+      await expect(
+        kept.getByRole('heading', { name: 'How should this SheepKeep work?' }),
+      ).toBeVisible();
       await kept.getByRole('button', { name: 'Finish setup' }).click();
       await expect(kept.getByRole('heading', { name: 'Welcome, Owner' })).toBeVisible();
 

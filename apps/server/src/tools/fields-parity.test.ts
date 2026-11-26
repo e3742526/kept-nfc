@@ -76,6 +76,7 @@ describe('add_thing and update_thing take every field the app’s forms set', ()
 const PLACE_AS_TOOL: Record<string, string> = {
   name: 'name',
   kindKey: 'kind',
+  description: 'description',
   parentId: 'parent_id',
   childOrder: 'child_order',
   custom: 'custom',

@@ -937,7 +937,7 @@ export const TOOL_DEFS = Object.freeze({
     name: 'update_place',
     title: 'Change a place',
     description:
-      'Change a place: its name, kind, parent, fields or the order inside it. `move` steps it up or down in Custom order; `turn` (where its top went) turns furniture, with `renumber`.',
+      'Change a place: its name, description, kind, parent, fields or the order inside it. `move` steps it up or down in Custom order; `turn` (where its top went) turns furniture, with `renumber`.',
     scope: 'write',
     module: null,
     since: '1.x',
@@ -948,6 +948,7 @@ export const TOOL_DEFS = Object.freeze({
         fields: z
           .object({
             name: shortText(120),
+            description: z.string().trim().max(500).nullable().describe('null clears it'),
             kind: z
               .string()
               .max(40)
