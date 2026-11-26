@@ -81,6 +81,26 @@ describe('thermal print geometry', () => {
     expect(() => thermalGeometry('thermal_2x1in', 'cut_2x1', defaultPrinterProfile(), 1)).toThrow();
   });
 
+  it.each(['portrait', 'landscape'] as const)(
+    'keeps cut clearance after opposing calibration offsets in %s',
+    (orientation) => {
+      const stock = 'thermal_4x6in';
+      const p = {
+        ...defaultPrinterProfile(),
+        orientation,
+        calibration: {
+          [stock]: { top: 0, right: 0, bottom: 0, left: 0, offsetX: -12, offsetY: 12 },
+        },
+      };
+      for (const { cell, ink } of thermalGeometry(stock, 'cut_2x2', p, 6).pages[0] ?? []) {
+        expect(ink.x).toBeGreaterThanOrEqual(cell.x + 8);
+        expect(ink.y).toBeGreaterThanOrEqual(cell.y + 8);
+        expect(ink.x + ink.w).toBeLessThanOrEqual(cell.x + cell.w - 8);
+        expect(ink.y + ink.h).toBeLessThanOrEqual(cell.y + cell.h - 8);
+      }
+    },
+  );
+
   it('recovers independent settings for two rolls on the same printer', () => {
     const large = 'thermal_4x6in';
     const micro = 'thermal_30_48x20_32';

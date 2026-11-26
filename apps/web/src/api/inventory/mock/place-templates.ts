@@ -14,6 +14,7 @@ import {
   layoutProblem,
   type PlaceLayout,
   rackUnitsProblem,
+  usesParent,
   withCount,
 } from '@kept/shared';
 import type { MockState } from '../../mock/fixtures';
@@ -181,8 +182,11 @@ export function placeTemplatesRoutes(state: MockState): MockRoute[] {
       const parentId = b.parentId ?? null;
       if (parentId && livePlace(inv(), parentId)?.locationId !== locationId) return notFound();
       const pattern =
-        b.compartmentName ?? (own ? own.compartmentName : DEFAULT_COMPARTMENT_NAMES[layout.kind]);
-      const codePattern = b.codePattern !== undefined ? b.codePattern : (own?.codePattern ?? null);
+        b.compartmentName ?? source.compartmentName ?? DEFAULT_COMPARTMENT_NAMES[layout.kind];
+      const codePattern =
+        b.codePattern !== undefined ? b.codePattern : (source.codePattern ?? null);
+      if (codePattern && usesParent(codePattern) && !b.code)
+        return err(400, 'validation', 'Give the furniture its own code.');
       const base = (over: Partial<StoredPlace>): StoredPlace => ({
         id: newId(),
         locationId,

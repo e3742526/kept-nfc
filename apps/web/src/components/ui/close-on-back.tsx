@@ -46,10 +46,10 @@ export function CloseOnBack() {
   const overlay = useContext(OverlayTriggerStateContext);
   const close = useRef(overlay?.close);
   close.current = overlay?.close;
-  const present = !!overlay;
+  const isOpen = overlay?.isOpen === true;
 
   useEffect(() => {
-    if (!present) return;
+    if (!isOpen) return;
     // One above the entry it opens on: the next modal up when stacked. Read from the history, not
     // counted: a modal still leaving (its exit animation) while the next one opens, or an entry a
     // reload kept, would otherwise put two modals at one depth.
@@ -77,7 +77,7 @@ export function CloseOnBack() {
           window.history.back();
       }, 0);
     };
-  }, [present]);
+  }, [isOpen]);
 
   return null;
 }

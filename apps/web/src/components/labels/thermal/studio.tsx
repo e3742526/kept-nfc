@@ -8,22 +8,25 @@ import {
   printerOnStock,
   profileForBatch,
   savePrinterStock,
+  supportsDrawerTemplate,
   ThermalBatchSpecSchema,
   type ThermalLayout,
+  type WorkshopIcon,
 } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import { liveQuery } from 'dexie';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CreateLabelBatchBody, LabelBatch } from '@/api/capture/types';
-import { Notice, useErrorText } from '@/components/page';
+import type { CreateLabelBatchBody, LabelBatch, LabelCellContent } from '@/api/capture/types';
+import { ErrorState, Notice, useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
+import { sep } from '@/lib/format';
 import { useOnline } from '@/lib/online';
 import { useQrEncoder } from '../qr';
 import type { PrintApi } from './api';
 import {
   calibrationDocument,
   DEFAULT_THERMAL_OPTIONS,
-  type ThermalContent,
   type ThermalDocument,
   ThermalFitError,
   thermalDocument,
@@ -56,10 +59,11 @@ const initialStock = COMPACT_THERMAL_STOCK;
 const stocksMatch = (stock: string, layout: ThermalLayout) =>
   stock === 'thermal_4x6in' ? layout : 'single';
 
-type Prepared =
+type Prepared = { queue?: string | undefined } & (
   | { kind: 'calibration'; doc: ThermalDocument }
   | { kind: 'local'; job: PrintManifest; doc: ThermalDocument }
-  | { kind: 'server'; batch: LabelBatch; doc: ThermalDocument };
+  | { kind: 'server'; batch: LabelBatch; doc: ThermalDocument }
+);
 
 export function ThermalStudio({
   owner,
@@ -68,6 +72,7 @@ export function ThermalStudio({
   nativeOutput,
   batch,
   reprintStock,
+  suggestIcon,
   onSaved,
 }: {
   owner: string;
@@ -76,6 +81,7 @@ export function ThermalStudio({
   nativeOutput?: NativeThermalOutput | undefined;
   batch?: LabelBatch | undefined;
   reprintStock?: string | undefined;
+  suggestIcon?: ((photo: File) => Promise<WorkshopIcon | undefined>) | undefined;
   onSaved?: (batch: LabelBatch) => void;
 }) {
   const { t } = useLingui();
@@ -95,7 +101,10 @@ export function ThermalStudio({
   const [count, setCount] = useState(source.blankCount ?? 1);
   const [category, setCategory] = useState(batch?.thermal?.category ?? '');
   const [contents, setContents] = useState(batch?.thermal?.contents ?? '');
-  const [labels, setLabels] = useState<ThermalContent[]>(() => (batch ? batchLabels(batch) : []));
+  const [loaded, setLoaded] = useState<{ labels: LabelCellContent[] } | { error: unknown } | null>(
+    null,
+  );
+  const [previewRetry, setPreviewRetry] = useState(0);
   const [jobs, setJobs] = useState<PrintManifest[]>([]);
   const [selected, setSelected] = useState<Prepared | null>(null);
   const [pdf, setPdf] = useState<Uint8Array<ArrayBuffer> | null>(null);
@@ -104,17 +113,14 @@ export function ThermalStudio({
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const inFlight = useRef(false);
+  const selectedJobId = selected?.kind === 'local' ? selected.job.id : undefined;
+  const selectedDocument = selected?.doc;
   const locationId = source.locationId;
   const newNumbered = source.kind === 'blank' && !batch;
   const seriesPrefix = mode === 'temporary' ? 'TMP' : prefix;
-  const spec = printSpec(
-    stock,
-    layout,
-    profile,
-    options,
-    mode === 'category' || batch ? category : '',
-    contents,
-  );
+  const draftCategory = mode === 'category' || batch ? category.trim() : '';
+  const draftContents = contents.trim();
+  const spec = printSpec(stock, layout, profile, options, draftCategory, draftContents);
 
   useEffect(() => {
     if (online) void loadThermalPdf().catch(() => {});
@@ -128,7 +134,7 @@ export function ThermalStudio({
         if (!active) return;
         if (row) {
           setProfiles(row.profiles);
-          if (row.address) setAddress(row.address);
+          if (row.address) setAddress((current) => current || row.address || '');
         }
         const saved = row?.profiles.find((item) => item.id === row.profileId);
         if (reprintStock) {
@@ -205,18 +211,47 @@ export function ThermalStudio({
   }, [api, owner, locationId, online]);
 
   useEffect(() => {
+    if (!selectedJobId) return;
+    const subscription = liveQuery(() => printStore.jobs.get(selectedJobId)).subscribe({
+      next(job) {
+        setSelected((old) => {
+          if (old?.kind !== 'local' || old.job.id !== selectedJobId) return old;
+          const registration = job?.registration ?? 'blocked';
+          return old.job.registration === registration
+            ? old
+            : { ...old, job: job ?? { ...old.job, registration } };
+        });
+      },
+      error() {
+        setSelected((old) =>
+          old?.kind === 'local' && old.job.id === selectedJobId
+            ? { ...old, job: { ...old.job, registration: 'blocked' } }
+            : old,
+        );
+      },
+    });
+    return () => subscription.unsubscribe();
+  }, [selectedJobId]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reconnecting or requesting a retry reloads the draft.
+  useEffect(() => {
     if (newNumbered || batch) return;
     let active = true;
+    setLoaded(null);
     void api
       .preview({ ...source, stock: initialStock })
       .then((out) => {
-        if (active) setLabels(batchLabels({ labels: out.labels }));
+        if (active) setLoaded({ labels: out.labels });
       })
-      .catch(() => {});
+      .catch((error: unknown) => {
+        if (active) setLoaded({ error });
+      });
     return () => {
       active = false;
     };
-  }, [api, source, newNumbered, batch]);
+  }, [api, source, newNumbered, batch, online, previewRetry]);
+
+  const labels = batch?.labels ?? (loaded && 'labels' in loaded ? loaded.labels : undefined);
 
   const preview = useMemo(() => {
     if (!encode) return null;
@@ -228,11 +263,16 @@ export function ThermalStudio({
       ? Array.from({ length: Math.max(1, Math.min(12, count)) }, () => ({
           identifier: example,
           url: exampleUrl,
-          name: mode === 'category' ? category : undefined,
+          name: draftCategory || undefined,
+          category: draftCategory || undefined,
           writeIn: mode === 'temporary',
-          contents,
+          contents: draftContents,
         }))
-      : labels.slice(0, 12).map((label) => ({ ...label, contents: contents || label.contents }));
+      : batchLabels({
+          labels: labels?.slice(0, 12) ?? [],
+          category: draftCategory,
+          contents: draftContents,
+        });
     if (previewLabels.length === 0) return null;
     try {
       return { doc: thermalDocument(stock, layout, profile, options, previewLabels, encode) };
@@ -241,8 +281,8 @@ export function ThermalStudio({
     }
   }, [
     address,
-    category,
-    contents,
+    draftCategory,
+    draftContents,
     count,
     encode,
     labels,
@@ -258,8 +298,8 @@ export function ThermalStudio({
   useEffect(() => {
     let active = true;
     setPdf(null);
-    if (selected) {
-      void thermalPdf(selected.doc)
+    if (selectedDocument) {
+      void thermalPdf(selectedDocument)
         .then((bytes) => {
           if (active) setPdf(bytes);
         })
@@ -270,11 +310,11 @@ export function ThermalStudio({
     return () => {
       active = false;
     };
-  }, [selected, t]);
+  }, [selectedDocument, t]);
 
   const show = (prepared: Prepared) => {
     setPdf(null);
-    setSelected(prepared);
+    setSelected({ ...prepared, queue: profile.queue?.trim() });
     setAttempt(null);
     setConfirmed(false);
   };
@@ -328,7 +368,8 @@ export function ThermalStudio({
   async function prepare() {
     if (!encode) return;
     const settings = ThermalBatchSpecSchema.parse(spec);
-    await remember();
+    // Existing server labels can still print when local browser storage is unavailable.
+    await remember().catch(() => {});
     if (newNumbered) {
       // Persist first so even an unexpected render or network failure keeps the reservation.
       let job = await createPrintManifest(
@@ -358,7 +399,8 @@ export function ThermalStudio({
       options,
       batchLabels({
         labels: ready.labels,
-        thermal: settings,
+        category: settings.category,
+        contents: settings.contents,
       }),
       encode,
     );
@@ -366,8 +408,9 @@ export function ThermalStudio({
     onSaved?.(ready);
   }
 
-  function openJob(job: PrintManifest, useSelectedStock = false) {
+  async function openJob(job: PrintManifest, useSelectedStock = false) {
     if (!encode) return;
+    job = (await printStore.jobs.get(job.id)) ?? { ...job, registration: 'blocked' };
     const doc = thermalDocument(
       useSelectedStock ? stock : job.stock,
       useSelectedStock ? layout : job.spec.layout,
@@ -397,8 +440,20 @@ export function ThermalStudio({
     }
   }
 
+  async function outputAllowed() {
+    if (!selected) return false;
+    if (selected.kind !== 'local') return true;
+    const cached = await printStore.jobs.get(selected.job.id);
+    if (cached?.registration === 'pending' || cached?.registration === 'registered') return true;
+    const job = cached ?? { ...selected.job, registration: 'blocked' as const };
+    setSelected({ ...selected, job });
+    setJobs((rows) => rows.map((row) => (row.id === job.id ? job : row)));
+    return false;
+  }
+
   async function print() {
     if (!selected || (nativeOutput && !pdf)) return;
+    if (!(await outputAllowed())) return;
     try {
       if (nativeOutput && pdf) {
         const result = await nativeOutput(pdf, false);
@@ -415,10 +470,12 @@ export function ThermalStudio({
 
   async function confirm() {
     if (!selected || selected.kind === 'calibration') return;
+    if (!(await outputAllowed())) return;
     if (selected.kind === 'server') await api.confirm(selected.batch.id);
     await mark('confirmed');
-    if (selected.kind === 'local' && selected.job.registration === 'registered') {
-      await syncPrintConfirmation(selected.job, api);
+    if (selected.kind === 'local') {
+      const latest = await printStore.jobs.get(selected.job.id);
+      if (latest?.registration === 'registered') await syncPrintConfirmation(latest, api);
     }
     setConfirmed(true);
   }
@@ -435,7 +492,7 @@ export function ThermalStudio({
   const canOutput =
     !!selected &&
     (selected.kind !== 'local' || ['registered', 'pending'].includes(selected.job.registration));
-  const queue = profile.queue?.trim();
+  const queue = selected?.queue;
 
   return (
     <div className="grid min-w-0 gap-4">
@@ -514,12 +571,15 @@ export function ThermalStudio({
             }
             options={options}
             setOptions={setOptions}
+            suggestIcon={suggestIcon}
           />
           <TextField
             label={
-              stock === MICRO_THERMAL_STOCK || stock === COMPACT_THERMAL_STOCK
-                ? t`Size or model (optional)`
-                : t`Contents summary (optional)`
+              options.template === 'drawer' && supportsDrawerTemplate(stock)
+                ? t`Drawer contents`
+                : stock === MICRO_THERMAL_STOCK || stock === COMPACT_THERMAL_STOCK
+                  ? t`Size or model (optional)`
+                  : t`Contents summary (optional)`
             }
             value={contents}
             onChange={setContents}
@@ -533,21 +593,18 @@ export function ThermalStudio({
               </Trans>
             </Notice>
           )}
-          {preview?.doc?.warnings?.threeDotQr && (
-            <Notice tone="warn">
-              <Trans>
-                This QR prints at three dots per module. Scan a test label before printing the
-                batch.
-              </Trans>
-            </Notice>
+          {!batch && loaded && 'error' in loaded && (
+            <ErrorState
+              error={loaded.error}
+              onRetry={() => setPreviewRetry((attempt) => attempt + 1)}
+            />
           )}
-          {preview?.doc?.warnings?.omittedText && (
+          {!batch && labels?.length === 0 && (
             <Notice>
-              <Trans>
-                Some optional text does not fit. The QR and full identifier are preserved.
-              </Trans>
+              <Trans>Nothing here can be labelled now</Trans>
             </Notice>
           )}
+          <DocumentWarnings doc={preview?.doc} />
           {preview?.error && (
             <Notice tone="warn">
               <Trans>
@@ -591,21 +648,7 @@ export function ThermalStudio({
         >
           <ThermalPreview doc={selected.doc} />
           {selected.kind === 'local' && <RegistrationStatus job={selected.job} />}
-          {selected.doc.warnings?.threeDotQr && (
-            <Notice tone="warn">
-              <Trans>
-                This QR prints at three dots per module. Scan a test label before printing the
-                batch.
-              </Trans>
-            </Notice>
-          )}
-          {selected.doc.warnings?.omittedText && (
-            <Notice>
-              <Trans>
-                Some optional text does not fit. The QR and full identifier are preserved.
-              </Trans>
-            </Notice>
-          )}
+          <DocumentWarnings doc={selected.doc} />
           {queue && (
             <p className="m-0">
               <Trans>Choose {queue} in the print dialog.</Trans>
@@ -627,6 +670,7 @@ export function ThermalStudio({
                 pdf={busy ? null : pdf}
                 send={(value) =>
                   void run(async () => {
+                    if (!(await outputAllowed())) return;
                     if (nativeOutput) await nativeOutput(value, true);
                     else await saveThermalPdf(value);
                   })
@@ -697,7 +741,9 @@ export function ThermalStudio({
             {jobs.map((job) => (
               <li key={job.id} className="grid gap-2 rounded-lg border border-line p-3">
                 <bdi className="font-mono">
-                  {job.codes[0]} · {job.codes.length}
+                  {job.codes[0]}
+                  {sep()}
+                  {job.codes.length}
                 </bdi>
                 <RegistrationStatus job={job} />
                 {job.confirmedAt && (
@@ -743,6 +789,41 @@ export function ThermalStudio({
       {newNumbered && online && <EpcForm locationId={locationId} register={api.registerTag} />}
       {problem && <Notice tone="danger">{problem}</Notice>}
     </div>
+  );
+}
+
+function DocumentWarnings({ doc }: { doc?: ThermalDocument | undefined }) {
+  const warnings = doc?.warnings;
+  if (!warnings) return null;
+  return (
+    <>
+      {warnings.threeDotQr && (
+        <Notice tone="warn">
+          <Trans>
+            This QR prints at three dots per module. Scan a test label before printing the batch.
+          </Trans>
+        </Notice>
+      )}
+      {(warnings.omittedText || warnings.omittedIcon) && (
+        <Notice>
+          <Trans>
+            Some optional text or icons do not fit. The QR and full identifier are preserved.
+          </Trans>
+        </Notice>
+      )}
+      {warnings.separateIcon && (
+        <Notice tone="warn">
+          <Trans>
+            The category icon moved beside the QR because there is not enough room to embed it.
+          </Trans>
+        </Notice>
+      )}
+      {warnings.standardTemplate && (
+        <Notice>
+          <Trans>This stock uses the standard inventory label for this reprint.</Trans>
+        </Notice>
+      )}
+    </>
   );
 }
 

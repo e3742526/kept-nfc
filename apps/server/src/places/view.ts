@@ -590,8 +590,9 @@ async function attachmentsOf(
   userId: string,
   role: Gate['role'],
 ): Promise<AttachmentView[]> {
+  // Attachment RLS lets room reviewers see photos still under review.
   const { rows } = await client.query<AttachmentRow>(
-    `${ATTACHMENT_SELECT} WHERE a.place_id = $1 AND NOT a.in_review AND a.photo_archived_at IS NULL ORDER BY a.sort, a.created_at, a.id`,
+    `${ATTACHMENT_SELECT} WHERE a.place_id = $1 AND a.photo_archived_at IS NULL ORDER BY a.sort, a.created_at, a.id`,
     [placeId],
   );
   const creators = new Map(rows.map((row) => [row.id, row.created_by]));

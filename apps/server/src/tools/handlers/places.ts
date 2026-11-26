@@ -53,6 +53,7 @@ export const updatePlaceTool: Handler<'update_place'> = {
     }
     const body: UpdatePlaceBody = {};
     if (f.name !== undefined) body.name = f.name;
+    if (f.description !== undefined) body.description = f.description || null;
     if (f.kind !== undefined) body.kindKey = f.kind;
     if (f.child_order !== undefined) body.childOrder = f.child_order;
     if (f.custom !== undefined) body.custom = f.custom;

@@ -164,7 +164,8 @@ export function cellMetrics(stock: LabelStock, codeChars = 7): CellMetrics {
   if (isRuled(stock)) return ruledMetrics(stock, codeChars);
   const { w, h } = stock.cell;
   const pad = Math.max(1.5, h * 0.06);
-  const qr = Math.min(h - 2 * pad, w * 0.48);
+  // Allow 0.4 mm per module for a 37-module label link, including its quiet zone.
+  const qr = Math.min(h - 2 * pad, Math.max(w * 0.48, 37 * 0.4));
   const text = Math.max(0, w - qr - 3 * pad);
   const compact = stock.content === 'compact';
   const code = Math.min(h * (compact ? 0.16 : 0.13), text / codeEm(codeChars));

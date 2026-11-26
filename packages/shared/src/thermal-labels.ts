@@ -4,6 +4,7 @@ import {
   isThermalLabelStock,
   labelStock,
   MICRO_THERMAL_STOCK,
+  SQUARE_THERMAL_STOCK,
 } from './label-stocks.js';
 
 export const THERMAL_LAYOUTS = {
@@ -129,6 +130,28 @@ export const StockCalibrationSchema = z.strictObject({
 });
 
 export const ThermalLayoutSchema = z.enum(['single', 'cut_4x3', 'cut_2x2', 'cut_2x1']);
+export const WORKSHOP_ICON_CODES = [
+  'BIT',
+  'HEX',
+  'BLT',
+  'TOL',
+  'CAB',
+  'ELE',
+  'MEA',
+  'ROT',
+  'ADH',
+  'WSH',
+  'DRL',
+  'MSC',
+] as const;
+export type WorkshopIcon = (typeof WORKSHOP_ICON_CODES)[number];
+
+export function supportsDrawerTemplate(stock: string): boolean {
+  return (
+    stock === COMPACT_THERMAL_STOCK || stock === SQUARE_THERMAL_STOCK || stock === 'thermal_4x6in'
+  );
+}
+
 const printDistance = z.number().positive().max(1000);
 export const ThermalBatchSpecSchema = z.strictObject({
   layout: ThermalLayoutSchema,
@@ -154,6 +177,9 @@ export const ThermalBatchSpecSchema = z.strictObject({
     showBarcode: z.boolean().optional(),
     payload: z.enum(['url', 'app']).optional(),
     variant: z.enum(['standard', 'identity']).optional(),
+    template: z.literal('drawer').optional(),
+    workshopIcon: z.enum([...WORKSHOP_ICON_CODES, 'none']).optional(),
+    iconPlacement: z.enum(['beside', 'embedded']).optional(),
     identifierPt: z.number().min(0).max(72),
   }),
   category: z.string().trim().max(100).optional(),
@@ -318,7 +344,9 @@ export function thermalGeometry(
     };
     const base = intersect(inside, printable);
     const shifted = { ...base, x: base.x + dot(cal.offsetX), y: base.y + dot(cal.offsetY) };
-    const ink = intersect(intersect(shifted, cell), {
+    // Calibration can shift the design, but it cannot consume the cut clearance.
+    const usableCell = { x: x + pad, y: y + pad, w: cell.w - 2 * pad, h: cell.h - 2 * pad };
+    const ink = intersect(intersect(shifted, usableCell), {
       x: 0,
       y: 0,
       w: Math.min(dots.w, head.w),

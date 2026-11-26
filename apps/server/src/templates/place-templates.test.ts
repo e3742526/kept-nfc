@@ -71,6 +71,63 @@ const fromTemplate = (as: Person, loc: Loc, body: Record<string, unknown>) =>
 
 const made = (res: LightMyRequestResponse) => ok(res, 201) as unknown as Made;
 
+it('creates small-parts drawer positions independently of printable labels', async () => {
+  const cabinet = made(
+    await fromTemplate(ibrahim, home, {
+      template: { builtin: 'small_parts_cabinet' },
+      name: 'Workshop cabinet',
+      code: 'CAB01',
+    }),
+  );
+  expect(cabinet.compartments).toHaveLength(24);
+  const drawer = cabinet.compartments.find((cell) => cell.code === 'CAB01-R01-C02');
+  expect(drawer).toMatchObject({ row: 1, col: 2 });
+  expect(cabinet.compartments.at(-1)?.code).toBe('CAB01-R04-C06');
+  const drawerId = drawer?.id as string;
+  await own(db, 'UPDATE public.places SET description = $2 WHERE id = $1', [
+    drawerId,
+    'Phillips bits',
+  ]);
+  await own(
+    db,
+    `INSERT INTO public.legacy_codes (location_id, place_id, source, source_collection, code)
+                  VALUES ($1, $2, 'own', '', 'AAAA-R01-C02'),
+                         ($1, $2, 'own', '', 'CAB01-R00-C00')`,
+    [home.id, drawerId],
+  );
+  const preview = async () =>
+    ok(
+      await call(t, '/api/v1/labels/batches', {
+        as: ibrahim,
+        body: {
+          locationId: home.id,
+          kind: 'places',
+          placeIds: [drawerId],
+          stock: 'thermal_50x20',
+          dryRun: true,
+        },
+      }),
+      200,
+    );
+  const draft = await preview();
+  expect(draft.labels).toEqual([
+    expect.objectContaining({
+      targetId: drawerId,
+      drawerContents: 'Phillips bits',
+      drawerPosition: 'CAB01-R01-C02',
+      code: expect.stringMatching(/^[A-Z0-9]{6}$/),
+    }),
+  ]);
+  ok(
+    await call(t, `/api/v1/places/${cabinet.place.id}/turn`, {
+      as: ibrahim,
+      body: { direction: 'right', renumber: false },
+    }),
+    200,
+  );
+  expect((await preview()).labels).toEqual(draft.labels);
+});
+
 const auditIds = (res: LightMyRequestResponse) =>
   String(res.headers['x-kept-audit-event'] ?? '')
     .split(',')

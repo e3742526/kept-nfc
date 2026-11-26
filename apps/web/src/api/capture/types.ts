@@ -498,6 +498,9 @@ export type LabelCellContent = {
   path?: string;
   barcode?: string;
   model?: string;
+  category?: string;
+  drawerContents?: string;
+  drawerPosition?: string;
   nfc?: 'verified';
   uhf?: true;
   targetId?: string;

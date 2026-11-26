@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { defaultPrinterProfile } from '@kept/shared';
+import Dexie from 'dexie';
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb';
 import { describe, expect, it, vi } from 'vitest';
 import type { LabelBatch } from '@/api/capture/types';
@@ -41,6 +42,7 @@ function batchOf(job: PrintManifest): LabelBatch {
     kind: 'blank',
     locationId: job.locationId,
     stock,
+    thermal: job.spec,
     startCell: 1,
     createdAt: job.createdAt,
     printedConfirmedAt: null,
@@ -109,7 +111,78 @@ describe('lasting thermal manifests', () => {
     expect(collision.prints.at(-1)?.state).toBe('failed');
     expect(collision.codes).toEqual(job.codes);
     expect(await syncPrintManifest(collision, api, store)).toEqual(collision);
+    expect(await syncPrintManifest(job, api, store)).toEqual(collision);
     expect(api.create).toHaveBeenCalledTimes(1);
     store.close();
+  });
+
+  it('retains a pending reservation on server downtime and rejects a changed batch specification', async () => {
+    const store = new PrintStore({ indexedDB: new IDBFactory(), IDBKeyRange });
+    const job = await createPrintManifest(store, input, 1);
+    const api = mockApi();
+    api.create.mockRejectedValueOnce(new ApiError(503, 'internal', 'temporarily unavailable'));
+    expect((await syncPrintManifest(job, api, store)).registration).toBe('pending');
+    const changed = { ...batchOf(job), thermal: { ...job.spec, contents: 'Changed on server' } };
+    api.create.mockResolvedValueOnce({ batch: changed, excluded: { pending: 0, other: 0 } });
+    expect((await syncPrintManifest(job, api, store)).registration).toBe('blocked');
+    const same = JSON.parse(JSON.stringify(batchOf(job))) as LabelBatch;
+    api.create.mockResolvedValueOnce({ batch: same, excluded: { pending: 0, other: 0 } });
+    expect((await syncPrintManifest(job, api, store)).registration).toBe('registered');
+    store.close();
+  });
+
+  it('never lets a late concurrent response replace a collision', async () => {
+    const store = new PrintStore({ indexedDB: new IDBFactory(), IDBKeyRange });
+    const job = await createPrintManifest(store, input, 1);
+    const api = mockApi();
+    const started = Promise.withResolvers<void>();
+    const late = Promise.withResolvers<Awaited<ReturnType<PrintApi['create']>>>();
+    api.create.mockImplementationOnce(() => {
+      started.resolve();
+      return late.promise;
+    });
+    const request = syncPrintManifest(job, api, store);
+    await started.promise;
+    api.create.mockRejectedValueOnce(new ApiError(409, 'label_series_collision', 'reserved'));
+    expect((await syncPrintManifest(job, api, store)).registration).toBe('collision');
+    late.resolve({ batch: batchOf(job), excluded: { pending: 0, other: 0 } });
+    expect((await request).registration).toBe('collision');
+    store.close();
+  });
+
+  it('upgrades old jobs and reserves a series across local owners at the same label address', async () => {
+    const indexedDB = new IDBFactory();
+    const old = new Dexie('sheepkeep-thermal-printing', { indexedDB, IDBKeyRange });
+    old.version(1).stores({
+      jobs: 'id, [owner+locationId], &[owner+prefix+series]',
+      preferences: 'owner',
+    });
+    const inherited: PrintManifest = {
+      ...input,
+      id: crypto.randomUUID(),
+      series: '0000',
+      codes: ['TOL-0000-0001'],
+      createdAt: '2026-10-02T08:00:00.000Z',
+      registration: 'pending',
+      prints: [],
+    };
+    await old.table('jobs').add(inherited);
+    await old.table('preferences').add({ owner: input.owner, stock, profileId: '', profiles: [] });
+    old.close();
+    const store = new PrintStore({ indexedDB, IDBKeyRange });
+    let byte = 0;
+    const random = vi.spyOn(crypto, 'getRandomValues').mockImplementation((values) => {
+      if (values instanceof Uint8Array) values.fill(byte++);
+      return values;
+    });
+    try {
+      const next = await createPrintManifest(store, { ...input, owner: 'new-owner' }, 1);
+      expect(next.series).toBe('1111');
+      expect(await store.jobs.get(inherited.id)).toEqual(inherited);
+      expect(await store.preferences.get(input.owner)).toMatchObject({ stock });
+    } finally {
+      random.mockRestore();
+      store.close();
+    }
   });
 });

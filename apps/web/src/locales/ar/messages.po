@@ -34160,3 +34160,87 @@ msgstr "الحد الأدنى لطول التغذية (مم)"
 #: src/components/labels/thermal/studio.tsx
 msgid "Reprint on selected stock"
 msgstr "إعادة الطباعة على المقاس المحدد"
+
+msgid "Adhesives"
+msgstr "مواد لاصقة"
+
+msgid "Automatic from category and contents"
+msgstr "تلقائي حسب الفئة والمحتويات"
+
+msgid "Beside the QR"
+msgstr "بجوار رمز QR"
+
+msgid "Category icon"
+msgstr "أيقونة الفئة"
+
+msgid "Could not suggest a category icon. Check that server AI is available."
+msgstr "تعذّر اقتراح أيقونة للفئة. تحقّق من توفر الذكاء الاصطناعي على الخادم."
+
+msgid "Drawer contents"
+msgstr "محتويات الدرج"
+
+msgid "Drill bits"
+msgstr "لقم المثقاب"
+
+msgid "Driver bits"
+msgstr "رؤوس المفكات"
+
+msgid "Hex bits"
+msgstr "رؤوس سداسية"
+
+msgid "Icon placement"
+msgstr "موضع الأيقونة"
+
+msgid "Inside the QR (experimental)"
+msgstr "داخل رمز QR (تجريبي)"
+
+msgid "Label template"
+msgstr "قالب الملصق"
+
+msgid "Measuring"
+msgstr "أدوات القياس"
+
+msgid "Miscellaneous"
+msgstr "متفرقات"
+
+msgid "No category icon was suggested."
+msgstr "لم تُقترح أيقونة للفئة."
+
+msgid "No icon"
+msgstr "بلا أيقونة"
+
+msgid "Nuts and bolts"
+msgstr "صواميل ومسامير"
+
+msgid "Rotary discs"
+msgstr "أقراص دوّارة"
+
+msgid "Sends the photo to your configured server AI."
+msgstr "يرسل الصورة إلى الذكاء الاصطناعي المُعدّ على خادمك."
+
+msgid "Small-parts cabinet"
+msgstr "خزانة القطع الصغيرة"
+
+msgid "Small-parts drawer"
+msgstr "درج القطع الصغيرة"
+
+msgid "Standard inventory label"
+msgstr "ملصق مخزون عادي"
+
+msgid "Suggest icon from photo"
+msgstr "اقتراح أيقونة من صورة"
+
+msgid "The category icon moved beside the QR because there is not enough room to embed it."
+msgstr "نُقلت أيقونة الفئة إلى جوار رمز QR لضيق المساحة داخله."
+
+msgid "Use suggested icon: {0}"
+msgstr "استخدم الأيقونة المقترحة: {0}"
+
+msgid "Washers"
+msgstr "حلقات معدنية"
+
+msgid "Some optional text or icons do not fit. The QR and full identifier are preserved."
+msgstr "لا تتسع المساحة لبعض النصوص أو الأيقونات الاختيارية. يظل رمز QR والمعرّف الكامل ظاهرين."
+
+msgid "This stock uses the standard inventory label for this reprint."
+msgstr "يُستخدم ملصق المخزون العادي عند إعادة الطباعة على هذا المقاس."

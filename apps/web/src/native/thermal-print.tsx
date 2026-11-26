@@ -1,3 +1,4 @@
+import { DevicePhotoProposals } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import { capturePaths } from '@/api/capture/paths';
@@ -5,6 +6,7 @@ import type { LabelBatch } from '@/api/capture/types';
 import type { PrintApi } from '@/components/labels/thermal/api';
 import type { NativeThermalOutput } from '@/components/labels/thermal/output';
 import { type ThermalSource, ThermalStudio } from '@/components/labels/thermal/studio';
+import { suggestWorkshopIcon } from '@/components/labels/thermal/workshop-icons';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
 
@@ -24,7 +26,9 @@ export function NativeThermalPrint({
   onSaved?: (batch: LabelBatch) => void;
 }) {
   const { t } = useLingui();
-  const { transport, media } = usePlatform();
+  const { transport, media, captureAI } = usePlatform();
+  const sourceLocationId = batch?.locationId ?? locationId;
+  const batchKind = batch?.kind;
   const api = useMemo<PrintApi>(
     () => ({
       address: async () =>
@@ -51,17 +55,20 @@ export function NativeThermalPrint({
   );
   const source = useMemo<ThermalSource>(
     () =>
-      thingId
-        ? { kind: 'things', thingIds: [thingId], locationId }
-        : placeId
-          ? { kind: 'places', placeIds: [placeId], locationId }
-          : { kind: 'blank', locationId },
-    [thingId, placeId, locationId],
+      batchKind
+        ? { kind: batchKind, locationId: sourceLocationId }
+        : thingId
+          ? { kind: 'things', thingIds: [thingId], locationId: sourceLocationId }
+          : placeId
+            ? { kind: 'places', placeIds: [placeId], locationId: sourceLocationId }
+            : { kind: 'blank', locationId: sourceLocationId },
+    [thingId, placeId, sourceLocationId, batchKind],
   );
   const send = media.thermalPdf;
   const output: NativeThermalOutput | undefined = send
     ? (pdf, share) => send(connection, pdf, share, t`SheepKeep labels`)
     : undefined;
+  const propose = captureAI?.serverProposals;
 
   return (
     <div className="grid gap-4">
@@ -72,11 +79,23 @@ export function NativeThermalPrint({
         </Trans>
       </p>
       <ThermalStudio
+        key={JSON.stringify([connection.id, source, batch?.id])}
         owner={connection.id}
         source={source}
         api={api}
         nativeOutput={output}
         batch={batch}
+        suggestIcon={
+          propose &&
+          (async (photo) => {
+            const { items } = DevicePhotoProposals.parse(
+              await propose(connection, sourceLocationId, photo),
+            );
+            return items
+              .map((item) => suggestWorkshopIcon('', item.categories?.join(' ') ?? '', item.name))
+              .find((icon) => icon !== 'MSC');
+          })
+        }
         {...(onSaved ? { onSaved } : {})}
       />
     </div>

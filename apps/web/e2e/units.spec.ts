@@ -172,7 +172,7 @@ test('metric or imperial: the map, a label sheet, a vehicle and its fuel, and ba
       .locator('xpath=ancestor::label'),
   ).toContainText('2.76 × 1.46 in');
   await expect(
-    page.getByRole('radio', { name: /Letter sheet/ }).locator('xpath=ancestor::label'),
+    page.getByRole('radio', { name: /Letter sheet, 30 labels/ }).locator('xpath=ancestor::label'),
   ).toContainText('2.63 × 1 in');
   await axe(page, 'Labels in inches');
 
@@ -237,7 +237,7 @@ test('metric or imperial: the map, a label sheet, a vehicle and its fuel, and ba
   await expect(page.getByRole('region', { name: 'Fuel' }).getByText('4.7 L/100 km')).toBeVisible();
   await page.goto(`/labels?loc=${home.id}&blank=24`);
   await expect(
-    page.getByRole('radio', { name: /Letter sheet/ }).locator('xpath=ancestor::label'),
+    page.getByRole('radio', { name: /Letter sheet, 30 labels/ }).locator('xpath=ancestor::label'),
   ).toContainText('67 × 25 mm');
   await context.close();
 });

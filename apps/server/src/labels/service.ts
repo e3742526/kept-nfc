@@ -106,6 +106,9 @@ export const LabelCellSchema = z.object({
   path: z.string().optional(),
   barcode: z.string().optional(),
   model: z.string().optional(),
+  category: z.string().optional(),
+  drawerContents: z.string().optional(),
+  drawerPosition: z.string().optional(),
   nfc: z.literal('verified').optional(),
   uhf: z.literal(true).optional(),
   targetId: z.uuid().optional(),
@@ -186,6 +189,9 @@ type CellRow = {
   path: string | null;
   barcode: string | null;
   model: string | null;
+  category: string | null;
+  drawer_contents: string | null;
+  drawer_position: string | null;
   nfc: boolean | null;
   uhf: boolean | null;
 };
@@ -236,6 +242,22 @@ const CELL_COLUMNS = `c.code::text AS code, ${aliasOfSql('c.code')} AS alias,
        CASE WHEN ls.guarded THEN ls.batch_id END AS guarded_batch, ls.label_origin,
        t.id AS thing_id, p.id AS place_id,
        coalesce(t.name, p.name) AS name, t.barcode, t.model, tags.nfc, tags.uhf,
+       ty.name AS category, CASE WHEN p.kind_key = 'drawer' THEN p.description END AS drawer_contents,
+       (SELECT coalesce(
+          min(lc.code) FILTER (
+            WHERE right(lc.code, 8) = concat('-R', lpad(p.cell->>'row', 2, '0'),
+                                             '-C', lpad(p.cell->>'col', 2, '0'))),
+          CASE WHEN count(*) = 1 THEN min(lc.code) END)
+          FROM public.legacy_codes lc
+         WHERE p.kind_key = 'drawer' AND p.cell IS NOT NULL AND cabinet.layout IS NOT NULL
+           AND lc.place_id = p.id AND lc.location_id = p.location_id
+           AND lc.source = 'own' AND lc.source_collection = ''
+           AND lc.code ~ '-R(0[1-9]|[1-9][0-9])-C(0[1-9]|[1-9][0-9])$'
+           AND EXISTS (
+             SELECT 1 FROM public.legacy_codes pc
+              WHERE pc.place_id = cabinet.id AND pc.location_id = cabinet.location_id
+                AND pc.source = 'own' AND pc.source_collection = ''
+                AND pc.code = left(lc.code, -8))) AS drawer_position,
        CASE WHEN t.id IS NOT NULL THEN t.place_path
             WHEN p.id IS NOT NULL THEN
               (SELECT string_agg(e->>'name', ' › ' ORDER BY x.n)
@@ -247,7 +269,9 @@ const CELL_JOINS = `
        LEFT JOIN public.label_aliases la ON la.code = c.code
        LEFT JOIN public.label_series ls ON ls.id = la.series_id
        LEFT JOIN public.things t ON t.id = s.thing_id AND t.deleted_at IS NULL
+       LEFT JOIN public.types ty ON ty.id = t.type_id
        LEFT JOIN public.places p ON p.id = s.place_id AND p.deleted_at IS NULL
+       LEFT JOIN public.places cabinet ON cabinet.id = p.parent_id AND cabinet.deleted_at IS NULL
        LEFT JOIN LATERAL (
          SELECT bool_or(a.nfc_verified_at IS NOT NULL) AS nfc,
                 bool_or(a.uhf_epc IS NOT NULL) AS uhf
@@ -279,6 +303,9 @@ function cellOf(
     if (r.path && target) cell.path = r.path;
     if (r.barcode && target) cell.barcode = r.barcode;
     if (r.model && target) cell.model = r.model;
+    if (r.category && target) cell.category = r.category;
+    if (r.drawer_contents && target) cell.drawerContents = r.drawer_contents;
+    if (r.drawer_position && target) cell.drawerPosition = r.drawer_position;
     if (r.nfc && target) cell.nfc = 'verified';
     if (r.uhf && target) cell.uhf = true;
   }

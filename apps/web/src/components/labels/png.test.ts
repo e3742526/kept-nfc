@@ -119,6 +119,11 @@ const label = (over: Partial<LabelCellContent> = {}): LabelCellContent => ({
 describe('labelPixelSize', () => {
   it('is the cell at 300 dpi', () => {
     expect(Object.fromEntries(LABEL_STOCKS.map((s) => [s.key, labelPixelSize(s)]))).toEqual({
+      thermal_50x20: { width: 591, height: 236 },
+      thermal_30_48x20_32: { width: 360, height: 240 },
+      thermal_4x6in: { width: 1200, height: 1800 },
+      thermal_1_75x0_75in: { width: 525, height: 225 },
+      thermal_2x1in: { width: 600, height: 300 },
       thermal_50x30: { width: 591, height: 354 },
       thermal_40x30: { width: 472, height: 354 },
       thermal_62x29: { width: 732, height: 343 },

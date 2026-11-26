@@ -17,6 +17,7 @@ import {
   thermalDocument,
 } from './document';
 import { thermalPdf } from './pdf';
+import { suggestWorkshopIcon } from './workshop-icons';
 
 const require = createRequire(import.meta.url);
 const identifier = 'TMP-OILZ-9999';
@@ -64,6 +65,154 @@ async function rendered(doc: ThermalDocument, bytes: Uint8Array<ArrayBuffer>) {
 }
 
 describe('thermal vector pages', () => {
+  it.each(['thermal_50x20', 'thermal_2x2in', 'thermal_4x6in'])(
+    'renders a drawer label with prominent contents and the original QR on %s',
+    async (stock) => {
+      for (const dpi of [203, 300]) {
+        const doc = thermalDocument(
+          stock,
+          'single',
+          { ...profile, dpi },
+          { ...DEFAULT_THERMAL_OPTIONS, template: 'drawer', workshopIcon: 'BIT' },
+          [
+            {
+              ...label,
+              drawerContents: 'Phillips bits',
+              drawerPosition: 'CAB01-R01-C02',
+              nfc: 'verified',
+              uhf: true,
+            },
+          ],
+          encode,
+        );
+        const page = doc.pages[0];
+        const title = page?.text.find((line) => line.bold);
+        const id = page?.text.find((line) => line.value === identifier);
+        expect(title?.size).toBeGreaterThan(id?.size ?? Infinity);
+        expect(
+          page?.text
+            .filter((line) => line.bold)
+            .map((line) => line.value)
+            .join(' '),
+        ).toBe('Phillips bits');
+        expect(page?.text.some((line) => line.value.includes('NFC / UHF'))).toBe(true);
+        expect((await rendered(doc, await thermalPdf(doc))).reads).toContainEqual(
+          expect.objectContaining({ text: url }),
+        );
+        expect(page?.ink.every((r) => [r.x, r.y, r.w, r.h].every(Number.isInteger))).toBe(true);
+        expect(
+          page?.text.every((line) => line.x + line.value.length * line.size * 0.6 <= doc.dots.w),
+        ).toBe(true);
+      }
+    },
+  );
+
+  it('preserves payloads with an embedded icon and falls back on a dense compact QR', async () => {
+    const options = {
+      ...DEFAULT_THERMAL_OPTIONS,
+      template: 'drawer',
+      workshopIcon: 'HEX',
+      iconPlacement: 'embedded',
+    } as const;
+    const reference = 'https://sk.test/l/2HX9RB';
+    for (const dpi of [203, 300]) {
+      const decorated = thermalDocument(
+        'thermal_50x20',
+        'single',
+        { ...profile, dpi },
+        { ...options, payload: 'app' },
+        [{ identifier: '2HX9RB', url: reference, name: 'Hex bits' }],
+        encode,
+      );
+      expect(decorated.warnings?.separateIcon).toBeUndefined();
+      expect((await rendered(decorated, await thermalPdf(decorated))).reads).toContainEqual(
+        expect.objectContaining({ text: '2HX9RB' }),
+      );
+    }
+    const dense = thermalDocument(
+      'thermal_50x20',
+      'single',
+      { ...profile, printableHeight: 17 },
+      options,
+      [{ ...label, name: 'Hex bits' }],
+      encode,
+    );
+    expect(dense.warnings?.separateIcon).toBe(true);
+    expect((await rendered(dense, await thermalPdf(dense))).reads).toContainEqual(
+      expect.objectContaining({ text: url }),
+    );
+  });
+
+  it('keeps the QR and full identifier when preferred type or icon size cannot fit', async () => {
+    const shortId = '2HX9RB';
+    const shortUrl = `https://labels.example.org/l/${shortId}`;
+    const doc = thermalDocument(
+      'thermal_50x20',
+      'single',
+      { ...profile, dpi: 300, scale: 75 },
+      { ...DEFAULT_THERMAL_OPTIONS, template: 'drawer', identifierPt: 72 },
+      [
+        {
+          identifier: shortId,
+          url: shortUrl,
+          name: 'Phillips bits',
+          nfc: 'verified',
+          uhf: true,
+          drawerPosition: 'CAB01-R01-C02',
+        },
+      ],
+      encode,
+    );
+    expect(doc.warnings?.omittedIcon).toBe(true);
+    expect(doc.pages[0]?.text[0]?.value).toBe(shortId);
+    expect((await rendered(doc, await thermalPdf(doc))).reads).toContainEqual(
+      expect.objectContaining({ text: shortUrl }),
+    );
+  });
+
+  it('reports standard-stock fallback and preserves the guarded QR on a drawer reprint', async () => {
+    const doc = thermalDocument(
+      'thermal_2x1in',
+      'single',
+      profile,
+      { ...DEFAULT_THERMAL_OPTIONS, template: 'drawer', payload: 'app' },
+      [label],
+      encode,
+    );
+    expect(doc.warnings?.standardTemplate).toBe(true);
+    const result = await rendered(doc, await thermalPdf(doc));
+    expect(result.text).toContain(identifier);
+    expect(result.reads).toContainEqual(
+      expect.objectContaining({ text: `${identifier}-010203040506` }),
+    );
+  });
+
+  it('infers a workshop icon from a numbered prefix, category, or contents', () => {
+    expect(suggestWorkshopIcon('HEX-A09Z-0001', 'Driver bits')).toBe('HEX');
+    expect(suggestWorkshopIcon('XKXJQ4', 'Drill bits')).toBe('DRL');
+    expect(suggestWorkshopIcon('XKXJQ4', '', 'Rotary cutoff wheels')).toBe('ROT');
+    expect(suggestWorkshopIcon('XKXJQ4', '', 'Washers and bolts')).toBe('WSH');
+    expect(suggestWorkshopIcon('XKXJQ4', '', 'Drawer 9')).toBe('MSC');
+    expect(suggestWorkshopIcon('TOL-A09Z-0001', 'HEX')).toBe('HEX');
+    expect(suggestWorkshopIcon('XKXJQ4', '', 'Drill‑bits')).toBe('DRL');
+  });
+
+  it('warns when the standard label font cannot render drawer contents', () => {
+    const doc = thermalDocument(
+      'thermal_50x20',
+      'single',
+      profile,
+      {
+        ...DEFAULT_THERMAL_OPTIONS,
+        template: 'drawer',
+      },
+      [{ ...label, drawerContents: '電気部品' }],
+      encode,
+    );
+    expect(doc.warnings?.omittedText).toBe(true);
+    expect(doc.pages[0]?.text[0]?.value).toBe(identifier);
+  });
+
   it.each([
     ['thermal_50x20', 203],
     ['thermal_50x20', 300],

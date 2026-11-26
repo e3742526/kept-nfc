@@ -105,8 +105,18 @@ const letterWritable = (cols: number, rows: number): LabelStock => ({
 
 export const COMPACT_THERMAL_STOCK = 'thermal_50x20';
 export const MICRO_THERMAL_STOCK = 'thermal_30_48x20_32';
+export const SQUARE_THERMAL_STOCK = 'thermal_2x2in';
 
-export const THERMAL_LABEL_STOCKS = [
+const SQUARE_ROLL = inchRoll(
+  SQUARE_THERMAL_STOCK,
+  2,
+  2,
+  'full',
+  'Square 2 × 2 in',
+  'مربع 2 × 2 بوصة',
+);
+
+const THERMAL_ONLY_STOCKS = [
   roll(COMPACT_THERMAL_STOCK, 50, 20, 'Compact Thermal — 50 × 20 mm', 'حراري مدمج — ٥٠ × ٢٠ مم'),
   roll(
     MICRO_THERMAL_STOCK,
@@ -126,19 +136,26 @@ export const THERMAL_LABEL_STOCKS = [
   roll('thermal_2x1in', 50.8, 25.4, 'Small · 2 × 1 in', 'صغير · 2 × 1 بوصة'),
 ] as const;
 
+export const THERMAL_LABEL_STOCKS = [...THERMAL_ONLY_STOCKS, SQUARE_ROLL] as const;
+
 export function isThermalLabelStock(key: string): boolean {
   return THERMAL_LABEL_STOCKS.some((stock) => stock.key === key);
 }
 
+// Square rolls predate the thermal editor and remain available in the original label builder.
+export function usesThermalLabelEditor(key: string, hasPrintSettings = false): boolean {
+  return isThermalLabelStock(key) && (key !== SQUARE_THERMAL_STOCK || hasPrintSettings);
+}
+
 export const LABEL_STOCKS: readonly LabelStock[] = Object.freeze([
-  ...THERMAL_LABEL_STOCKS,
+  ...THERMAL_ONLY_STOCKS,
   roll('thermal_50x30', 50, 30, 'Thermal 50 × 30 mm', 'حراري 50 × 30 مم'),
   roll('thermal_40x30', 40, 30, 'Thermal 40 × 30 mm', 'حراري 40 × 30 مم'),
   roll('thermal_62x29', 62, 29, 'Brother 62 × 29 mm', 'براذر 62 × 29 مم'),
   inchRoll('thermal_1x1in', 1, 1, 'compact', 'Micro 1 × 1 in', 'صغير جدًا 1 × 1 بوصة'),
   inchRoll('thermal_1_5x1in', 1.5, 1, 'compact', 'Compact 1.5 × 1 in', 'مدمج 1.5 × 1 بوصة'),
   inchRoll('thermal_1_5x1_5in', 1.5, 1.5, 'full', 'Medium 1.5 × 1.5 in', 'متوسط 1.5 × 1.5 بوصة'),
-  inchRoll('thermal_2x2in', 2, 2, 'full', 'Square 2 × 2 in', 'مربع 2 × 2 بوصة'),
+  SQUARE_ROLL,
   tape(9, 40, false),
   tape(12, 50, false),
   tape(18, 50, true),

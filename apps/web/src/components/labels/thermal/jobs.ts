@@ -43,30 +43,38 @@ export async function syncPrintManifest(
   api: PrintApi,
   store: PrintStore = printStore,
 ): Promise<PrintManifest> {
+  const current = await store.jobs.get(job.id);
+  if (!current) return { ...job, registration: 'blocked' };
+  job = current;
   if (job.registration === 'collision') return job;
   if (job.registration === 'registered') {
     if (job.confirmedAt && !job.confirmationSynced) await syncPrintConfirmation(job, api, store);
-    return (await store.jobs.get(job.id)) ?? job;
+    return (await store.jobs.get(job.id)) ?? { ...job, registration: 'blocked' };
   }
   let registration: PrintManifest['registration'];
   try {
     const { batch } = await api.create(registrationBody(job));
     registration = matchedRegistration(job, batch) ? 'registered' : 'blocked';
   } catch (error) {
-    if (isApiError(error) && error.code === 'offline') return job;
+    if (
+      isApiError(error) &&
+      (error.code === 'offline' || error.status >= 500 || [408, 425, 429].includes(error.status))
+    )
+      return (await store.jobs.get(job.id)) ?? { ...job, registration: 'blocked' };
     if (isApiError(error) && error.code === 'label_series_collision') registration = 'collision';
     else if (isApiError(error) && error.code === 'label_address_changed')
       registration = 'address-changed';
     else registration = 'blocked';
   }
-  // A retry from another tab must not replace confirmation or print attempts.
+  // A late retry must not overwrite a settled reservation or another tab's print history.
   await store.jobs
     .where('id')
     .equals(job.id)
     .modify((row) => {
-      if (row.registration !== 'registered') row.registration = registration;
+      if (row.registration !== 'registered' && row.registration !== 'collision')
+        row.registration = registration;
     });
-  const updated = (await store.jobs.get(job.id)) ?? job;
+  const updated = (await store.jobs.get(job.id)) ?? { ...job, registration: 'blocked' };
   if (updated.registration === 'registered' && updated.confirmedAt) {
     await syncPrintConfirmation(updated, api, store);
   }

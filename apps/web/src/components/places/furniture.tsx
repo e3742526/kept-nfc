@@ -81,6 +81,7 @@ export function useBuiltinTemplateName() {
   const { t } = useLingui();
   const fmt = useFormat();
   return (b: BuiltinPlaceTemplate): string => {
+    if (b.key === 'small_parts_cabinet') return t`Small-parts cabinet`;
     if (b.layout.kind === 'grid') {
       const across = fmt.num(b.layout.across);
       const up = fmt.num(b.layout.up);
@@ -175,8 +176,8 @@ export function FurnitureForm({ locationId, parentId, onDone }: FurnitureFormPro
         name: builtinName(b),
         layout: b.layout,
         adjustable: b.adjustable,
-        compartmentName: null,
-        codePattern: null,
+        compartmentName: b.compartmentName ? defaultName('drawers') : null,
+        codePattern: b.codePattern ?? null,
         template: { builtin: b.key },
       })),
       ...BUILTIN_RACK_TEMPLATES.map((b) => ({
@@ -200,7 +201,7 @@ export function FurnitureForm({ locationId, parentId, onDone }: FurnitureFormPro
         template: { id: x.id },
       })),
     ],
-    [own.data, builtinName, rackName],
+    [own.data, builtinName, defaultName, rackName],
   );
 
   const [choiceId, setChoiceId] = useState('builtin:cube_2x4');
