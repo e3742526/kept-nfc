@@ -20,6 +20,7 @@ import type { CreateLabelBatchBody, LabelBatch, LabelCellContent } from '@/api/c
 import { ErrorState, Notice, useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
+import { sep } from '@/lib/format';
 import { useOnline } from '@/lib/online';
 import { useQrEncoder } from '../qr';
 import type { PrintApi } from './api';
@@ -740,7 +741,9 @@ export function ThermalStudio({
             {jobs.map((job) => (
               <li key={job.id} className="grid gap-2 rounded-lg border border-line p-3">
                 <bdi className="font-mono">
-                  {job.codes[0]} · {job.codes.length}
+                  {job.codes[0]}
+                  {sep()}
+                  {job.codes.length}
                 </bdi>
                 <RegistrationStatus job={job} />
                 {job.confirmedAt && (

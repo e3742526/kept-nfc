@@ -803,7 +803,7 @@ describe('"Type the code"', () => {
       'hello{Enter}',
     );
     expect(
-      await screen.findByText('A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ.'),
+      await screen.findByText('Enter a short ID like 7KQ‑4MZ or a numbered ID like TMP-A09Z-0001.'),
     ).toBeInTheDocument();
   });
 

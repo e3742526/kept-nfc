@@ -47,6 +47,8 @@ describe('ErrorCode', () => {
       'server_outdated',
       'undo_refused',
       'label_claimed',
+      'label_series_collision',
+      'label_address_changed',
       'blank_cap_reached',
       'reservation_limit',
       'ai_unavailable',
@@ -110,7 +112,7 @@ describe('ErrorCode', () => {
   });
 
   it('gives every capture code an English sentence', () => {
-    expect(Object.keys(CAPTURE_ERROR_MESSAGES)).toHaveLength(12);
+    expect(Object.keys(CAPTURE_ERROR_MESSAGES)).toHaveLength(14);
     for (const [code, message] of Object.entries(CAPTURE_ERROR_MESSAGES)) {
       expect(isErrorCode(code)).toBe(true);
       expect(message).toMatch(/^[A-Z].+\.$/);

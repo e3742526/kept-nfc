@@ -87,7 +87,7 @@ function printableText(value: string): string {
     .normalize('NFKD')
     .replace(/\p{Mark}/gu, '')
     .replaceAll('⁄', '/')
-    .replace(/[^\x20-\x7E·]+/g, ' ')
+    .replace(/[^\x20-\x7E\u00b7]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -386,7 +386,7 @@ function drawDrawer(
   ].filter(Boolean);
   const tags = tagParts.join(' / ');
   const position = options.showLocation ? printableText(label.drawerPosition ?? '') : '';
-  const metadata = [position, tags].filter(Boolean).join(' · ');
+  const metadata = [position, tags].filter(Boolean).join(', ');
   const fits = (text: string) => !!text && text.length * small * glyphWidth <= w;
   const footer = fits(metadata)
     ? [metadata]
