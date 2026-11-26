@@ -2964,6 +2964,112 @@ describe('KeptPhone mobile workflows', () => {
     ).toBeInTheDocument();
   });
 
+  it('records when an item was bought: a new purchase, or its purchase’s new date', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const calls: { path: string; method?: string; ifMatch?: unknown; body?: unknown }[] = [];
+    let purchase: unknown = null;
+    const receipt = {
+      id: 'receipt-1',
+      locationId: 'loc',
+      vendor: null,
+      purchasedOn: '2025-03-02',
+      currency: null,
+      notes: null,
+      needsReview: 0,
+      rowVersion: 7,
+      lines: [
+        {
+          id: 'line-mine',
+          description: 'Winter Box',
+          quantity: 1,
+          thing: { id: env.boxId, name: 'Winter Box' },
+        },
+        { id: 'line-other', description: 'Tape', quantity: 1, thing: null },
+      ],
+    };
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    env.adapters.transport.request = async <T,>(
+      conn: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path.startsWith(inventoryPaths.purchases)) {
+        calls.push({
+          path,
+          method: options?.method,
+          ifMatch: options?.ifMatch,
+          body: options?.body,
+        });
+        return receipt as T;
+      }
+      const answer = await request<T>(conn, path, options);
+      if (path === inventoryPaths.thing(env.boxId) && !options?.method && purchase)
+        return { ...(answer as object), purchase } as T;
+      return answer;
+    };
+    const setDate = async (user: ReturnType<typeof userEvent.setup>, date: string) => {
+      const [year, month, day] = date.split('-');
+      const group = screen.getByRole('group', { name: 'Bought on' });
+      await user.click(within(group).getByRole('spinbutton', { name: /month/i }));
+      await user.keyboard(`${month}${day}${year}`);
+    };
+    const user = userEvent.setup();
+    const view = env.renderApp();
+
+    // No purchase yet: a date makes a one-line purchase for the item.
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    await setDate(user, '2025-11-21');
+    await user.click(screen.getByRole('button', { name: /^Save$/ }));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(calls[0]).toMatchObject({
+      path: inventoryPaths.purchases,
+      method: 'POST',
+      body: {
+        purchasedOn: '2025-11-21',
+        lines: [{ description: 'Winter Box', quantity: 1, thingId: env.boxId }],
+      },
+    });
+    view.unmount();
+
+    // A purchase: its date changes (If-Match its version), and the other things on it are named.
+    purchase = {
+      purchaseId: 'receipt-1',
+      lineId: 'line-mine',
+      purchasedOn: '2025-03-02',
+      vendor: null,
+      lineDescription: 'Winter Box',
+      quantity: 1,
+      receipts: [],
+    };
+    calls.length = 0;
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    expect(
+      await screen.findByText(
+        'This receipt has 1 other thing on it: the date and shop change for it too.',
+      ),
+    ).toBeInTheDocument();
+    await setDate(user, '2025-03-09');
+    await user.click(screen.getByRole('button', { name: /^Save$/ }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'PATCH')).toBe(true));
+    expect(calls.at(-1)).toEqual({
+      path: inventoryPaths.purchase('receipt-1'),
+      method: 'PATCH',
+      ifMatch: 7,
+      body: { purchasedOn: '2025-03-09' },
+    });
+  });
+
   it('edits a bin in place and shows the last known location and photo history', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({

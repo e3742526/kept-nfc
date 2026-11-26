@@ -1,5 +1,5 @@
 import { AMOUNT_STRING, CONDITIONS, NATIVE_INVENTORY_PAYLOAD_VERSION, newId } from '@kept/shared';
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { ArrowRightLeft, Check, CheckCircle2, Compass, Inbox, MapPinOff, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ApiError } from '@/api/client';
@@ -9,6 +9,7 @@ import type {
   MoveBody,
   MovePreview,
   PlaceView,
+  PurchaseView,
   ThingView,
   UpdatePlaceBody,
 } from '@/api/inventory/types';
@@ -19,6 +20,7 @@ import { useConditionLabels } from '@/components/things/labels';
 import { useFieldLabel } from '@/components/things/names';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
+import { DatePicker } from '@/components/ui/date-picker';
 import { inputClass } from '@/components/ui/field';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
@@ -38,6 +40,15 @@ import {
 import { PhotoDetailsPanel } from './photo-details';
 import { PlaceKindSelect } from './place-kind-select';
 import { rememberDestination } from './recent-destinations';
+
+/** Today in a time zone, `YYYY-MM-DD`: a purchase can't be dated after it. */
+function todayIn(timeZone: string | undefined): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date());
+  } catch {
+    return new Intl.DateTimeFormat('en-CA').format(new Date());
+  }
+}
 
 export function EditRecord({
   connection,
@@ -102,6 +113,29 @@ export function EditRecord({
   const [quantity, setQuantity] = useState('');
   const [moveKey, setMoveKey] = useState(newId);
   const [removeKey] = useState(newId);
+  // When it was bought: its purchase's date (#348). Purchases are core, so this shows with the
+  // Money module off too; the price and the receipts stay on the web page.
+  const purchase = thing?.purchase ?? null;
+  const [boughtOn, setBoughtOn] = useState<string | null>(purchase?.purchasedOn ?? null);
+  const [receipt, setReceipt] = useState<PurchaseView>();
+  const today = todayIn(cache.locations.find(({ id }) => id === thing?.locationId)?.timezone);
+  useEffect(() => {
+    const id = purchase?.purchaseId;
+    if (!id || mode !== 'edit') return;
+    let current = true;
+    adapters.transport
+      .request<PurchaseView>(connection, inventoryPaths.purchase(id))
+      .then((view) => {
+        if (current) setReceipt(view);
+      })
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, [adapters, connection, mode, purchase?.purchaseId]);
+  const others = receipt
+    ? receipt.lines.filter((l) => l.id !== purchase?.lineId && l.thing?.id !== thing?.id).length
+    : 0;
   const correcting = mode === 'correct';
   const amount = quantity ? Number(quantity) : undefined;
   const badAmount =
@@ -186,6 +220,7 @@ export function EditRecord({
             body,
           });
         }
+        await saveBoughtOn(thing, values.name);
       } else if (place && roomName.trim()) {
         const text = description.trim() || null;
         const descriptionChanged = text !== (place.description ?? null);
@@ -207,6 +242,35 @@ export function EditRecord({
           });
       }
       onChanged();
+    });
+  }
+
+  /** A new date makes a one-line purchase for the thing, or changes its purchase's date. */
+  async function saveBoughtOn(saved: ThingView, name: string) {
+    if (!boughtOn || boughtOn === (purchase?.purchasedOn ?? null)) return;
+    if (!purchase) {
+      const quantity = Number(saved.quantity) > 0 ? Number(saved.quantity) : 1;
+      await adapters.transport.request(connection, inventoryPaths.purchases, {
+        method: 'POST',
+        body: {
+          locationId: saved.locationId,
+          purchasedOn: boughtOn,
+          lines: [
+            { description: name.trim() || saved.name || t`Untitled`, quantity, thingId: saved.id },
+          ],
+        },
+      });
+      return;
+    }
+    if (!purchase.purchaseId) return;
+    const view = await adapters.transport.request<PurchaseView>(
+      connection,
+      inventoryPaths.purchase(purchase.purchaseId),
+    );
+    await adapters.transport.request(connection, inventoryPaths.purchase(purchase.purchaseId), {
+      method: 'PATCH',
+      ifMatch: view.rowVersion,
+      body: { purchasedOn: boughtOn },
     });
   }
 
@@ -404,6 +468,25 @@ export function EditRecord({
               >
                 {(option) => <SelectItem id={option.id}>{option.name}</SelectItem>}
               </Select>
+              {thing && (!purchase || purchase.purchaseId) && (
+                <div className="grid gap-1">
+                  <DatePicker
+                    label={t`Bought on`}
+                    value={boughtOn}
+                    onChange={(value) => setBoughtOn(value ?? purchase?.purchasedOn ?? null)}
+                    maxValue={today}
+                  />
+                  {others > 0 && (
+                    <p className="m-0 text-small text-ink-2">
+                      <Plural
+                        value={others}
+                        one="This receipt has # other thing on it: the date and shop change for it too."
+                        other="This receipt has # other things on it: the date and shop change for them too."
+                      />
+                    </p>
+                  )}
+                </div>
+              )}
               {thing && account && (
                 <CategoryPicker
                   connection={connection}
