@@ -1359,6 +1359,27 @@
       "when": 1795615577888,
       "tag": "0193_split_keeps_purchase_line",
       "breakpoints": true
+    },
+    {
+      "idx": 194,
+      "version": "7",
+      "when": 1795663982035,
+      "tag": "0194_thermal_label_batches",
+      "breakpoints": true
+    },
+    {
+      "idx": 195,
+      "version": "7",
+      "when": 1795664418490,
+      "tag": "0195_label_supersession",
+      "breakpoints": true
+    },
+    {
+      "idx": 196,
+      "version": "7",
+      "when": 1795665078668,
+      "tag": "0196_label_tag_associations",
+      "breakpoints": true
     }
   ]
 }

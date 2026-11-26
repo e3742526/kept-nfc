@@ -1,0 +1,84 @@
+import { Trans, useLingui } from '@lingui/react/macro';
+import { useMemo } from 'react';
+import { capturePaths } from '@/api/capture/paths';
+import type { LabelBatch } from '@/api/capture/types';
+import type { PrintApi } from '@/components/labels/thermal/api';
+import type { NativeThermalOutput } from '@/components/labels/thermal/output';
+import { type ThermalSource, ThermalStudio } from '@/components/labels/thermal/studio';
+import { usePlatform } from './adapters';
+import type { Connection } from './bridge';
+
+export function NativeThermalPrint({
+  connection,
+  locationId,
+  batch,
+  thingId,
+  placeId,
+  onSaved,
+}: {
+  connection: Connection;
+  locationId: string;
+  batch?: LabelBatch | undefined;
+  thingId?: string | undefined;
+  placeId?: string | undefined;
+  onSaved?: (batch: LabelBatch) => void;
+}) {
+  const { t } = useLingui();
+  const { transport, media } = usePlatform();
+  const api = useMemo<PrintApi>(
+    () => ({
+      address: async () =>
+        (await transport.request<{ url: string }>(connection, capturePaths.labelAddress)).url,
+      preview: (body) =>
+        transport.request(connection, capturePaths.labelBatches, {
+          method: 'POST',
+          body: { ...body, dryRun: true },
+        }),
+      create: (body) =>
+        transport.request(connection, capturePaths.labelBatches, {
+          method: 'POST',
+          body,
+          ...(body.id ? { idempotencyKey: body.id } : {}),
+        }),
+      replace: (body) =>
+        transport.request(connection, capturePaths.labelReplace, { method: 'POST', body }),
+      registerTag: (body) =>
+        transport.request(connection, capturePaths.labelTags, { method: 'POST', body }),
+      confirm: (id) =>
+        transport.request(connection, capturePaths.labelBatchPrinted(id), { method: 'POST' }),
+    }),
+    [connection, transport],
+  );
+  const source = useMemo<ThermalSource>(
+    () =>
+      thingId
+        ? { kind: 'things', thingIds: [thingId], locationId }
+        : placeId
+          ? { kind: 'places', placeIds: [placeId], locationId }
+          : { kind: 'blank', locationId },
+    [thingId, placeId, locationId],
+  );
+  const send = media.thermalPdf;
+  const output: NativeThermalOutput | undefined = send
+    ? (pdf, share) => send(connection, pdf, share, t`SheepKeep labels`)
+    : undefined;
+
+  return (
+    <div className="grid gap-4">
+      <p className="m-0 text-small text-ink-2">
+        <Trans>
+          Choose an AirPrint-compatible network printer. For a printer connected to a computer by
+          USB, export the PDF and print it on that computer.
+        </Trans>
+      </p>
+      <ThermalStudio
+        owner={connection.id}
+        source={source}
+        api={api}
+        nativeOutput={output}
+        batch={batch}
+        {...(onSaved ? { onSaved } : {})}
+      />
+    </div>
+  );
+}

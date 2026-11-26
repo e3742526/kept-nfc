@@ -7,7 +7,7 @@
 /** SQL boolean: `id` (a thing's or a place's id expression) has a printed label. */
 export const labelPrintedSql = (col: 'thing_id' | 'place_id', id: string): string =>
   `EXISTS (SELECT 1 FROM public.short_ids lp
-            WHERE lp.${col} = ${id} AND lp.state = 'assigned' AND lp.printed_at IS NOT NULL)`;
+            WHERE lp.${col} = ${id} AND lp.state = 'assigned' AND lp.superseded_at IS NULL AND lp.printed_at IS NOT NULL)`;
 
 /**
  * SQL: the code `id` shows, its label: the most recently printed of its codes, else its primary
@@ -16,5 +16,5 @@ export const labelPrintedSql = (col: 'thing_id' | 'place_id', id: string): strin
  */
 export const shownCodeSql = (col: 'thing_id' | 'place_id', id: string): string =>
   `(SELECT sc.code FROM public.short_ids sc
-     WHERE sc.${col} = ${id} AND sc.state = 'assigned' AND (sc.printed_at IS NOT NULL OR sc.is_primary)
+     WHERE sc.${col} = ${id} AND sc.state = 'assigned' AND sc.superseded_at IS NULL AND (sc.printed_at IS NOT NULL OR sc.is_primary)
      ORDER BY sc.printed_at DESC NULLS LAST, sc.is_primary DESC, sc.code LIMIT 1)`;

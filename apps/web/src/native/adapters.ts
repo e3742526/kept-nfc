@@ -105,6 +105,12 @@ export type PlatformMedia = {
     input: { thing?: string; file: string; mime: string; variant?: 'display' },
   ): Promise<void>;
   openPending(connection: Connection, input: { id: string; file: string }): Promise<void>;
+  thermalPdf?(
+    connection: Connection,
+    pdf: Uint8Array<ArrayBuffer>,
+    share: boolean,
+    title: string,
+  ): Promise<'submitted' | 'cancelled' | 'shared'>;
   shareLabelSheet?(connection: Connection, input: LabelSheet): Promise<void>;
   shareLabelPdf(connection: Connection, input: { url: string; name: string }): Promise<void>;
   openHeld(
@@ -375,6 +381,19 @@ export const capacitorAdapters: PlatformAdapters = {
     },
     openPending(connection, input) {
       return native.openPendingMedia({ context: connection.id, ...input });
+    },
+    async thermalPdf(connection, pdf, share, title) {
+      const data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const payload = String(reader.result ?? '').split(',')[1];
+          if (payload) resolve(payload);
+          else reject(new Error('PDF encoding failed'));
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(new Blob([pdf], { type: 'application/pdf' }));
+      });
+      return (await native.thermalPdf({ context: connection.id, data, share, title })).outcome;
     },
     shareLabelSheet(connection, input) {
       return native.shareLabelSheet({ context: connection.id, ...input });

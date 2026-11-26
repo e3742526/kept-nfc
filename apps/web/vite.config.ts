@@ -242,6 +242,9 @@ const COMPONENT_ONLY_ROUTES = new Set<string>([
  * parser. The import's worker goes to assets/household/ too (`worker` below).
  */
 const ON_DEMAND_ENTRIES = [
+  // Open the thermal editor once online to cache it and its optional PDF exporter.
+  '/src/components/labels/thermal/studio.tsx',
+  '/pdf-lib/es/index.js',
   '/src/components/hints/driver-kit.ts',
   // 1.x (D250): the spreadsheet view; it reads and writes the server only (sheet/lazy.tsx).
   '/src/components/sheet/sheet-view.tsx',

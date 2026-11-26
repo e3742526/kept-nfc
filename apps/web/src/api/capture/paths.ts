@@ -56,6 +56,8 @@ export const capturePaths = {
   labelBatchDismiss: (id: string) => `${V1}/labels/batches/${seg(id)}/dismiss`,
   labelSummary: `${V1}/labels/summary`,
   labelReserve: `${V1}/labels/reserve`,
+  labelReplace: `${V1}/labels/replace`,
+  labelTags: `${V1}/labels/tags`,
   labelAddress: `${V1}/labels/address`,
   codeClaim: (code: string) => `${V1}/codes/${seg(code)}/claim`,
 
@@ -145,6 +147,8 @@ export const CAPTURE_METHODS: Record<keyof typeof capturePaths, readonly Method[
   labelBatchDismiss: ['POST'],
   labelSummary: ['GET'],
   labelReserve: ['POST'],
+  labelReplace: ['POST'],
+  labelTags: ['POST'],
   labelAddress: ['GET'],
   codeClaim: ['POST'],
   scanResolve: ['POST'],

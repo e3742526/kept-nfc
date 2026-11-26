@@ -161,11 +161,15 @@ export function ScanAnswer(props: AnswerProps) {
       return (
         <AnswerFrame label={t`Scan result`} onCamera={onCamera}>
           <Pill tone="info" icon={<LinkIcon />}>
-            <Trans>Old Homebox label</Trans>
+            {res.superseded ? <Trans>Superseded label</Trans> : <Trans>Old Homebox label</Trans>}
           </Pill>
           <h2 className="m-0 font-semibold text-[19px] [overflow-wrap:anywhere]">
             <bdi dir="ltr" className="font-mono">
-              {t`Asset ${res.legacy ?? ''}`}
+              {res.superseded ? (
+                <Trans>Open the current inventory record</Trans>
+              ) : (
+                t`Asset ${res.legacy ?? ''}`
+              )}
             </bdi>
             {name ? (
               <>

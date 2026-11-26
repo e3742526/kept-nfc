@@ -87,6 +87,9 @@ export type StoredCode = {
   code: string;
   locationId: string;
   state: 'blank' | 'assigned';
+  superseded?: true;
+  nfc?: true;
+  uhfEpc?: string;
   target: { kind: 'thing' | 'place'; id: string; name: string } | null;
   printedAt: string | null;
 };

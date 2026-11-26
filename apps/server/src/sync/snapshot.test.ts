@@ -431,6 +431,10 @@ describe('deltas', () => {
     const all = allOf((await pull(louis)).pages, 'codes');
     expect(all.find((c) => c.code === 'NP2345')).not.toHaveProperty('printedAt');
     expect(all.find((c) => c.code === 'PR1234')?.printedAt).toMatch(/^\d{4}-\d\d-\d\dT/);
+    await own("UPDATE public.short_ids SET superseded_at = now() WHERE code = 'PR1234'");
+    const after = allOf((await pull(louis)).pages, 'codes');
+    expect(after.find((c) => c.code === 'PR1234')).toMatchObject({ superseded: true });
+    expect(after.find((c) => c.code === 'NP2345')).not.toHaveProperty('superseded');
   });
 
   it('carry a thing whose tags changed, with its tag ids', async () => {

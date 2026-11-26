@@ -208,7 +208,7 @@ export function readKey(text: string, format?: string): string {
     case 'kept':
       return `k:${s.code}`;
     case 'alias':
-      return `a:${s.alias}`;
+      return `a:${s.alias}${s.guard ? `:${s.guard}` : ''}`;
     case 'homebox':
       return `h:${s.path}:${s.assetId ?? s.uuid ?? ''}`;
     case 'barcode':

@@ -155,6 +155,7 @@ const SnapshotResponse = z.object({
         state: z.enum(['blank', 'assigned', 'retired']),
         isPrimary: z.boolean(),
         printedAt: z.string().optional(),
+        superseded: z.literal(true).optional(),
       }),
     ),
     legacyCodes: z.array(

@@ -14,6 +14,7 @@ import type { Ctx } from '../things/service.js';
 import { ClaimTarget, claimableCode, claimLabel, labelClaimed } from './claim.js';
 import { formerHostHook } from './former-hosts.js';
 import { APPLE_ASSOCIATION_PATH, appleAssociation } from './label-host.js';
+import { ReplaceLabelBody, ReplaceLabelResult, replaceLabel } from './replace.js';
 import {
   CreateBatchBody,
   CreateBatchResultSchema,
@@ -30,6 +31,8 @@ import {
   reserveLabel,
   SummarySchema,
 } from './service.js';
+
+import { RegisterTagBody, RegisterTagResult, registerTag } from './tags.js';
 
 // Labels (D43, D44, D45, D120, D137, D172, D175).
 // The web contract is apps/web/src/api/capture/{paths,types}.ts "labels".
@@ -262,6 +265,36 @@ export async function labelRoutes(app: KeptApp, deps: InventoryDeps): Promise<vo
         const placeId = locationId ? (req.query.placeId?.toLowerCase() ?? null) : null;
         return labelSummary(client, locationId, placeId);
       }),
+  );
+
+  app.post(
+    '/api/v1/labels/tags',
+    {
+      config: {
+        module: 'labels',
+        moduleLocation: async (req) =>
+          (req.body as { locationId?: string } | null)?.locationId ?? null,
+      },
+      schema: { body: RegisterTagBody, response: { 200: RegisterTagResult } },
+    },
+    (req, reply) =>
+      scopedWrite(pools, req, reply, async (tx, client, scope) => ({
+        status: 200,
+        body: await registerTag(ctxOf(req, tx, client, scope), req.body),
+      })),
+  );
+
+  app.post(
+    '/api/v1/labels/replace',
+    {
+      config: { module: 'labels' },
+      schema: { body: ReplaceLabelBody, response: { 200: ReplaceLabelResult } },
+    },
+    (req, reply) =>
+      scopedWrite(pools, req, reply, async (tx, client, scope) => ({
+        status: 200,
+        body: await replaceLabel(ctxOf(req, tx, client, scope), req.body),
+      })),
   );
 
   app.post(

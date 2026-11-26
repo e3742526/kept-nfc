@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { capturePaths } from '@/api/capture/paths';
 import { appDetect } from '@/camera/scanner';
 import { useErrorText } from '@/components/page';
 import type { Read } from '@/components/scan/resolve';
@@ -43,6 +44,7 @@ import {
 } from './labels';
 import { useNfcStatusText } from './nfc-status';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
+import { NativeThermalPrint } from './thermal-print';
 
 export type LabelBox = {
   id: string;
@@ -93,6 +95,7 @@ export function LabelPanel({
   const [finding, setFinding] = useState(false);
   const [findPausedState, setFindPausedState] = useState<'timeout' | 'interrupted' | null>(null);
   const [scanMode, setScanMode] = useState<ScanMode>(action === 'identify' ? 'qr' : 'nfc');
+  const [superseded, setSuperseded] = useState<Target>();
   const [claim, setClaim] = useState<{ code: string; locationId: string }>();
   const [typed, setTyped] = useState('');
   const [status, setStatus] = useState('');
@@ -100,6 +103,8 @@ export function LabelPanel({
   const [inspection, setInspection] = useState<TagReading>();
   const [existingOwner, setExistingOwner] = useState<string | null>(null);
   const [unverifiedWrite, setUnverifiedWrite] = useState(false);
+  const [nfcRegistrationPending, setNfcRegistrationPending] = useState(false);
+  const [tagVersion, setTagVersion] = useState(0);
   const [matched, setMatched] = useState(false);
   // Identify listens for an NFC tag while the camera looks for a QR code; the first read wins.
   const [nfcListening, setNfcListening] = useState(false);
@@ -295,6 +300,7 @@ export function LabelPanel({
 
   async function read(text: string, mode: 'qr' | 'nfc', format?: string, signal?: AbortSignal) {
     setClaim(undefined);
+    setSuperseded(undefined);
     const result = await resolveLabel(connection, cache, text, mode, format, false, adapters);
     if (!live.current || signal?.aborted) return;
     if (action === 'find') {
@@ -302,6 +308,11 @@ export function LabelPanel({
       return;
     }
     if (result.status === 'resolved') {
+      if (result.superseded) {
+        setSuperseded(result.target);
+        setStatus(t`Superseded label`);
+        return;
+      }
       await chooseTarget(result.target);
       return;
     }
@@ -537,6 +548,22 @@ export function LabelPanel({
     return false;
   }
 
+  async function registerVerifiedTag(label: string) {
+    if (!box) return;
+    try {
+      await adapters.transport.request(connection, capturePaths.labelTags, {
+        method: 'POST',
+        body: { locationId: box.locationId, label, kind: 'nfc' },
+      });
+      if (live.current) {
+        setNfcRegistrationPending(false);
+        setTagVersion((value) => value + 1);
+      }
+    } catch {
+      if (live.current) setNfcRegistrationPending(true);
+    }
+  }
+
   function inspect() {
     return run(async () => {
       setInspection(undefined);
@@ -549,6 +576,7 @@ export function LabelPanel({
       } else if (result.url === url) {
         setUnverifiedWrite(false);
         setStatus(t`This tag already contains the verified SheepKeep label.`);
+        await registerVerifiedTag(url);
       } else if (!result.writable) {
         setStatus(nfcStatus({ status: 'read_only' }));
       } else if ((result.required ?? 1) > (result.capacity ?? 0)) {
@@ -579,6 +607,7 @@ export function LabelPanel({
       if (result.status === 'written') {
         setUnverifiedWrite(false);
         setStatus(t`SheepKeep tag verified.`);
+        await registerVerifiedTag(url);
       } else {
         if (result.status === 'write_unverified') setUnverifiedWrite(true);
         setStatus(nfcStatus(result));
@@ -674,6 +703,18 @@ export function LabelPanel({
           onAuthError={onAuthError}
         />
       )}
+      {superseded && (
+        <Button variant="secondary" onPress={() => void chooseTarget(superseded)}>
+          <Trans>Open the current inventory record</Trans>
+        </Button>
+      )}
+      {nfcRegistrationPending && (
+        <p role="status">
+          <Trans>
+            NFC readback succeeded. Inspect the tag again to save verification when connected.
+          </Trans>
+        </p>
+      )}
       {action === 'enroll' ? (
         <div className="kept-card justify-items-center">
           {url && <QrCode value={url} label={t`SheepKeep QR label`} />}
@@ -694,6 +735,20 @@ export function LabelPanel({
                 <Share size={16} aria-hidden />
                 <Trans>Share QR label PDF</Trans>
               </Button>
+            )}
+            {box && (
+              <details className="kept-details">
+                <summary>
+                  <Trans>Thermal printing</Trans>
+                </summary>
+                <NativeThermalPrint
+                  key={tagVersion}
+                  connection={connection}
+                  locationId={box.locationId}
+                  thingId={box.kind === 'thing' ? box.id : undefined}
+                  placeId={box.kind === 'place' ? box.id : undefined}
+                />
+              </details>
             )}
             {canEnroll && url?.startsWith('https://') && (
               <Button isPending={busy} onPress={() => void inspect()}>

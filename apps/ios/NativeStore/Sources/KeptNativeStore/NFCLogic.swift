@@ -15,7 +15,7 @@ public struct NFCLabelValidation {
     private static let shortCodePattern = try! NSRegularExpression(pattern: "^[0-9A-HJKMNP-TV-Z]{6}$")
     private static let labelPathPattern = try! NSRegularExpression(pattern: "^/l/([A-Za-z0-9]{6})$")
     private static let aliasPathPattern = try! NSRegularExpression(
-        pattern: "^/l/([A-Za-z]{3}-[0-9A-Za-z]{4}-[0-9]{4})$"
+        pattern: "^/l/([A-Za-z]{3}-[0-9A-Za-z]{4}-[0-9]{4})(?:-([0-9A-Fa-f]{12}))?$"
     )
 
     public static func normaliseShortCode(_ raw: String) -> String {
@@ -63,6 +63,9 @@ public struct NFCLabelValidation {
         {
             let alias = String(path[aliasRange]).uppercased()
             guard !alias.hasSuffix("-0000") else { return .malformed }
+            if let guardRange = Range(match.range(at: 2), in: path) {
+                return .approved(code: alias + "-" + path[guardRange].lowercased())
+            }
             return .approved(code: alias)
         }
         guard let match = labelPathPattern.firstMatch(in: path, options: [], range: pathRange),

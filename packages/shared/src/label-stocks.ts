@@ -103,7 +103,33 @@ const letterWritable = (cols: number, rows: number): LabelStock => ({
   content: 'full',
 });
 
+export const MICRO_THERMAL_STOCK = 'thermal_30_48x20_32';
+
+export const THERMAL_LABEL_STOCKS = [
+  roll(
+    MICRO_THERMAL_STOCK,
+    30.48,
+    20.32,
+    'Micro Thermal 1.2 × 0.8 in',
+    'حراري صغير 1.2 × 0.8 بوصة',
+  ),
+  roll('thermal_4x6in', 101.6, 152.4, 'Large · 4 × 6 in', 'كبير · 4 × 6 بوصات'),
+  roll(
+    'thermal_1_75x0_75in',
+    44.45,
+    19.05,
+    'Micro · 1.75 × 0.75 in',
+    'صغير جدًا · 1.75 × 0.75 بوصة',
+  ),
+  roll('thermal_2x1in', 50.8, 25.4, 'Small · 2 × 1 in', 'صغير · 2 × 1 بوصة'),
+] as const;
+
+export function isThermalLabelStock(key: string): boolean {
+  return THERMAL_LABEL_STOCKS.some((stock) => stock.key === key);
+}
+
 export const LABEL_STOCKS: readonly LabelStock[] = Object.freeze([
+  ...THERMAL_LABEL_STOCKS,
   roll('thermal_50x30', 50, 30, 'Thermal 50 × 30 mm', 'حراري 50 × 30 مم'),
   roll('thermal_40x30', 40, 30, 'Thermal 40 × 30 mm', 'حراري 40 × 30 مم'),
   roll('thermal_62x29', 62, 29, 'Brother 62 × 29 mm', 'براذر 62 × 29 مم'),

@@ -267,8 +267,20 @@ export class DexieStore implements SyncStore {
     const c = await this.db.codes.get(code);
     if (c && c.state !== 'retired') {
       if (c.state === 'blank') return { kind: 'blank', locationId: c.locationId };
-      if (c.thingId) return { kind: 'thing', id: c.thingId, locationId: c.locationId };
-      if (c.placeId) return { kind: 'place', id: c.placeId, locationId: c.locationId };
+      if (c.thingId)
+        return {
+          kind: 'thing',
+          id: c.thingId,
+          locationId: c.locationId,
+          ...(c.superseded ? { superseded: true } : {}),
+        };
+      if (c.placeId)
+        return {
+          kind: 'place',
+          id: c.placeId,
+          locationId: c.locationId,
+          ...(c.superseded ? { superseded: true } : {}),
+        };
     }
     const t = await this.db.things.where('shortCode').equals(code).first();
     if (t) return { kind: 'thing', id: t.id, locationId: t.locationId };

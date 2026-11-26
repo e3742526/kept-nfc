@@ -110,6 +110,39 @@ describe('a numbered series', () => {
     expect(tmp.batch.labels[0]?.alias).toBe('TMP-ZZ99-0001');
   });
 
+  it('registers exactly the device batch, replays it, and refuses collisions atomically', async () => {
+    const id = crypto.randomUUID();
+    const body = {
+      id,
+      locationId: home.id,
+      kind: 'blank',
+      blankCount: 2,
+      stock: 'thermal_1_75x0_75in',
+      series: { prefix: 'TMP', id: 'OIL0', origin: LABELS },
+    };
+    const register = (as: Person, request = body) =>
+      call(t, '/api/v1/labels/batches', { as, body: request });
+    const first = ok(await register(louis), 201) as unknown as { batch: Batch };
+    expect(first.batch.id).toBe(id);
+    const suffix = id.slice(-12);
+    const cell = first.batch.labels[0] as Cell;
+    expect(cell.url).toBe(`${LABELS}/l/TMP-OIL0-0001-${suffix}`);
+    expect(ok(await register(louis), 201)).toEqual(first);
+    const rejected = { ...body, id: crypto.randomUUID(), locationId: garage.id };
+    const collision = await register(bruce, rejected);
+    expect(collision.statusCode).toBe(409);
+    expect(collision.json()).toMatchObject({ code: 'label_series_collision' });
+    const missing = await call(t, `/api/v1/labels/batches/${rejected.id}`, { as: bruce });
+    expect(missing.statusCode).toBe(404);
+    expect(ok(await resolve(louis, cell.url))).toMatchObject({ outcome: 'claim', code: cell.code });
+    expect(ok(await resolve(louis, `${LABELS}/l/TMP-OIL0-0001-${rejected.id.slice(-12)}`))).toEqual(
+      { outcome: 'not_in_your_kept' },
+    );
+    expect(
+      (await onHost('labels.example.org', new URL(cell.url).pathname)).headers.location,
+    ).toContain(`/l/TMP-OIL0-0001-${suffix}`);
+  });
+
   it('numbers only blank sheets, with a three-letter prefix, and only for writers', async () => {
     const thing = await createThing(t, ibrahim, home, { name: 'Drill' });
     const things = await call(t, '/api/v1/labels/batches', {
@@ -158,6 +191,143 @@ describe('reading a numbered label', () => {
       201,
     ) as unknown as { batch: Batch };
     expect(reprint.batch.labels[0]).toMatchObject({ code: cell.code, alias, url: cell.url });
+  });
+
+  // catalogue: POST /api/v1/labels/replace
+  it('replaces two stickers in sequence while every QR still opens the same inventory UUID', async () => {
+    const box = await createThing(t, louis, home, { name: 'Cable box' });
+    const labels = (ok(await numbered(louis, home, 'CAB', 3), 201) as unknown as { batch: Batch })
+      .batch.labels;
+    const url = (index: number) => labels[index]?.url as string;
+    ok(
+      await call(t, `/api/v1/codes/${labels[0]?.code}/claim`, {
+        as: louis,
+        body: { thingId: box.id },
+      }),
+    );
+    const replace = (as: Person, from: number, to: number) =>
+      call(t, '/api/v1/labels/replace', {
+        as,
+        body: {
+          locationId: home.id,
+          previous: url(from),
+          replacement: url(to),
+          reason: 'Worn sticker',
+        },
+      });
+    expect((await replace(talia, 0, 1)).statusCode).toBe(403);
+    ok(await replace(louis, 0, 1));
+    ok(await replace(louis, 0, 1));
+    expect((await replace(louis, 0, 2)).statusCode).toBe(404);
+    ok(await replace(louis, 1, 2));
+    const target = { kind: 'thing', id: box.id, locationId: home.id };
+    expect(ok(await resolve(talia, url(0)))).toEqual({ outcome: 'open', target, superseded: true });
+    expect(ok(await resolve(talia, url(1)))).toEqual({ outcome: 'open', target, superseded: true });
+    expect(ok(await resolve(talia, url(2)))).toEqual({ outcome: 'open', target });
+    const rows = await own<{
+      replacement_code: string;
+      replacement_reason: string;
+      superseded_by: string;
+    }>(
+      db,
+      'SELECT replacement_code, replacement_reason, superseded_by FROM public.short_ids WHERE code = $1',
+      [labels[0]?.code],
+    );
+    expect(rows[0]).toMatchObject({
+      replacement_code: labels[1]?.code,
+      replacement_reason: 'Worn sticker',
+      superseded_by: louis.userId,
+    });
+    const events = await own<{ diff: Record<string, unknown> }>(
+      db,
+      "SELECT diff FROM public.audit_events WHERE action = 'label.replace' AND entity_id = $1",
+      [box.id],
+    );
+    expect(events).toHaveLength(2);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          diff: expect.objectContaining({
+            code: expect.objectContaining({ before: labels[0]?.code, after: labels[1]?.code }),
+            reason: expect.objectContaining({ after: 'Worn sticker' }),
+          }),
+        }),
+      ]),
+    );
+  });
+
+  // catalogue: POST /api/v1/labels/tags
+  it('verifies NFC and registers a distinct, unique EPC across physical sticker replacement', async () => {
+    const box = await createThing(t, louis, home, {
+      name: 'Tagged drill',
+      barcode: '5901234123457',
+    });
+    const blank = (ok(await numbered(louis, home, 'TOL', 1), 201) as unknown as { batch: Batch })
+      .batch.labels[0] as Cell;
+    const epc = '300833B2DDD9014000000001';
+    const register = (
+      as: Person,
+      tag: { kind: 'nfc' } | { kind: 'uhf'; epc: string },
+      label = box.shortCode,
+    ) =>
+      call(t, '/api/v1/labels/tags', {
+        as,
+        body: { locationId: home.id, label, ...tag },
+      });
+    expect((await register(talia, { kind: 'nfc' })).statusCode).toBe(403);
+    ok(await register(louis, { kind: 'nfc' }));
+    ok(await register(louis, { kind: 'uhf', epc }));
+    const another = await createThing(t, louis, home, {
+      name: 'Another drill',
+      barcode: '5901234123457',
+    });
+    expect((await register(louis, { kind: 'uhf', epc }, another.shortCode)).statusCode).toBe(409);
+    ok(
+      await call(t, '/api/v1/labels/replace', {
+        as: louis,
+        body: {
+          locationId: home.id,
+          previous: box.shortCode,
+          replacement: blank.url,
+          reason: 'Smudged',
+        },
+      }),
+    );
+    const printed = ok(
+      await call(t, '/api/v1/labels/batches', {
+        as: louis,
+        body: {
+          locationId: home.id,
+          kind: 'things',
+          thingIds: [box.id],
+          stock: 'thermal_30_48x20_32',
+        },
+      }),
+      201,
+    ) as unknown as { batch: Batch };
+    expect(printed.batch.labels[0]).toMatchObject({ code: blank.code, nfc: 'verified', uhf: true });
+    const read = ok(
+      await call(t, '/api/v1/scan/resolve', { as: talia, body: { text: epc, format: 'uhf_rfid' } }),
+    );
+    expect(read).toEqual({
+      outcome: 'open',
+      target: { kind: 'thing', id: box.id, locationId: home.id },
+    });
+    const events = await own<{ diff: Record<string, unknown> }>(
+      db,
+      "SELECT diff FROM public.audit_events WHERE action = 'label.tag.register' AND entity_id = $1",
+      [box.id],
+    );
+    expect(events).toHaveLength(2);
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          diff: expect.objectContaining({
+            nfc_verified: expect.objectContaining({ after: true }),
+          }),
+        }),
+      ]),
+    );
   });
 
   it("answers another household's numbered label, a viewer's blank and an unknown one alike", async () => {

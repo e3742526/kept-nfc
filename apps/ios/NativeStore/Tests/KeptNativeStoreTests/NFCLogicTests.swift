@@ -74,6 +74,21 @@ final class NFCLogicTests: XCTestCase {
         )
     }
 
+    func testGuardedNumberedLinkKeepsItsBatchGuard() {
+        XCTAssertEqual(
+            NFCLabelValidation.validate(
+                urlText: "https://kept.example.com/l/TMP-OIL1-0042-0A0203040506", expectedOrigin: origin
+            ),
+            .approved(code: "TMP-OIL1-0042-0a0203040506")
+        )
+        XCTAssertEqual(
+            NFCLabelValidation.validate(
+                urlText: "https://kept.example.com/l/TMP-OIL1-0042-0A020304050X", expectedOrigin: origin
+            ),
+            .malformed
+        )
+    }
+
     func testLabelOriginAcceptsOnlyAnHttpsOrigin() {
         XCTAssertEqual(
             NFCLabelValidation.labelOrigin("https://Labels.Example.org:443/"),

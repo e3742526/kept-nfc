@@ -65,7 +65,7 @@ export function LabelLink({
     void resolveScan({ text: text ?? '' }, { store, online })
       .then(async (r) => {
         if (r.outcome === 'not_on_phone') await rememberPendingScan(store, r.text);
-        if (r.outcome === 'open') open(r.target);
+        if (r.outcome === 'open' && !r.superseded) open(r.target);
         else setRes(r);
       })
       .catch(() => setFailed(true));
@@ -84,7 +84,7 @@ export function LabelLink({
             <Trans>Couldn't look that up. Try again.</Trans>
           </p>
         </AnswerFrame>
-      ) : res && res.outcome !== 'open' ? (
+      ) : res ? (
         <ScanAnswer
           res={res}
           store={store}

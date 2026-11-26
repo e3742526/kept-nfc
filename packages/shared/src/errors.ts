@@ -59,6 +59,8 @@ export const ErrorCode = Object.freeze({
   undo_refused: 'undo_refused',
   /** A blank label was claimed first by someone else (D43, D112). */
   label_claimed: 'label_claimed',
+  label_series_collision: 'label_series_collision',
+  label_address_changed: 'label_address_changed',
   /** The location already has 1,000 unclaimed blank labels (D172). */
   blank_cap_reached: 'blank_cap_reached',
   /** Too many reserved labels no item has claimed yet in this location (POST /labels/reserve). */
@@ -192,6 +194,8 @@ export type CaptureErrorCode =
   | 'server_outdated'
   | 'undo_refused'
   | 'label_claimed'
+  | 'label_series_collision'
+  | 'label_address_changed'
   | 'blank_cap_reached'
   | 'reservation_limit'
   | 'ai_unavailable'
@@ -211,6 +215,8 @@ export const CAPTURE_ERROR_MESSAGES: Readonly<Record<CaptureErrorCode, string>> 
   server_outdated: 'Kept on the server is older than this app; ask your admin.',
   undo_refused: "That can't be undone any more.",
   label_claimed: 'This label was already claimed.',
+  label_series_collision: 'This label series is already reserved.',
+  label_address_changed: 'The label address changed before this batch was registered.',
   blank_cap_reached:
     'This location already has 1,000 unclaimed labels. Use some before printing more.',
   reservation_limit: 'Use or scan the labels you already made before making more.',

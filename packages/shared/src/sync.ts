@@ -706,6 +706,7 @@ export type SnapCode = {
    * it with the amber tape, and the newest printed code as its code. Left out when never printed;
    * additive, so an older copy has none. */
   printedAt?: string;
+  superseded?: true;
 };
 
 /** Keyed by location, source, collection and code (the table's primary key); `legacyCodeKey()`

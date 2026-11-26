@@ -52,6 +52,7 @@ export * from './share-links.js';
 export * from './short-code.js';
 export * from './sync.js';
 export * from './tags.js';
+export * from './thermal-labels.js';
 export * from './tokens.js';
 export * from './type-fields.js';
 export * from './user-agent.js';

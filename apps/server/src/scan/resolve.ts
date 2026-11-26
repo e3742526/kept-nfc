@@ -12,6 +12,7 @@ import type pg from 'pg';
 import { z } from 'zod';
 import { legacyCodeOf } from '../imports/csv.js';
 import { codeOfAlias } from '../labels/series.js';
+import { Epc } from '../labels/tags.js';
 import { callerMembership } from '../locations/access.js';
 
 // What a scan means (D120, D137, D146, D208). The web contract is
@@ -65,7 +66,7 @@ const Target = z.object({
 });
 
 export const ScanOutcomeSchema = z.union([
-  z.object({ outcome: z.literal('open'), target: Target }),
+  z.object({ outcome: z.literal('open'), target: Target, superseded: z.literal(true).optional() }),
   z.object({
     outcome: z.literal('claim'),
     locationId: z.uuid(),
@@ -104,11 +105,12 @@ export type ResolveDeps = {
 async function byShortCode(client: pg.ClientBase, code: string): Promise<ScanOutcome | null> {
   const { rows } = await client.query<{
     state: string;
+    superseded: boolean;
     location_id: string;
     thing_id: string | null;
     place_id: string | null;
   }>(
-    `SELECT s.state, s.location_id,
+    `SELECT s.state, s.location_id, s.superseded_at IS NOT NULL AS superseded,
             (SELECT t.id FROM public.things t
               WHERE t.id = s.thing_id AND t.deleted_at IS NULL) AS thing_id,
             (SELECT p.id FROM public.places p
@@ -121,6 +123,7 @@ async function byShortCode(client: pg.ClientBase, code: string): Promise<ScanOut
   if (s.state === 'assigned' && (s.thing_id || s.place_id)) {
     return {
       outcome: 'open',
+      ...(s.superseded ? { superseded: true as const } : {}),
       target: s.thing_id
         ? { kind: 'thing', id: s.thing_id, locationId: s.location_id }
         : { kind: 'place', id: s.place_id as string, locationId: s.location_id },
@@ -269,7 +272,8 @@ const RESOLVERS: {
   // A numbered label: the short ID it stands for, answered as that code; else, as typed, a
   // household's own code that happens to look like one.
   alias: async (client, scan, text) => {
-    const code = await codeOfAlias(client, scan.alias);
+    const code = await codeOfAlias(client, scan.alias, scan.guard);
+    if (scan.guard) return (code ? await byShortCode(client, code) : null) ?? MISS;
     return (
       (code ? await byShortCode(client, code) : null) ?? (await anyLegacy(client, text)) ?? MISS
     );
@@ -317,6 +321,16 @@ export async function resolveScan(
   body: z.infer<typeof ResolveScanBody>,
   deps: ResolveDeps,
 ): Promise<ScanOutcome> {
+  if (body.format === 'uhf_rfid') {
+    const epc = Epc.safeParse(body.text);
+    if (!epc.success) return MISS;
+    const { rows } = await client.query<{ code: string }>(
+      "SELECT code FROM public.short_ids WHERE uhf_epc = $1 AND state = 'assigned'",
+      [epc.data],
+    );
+    const result = rows[0] && (await byShortCode(client, rows[0].code));
+    return result?.outcome === 'open' ? { outcome: 'open', target: result.target } : MISS;
+  }
   const scan = parseScan(body.text, body.format);
   const text = body.text.trim();
   const resolve = RESOLVERS[scan.kind] as (

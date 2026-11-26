@@ -1,6 +1,6 @@
 import {
   normaliseInputCode,
-  parseDeviceLabel,
+  parseDeviceLabelReference,
   parseScan,
   SHORT_CODE,
   storedCodeOf,
@@ -19,7 +19,7 @@ export type ScanCandidate = Extract<
 >['candidates'][number];
 
 export type ReadResult =
-  | { status: 'resolved'; target: Target; cached: boolean }
+  | { status: 'resolved'; target: Target; cached: boolean; superseded?: true }
   | { status: 'ambiguous'; candidates: ScanCandidate[] }
   | { status: 'unassigned'; claim?: { code: string; locationId: string } }
   | {
@@ -29,9 +29,9 @@ export type ReadResult =
 /** A label's code from its `/l/` path: a short ID folded onto Crockford base32, or a numbered
  * label's alias (`BIN-A09Z-0001`, nothing folded); '' for anything else. */
 function labelCodeOf(pathname: string): string {
-  const part = /^\/l\/([a-z0-9-]{6,13})$/i.exec(pathname)?.[1] ?? '';
-  const alias = parseDeviceLabel(part);
-  if (alias && alias.code === part.toUpperCase()) return alias.code;
+  const part = /^\/l\/([a-z0-9-]{6,26})$/i.exec(pathname)?.[1] ?? '';
+  const alias = parseDeviceLabelReference(part);
+  if (alias) return alias.guard ? `${alias.code}-${alias.guard}` : alias.code;
   const code = normaliseInputCode(part);
   return /^[a-z0-9]{6}$/i.test(part) && SHORT_CODE.test(code) ? code : '';
 }
@@ -243,7 +243,7 @@ function resolveOfflineFromCache(
   parsed: ReturnType<typeof parseScan>,
   rawText: string,
 ): ReadResult {
-  if (!cache) return { status: 'unresolved' };
+  if (!cache || (parsed.kind === 'alias' && parsed.guard)) return { status: 'unresolved' };
 
   if (parsed.kind === 'kept') {
     const code = parsed.code;
@@ -262,6 +262,7 @@ function resolveOfflineFromCache(
             status: 'resolved',
             target: { id: hit.thingId, kind: 'thing', locationId: hit.locationId },
             cached: true,
+            ...(hit.superseded ? { superseded: true as const } : {}),
           };
         }
         if (hit.placeId && cache.places.some((item) => item.id === hit.placeId)) {
@@ -269,6 +270,7 @@ function resolveOfflineFromCache(
             status: 'resolved',
             target: { id: hit.placeId, kind: 'place', locationId: hit.locationId },
             cached: true,
+            ...(hit.superseded ? { superseded: true as const } : {}),
           };
         }
       }
@@ -391,7 +393,12 @@ export async function resolveLabel(
     );
     switch (response.outcome) {
       case 'open':
-        return { status: 'resolved', target: response.target, cached: false };
+        return {
+          status: 'resolved',
+          target: response.target,
+          cached: false,
+          ...(response.superseded ? { superseded: true } : {}),
+        };
       case 'claim':
         return {
           status: 'unassigned',

@@ -605,3 +605,44 @@ test('12 mm tape (#303): one 50 × 12 mm page a label, the code and the name, no
   }
   await context.close();
 });
+
+test('prepares micro thermal stock, remembers the printer, and reprints exact IDs', async ({
+  browser,
+}) => {
+  const { context, page } = await person(browser);
+  try {
+    const home = await homeId(page);
+    await page.goto(`/labels?loc=${home}&blank=2&thermal=1`);
+    await page.getByRole('button', { name: 'Physical stock' }).click();
+    await page.getByRole('option', { name: 'Micro Thermal 1.2 × 0.8 in' }).click();
+    await page.getByText('Save printer profile', { exact: true }).click();
+    await page.getByLabel('Printer name', { exact: true }).fill('Thermal test profile');
+    await page.getByRole('button', { name: 'Save profile and stock calibration' }).click();
+    await expect(page.getByRole('button', { name: 'Printer profile' })).toContainText(
+      'Thermal test profile',
+    );
+
+    await page.getByRole('button', { name: 'Prepare labels', exact: true }).click();
+    const job = page.getByRole('region', { name: 'Prepared print job' });
+    await expect(job.getByText('Registered', { exact: true })).toBeVisible();
+    await expect(job.getByRole('button', { name: 'Print', exact: true })).toBeEnabled();
+    const first = await page.locator('#kept-thermal-pages svg text').allTextContents();
+    expect(first).toHaveLength(2);
+    expect(first[0]).toMatch(/^TMP-[0-9A-Z]{4}-0001$/);
+    await job.getByRole('button', { name: 'Print', exact: true }).click();
+    await job.getByRole('button', { name: 'Record partial print' }).click();
+    await expect(job.getByText(/Partial print recorded/)).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Printer profile' })).toContainText(
+      'Thermal test profile',
+    );
+    await expect(page.getByRole('button', { name: 'Physical stock' })).toContainText(
+      'Micro Thermal',
+    );
+    await page.getByRole('button', { name: 'Open batch for reprint' }).click();
+    await expect(job.getByText(/Partial print recorded/)).toBeVisible();
+    expect(await page.locator('#kept-thermal-pages svg text').allTextContents()).toEqual(first);
+  } finally {
+    await context.close();
+  }
+});

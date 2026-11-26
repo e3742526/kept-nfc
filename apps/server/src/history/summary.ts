@@ -319,6 +319,8 @@ const ENGLISH: Record<SummaryKey, Sentence> = {
   'scan.session.move': (p) =>
     plural(p.count, `Moved # thing to ${p.name}`, `Moved # things to ${p.name}`),
   'label.claim': (p) => `Gave ${p.name} a label`,
+  'label.replace': (p) => `Replaced the label on ${p.name}`,
+  'label.tag.register': (p) => `Registered a tag for ${p.name}`,
   'location.own_codes': (p) => `Changed how ${p.name} numbers its codes`,
   'location.transfer_ownership': (p) => `Handed ${p.name} to a new owner`,
   'report.generate': (p) => `Made an inventory report of ${p.name}`,
