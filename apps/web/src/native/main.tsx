@@ -68,6 +68,7 @@ import { HomeDashboard } from './home';
 import {
   type InventoryCache,
   inventoryPath,
+  inventorySearchTerm,
   loadInventory,
   localInventorySearch,
   previewUrl,
@@ -594,6 +595,7 @@ export function Inventory({
   const formatBytes = useBytes();
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
   const [assistantThreadId, setAssistantThreadId] = useState<string>();
+  const [assistantDraft, setAssistantDraft] = useState('');
   const [preferredLocationId, setPreferredLocationId] = useState<string>();
   const [preferredAI, setPreferredAI] = useState<CaptureAIProvider>();
   const [photoPreferenceLoaded, setPhotoPreferenceLoaded] = useState(false);
@@ -694,7 +696,8 @@ export function Inventory({
   const [retargetBoxId, setRetargetBoxId] = useState<string | null>(null);
   const [openingPendingMedia, setOpeningPendingMedia] = useState<string>();
   const [query, setQuery] = useState('');
-  const searchingHome = screen.kind === 'home' && !!query.trim();
+  const searchTerm = inventorySearchTerm(query);
+  const searchingHome = screen.kind === 'home' && !!searchTerm;
   const [unplacedLocationFilter, setUnplacedLocationFilter] = useState<string | null>(null);
   const [found, setFound] = useState<SearchResponse>();
   const [cachedSearch, setCachedSearch] = useState(false);
@@ -1033,7 +1036,7 @@ export function Inventory({
       void adapters.transport
         .request<SearchResponse>(
           connection,
-          `${inventoryPaths.search}${qs({ q: query.trim(), limit: 50 })}`,
+          `${inventoryPaths.search}${qs({ q: searchTerm, limit: 50 })}`,
         )
         .then((result) => {
           if (current) setFound(result);
@@ -1056,7 +1059,7 @@ export function Inventory({
       current = false;
       clearTimeout(timer);
     };
-  }, [adapters, connection, onSignOut, query, searchingHome, t]);
+  }, [adapters, connection, onSignOut, searchTerm, searchingHome, t]);
 
   const savedLocally = () => {
     void refreshPendingState().catch(() => {});
@@ -1210,7 +1213,7 @@ export function Inventory({
         kind: 'box',
       }
     : cache && defaultDestination(cache, defaultLocationId);
-  const localResults = cache && cachedSearch ? localInventorySearch(cache, query) : [];
+  const localResults = cache && cachedSearch ? localInventorySearch(cache, searchTerm) : [];
   const things = query.trim()
     ? (found?.things.items.map((thing) => ({
         ...thing,
@@ -1677,7 +1680,7 @@ export function Inventory({
                   ? (cache?.places.filter(
                       (place) =>
                         !place.isUnplaced &&
-                        place.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+                        place.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()),
                     ) ?? [])
                   : [])
               ).map((place) => (
@@ -2011,7 +2014,10 @@ export function Inventory({
           onPhotoSearch={(mode) =>
             pushScreen({ kind: 'visualSearch', intent: { mode, text: browseFilters.q } })
           }
-          onAssistant={() => pushScreen({ kind: 'assistant' })}
+          onAssistant={() => {
+            setAssistantDraft((draft) => draft || browseFilters.q.trim());
+            pushScreen({ kind: 'assistant' });
+          }}
           onRooms={() => pushScreen({ kind: 'rooms' })}
           onInventoryChanged={() => {
             void refresh();
@@ -2027,6 +2033,8 @@ export function Inventory({
           online={online}
           defaultLocationId={defaultLocationId}
           threadId={assistantThreadId}
+          draft={assistantDraft}
+          onDraftChange={setAssistantDraft}
           onThreadChange={setAssistantThreadId}
           onOpen={(target) => pushScreen({ kind: 'record', target, backToAssistant: true })}
           onAuthError={onSignOut}

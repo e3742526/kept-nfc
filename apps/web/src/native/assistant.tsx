@@ -51,6 +51,8 @@ type Props = {
   cache?: InventoryCache;
   defaultLocationId?: string;
   threadId?: string;
+  draft: string;
+  onDraftChange: (text: string) => void;
   onThreadChange: (id?: string) => void;
   onOpen: (target: Target) => void;
   onAuthError: (reason: 'expired' | 'restored') => void;
@@ -77,6 +79,8 @@ function AssistantConversation({
   cache,
   defaultLocationId,
   threadId,
+  draft,
+  onDraftChange: setDraft,
   onThreadChange,
   onOpen,
   onAuthError,
@@ -88,7 +92,6 @@ function AssistantConversation({
   const queryClient = useQueryClient();
   const { transport } = usePlatform();
   const [turnId, setTurnId] = useState<string>();
-  const [draft, setDraft] = useState('');
   const [error, setError] = useState<unknown>(null);
   const previousAsk = useRef<{ thread: string; input: string; key: string }>(null);
   const request = <T,>(path: string, options?: NativeRequestOptions) =>
