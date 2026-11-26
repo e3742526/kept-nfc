@@ -1,15 +1,17 @@
-import { PHOTO_DETAILS_MAX_PHOTOS, type PhotoDetails } from '@kept/shared';
+import { normalize, PHOTO_DETAILS_MAX_PHOTOS, type PhotoDetails } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, Image, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { AttachmentView, Page, ThingView } from '@/api/inventory/types';
+import type { AttachmentView, FileUrl, Page, ThingView } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import type { FormValues } from '@/components/things/form-model';
 import { Button } from '@/components/ui/button';
+import { Select, SelectItem } from '@/components/ui/select';
 import { usePlatform } from './adapters';
-import type { Connection } from './bridge';
+import { type CaptureAIModel, type Connection, nativeErrorCode } from './bridge';
+import { ChatGPTConnection, useCaptureAI } from './capture-ai';
 import type { InventoryCache } from './inventory';
 import { previewUrl } from './inventory';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
@@ -55,6 +57,67 @@ export function suggestionsFor(
   return out;
 }
 
+/** The model the ChatGPT plan reads photos with, remembered on this iPhone. */
+export const DETAILS_MODEL_KEY = 'chatGPTDetailsModel';
+
+/** The remembered model if the plan still lists it, else a Terra model (OpenAI's visual one,
+ * GPT-6.1 Terra, made for reading product photos and labels), else the plan's first. */
+export function pickDetailsModel(models: readonly CaptureAIModel[], remembered?: string | null) {
+  if (remembered && models.some(({ id }) => id === remembered)) return remembered;
+  return (
+    models.find(({ id, name }) => /terra/i.test(id) || /terra/i.test(name))?.id ??
+    models[0]?.id ??
+    ''
+  );
+}
+
+const LIMITS = {
+  name: 200,
+  brand: 120,
+  model: 120,
+  serial: 120,
+  barcode: 14,
+  colour: 60,
+  specs: 600,
+  type_hint: 80,
+} as const;
+const PLACEHOLDER = /^(?:unknown|none|n\/?a|not (?:printed|visible|shown|readable)|-+|\?+)$/i;
+
+/**
+ * The ChatGPT plan's answer (JSON text, ChatGPTPlan.swift `itemDetailsInstructions`) as details:
+ * only the known fields, each a short plain string with a confidence from 0 to 1; a barcode only as
+ * 8 to 14 digits; placeholders dropped. Text around the JSON (a code fence) is ignored.
+ */
+export function parseChatGPTDetails(text: string): {
+  details: PhotoDetails;
+  typeHint?: { value: string; confidence: number };
+} {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end <= start) throw new Error('No details in the answer');
+  const raw: unknown = JSON.parse(text.slice(start, end + 1));
+  if (!raw || typeof raw !== 'object') throw new Error('No details in the answer');
+  const read = (key: keyof typeof LIMITS) => {
+    const entry = (raw as Record<string, unknown>)[key];
+    const box = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : null;
+    const given = box ? box.value : entry;
+    let value =
+      typeof given === 'string' ? given.trim() : typeof given === 'number' ? String(given) : '';
+    if (key === 'barcode') value = value.replace(/\s+/g, '');
+    if (!value || value.length > LIMITS[key] || PLACEHOLDER.test(value)) return undefined;
+    if (key === 'barcode' && !/^\d{8,14}$/.test(value)) return undefined;
+    const c = box && typeof box.confidence === 'number' ? box.confidence : 0.5;
+    return { value, confidence: Math.min(1, Math.max(0, c)) };
+  };
+  const details: PhotoDetails = {};
+  for (const key of ['name', 'brand', 'model', 'serial', 'barcode', 'colour', 'specs'] as const) {
+    const found = read(key);
+    if (found) details[key] = found;
+  }
+  const typeHint = read('type_hint');
+  return typeHint ? { details, typeHint } : { details };
+}
+
 /** The form with the chosen suggestions in it; specs go on their own line in the notes. */
 export function applySuggestions(
   values: FormValues,
@@ -98,8 +161,13 @@ export function PhotoDetailsPanel({
   onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
   const { t } = useLingui();
-  const { captureAI, transport } = usePlatform();
+  const { captureAI, outbox, transport } = usePlatform();
   const errorText = useErrorText();
+  const { status: plan, setAccount } = useCaptureAI(connection);
+  // The ChatGPT plan unless this iPhone's default photo AI is the server's API key.
+  const [provider, setProvider] = useState<'chatgpt' | 'server'>('chatgpt');
+  const [models, setModels] = useState<CaptureAIModel[]>([]);
+  const [model, setModel] = useState('');
   const [photos, setPhotos] = useState<AttachmentView[]>();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -107,7 +175,48 @@ export function PhotoDetailsPanel({
   const [suggestions, setSuggestions] = useState<Suggestion[]>();
   const [ticked, setTicked] = useState<Set<Target>>(new Set());
   const camera = useRef<HTMLInputElement>(null);
-  const read = captureAI?.photoDetails;
+  const viaServer = captureAI?.photoDetails;
+  const viaPlan = captureAI?.chatGPTDetails;
+  const read = viaServer ?? viaPlan;
+  const providers = [
+    ...(viaPlan ? [{ id: 'chatgpt' as const, name: t`ChatGPT plan` }] : []),
+    ...(viaServer ? [{ id: 'server' as const, name: t`Server API` }] : []),
+  ];
+  const using = providers.some(({ id }) => id === provider) ? provider : providers[0]?.id;
+
+  useEffect(() => {
+    let live = true;
+    void outbox
+      .getValue(connection, 'defaultPhotoAI')
+      .then((value) => {
+        if (live && value === 'server') setProvider('server');
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [connection, outbox]);
+
+  useEffect(() => {
+    if (!captureAI || using !== 'chatgpt' || !plan?.chatGPT) return;
+    let live = true;
+    void Promise.all([
+      captureAI.models(connection),
+      outbox.getValue(connection, DETAILS_MODEL_KEY).catch(() => null),
+    ])
+      .then(([listed, remembered]) => {
+        if (!live) return;
+        setModels(listed);
+        setModel(pickDetailsModel(listed, remembered));
+        if (!listed.length) setStatus(t`No ChatGPT models are available for this account.`);
+      })
+      .catch(() => {
+        if (live) setStatus(t`Could not load ChatGPT models. Reconnect and try again.`);
+      });
+    return () => {
+      live = false;
+    };
+  }, [captureAI, connection, outbox, plan?.chatGPT, t, using]);
 
   useEffect(() => {
     if (!read) return;
@@ -131,13 +240,47 @@ export function PhotoDetailsPanel({
     };
   }, [connection, read, thing.id, transport]);
 
-  if (!read) return null;
-  const photoDetails = read;
+  if (!read || !using) return null;
+  const ready = using === 'server' || (!!plan?.chatGPT && models.some(({ id }) => id === model));
 
   function fail(error: unknown) {
+    const code = nativeErrorCode(error);
     if (isAuthRefusal(error)) onAuthError?.('expired');
     else if (isRestoreEpochMismatch(error)) onAuthError?.('restored');
+    else if (code === 'quota') setStatus(t`Your ChatGPT plan reached a usage limit.`);
+    else if (code === 'reconnect') setStatus(t`Reconnect ChatGPT and try again.`);
+    else if (code === 'ai_unavailable') setStatus(t`AI isn't set up here`);
+    else if (error instanceof SyntaxError || (using === 'chatgpt' && !code))
+      setStatus(t`Nothing new was found in these photos.`);
     else setStatus(errorText(error));
+  }
+
+  /** The chosen photos read by the ChatGPT plan: signed links the iPhone fetches itself. */
+  async function readWithPlan(attachmentIds: string[], photo?: File): Promise<PhotoDetails> {
+    if (!viaPlan) return {};
+    const fileIds = attachmentIds
+      .map((id) => photos?.find((p) => p.id === id)?.file?.id)
+      .filter((id): id is string => !!id);
+    const urls = await Promise.all(
+      fileIds.map(
+        async (fileId) =>
+          (
+            await transport.request<FileUrl>(
+              connection,
+              inventoryPaths.fileUrl(fileId) + qs({ thingId: thing.id }),
+              { method: 'POST', body: { variant: 'display' } },
+            )
+          ).url,
+      ),
+    );
+    void outbox.setValue(connection, DETAILS_MODEL_KEY, model).catch(() => {});
+    const { details, typeHint } = parseChatGPTDetails(
+      await viaPlan(connection, model, { urls, photo }),
+    );
+    const type = typeHint
+      ? cache.types.find((entry) => normalize(entry.name ?? '') === normalize(typeHint.value))
+      : undefined;
+    return type && typeHint ? { ...details, type: { ...typeHint, id: type.id } } : details;
   }
 
   async function ask(photo?: File) {
@@ -151,7 +294,10 @@ export function PhotoDetailsPanel({
         setStatus(t`Photo kept with this item.`);
       }
       const attachmentIds = [...selected].slice(0, PHOTO_DETAILS_MAX_PHOTOS - (photo ? 1 : 0));
-      const details = await photoDetails(connection, thing.id, { attachmentIds, photo });
+      const details =
+        using === 'server' && viaServer
+          ? await viaServer(connection, thing.id, { attachmentIds, photo })
+          : await readWithPlan(attachmentIds, photo);
       const found = suggestionsFor(
         details,
         values,
@@ -213,6 +359,48 @@ export function PhotoDetailsPanel({
           </Trans>
         </p>
       </div>
+      {providers.length > 1 && (
+        <Select
+          label={t`AI provider`}
+          items={providers}
+          value={using}
+          isDisabled={locked}
+          onChange={(key) => {
+            if (key === 'chatgpt' || key === 'server') setProvider(key);
+            setSuggestions(undefined);
+            setStatus('');
+          }}
+        >
+          {(item) => (
+            <SelectItem id={item.id} textValue={item.name}>
+              {item.name}
+            </SelectItem>
+          )}
+        </Select>
+      )}
+      {using === 'chatgpt' && plan && !plan.chatGPT && (
+        <ChatGPTConnection
+          connection={connection}
+          account={plan.chatGPT}
+          isDisabled={locked}
+          onChange={setAccount}
+        />
+      )}
+      {using === 'chatgpt' && models.length > 0 && (
+        <Select
+          label={t`Model`}
+          items={models}
+          value={model}
+          isDisabled={locked}
+          onChange={(key) => setModel(String(key ?? ''))}
+        >
+          {(item) => (
+            <SelectItem id={item.id} textValue={item.name}>
+              {item.name}
+            </SelectItem>
+          )}
+        </Select>
+      )}
       {photos && photos.length > 0 && (
         <ul className="kept-photo-grid" aria-label={t`Photos to read`}>
           {photos.map((photo, index) => {
@@ -245,14 +433,18 @@ export function PhotoDetailsPanel({
         </ul>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" isDisabled={locked} onPress={() => camera.current?.click()}>
+        <Button
+          variant="secondary"
+          isDisabled={locked || !ready}
+          onPress={() => camera.current?.click()}
+        >
           <Camera size={16} aria-hidden />
           <Trans>Take a photo to read</Trans>
         </Button>
         {photos && photos.length > 0 && (
           <Button
             isPending={busy}
-            isDisabled={locked || selected.size === 0}
+            isDisabled={locked || !ready || selected.size === 0}
             onPress={() => void ask()}
           >
             <Sparkles size={16} aria-hidden />

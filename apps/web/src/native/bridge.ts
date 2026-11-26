@@ -88,6 +88,15 @@ type NativeKept = {
     jpeg: string;
     multiple?: boolean;
   }): Promise<{ name: string }>;
+  /** A thing's details read by the ChatGPT plan: JSON text (photo-details.tsx parses it). */
+  readItemDetails(input: {
+    context: string;
+    model: string;
+    /** Photos just taken. */
+    jpegs: string[];
+    /** Signed links to the thing's own photos on this server. */
+    urls: string[];
+  }): Promise<{ text: string }>;
   request(input: {
     context: string;
     path: string;

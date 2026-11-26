@@ -611,7 +611,8 @@ export function Inventory({
       .getValue(connection, 'defaultPhotoAI')
       .then((provider) => {
         if (!active) return;
-        setPreferredAI(provider === 'apple' || provider === 'chatgpt' ? provider : 'server');
+        // The ChatGPT plan unless this iPhone chose another: the server's API key is opt-in.
+        setPreferredAI(provider === 'apple' || provider === 'server' ? provider : 'chatgpt');
       })
       .catch(() => {})
       .finally(() => {

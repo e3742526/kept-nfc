@@ -77,7 +77,7 @@ export function CaptureForm({
   completions = {},
   syncing = false,
   online = true,
-  preferredProvider = 'server',
+  preferredProvider = 'chatgpt',
   photoPreferenceLoaded = true,
   leaveRef,
   onClose,

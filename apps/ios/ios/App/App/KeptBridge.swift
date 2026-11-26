@@ -562,6 +562,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "disconnectCaptureChatGPT", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "captureChatGPTModels", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "suggestCaptureName", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readItemDetails", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "request", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "uploadVisualQuery", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "outbox", returnType: CAPPluginReturnPromise),

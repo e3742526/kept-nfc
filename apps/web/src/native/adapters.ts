@@ -136,6 +136,12 @@ export type PlatformAdapters = {
   visualSearch?: VisualSearchAdapter;
   captureAI?: {
     serverProposals?: (connection: Connection, locationId: string, file: File) => Promise<unknown>;
+    /** The ChatGPT plan's reading of a thing's photos (signed links) and one just taken: JSON text. */
+    chatGPTDetails?: (
+      connection: Connection,
+      model: string,
+      input: { urls: string[]; photo?: File },
+    ) => Promise<string>;
     /** What a thing's photos (and one just taken) say about it, for its edit form. */
     photoDetails?: (
       connection: Connection,
@@ -193,6 +199,10 @@ export const capacitorAdapters: PlatformAdapters = {
           body: { attachmentIds, jpegs: photo ? [await photoJpeg(photo)] : [] },
         }),
       );
+    },
+    async chatGPTDetails({ id }, model, { urls, photo }) {
+      const jpegs = photo ? [await photoJpeg(photo)] : [];
+      return (await native.readItemDetails({ context: id, model, jpegs, urls })).text;
     },
     status: ({ id }) => native.captureAIStatus({ context: id }),
     connect: ({ id }) => native.connectCaptureChatGPT({ context: id }),

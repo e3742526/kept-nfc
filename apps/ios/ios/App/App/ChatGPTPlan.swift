@@ -143,20 +143,40 @@ final class ChatGPTPlan {
     }
 
     func describe(context: String, model: String, jpeg: String, multiple: Bool = false) async throws -> String {
+        try await respond(
+            context: context, model: model,
+            instructions: multiple ? inventoryItemsInstructions : inventoryPhotoInstructions,
+            text: multiple ? "List the visible inventory items." : "Describe the main item in this inventory photo.",
+            jpegs: [jpeg], detail: "auto"
+        )
+    }
+
+    /// One item's details from up to four photos of it (the item, its nameplate, its box), as JSON
+    /// text the WebView validates. High detail, so small print such as a model code is readable.
+    func itemDetails(context: String, model: String, jpegs: [String]) async throws -> String {
+        try await respond(
+            context: context, model: model, instructions: itemDetailsInstructions,
+            text: "Read the details of this item.", jpegs: jpegs, detail: "high"
+        )
+    }
+
+    private func respond(
+        context: String, model: String, instructions: String, text: String, jpegs: [String], detail: String
+    ) async throws -> String {
         try await perform {
             var request = try await apiRequest("/responses", context: context)
             request.httpMethod = "POST"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+            let images: [[String: String]] = jpegs.map {
+                ["type": "input_image", "image_url": "data:image/jpeg;base64,\($0)", "detail": detail]
+            }
             request.httpBody = try JSONSerialization.data(withJSONObject: [
                 "model": model, "store": false, "stream": true,
-                "instructions": multiple ? inventoryItemsInstructions : inventoryPhotoInstructions,
+                "instructions": instructions,
                 "input": [[
                     "role": "user",
-                    "content": [
-                        ["type": "input_text", "text": multiple ? "List the visible inventory items." : "Describe the main item in this inventory photo."],
-                        ["type": "input_image", "image_url": "data:image/jpeg;base64,\(jpeg)", "detail": "auto"]
-                    ]
+                    "content": [["type": "input_text", "text": text]] + images
                 ]]
             ])
             let (bytes, response) = try await KeptHTTP.stream(request)

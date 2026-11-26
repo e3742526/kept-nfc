@@ -1342,6 +1342,12 @@ describe('KeptPhone mobile workflows', () => {
     };
     const request = vi.spyOn(env.adapters.transport, 'request');
     const user = userEvent.setup();
+    // These read the server's suggestions: this iPhone opts into the server's API key.
+    await env.adapters.outbox.setValue(
+      { id: `${origin}|ibrahim|epoch-1` } as Connection,
+      'defaultPhotoAI',
+      'server',
+    );
     env.renderApp();
     await user.click(
       within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
@@ -1399,6 +1405,12 @@ describe('KeptPhone mobile workflows', () => {
       })),
     };
     const user = userEvent.setup();
+    // These read the server's suggestions: this iPhone opts into the server's API key.
+    await env.adapters.outbox.setValue(
+      { id: `${origin}|ibrahim|epoch-1` } as Connection,
+      'defaultPhotoAI',
+      'server',
+    );
     env.renderApp();
     await user.click(
       within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
@@ -1619,8 +1631,12 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: /Default location/ }));
     await user.click(await screen.findByRole('option', { name: 'Home' }));
     await user.click(await screen.findByRole('button', { name: 'AI and photo suggestions' }));
+    // The ChatGPT plan is the default; the server's API key is the opt-in.
+    expect(await screen.findByRole('button', { name: /Default photo AI/ })).toHaveTextContent(
+      'ChatGPT plan',
+    );
     await user.click(await screen.findByRole('button', { name: /Default photo AI/ }));
-    await user.click(await screen.findByRole('option', { name: 'ChatGPT plan' }));
+    await user.click(await screen.findByRole('option', { name: 'Server API' }));
     expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBeUndefined();
     const save = screen.getByRole('button', { name: /^Save$/ });
     vi.spyOn(env.adapters.outbox, 'setValue').mockRejectedValueOnce(new Error('No storage'));
@@ -1634,7 +1650,7 @@ describe('KeptPhone mobile workflows', () => {
       expect(await env.adapters.outbox.getValue(connection, 'defaultLocation')).toBe(
         env.rooms[0]?.locationId,
       );
-      expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBe('chatgpt');
+      expect(await env.adapters.outbox.getValue(connection, 'defaultPhotoAI')).toBe('server');
     });
     first.unmount();
     let finishReading = () => {};
@@ -1661,7 +1677,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(provider).toBeDisabled();
     await act(async () => finishReading());
     expect(provider).toBeEnabled();
-    expect(provider).toHaveTextContent('ChatGPT plan');
+    expect(provider).toHaveTextContent('Server API');
   });
 
   it('uses an authorized ChatGPT photo suggestion only when accepted, then skips server suggestions', async () => {
@@ -2830,6 +2846,109 @@ describe('KeptPhone mobile workflows', () => {
       notes: expect.stringContaining('Specs: 20 V, brushless, 1/4 in hex chuck'),
     });
     expect(patches[0]).not.toHaveProperty('serial');
+  });
+
+  it('reads the photos with the ChatGPT plan by default, on Terra, from signed links to the photos', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const label = {
+      id: 'nameplate-photo',
+      role: 'photo',
+      sort: 0,
+      name: 'Nameplate',
+      url: null,
+      subject: { thingId: env.boxId },
+      rowVersion: 1,
+      createdBy: { displayName: 'Ibrahim' },
+      file: {
+        id: 'nameplate-file',
+        mime: 'image/jpeg',
+        class: 'photo',
+        bytes: 50,
+        sha256: 'b'.repeat(64),
+        hasGps: false,
+        width: 8,
+        height: 4,
+        derivativeState: 'ready',
+        thumbUrl: '/f/nameplate-thumb.jpg',
+        displayUrl: '/f/nameplate-display.jpg',
+      },
+    } as unknown as AttachmentView;
+    const chatGPTDetails = vi.fn(async () =>
+      JSON.stringify({
+        model: { value: 'DCF887', confidence: 0.95 },
+        type_hint: { value: 'Tools', confidence: 0.4 },
+      }),
+    );
+    const photoDetails = vi.fn();
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'unsupported' as const, chatGPT: 'ibrahim@kept.test' })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => [
+        { id: 'gpt-6.2-sol', name: 'GPT-6.2 Sol' },
+        { id: 'gpt-6.1-terra', name: 'GPT-6.1 Terra' },
+      ]),
+      suggest: vi.fn(async () => ({ name: '' })),
+      chatGPTDetails,
+      photoDetails,
+    };
+    const signed: unknown[] = [];
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    env.adapters.transport.request = async <T,>(
+      conn: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path.startsWith(inventoryPaths.thingAttachments(env.boxId))) {
+        const archive = new URL(path, origin).searchParams.has('archivedPhotos');
+        return { items: archive ? [] : [label], next_cursor: null } as T;
+      }
+      if (path.startsWith(inventoryPaths.fileUrl('nameplate-file'))) {
+        signed.push({ path, body: options?.body });
+        return { url: `${origin}/f/signed-display.jpg`, expiresAt: '2026-11-26T02:00:00Z' } as T;
+      }
+      return request<T>(conn, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    // The ChatGPT plan is the default, with Terra chosen from the plan's models.
+    expect(await screen.findByRole('button', { name: /AI provider/ })).toHaveTextContent(
+      'ChatGPT plan',
+    );
+    expect(
+      await screen.findByRole('button', { name: /GPT-6\.1 Terra.*Model|Model.*GPT-6\.1 Terra/ }),
+    ).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Read selected photos' }));
+    expect(await screen.findByRole('button', { name: /Fill in 1 field/ })).toBeEnabled();
+    expect(signed).toEqual([
+      {
+        path: `${inventoryPaths.fileUrl('nameplate-file')}?thingId=${env.boxId}`,
+        body: { variant: 'display' },
+      },
+    ]);
+    expect(chatGPTDetails).toHaveBeenCalledWith(expect.anything(), 'gpt-6.1-terra', {
+      urls: [`${origin}/f/signed-display.jpg`],
+      photo: undefined,
+    });
+    expect(photoDetails).not.toHaveBeenCalled();
+    expect(
+      await env.adapters.outbox.getValue(
+        { id: `${origin}|ibrahim|epoch-1` } as Connection,
+        'chatGPTDetailsModel',
+      ),
+    ).toBe('gpt-6.1-terra');
+    await user.click(screen.getByRole('button', { name: /Fill in 1 field/ }));
+    expect(screen.getByRole('textbox', { name: 'Model' })).toHaveValue('DCF887');
   });
 
   it('edits a bin in place and shows the last known location and photo history', async () => {
@@ -4449,6 +4568,12 @@ describe('KeptPhone mobile workflows', () => {
       })),
     };
     const user = userEvent.setup();
+    // These read the server's suggestions: this iPhone opts into the server's API key.
+    await env.adapters.outbox.setValue(
+      { id: `${origin}|ibrahim|epoch-1` } as Connection,
+      'defaultPhotoAI',
+      'server',
+    );
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));

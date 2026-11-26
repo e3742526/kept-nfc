@@ -46,7 +46,7 @@ export function mergePhotoSuggestions(photos: readonly DevicePhotoProposal[][]):
   return [...merged.values()];
 }
 
-function useCaptureAI(connection: Connection) {
+export function useCaptureAI(connection: Connection) {
   const { captureAI, lifecycle } = usePlatform();
   const [status, setStatus] = useState<CaptureAIStatus>();
   useEffect(() => {
@@ -85,7 +85,7 @@ function useCaptureAI(connection: Connection) {
   };
 }
 
-function ChatGPTConnection({
+export function ChatGPTConnection({
   connection,
   account,
   onChange,
@@ -199,12 +199,13 @@ export function CaptureAISettings({
     }
   }
 
+  // The ChatGPT plan first: it is the default; the server's API key is the alternative.
   const choices: { id: CaptureAIProvider; name: string }[] = [
-    ...(captureAI?.serverProposals ? [{ id: 'server' as const, name: t`Server API` }] : []),
+    ...(captureAI ? [{ id: 'chatgpt' as const, name: t`ChatGPT plan` }] : []),
     ...(status?.apple === 'available' || selected === 'apple'
       ? [{ id: 'apple' as const, name: t`Apple Intelligence` }]
       : []),
-    ...(captureAI ? [{ id: 'chatgpt' as const, name: t`ChatGPT plan` }] : []),
+    ...(captureAI?.serverProposals ? [{ id: 'server' as const, name: t`Server API` }] : []),
   ];
 
   return (
@@ -312,9 +313,9 @@ export function CaptureSuggestion({
     [],
   );
   const providers: { id: CaptureAIProvider; name: string }[] = [
-    { id: 'server', name: t`Server API` },
-    { id: 'apple', name: t`Apple Intelligence` },
     { id: 'chatgpt', name: t`ChatGPT plan` },
+    { id: 'apple', name: t`Apple Intelligence` },
+    { id: 'server', name: t`Server API` },
   ];
 
   useEffect(() => {
