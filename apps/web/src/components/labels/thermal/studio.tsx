@@ -67,6 +67,7 @@ export function ThermalStudio({
   api,
   nativeOutput,
   batch,
+  reprintStock,
   onSaved,
 }: {
   owner: string;
@@ -74,6 +75,7 @@ export function ThermalStudio({
   api: PrintApi;
   nativeOutput?: NativeThermalOutput | undefined;
   batch?: LabelBatch | undefined;
+  reprintStock?: string | undefined;
   onSaved?: (batch: LabelBatch) => void;
 }) {
   const { t } = useLingui();
@@ -83,8 +85,10 @@ export function ThermalStudio({
   const [address, setAddress] = useState('');
   const [profile, setProfile] = useState(defaultPrinterProfile);
   const [profiles, setProfiles] = useState<PrinterProfile[]>([]);
-  const [stock, setStock] = useState(batch?.stock ?? initialStock);
-  const [layout, setLayout] = useState<ThermalLayout>(batch?.thermal?.layout ?? 'single');
+  const [stock, setStock] = useState(reprintStock ?? batch?.stock ?? initialStock);
+  const [layout, setLayout] = useState(() =>
+    stocksMatch(stock, batch?.thermal?.layout ?? 'single'),
+  );
   const [options, setOptions] = useState(batch?.thermal?.options ?? DEFAULT_THERMAL_OPTIONS);
   const [mode, setMode] = useState<'temporary' | 'category'>('temporary');
   const [prefix, setPrefix] = useState('GEN');
@@ -127,7 +131,9 @@ export function ThermalStudio({
           if (row.address) setAddress(row.address);
         }
         const saved = row?.profiles.find((item) => item.id === row.profileId);
-        if (batch?.thermal) {
+        if (reprintStock) {
+          if (saved) setProfile(printerOnStock(saved, reprintStock));
+        } else if (batch?.thermal) {
           const rendering = profileForBatch(batch.stock, batch.thermal);
           setProfile(
             saved
@@ -165,7 +171,7 @@ export function ThermalStudio({
     return () => {
       active = false;
     };
-  }, [api, owner, batch]);
+  }, [api, owner, batch, reprintStock]);
 
   useEffect(() => {
     let active = true;

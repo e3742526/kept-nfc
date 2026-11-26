@@ -127,7 +127,9 @@ print, reprint the missing pages via the system dialog's page range. Confirm onl
 checked the output. **Replace a label identity** takes a registered, unclaimed label and a reason.
 The previous sticker still resolves for authorized users and shows its superseded status. NFC
 and UHF associations remain with the inventory target. Full instance backups retain the label
-registry. Portable household exports currently omit series reservations and batch history.
+registry. Portable household exports carry short IDs and replacement audit events. Series
+reservations, batch history, live replacement links and NFC/UHF associations require a full
+instance backup. Verify and register tags again when moving inventory through a portable import.
 
 ## If printing fails or produces blank labels
 

@@ -655,3 +655,48 @@ test('prepares micro thermal stock, remembers the printer, and reprints exact ID
     await context.close();
   }
 });
+
+test('reprints a 4 × 6 cut-apart batch on compact stock from a stock override', async ({
+  browser,
+}) => {
+  const { context, page } = await person(browser);
+  try {
+    const { batch } = (await send(page, '/api/v1/labels/batches', {
+      locationId: await homeId(page),
+      kind: 'blank',
+      blankCount: 2,
+      stock: 'thermal_4x6in',
+      thermal: {
+        layout: 'cut_4x3',
+        profile: {
+          dpi: 203,
+          orientation: 'portrait',
+          scale: 100,
+          calibration: { offsetX: 0, offsetY: 0, top: 25, right: 1, bottom: 1, left: 1 },
+        },
+        options: {
+          qrSide: 'left',
+          handwriting: 1,
+          showName: true,
+          showLocation: true,
+          showContents: true,
+          showNfc: true,
+          identifierPt: 0,
+        },
+      },
+    })) as { batch: { id: string; labels: { code: string }[] } };
+    await page.goto(`/labels/${batch.id}?stock=thermal_50x20`);
+    await expect(page.getByRole('button', { name: 'Physical stock' })).toContainText('50 × 20 mm');
+    await page.getByRole('button', { name: 'Prepare labels', exact: true }).click();
+    const job = page.getByRole('region', { name: 'Prepared print job' });
+    await expect(job.getByRole('button', { name: 'Print', exact: true })).toBeEnabled();
+    const sheets = page.locator('#kept-thermal-pages svg');
+    await expect(sheets).toHaveCount(2);
+    await expect(sheets.first()).toHaveAttribute('viewBox', '0 0 400 160');
+    expect(await sheets.locator('text').allTextContents()).toEqual(
+      batch.labels.map((label) => label.code),
+    );
+  } finally {
+    await context.close();
+  }
+});

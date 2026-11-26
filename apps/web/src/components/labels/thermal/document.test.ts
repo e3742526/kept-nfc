@@ -331,6 +331,21 @@ describe('thermal vector pages', () => {
     );
   });
 
+  it.each(['thermal_30_48x20_32', 'thermal_50x20'])(
+    'hides the NFC mark when disabled on %s and keeps the UHF mark',
+    (stock) => {
+      const doc = thermalDocument(
+        stock,
+        'single',
+        profile,
+        { ...DEFAULT_THERMAL_OPTIONS, payload: 'app', variant: 'identity', showNfc: false },
+        [{ ...label, nfc: 'verified', uhf: true }],
+        encode,
+      );
+      expect(doc.pages[0]?.text.map((item) => item.value)).toEqual([identifier, 'UHF']);
+    },
+  );
+
   it('emits a fixed-size landscape multi-page document and a readable calibration page', async () => {
     const layout = thermalDocument(
       'thermal_4x6in',

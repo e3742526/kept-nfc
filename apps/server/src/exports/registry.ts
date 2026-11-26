@@ -44,6 +44,12 @@ export const OMIT_REASONS: Readonly<Record<string, string>> = Object.freeze({
   change_xid: "this server's sync bookkeeping",
   created_by: 'a user of this server (history keeps who did what, by name)',
   claimed_by: 'a user of this server',
+  superseded_at: "the server's label replacement state; the event travels in history",
+  superseded_by: 'a user of this server',
+  replacement_code: "the server's label replacement link; the event travels in history",
+  replacement_reason: 'carried in the label replacement event in history',
+  nfc_verified_at: 'NDEF readback verified against the original server and inventory record',
+  uhf_epc: 'the server-wide unique EPC association; portable imports require reassociation',
   checked_by: 'a user of this server',
   logged_by: 'a user of this server',
   taken_back_by: 'a user of this server',
@@ -133,7 +139,7 @@ export const REGISTRY: readonly EntityDef[] = Object.freeze([
     key: ['code'],
     fields:
       'code:text thing_id:uuid place_id:uuid state:text is_primary:bool printed_at:ts claimed_at:ts created_at:ts updated_at:ts',
-    omit: 'location_id claimed_by row_version change_seq change_xid',
+    omit: 'location_id claimed_by row_version change_seq change_xid superseded_at superseded_by replacement_code replacement_reason nfc_verified_at uhf_epc',
     thingRefs: ['x.thing_id'],
   },
   {

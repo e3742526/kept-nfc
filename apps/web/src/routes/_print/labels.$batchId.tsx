@@ -137,7 +137,8 @@ function PrintLabelsPage() {
       </div>
     );
 
-  if (thermal) return <ThermalReprint batch={data} stock={stockKey} />;
+  if (thermal)
+    return <ThermalReprint key={`${data.id}:${stockKey}`} batch={data} stock={stockKey} />;
 
   const count = data.labels.length;
   const title =
@@ -236,10 +237,6 @@ function ThermalReprint({ batch, stock }: { batch: LabelBatch; stock: string }) 
     () => ({ locationId: batch.locationId, kind: batch.kind }),
     [batch.locationId, batch.kind],
   );
-  const reprint = useMemo(
-    () => (batch.stock === stock ? batch : { ...batch, stock }),
-    [batch, stock],
-  );
   return (
     <div className="mx-auto grid max-w-4xl gap-4 p-4">
       <Link to="/labels" className="font-semibold underline">
@@ -254,7 +251,8 @@ function ThermalReprint({ batch, stock }: { batch: LabelBatch; stock: string }) 
             owner={me.data.user.id}
             api={webPrintApi}
             source={source}
-            batch={reprint}
+            batch={batch}
+            reprintStock={batch.stock === stock ? undefined : stock}
           />
         </Suspense>
       )}

@@ -131,7 +131,7 @@ function drawCompactFields(
   dpi: number,
   warnings: FitWarnings,
 ) {
-  const tags = [label.nfc === 'verified' ? 'NFC' : '', label.uhf ? 'UHF' : '']
+  const tags = [options.showNfc && label.nfc === 'verified' ? 'NFC' : '', label.uhf ? 'UHF' : '']
     .filter(Boolean)
     .join(' + ');
   const font = Math.ceil((6 * dpi) / 72);
@@ -364,7 +364,7 @@ function drawMicro(
   const size = pts(6);
   const line = Math.ceil(size * 1.16);
   let y = box.y;
-  const tags = [label.nfc === 'verified' ? 'NFC' : '', label.uhf ? 'UHF' : ''];
+  const tags = [options.showNfc && label.nfc === 'verified' ? 'NFC' : '', label.uhf ? 'UHF' : ''];
   const content = [
     ...tags,
     !identity && options.showName && label.name,
