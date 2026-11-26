@@ -18,10 +18,10 @@ import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
+import { lazy, type ReactNode, Suspense, useMemo } from 'react';
 import { captureApi, captureKeys, useLabelBatches, useLabelSummary } from '@/api/capture/queries';
 import type { LabelBatch } from '@/api/capture/types';
-import { useLocation, useLocationsInView } from '@/api/queries';
+import { useLocation, useLocationsInView, useMe } from '@/api/queries';
 import type { LocationDetail } from '@/api/types';
 import { BoxIcon, PrinterIcon, QrIcon, TagIcon } from '@/components/icons';
 import { BatchBuilder, type BatchSource, MAX_BLANK } from '@/components/labels/batch-builder';
@@ -30,6 +30,7 @@ import { perPage } from '@/components/labels/layout';
 import { PendingPrompt } from '@/components/labels/pending-prompt';
 import { useConfirmPrinted } from '@/components/labels/printed-ok';
 import { rememberedStock, useStockText } from '@/components/labels/stock-picker';
+import { webPrintApi } from '@/components/labels/thermal/api';
 import {
   EmptyState,
   ErrorState,
@@ -46,6 +47,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { useFormat } from '@/lib/format';
 import { useLocationName } from '@/lib/labels';
+import { useOnline } from '@/lib/online';
 
 export type LabelsSearch = {
   loc?: string;
@@ -56,6 +58,7 @@ export type LabelsSearch = {
   /** With `unprinted`: label the places rather than the things. */
   kind?: 'places';
   blank?: number;
+  thermal?: 1;
 };
 
 const text = (v: unknown) =>
@@ -74,6 +77,7 @@ export const Route = createFileRoute('/_app/labels')({
     const place = text(s.place);
     if (place) out.place = place;
     if (s.kind === 'places') out.kind = 'places';
+    if (s.thermal === 1 || s.thermal === '1') out.thermal = 1;
     const blank = Number(s.blank);
     if (Number.isInteger(blank) && blank > 0) out.blank = blank;
     return out;
@@ -103,11 +107,12 @@ const isAdmin = (l: LocationDetail) => l.role === 'owner' || l.role === 'admin';
 
 function LabelsPage() {
   const { t } = useLingui();
-  const source = sourceOf(Route.useSearch());
+  const search = Route.useSearch();
+  const source = useMemo(() => sourceOf(search), [search]);
   if (source)
     return (
       <Page title={t`Print labels`} back="/labels" wide>
-        <Builder source={source} />
+        <Builder source={source} thermal={search.thermal === 1} />
       </Page>
     );
   return (
@@ -117,13 +122,26 @@ function LabelsPage() {
   );
 }
 
-function Builder({ source }: { source: BatchSource }) {
+const ThermalStudio = lazy(() =>
+  import('@/components/labels/thermal/studio').then((m) => ({
+    default: m.ThermalStudio,
+  })),
+);
+
+function Builder({ source, thermal }: { source: BatchSource; thermal: boolean }) {
   const navigate = Route.useNavigate();
+  const me = useMe();
+  const qc = useQueryClient();
+  const online = useOnline();
+  const locations = useLocationsInView();
   const location = useLocation(source.locationId);
-  if (location.isPending) return <LoadingRows />;
-  if (location.isError)
-    return <ErrorState error={location.error} onRetry={() => location.refetch()} />;
-  const l = location.data;
+  const cached =
+    thermal && !online
+      ? locations.data?.find((entry) => entry.id === source.locationId)
+      : undefined;
+  const l = location.data ?? cached;
+  if (!l && location.isPending) return <LoadingRows />;
+  if (!l) return <ErrorState error={location.error} onRetry={() => location.refetch()} />;
   if (!labelsOn(l)) return <LabelsOff location={l} />;
   if (!can(l.role, 'labels.use'))
     return (
@@ -132,17 +150,50 @@ function Builder({ source }: { source: BatchSource }) {
       </Notice>
     );
   return (
-    <BatchBuilder
-      key={JSON.stringify(source)}
-      source={source}
-      location={l}
-      onUnprintedKind={(kind) =>
-        void navigate({
-          search: (s: LabelsSearch) => ({ ...s, kind: kind === 'places' ? 'places' : undefined }),
-          replace: true,
-        })
-      }
-    />
+    <div className="grid gap-4">
+      <div className="print:hidden">
+        <Button
+          variant="secondary"
+          onPress={() =>
+            void navigate({
+              search: (prev) => ({ ...prev, thermal: thermal ? undefined : 1 }),
+              replace: true,
+            })
+          }
+        >
+          {thermal ? <Trans>Office sheets and other stock</Trans> : <Trans>Thermal printing</Trans>}
+        </Button>
+      </div>
+      {thermal && me.data?.user.id ? (
+        <Suspense fallback={<LoadingRows />}>
+          <ThermalStudio
+            key={JSON.stringify(source)}
+            owner={me.data.user.id}
+            source={source}
+            api={webPrintApi}
+            onSaved={(batch) => {
+              qc.setQueryData(captureKeys.labels.batch(batch.id), batch);
+              void qc.invalidateQueries({ queryKey: captureKeys.labels.all });
+            }}
+          />
+        </Suspense>
+      ) : (
+        <BatchBuilder
+          key={JSON.stringify(source)}
+          source={source}
+          location={l}
+          onUnprintedKind={(kind) =>
+            void navigate({
+              search: (s: LabelsSearch) => ({
+                ...s,
+                kind: kind === 'places' ? 'places' : undefined,
+              }),
+              replace: true,
+            })
+          }
+        />
+      )}
+    </div>
   );
 }
 
@@ -290,6 +341,12 @@ function LocationLabels({ location, name }: { location: LocationDetail; name: st
             <Trans>Stick them on now, name them on the first scan. {b} unclaimed here.</Trans>
           }
           search={{ loc: location.id, blank: sheetCount }}
+        />
+        <LinkRow
+          icon={<PrinterIcon />}
+          title={<Trans>Thermal printing</Trans>}
+          subtitle={<Trans>Printer profiles, numbered rolls, and calibration</Trans>}
+          search={{ loc: location.id, blank: 1, thermal: 1 }}
         />
       </List>
     </Section>

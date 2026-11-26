@@ -21,14 +21,14 @@
  * - **Anything else** is `other`, and the scanner shows its text ("Not a Kept label").
  */
 
-import { parseDeviceLabel } from './device-labels.js';
+import { parseDeviceLabel, parseDeviceLabelReference } from './device-labels.js';
 import { normaliseInputCode, SHORT_CODE } from './short-code.js';
 
 export type ScanResult =
   | { kind: 'kept'; code: string }
   /** A numbered label (`BIN-A09Z-0001`, device-labels.ts): an alias the server turns into its
    * short ID. Read from `/l/<alias>` or `/t/<alias>` on any host, or typed. */
-  | { kind: 'alias'; alias: string }
+  | { kind: 'alias'; alias: string; guard?: string }
   | {
       kind: 'homebox';
       path: 'a' | 'item' | 'location';
@@ -429,8 +429,9 @@ function fromUrl(text: string): ScanResult | null {
 
   const kept = /\/l\/([^/]+)$/.exec(path);
   if (kept) {
-    const alias = parseDeviceLabel(kept[1] as string);
-    if (alias) return { kind: 'alias', alias: alias.code };
+    const alias = parseDeviceLabelReference(kept[1] as string);
+    if (alias)
+      return { kind: 'alias', alias: alias.code, ...(alias.guard ? { guard: alias.guard } : {}) };
     const code = normaliseInputCode(kept[1] as string);
     return SHORT_CODE.test(code) ? { kind: 'kept', code } : null;
   }
@@ -488,8 +489,9 @@ export function parseScan(input: string, format?: string): ScanResult {
     if (label) return label;
     if (!has(TEXT_FORMATS, format)) return other;
   } else {
-    const alias = parseDeviceLabel(text);
-    if (alias) return { kind: 'alias', alias: alias.code };
+    const alias = parseDeviceLabelReference(text);
+    if (alias)
+      return { kind: 'alias', alias: alias.code, ...(alias.guard ? { guard: alias.guard } : {}) };
     const code = normaliseInputCode(text);
     if (SHORT_CODE.test(code)) return { kind: 'kept', code };
   }

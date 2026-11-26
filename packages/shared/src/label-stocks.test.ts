@@ -14,6 +14,11 @@ import {
 describe('LABEL_STOCKS', () => {
   it('has the supported stocks, in order', () => {
     expect(LABEL_STOCKS.map((s) => s.key)).toEqual([
+      'thermal_50x20',
+      'thermal_30_48x20_32',
+      'thermal_4x6in',
+      'thermal_1_75x0_75in',
+      'thermal_2x1in',
       'thermal_50x30',
       'thermal_40x30',
       'thermal_62x29',

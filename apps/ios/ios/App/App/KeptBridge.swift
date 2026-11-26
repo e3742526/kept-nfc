@@ -578,6 +578,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "openMedia", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readThumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareLabelPdf", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "thermalPdf", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareLabelSheet", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openPendingMedia", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openHeldMedia", returnType: CAPPluginReturnPromise),
@@ -1091,6 +1092,45 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             guard data.starts(with: [0xff, 0xd8, 0xff]), try KeptKeychain.read() == connection
             else { throw KeptNativeError.invalidRequest }
             call.resolve(["data": data.base64EncodedString()])
+        }
+    }
+
+    @objc func thermalPdf(_ call: CAPPluginCall) {
+        run(call) {
+            _ = try self.requireConnection(call)
+            guard let base64 = call.getString("data"), base64.utf8.count <= 24 * 1024 * 1024,
+                  let data = Data(base64Encoded: base64), data.starts(with: Data("%PDF-".utf8)),
+                  let controller = self.bridge?.viewController,
+                  let view = controller.viewIfLoaded, view.window != nil,
+                  controller.presentedViewController == nil
+            else { throw KeptNativeError.invalidRequest }
+            if call.getBool("share") == true {
+                try self.shareProtectedPDF(data, filename: "SheepKeep-thermal-labels.pdf", from: controller)
+                call.resolve(["outcome": "shared"])
+                return
+            }
+            guard UIPrintInteractionController.isPrintingAvailable,
+                  UIPrintInteractionController.canPrint(data)
+            else { throw KeptNativeError.invalidRequest }
+            let printer = UIPrintInteractionController.shared
+            let info = UIPrintInfo(dictionary: nil)
+            info.jobName = String((call.getString("title") ?? "SheepKeep").prefix(100))
+            info.outputType = .general
+            printer.printInfo = info
+            printer.printingItem = data
+            printer.showsPageRange = true
+            let finish: UIPrintInteractionController.CompletionHandler = { _, completed, error in
+                if let error { call.reject(error.localizedDescription) }
+                else { call.resolve(["outcome": completed ? "submitted" : "cancelled"]) }
+            }
+            let opened: Bool
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                let anchor = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+                opened = printer.present(from: anchor, in: view, animated: true, completionHandler: finish)
+            } else {
+                opened = printer.present(animated: true, completionHandler: finish)
+            }
+            if !opened { throw KeptNativeError.invalidRequest }
         }
     }
 

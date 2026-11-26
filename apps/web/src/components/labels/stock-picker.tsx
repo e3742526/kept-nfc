@@ -10,6 +10,7 @@ import {
   isRuled,
   isSheet,
   isTape,
+  isThermalLabelStock,
   LABEL_STOCKS,
   type LabelStock,
   labelSize,
@@ -26,7 +27,7 @@ export const DEFAULT_STOCK = 'a4_24_70x37';
 export function rememberedStock(): string {
   try {
     const key = localStorage.getItem(STOCK_KEY);
-    if (key && LABEL_STOCKS.some((s) => s.key === key)) return key;
+    if (key && !isThermalLabelStock(key) && LABEL_STOCKS.some((s) => s.key === key)) return key;
   } catch {
     // Storage blocked: the default.
   }
@@ -99,7 +100,7 @@ export function StockPicker({
         rememberStock(key);
         onChange(key);
       }}
-      options={LABEL_STOCKS.map((s) => {
+      options={LABEL_STOCKS.filter((s) => !isThermalLabelStock(s.key)).map((s) => {
         const { title, detail } = text(s);
         return { id: s.key, title, body: detail };
       })}

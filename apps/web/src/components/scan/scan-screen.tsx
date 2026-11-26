@@ -198,7 +198,7 @@ export function ScanScreen({
           setManual(false);
           return;
         }
-        if (res.outcome === 'open' && !res.legacy) {
+        if (res.outcome === 'open' && !res.legacy && !res.superseded) {
           // The sheet closes when the navigation commits, never before: closing first lets the
           // sheet's history entry pop while the resolve is still running, and that pop lands
           // after the navigation and derails it (the URL ends back at /scan).

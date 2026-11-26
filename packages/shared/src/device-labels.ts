@@ -65,9 +65,19 @@ export function deviceLabelCode(prefix: string, batchId: string, sequence: numbe
   return `${prefix}-${batchId}-${String(sequence).padStart(4, '0')}`;
 }
 
-/** A local manifest, for tests and offline previews only: a series that prints is reserved by
- * the server (`POST /api/v1/labels/batches` with `series`), which owns uniqueness. Its QR payload
- * is the bare alias; a printed label carries the alias's HTTPS link instead.
+/** A guarded reference preserves the local batch's identity through the existing /l/ route. */
+export function parseDeviceLabelReference(input: string) {
+  const guarded = /^([A-Z]{3}-[0-9A-Z]{4}-[0-9]{4})-([0-9A-F]{12})$/i.exec(input.trim());
+  const alias = parseDeviceLabel(guarded?.[1] ?? input);
+  return alias && { ...alias, guard: guarded?.[2]?.toLowerCase() };
+}
+
+export function deviceLabelReference(alias: string, id: string): string {
+  return `${alias}-${id.slice(-12).toLowerCase()}`;
+}
+
+/** The alias manifest is persisted on the device before printing. Only the server can register
+ * it. The local renderer wraps the alias in a guarded URL on the configured label address.
  */
 export function createDeviceLabelBatch(
   prefix: string,

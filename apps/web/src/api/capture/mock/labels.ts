@@ -1,3 +1,10 @@
+import {
+  deviceLabelCode,
+  deviceLabelReference,
+  parseDeviceLabel,
+  parseDeviceLabelReference,
+  parseScan,
+} from '@kept/shared';
 /**
  * Mock handlers for label batches, blank sheets, "Printed OK?" and claims (T16). A thing without
  * a code (an offline capture not yet synced) can't be in a batch: it's counted as `pending`. A
@@ -38,6 +45,8 @@ import type {
   LabelBatch,
   LabelBatchPreview,
   LabelCellContent,
+  RegisterLabelTag,
+  ReplaceLabelBody,
 } from '../types';
 import { allocateCode } from './capture';
 import { urlOf } from './state';
@@ -78,8 +87,69 @@ export function labelsRoutes(state: MockState): MockRoute[] {
    * (labels/printed-sql.ts); the mock keeps the two in step here. */
   const printedCodes = () => printedCodesOf(state);
 
+  const short = (locationId: string, text: string) => {
+    const scan = parseScan(text);
+    if (scan.kind === 'kept') return scan.code;
+    if (scan.kind !== 'alias') return '';
+    for (const batch of cap().labelBatches) {
+      if (batch.locationId !== locationId) continue;
+      const cell = batch.labels.find((label) => label.alias === scan.alias);
+      if (!cell) continue;
+      const guard = parseDeviceLabelReference(cell.url.split('/').at(-1) ?? '')?.guard;
+      if (!scan.guard || scan.guard === guard) return cell.code;
+    }
+    return '';
+  };
   return [
     // The label address: the mock has no label host, so labels carry the page's own origin.
+    route('POST', p.labelTags, ({ body }) => {
+      const gate = sessionGate(state);
+      if (gate) return gate;
+      const tag = body as RegisterLabelTag;
+      if (!access().visible(tag.locationId)) return notFound();
+      if (!access().canWrite(tag.locationId)) return forbidden();
+      if (!labelsOn(tag.locationId))
+        return err(409, 'module_off', 'Labels are off in this location.');
+      const code = short(tag.locationId, tag.label);
+      const entry = cap().codes.find(
+        (item) => item.code === code && item.locationId === tag.locationId,
+      );
+      if (entry?.state !== 'assigned') return notFound();
+      if (tag.kind === 'nfc') entry.nfc = true;
+      else {
+        const epc = tag.epc.trim().toUpperCase();
+        if (!/^(?:[0-9A-F]{2}){4,64}$/.test(epc)) return err(400, 'validation', 'Invalid EPC.');
+        if (
+          (entry.uhfEpc && entry.uhfEpc !== epc) ||
+          cap().codes.some((item) => item !== entry && item.uhfEpc === epc)
+        ) {
+          return err(409, 'conflict', 'The EPC or label already has a registration.');
+        }
+        entry.uhfEpc = epc;
+      }
+      return reply(200, { configured: true });
+    }),
+    route('POST', p.labelReplace, ({ body }) => {
+      const gate = sessionGate(state);
+      if (gate) return gate;
+      const { locationId, previous, replacement, reason } = body as ReplaceLabelBody;
+      if (!access().visible(locationId)) return notFound();
+      if (!access().canWrite(locationId)) return forbidden();
+      if (!labelsOn(locationId)) return err(409, 'module_off', 'Labels are off in this location.');
+      if (!reason.trim()) return err(400, 'validation', 'A reason is required.');
+      const old = cap().codes.find(
+        (entry) => entry.code === short(locationId, previous) && entry.locationId === locationId,
+      );
+      const next = cap().codes.find(
+        (entry) => entry.code === short(locationId, replacement) && entry.locationId === locationId,
+      );
+      if (!old?.target || old.superseded || next?.state !== 'blank') return notFound();
+      old.superseded = true;
+      next.state = 'assigned';
+      next.target = old.target;
+      next.printedAt ??= now();
+      return reply(200, old.target);
+    }),
     route('GET', p.labelAddress, () => reply(200, { url: urlOf('').replace(/\/l\/$/, '') })),
     route('POST', p.labelBatches, ({ body }) => {
       const gate = sessionGate(state);
@@ -89,6 +159,16 @@ export function labelsRoutes(state: MockState): MockRoute[] {
       if (!access().canWrite(b.locationId)) return forbidden();
       if (!labelsOn(b.locationId))
         return err(409, 'module_off', 'Labels are off in this location.');
+      if (!b.dryRun && b.series?.id && b.id) {
+        const prior = cap().labelBatches.find((batch) => batch.id === b.id);
+        if (prior) return reply(201, { batch: prior, excluded: { pending: 0, other: 0 } });
+        const taken = cap().labelBatches.some((batch) => {
+          const first = parseDeviceLabel(batch.labels[0]?.alias ?? '');
+          return first?.prefix === b.series?.prefix && first?.batchId === b.series?.id;
+        });
+        if (taken)
+          return err(409, 'label_series_collision', 'This label series is already reserved.');
+      }
       const labels: LabelCellContent[] = [];
       // Excluded and counted, as the server does: `pending` when the caller can't see it at all
       // (an offline capture not synced yet looks the same), `other` when it is visible but can't
@@ -115,7 +195,15 @@ export function labelsRoutes(state: MockState): MockRoute[] {
             target: null,
             printedAt: null,
           });
-          labels.push({ code, url: urlOf(code), kind: 'blank' });
+          const alias = b.series?.id
+            ? deviceLabelCode(b.series.prefix, b.series.id, i + 1)
+            : undefined;
+          labels.push({
+            code,
+            kind: 'blank',
+            ...(alias ? { alias } : {}),
+            url: urlOf(alias && b.id ? deviceLabelReference(alias, b.id) : code),
+          });
         }
       } else if (b.kind === 'things') {
         const printed = printedCodes();
@@ -229,6 +317,7 @@ export function labelsRoutes(state: MockState): MockRoute[] {
         locationId: b.locationId,
         kind: b.kind,
         stock: b.stock,
+        ...(b.thermal ? { thermal: b.thermal } : {}),
         startCell: b.startCell ?? 1,
         createdAt: now(),
         printedConfirmedAt: null,

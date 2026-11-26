@@ -64,6 +64,12 @@ const LIBVIPS_REASON =
   "sharp's prebuilt libvips (T17: derivatives, D117, D157). LGPL-3.0-or-later, dynamically linked: the shared library ships unmodified as its own package and can be replaced, which is what D187 allows for LGPL";
 
 export const EXCEPTIONS = {
+  pako: {
+    licence: '(MIT AND Zlib)',
+    scope: 'prod',
+    reason:
+      'pdf-lib uses pako to compress vector PDF streams. Both terms are permissive, and pako ships with its MIT and zlib notices.',
+  },
   // One per platform binary pnpm installs: the Mac that runs CI, and the image's two arches
   // (bookworm, glibc). A platform not installed here is reported as unused, which is expected.
   '@img/sharp-libvips-darwin-arm64': {

@@ -323,6 +323,8 @@ const FUNCTIONS: Record<string, { roles: string[]; definer: boolean }> = {
   // (0042) Claiming a blank label (the server decides) and merging a duplicate:
   // each checks the caller writes the location.
   'kept.claim_blank_code(character,uuid,uuid)': { roles: APP, definer: true },
+  'kept.replace_printed_label(uuid,character,character,text)': { roles: APP, definer: true },
+  'kept.register_label_tag(uuid,character,text,text)': { roles: APP, definer: true },
   'kept.merge_things(uuid,uuid)': { roles: APP, definer: true },
   // (0042, for T13) The phone's display of a photo: files are append-only to kept_app.
   'kept.set_file_display(uuid,jsonb)': { roles: APP, definer: true },
@@ -1113,6 +1115,23 @@ describe('catalogue', () => {
 });
 
 describe('catalogue: functions and key columns (review #5, #6)', () => {
+  it('keeps supersession and tag metadata out of runtime short ID INSERT grants', async () => {
+    const rows = await asOwner(
+      db,
+      async (client) =>
+        (
+          await client.query<{ allowed: boolean }>(
+            `SELECT has_column_privilege(role, 'public.short_ids', field, 'INSERT') AS allowed
+         FROM unnest(ARRAY['kept_app', 'kept_system']) role
+        CROSS JOIN unnest(ARRAY['superseded_at', 'superseded_by', 'replacement_code',
+                                'replacement_reason', 'nfc_verified_at', 'uhf_epc']) field`,
+          )
+        ).rows,
+    );
+    expect(rows).toHaveLength(12);
+    expect(rows.every(({ allowed }) => !allowed)).toBe(true);
+  });
+
   it('lets the runtime roles EXECUTE exactly the listed functions, definers deliberately', async () => {
     expect(await asOwner(db, functionInventory)).toEqual(FUNCTIONS);
   });
@@ -2091,6 +2110,21 @@ const PROBES: Probe[] = [
     sql: `SELECT * FROM kept.claim_blank_code(
             (SELECT code FROM public.short_ids WHERE thing_id = $1 LIMIT 1), $1, NULL)`,
     args: (i) => [i.thing],
+    viewer: 'refused',
+  },
+  {
+    name: 'replace_printed_label',
+    sql: `SELECT * FROM kept.replace_printed_label(
+            $2, (SELECT code FROM public.short_ids WHERE thing_id = $1 LIMIT 1),
+            'ABC123', 'probe')`,
+    args: (i, t) => [i.thing, t.locationId],
+    viewer: 'refused',
+  },
+  {
+    name: 'register_label_tag',
+    sql: `SELECT * FROM kept.register_label_tag(
+            $2, (SELECT code FROM public.short_ids WHERE thing_id = $1 LIMIT 1), 'nfc', NULL)`,
+    args: (i, t) => [i.thing, t.locationId],
     viewer: 'refused',
   },
   {

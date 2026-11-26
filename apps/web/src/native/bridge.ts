@@ -147,6 +147,12 @@ type NativeKept = {
     mime: string;
     variant?: 'display';
   }): Promise<void>;
+  thermalPdf(input: {
+    context: string;
+    data: string;
+    share: boolean;
+    title: string;
+  }): Promise<{ outcome: 'submitted' | 'cancelled' | 'shared' }>;
   shareLabelSheet(input: LabelSheet & { context: string }): Promise<void>;
   shareLabelPdf(input: { context: string; url: string; name: string }): Promise<void>;
   openPendingMedia(input: { context: string; id: string; file: string }): Promise<void>;

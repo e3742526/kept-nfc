@@ -28,6 +28,7 @@ import type {
   MappableField,
   ProviderKind,
   ReasoningLevel,
+  ThermalBatchSpec,
 } from '@kept/shared';
 import { aliasSuggestionLanguage } from '@kept/shared';
 import type {
@@ -458,7 +459,8 @@ export type CreateLabelBatchBody = {
   unprinted?: { placeId?: string };
   blankCount?: number;
   /** A blank sheet only: number its labels as a series with this purpose prefix (`BIN`). */
-  series?: { prefix: string };
+  series?: { prefix: string; id?: string; origin?: string };
+  thermal?: ThermalBatchSpec;
   /** A `LABEL_STOCKS` key (@kept/shared). */
   stock: string;
   startCell?: number;
@@ -470,6 +472,20 @@ export type CreateLabelBatchBody = {
   dryRun?: boolean;
 };
 
+export type ReplaceLabelBody = {
+  locationId: string;
+  previous: string;
+  replacement: string;
+  reason: string;
+};
+
+export type RegisterLabelTag = { locationId: string; label: string } & (
+  | { kind: 'nfc' }
+  | { kind: 'uhf'; epc: string }
+);
+
+export type ReplaceLabelResult = { kind: 'thing' | 'place'; id: string };
+
 export type LabelCellContent = {
   code: string;
   /** A numbered label's alias (`BIN-A09Z-0001`): printed instead of the code, and in `url`. */
@@ -480,6 +496,10 @@ export type LabelCellContent = {
   name?: string;
   /** Where it lives, outermost first, joined with " › " (full stocks print it, D134). */
   path?: string;
+  barcode?: string;
+  model?: string;
+  nfc?: 'verified';
+  uhf?: true;
   targetId?: string;
 };
 
@@ -488,6 +508,7 @@ export type LabelBatch = {
   locationId: string;
   kind: LabelBatchKind;
   stock: string;
+  thermal?: ThermalBatchSpec;
   startCell: number;
   createdAt: string;
   printedConfirmedAt: string | null;
@@ -585,7 +606,11 @@ export type ScanSessionView = {
  * the phone. `not_in_your_kept` is identical for a missing, forbidden or retired code.
  */
 export type ScanOutcome =
-  | { outcome: 'open'; target: { kind: 'thing' | 'place'; id: string; locationId: string } }
+  | {
+      outcome: 'open';
+      superseded?: true;
+      target: { kind: 'thing' | 'place'; id: string; locationId: string };
+    }
   /** `code`: the short ID to claim (a numbered label's, or the code read). */
   | { outcome: 'claim'; locationId: string; code?: string }
   | { outcome: 'not_in_your_kept' }

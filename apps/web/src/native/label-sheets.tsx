@@ -1,4 +1,4 @@
-import { labelStock, newId } from '@kept/shared';
+import { isThermalLabelStock, labelStock, newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ChevronRight, Printer, Tags } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -17,6 +17,7 @@ import { LocationPicker, writableLocations } from './destination';
 import type { InventoryCache } from './inventory';
 import { approvedLabel, labelBase, labelOrigins, labelUrl, loadLabelAddress } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
+import { NativeThermalPrint } from './thermal-print';
 
 const counts = [8, 12, 24];
 
@@ -40,6 +41,8 @@ export function LabelSheets({
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const [batches, setBatches] = useState<LabelBatch[]>([]);
+  const [thermal, setThermal] = useState(false);
+  const [reprint, setReprint] = useState<LabelBatch>();
 
   useEffect(() => {
     let current = true;
@@ -52,7 +55,12 @@ export function LabelSheets({
         )
         .then((page) => {
           if (current)
-            setBatches(page.items.filter((batch) => batch.stock.startsWith('letter_writable_')));
+            setBatches(
+              page.items.filter(
+                (batch) =>
+                  batch.stock.startsWith('letter_writable_') || isThermalLabelStock(batch.stock),
+              ),
+            );
         })
         .catch((error: unknown) => {
           if (!current) return;
@@ -134,65 +142,90 @@ export function LabelSheets({
           cache={cache}
           value={location}
           onChange={(value) => {
+            setReprint(undefined);
             setLocation(value);
             setId(newId());
           }}
           disabled={busy}
         />
-        <Select
-          label={t`Labels per US Letter sheet`}
-          items={counts.map((value) => ({ id: value }))}
-          selectedKey={count}
-          onSelectionChange={(key) => {
-            if (key != null) setCount(Number(key));
-            setId(newId());
-          }}
-          isDisabled={busy}
-        >
-          {(option) => <SelectItem id={option.id}>{String(option.id)}</SelectItem>}
-        </Select>
         <Button
-          isDisabled={!location || !adapters.media.shareLabelSheet}
-          isPending={busy}
-          onPress={() => void share()}
+          variant="secondary"
+          onPress={() => {
+            setThermal((value) => !value);
+            setReprint(undefined);
+          }}
         >
-          <Printer size={18} aria-hidden />
-          <Trans>Create blank labels</Trans>
+          {thermal ? <Trans>Office sheets and other stock</Trans> : <Trans>Thermal printing</Trans>}
         </Button>
+        {thermal ? (
+          location && (
+            <NativeThermalPrint
+              key={reprint?.id ?? location}
+              connection={connection}
+              locationId={location}
+              batch={reprint}
+            />
+          )
+        ) : (
+          <>
+            <Select
+              label={t`Labels per US Letter sheet`}
+              items={counts.map((value) => ({ id: value }))}
+              selectedKey={count}
+              onSelectionChange={(key) => {
+                if (key != null) setCount(Number(key));
+                setId(newId());
+              }}
+              isDisabled={busy}
+            >
+              {(option) => <SelectItem id={option.id}>{String(option.id)}</SelectItem>}
+            </Select>
+            <Button
+              isDisabled={!location || !adapters.media.shareLabelSheet}
+              isPending={busy}
+              onPress={() => void share()}
+            >
+              <Printer size={18} aria-hidden />
+              <Trans>Create blank labels</Trans>
+            </Button>
+          </>
+        )}
       </div>
       {batches.length > 0 && (
         <ul className="grid gap-2">
-          {batches.map((batch) => (
-            <li key={batch.id}>
-              <Button
-                variant="secondary"
-                className="kept-phone-row"
-                isDisabled={busy}
-                onPress={() => void share(batch)}
-              >
-                <span className="kept-row-lead" aria-hidden>
-                  <Printer size={18} />
-                </span>
-                <span className="kept-row-body">
-                  <span className="font-semibold">
-                    <Trans>Reprint label sheet</Trans>
+          {batches
+            .filter((batch) => isThermalLabelStock(batch.stock) === thermal)
+            .map((batch) => (
+              <li key={batch.id}>
+                <Button
+                  variant="secondary"
+                  className="kept-phone-row"
+                  isDisabled={busy}
+                  onPress={() => (thermal ? setReprint(batch) : void share(batch))}
+                >
+                  <span className="kept-row-lead" aria-hidden>
+                    <Printer size={18} />
                   </span>
-                  <span className="text-small font-normal text-ink-2">
-                    <time dateTime={batch.createdAt}>
-                      {new Date(batch.createdAt).toLocaleString()}
-                    </time>
-                    {batch.labels[0]?.code && (
-                      <>
-                        {sep()}
-                        <bdi className="ltr">{batch.labels[0].code}</bdi>
-                      </>
-                    )}
+                  <span className="kept-row-body">
+                    <span className="font-semibold">
+                      <Trans>Reprint label sheet</Trans>
+                    </span>
+                    <span className="text-small font-normal text-ink-2">
+                      <time dateTime={batch.createdAt}>
+                        {new Date(batch.createdAt).toLocaleString()}
+                      </time>
+                      {batch.labels[0]?.code && (
+                        <>
+                          {sep()}
+                          <bdi className="ltr">{batch.labels[0].code}</bdi>
+                        </>
+                      )}
+                    </span>
                   </span>
-                </span>
-                <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
-              </Button>
-            </li>
-          ))}
+                  <ChevronRight size={18} className="kept-row-chevron rtl:rotate-180" aria-hidden />
+                </Button>
+              </li>
+            ))}
         </ul>
       )}
       {status && <p role="alert">{status}</p>}

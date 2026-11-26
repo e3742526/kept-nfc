@@ -60,6 +60,7 @@ export type Resolution =
   | {
       outcome: 'open';
       target: ScanTarget;
+      superseded?: true;
       /** The SheepKeep code read, when it was one. */
       code: string | null;
       /** An old label (Homebox, or an own code later), shown as it reads: "Asset 000-014". */
@@ -128,6 +129,7 @@ export const keptCodeResolver: LocalResolver = async (scan, store) => {
     code: scan.code,
     legacy: null,
     from: 'phone',
+    ...(hit.superseded ? { superseded: true as const } : {}),
   };
 };
 
@@ -206,7 +208,7 @@ async function fromLegacyHits(
  * kind the text parsed as, after the short IDs: the server's order (scan/resolve.ts `anyLegacy`).
  */
 export const ownCodeResolver: LocalResolver = async (scan, store, text) => {
-  if (scan.kind === 'homebox') return null;
+  if (scan.kind === 'homebox' || (scan.kind === 'alias' && scan.guard)) return null;
   const code = storedCodeOf(text);
   if (!code || code.length > 100) return null;
   const hits: LegacyHit[] = [];
@@ -245,6 +247,7 @@ export function fromServer(scan: ScanResult, o: ScanOutcome): Resolution {
       return {
         outcome: 'open',
         target: o.target,
+        ...(o.superseded ? { superseded: true as const } : {}),
         code,
         legacy: scan.kind === 'homebox' ? legacy : null,
         from: 'server',
@@ -289,7 +292,7 @@ export function offlineAnswer(scan: ScanResult, text: string): Resolution {
 
 export async function resolveScan(read: Read, deps: ResolveDeps): Promise<Resolution> {
   const scan = parseScan(read.text, read.format);
-  if (deps.store)
+  if (deps.store && !(scan.kind === 'alias' && scan.guard))
     for (const resolve of deps.resolvers ?? LOCAL_RESOLVERS) {
       const hit = await resolve(scan, deps.store, read.text);
       if (hit) return hit;
@@ -325,9 +328,10 @@ export async function resolveBatch(reads: readonly Read[], deps: BatchDeps): Pro
   const out: (Resolution | null)[] = [];
   for (const [i, read] of reads.entries()) {
     let hit: Resolution | null = null;
-    if (deps.store)
+    const scan = scans[i] as ScanResult;
+    if (deps.store && !(scan.kind === 'alias' && scan.guard))
       for (const resolve of deps.resolvers ?? LOCAL_RESOLVERS) {
-        hit = await resolve(scans[i] as ScanResult, deps.store, read.text);
+        hit = await resolve(scan, deps.store, read.text);
         if (hit) break;
       }
     out.push(hit);

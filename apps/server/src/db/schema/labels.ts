@@ -1,10 +1,12 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   char,
   check,
   foreignKey,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -35,6 +37,7 @@ export const labelBatches = pgTable(
     stock: text('stock').notNull(),
     startCell: integer('start_cell').notNull().default(1),
     codeCount: integer('code_count').notNull(),
+    thermal: jsonb('thermal'),
     createdBy: uuid('created_by').notNull(),
     /** "Printed OK?" answered yes. */
     printedConfirmedAt: tstz('printed_confirmed_at'),
@@ -97,6 +100,8 @@ export const labelSeries = pgTable(
     prefix: char('prefix', { length: 3 }).notNull(),
     series: char('series', { length: 4 }).notNull(),
     batchId: uuid('batch_id'),
+    guarded: boolean('guarded').notNull().default(false),
+    labelOrigin: text('label_origin'),
     labelCount: integer('label_count').notNull(),
     createdBy: uuid('created_by').notNull(),
     createdAt: tstz('created_at').notNull().defaultNow(),

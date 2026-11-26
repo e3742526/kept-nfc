@@ -1,4 +1,16 @@
-import { isSheet, LABEL_STOCKS, labelStock, newId, randomShortCode } from '@kept/shared';
+import {
+  deviceLabelReference,
+  isSheet,
+  isThermalLabelStock,
+  LABEL_STOCKS,
+  labelStock,
+  newId,
+  profileForBatch,
+  randomShortCode,
+  type ThermalBatchSpec,
+  ThermalBatchSpecSchema,
+  thermalGeometry,
+} from '@kept/shared';
 import type pg from 'pg';
 import { z } from 'zod';
 import { actorOf } from '../audit/actor.js';
@@ -64,12 +76,18 @@ export const CreateBatchBody = z.strictObject({
   /** A blank sheet only: number its labels as a series with this purpose prefix (`BIN`). */
   series: z
     .strictObject({
+      id: z
+        .string()
+        .regex(/^[0-9A-Z]{4}$/)
+        .optional(),
+      origin: z.url().max(1024).optional(),
       prefix: z
         .string()
         .regex(/^[A-Za-z]{3}$/, 'three letters')
         .transform((p) => p.toUpperCase()),
     })
     .optional(),
+  thermal: ThermalBatchSpecSchema.optional(),
   stock: z.string().refine((s) => LABEL_STOCKS.some((x) => x.key === s), 'an unknown stock'),
   startCell: z.number().int().min(1).max(200).optional(),
   /** The preview: 200 LabelBatchPreview, no batch saved and no blank code allocated (a place
@@ -86,6 +104,10 @@ export const LabelCellSchema = z.object({
   kind: z.enum(['thing', 'place', 'blank']),
   name: z.string().optional(),
   path: z.string().optional(),
+  barcode: z.string().optional(),
+  model: z.string().optional(),
+  nfc: z.literal('verified').optional(),
+  uhf: z.literal(true).optional(),
   targetId: z.uuid().optional(),
 });
 
@@ -94,6 +116,7 @@ export const LabelBatchSchema = z.object({
   locationId: z.uuid(),
   kind: z.enum(['things', 'places', 'blank']),
   stock: z.string(),
+  thermal: ThermalBatchSpecSchema.optional(),
   startCell: z.number(),
   createdAt: z.string(),
   printedConfirmedAt: z.string().nullable(),
@@ -141,6 +164,7 @@ type BatchRow = {
   location_id: string;
   kind: 'things' | 'places' | 'blank';
   stock: string;
+  thermal: ThermalBatchSpec | null;
   start_cell: number;
   created_at: Date;
   printed_confirmed_at: Date | null;
@@ -148,16 +172,22 @@ type BatchRow = {
 };
 
 const BATCH_COLUMNS = `b.id, b.location_id, b.kind, b.stock, b.start_cell, b.created_at,
-                       b.printed_confirmed_at, b.dismissed_at`;
+                       b.printed_confirmed_at, b.dismissed_at, b.thermal`;
 
 type CellRow = {
   batch_id: string;
   code: string;
   alias: string | null;
+  guarded_batch: string | null;
+  label_origin: string | null;
   thing_id: string | null;
   place_id: string | null;
   name: string | null;
   path: string | null;
+  barcode: string | null;
+  model: string | null;
+  nfc: boolean | null;
+  uhf: boolean | null;
 };
 
 /** The labels of `batches`, in print order: a code's thing or place as it is now, when the
@@ -203,8 +233,9 @@ async function previewCells(
 /** A cell's code, target, name and path (outermost first, " › "; a thing's place chain and
  * containers, `place_path`; a place's parent chain). */
 const CELL_COLUMNS = `c.code::text AS code, ${aliasOfSql('c.code')} AS alias,
+       CASE WHEN ls.guarded THEN ls.batch_id END AS guarded_batch, ls.label_origin,
        t.id AS thing_id, p.id AS place_id,
-       coalesce(t.name, p.name) AS name,
+       coalesce(t.name, p.name) AS name, t.barcode, t.model, tags.nfc, tags.uhf,
        CASE WHEN t.id IS NOT NULL THEN t.place_path
             WHEN p.id IS NOT NULL THEN
               (SELECT string_agg(e->>'name', ' › ' ORDER BY x.n)
@@ -213,8 +244,17 @@ const CELL_COLUMNS = `c.code::text AS code, ${aliasOfSql('c.code')} AS alias,
        END AS path`;
 const CELL_JOINS = `
        LEFT JOIN public.short_ids s ON s.code = c.code
+       LEFT JOIN public.label_aliases la ON la.code = c.code
+       LEFT JOIN public.label_series ls ON ls.id = la.series_id
        LEFT JOIN public.things t ON t.id = s.thing_id AND t.deleted_at IS NULL
-       LEFT JOIN public.places p ON p.id = s.place_id AND p.deleted_at IS NULL`;
+       LEFT JOIN public.places p ON p.id = s.place_id AND p.deleted_at IS NULL
+       LEFT JOIN LATERAL (
+         SELECT bool_or(a.nfc_verified_at IS NOT NULL) AS nfc,
+                bool_or(a.uhf_epc IS NOT NULL) AS uhf
+           FROM public.short_ids a
+          WHERE a.location_id = s.location_id AND a.state = 'assigned'
+            AND (a.thing_id = t.id OR a.place_id = p.id)
+       ) tags ON true`;
 
 function cellOf(
   publicUrl: string,
@@ -224,7 +264,12 @@ function cellOf(
   const cell: LabelBatch['labels'][number] = {
     code: r.code,
     ...(r.alias ? { alias: r.alias } : {}),
-    url: labelUrl(publicUrl, r.alias ?? r.code),
+    url: labelUrl(
+      r.label_origin ?? publicUrl,
+      r.alias && r.guarded_batch
+        ? deviceLabelReference(r.alias, r.guarded_batch)
+        : (r.alias ?? r.code),
+    ),
     kind: batchKind === 'blank' ? 'blank' : batchKind === 'places' ? 'place' : 'thing',
   };
   if (batchKind !== 'blank') {
@@ -232,6 +277,10 @@ function cellOf(
     if (target) cell.targetId = target;
     if (r.name !== null && target) cell.name = r.name;
     if (r.path && target) cell.path = r.path;
+    if (r.barcode && target) cell.barcode = r.barcode;
+    if (r.model && target) cell.model = r.model;
+    if (r.nfc && target) cell.nfc = 'verified';
+    if (r.uhf && target) cell.uhf = true;
   }
   return cell;
 }
@@ -242,6 +291,7 @@ function batchOf(b: BatchRow, labels: LabelBatch['labels']): LabelBatch {
     locationId: b.location_id,
     kind: b.kind,
     stock: b.stock,
+    ...(b.thermal ? { thermal: b.thermal } : {}),
     startCell: b.start_cell,
     createdAt: b.created_at.toISOString(),
     printedConfirmedAt: b.printed_confirmed_at?.toISOString() ?? null,
@@ -571,6 +621,57 @@ export async function createBatch(
     }
   }
 
+  const thermal = body.thermal;
+  if (thermal) {
+    if (!isThermalLabelStock(stock.key)) throw invalid('Thermal stock required.');
+    try {
+      thermalGeometry(stock.key, thermal.layout, profileForBatch(stock.key, thermal), 1);
+    } catch {
+      throw invalid('The print settings do not fit this stock.');
+    }
+  }
+  const seriesId = body.series?.id;
+  const origin = body.series?.origin;
+  let exact: { id: string; origin: string } | undefined;
+  if (seriesId || origin) {
+    if (!seriesId || !origin || !body.id || !z.uuidv4().safeParse(body.id).success || body.dryRun) {
+      throw invalid('A device series requires a UUIDv4 batch ID and its label address.');
+    }
+    const id = body.id.toLowerCase();
+    // A manifest can sync long after the request idempotency cache expires. Serialize retries
+    // for the durable batch ID, then compare the immutable reservation before touching caps.
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtext('kept.device_label_batch'), hashtext($1))",
+      [id],
+    );
+    const { rows } = await client.query<{ match: boolean }>(
+      `SELECT (b.location_id = $2 AND b.created_by = kept.current_user_id() AND b.kind = 'blank'
+           AND b.stock = $3 AND b.start_cell = $4 AND b.code_count = $5
+           AND b.thermal IS NOT DISTINCT FROM $6::jsonb
+           AND s.guarded AND s.prefix = $7 AND s.series = $8 AND s.label_origin = $9) AS match
+         FROM public.label_batches b
+         LEFT JOIN public.label_series s ON s.batch_id = b.id AND s.location_id = b.location_id
+        WHERE b.id = $1`,
+      [
+        id,
+        locationId,
+        stock.key,
+        startCell,
+        body.blankCount,
+        thermal ?? null,
+        body.series?.prefix,
+        seriesId,
+        origin,
+      ],
+    );
+    if (rows.length > 0) {
+      if (!rows.some((row) => row.match)) throw new AppError('label_series_collision', 409);
+      return { batch: await getBatch(client, publicUrl, id), excluded: { pending: 0, other: 0 } };
+    }
+    if (origin !== publicUrl.replace(/\/+$/, '')) throw new AppError('label_address_changed', 409);
+    exact = { id: seriesId, origin };
+  }
+
   let picked: Picked;
   try {
     if (body.kind === 'blank' && body.dryRun) {
@@ -613,12 +714,16 @@ export async function createBatch(
     );
   }
 
-  const id = body.id ? assertClientId(body.id) : newId();
+  const id = exact
+    ? (body.id?.toLowerCase() as string)
+    : body.id
+      ? assertClientId(body.id)
+      : newId();
   await client.query(
     `INSERT INTO public.label_batches (id, location_id, kind, stock, start_cell, code_count,
-                                       created_by)
-     VALUES ($1, $2, $3, $4, $5, $6, kept.current_user_id())`,
-    [id, locationId, body.kind, stock.key, startCell, picked.codes.length],
+                                       created_by, thermal)
+     VALUES ($1, $2, $3, $4, $5, $6, kept.current_user_id(), $7)`,
+    [id, locationId, body.kind, stock.key, startCell, picked.codes.length, thermal ?? null],
   );
   await client.query(
     `INSERT INTO public.label_batch_codes (batch_id, location_id, code, sort)
@@ -626,7 +731,7 @@ export async function createBatch(
     [id, locationId, picked.codes],
   );
   const series = body.series
-    ? `${body.series.prefix}-${await reserveSeries(client, locationId, body.series.prefix, id, picked.codes)}`
+    ? `${body.series.prefix}-${await reserveSeries(client, locationId, body.series.prefix, id, picked.codes, exact)}`
     : null;
   await audited(tx, {
     locationId,

@@ -1,10 +1,9 @@
 /**
  * "Type the code" (WCAG 1.1/2.1: an alternative to the camera, always reachable). The 6
- * characters printed under a label's QR code, folded the way the server folds them
- * (`normaliseInputCode`: case, spaces, hyphens, O → 0, I/L → 1), with the chip previewing the code
- * exactly as the label prints it. The field stays left to right in Arabic.
+ * characters of a legacy short ID use Crockford folding. Numbered aliases keep every Base36
+ * character and may carry a batch guard. The field stays left to right in Arabic.
  */
-import { isShortCode, normaliseInputCode } from '@kept/shared';
+import { isShortCode, normaliseInputCode, parseDeviceLabelReference } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import { Form } from 'react-aria-components';
@@ -22,10 +21,17 @@ export function ManualCode({
   const { t } = useLingui();
   const [raw, setRaw] = useState('');
   const [tried, setTried] = useState(false);
-  const code = normaliseInputCode(raw);
-  const valid = isShortCode(code);
+  const numbered = parseDeviceLabelReference(raw);
+  const code = numbered
+    ? numbered.guard
+      ? `${numbered.code}-${numbered.guard}`
+      : numbered.code
+    : normaliseInputCode(raw);
+  const valid = !!numbered || isShortCode(code);
   const error =
-    tried && !valid ? t`A SheepKeep code is 6 letters and digits, like 7KQ‑4MZ.` : undefined;
+    tried && !valid
+      ? t`Enter a short ID like 7KQ‑4MZ or a numbered ID like TMP-A09Z-0001.`
+      : undefined;
   return (
     <Form
       aria-label={t`Type the code`}
@@ -38,7 +44,6 @@ export function ManualCode({
     >
       <TextField
         label={t`Code on the label`}
-        description={t`The 6 characters printed under the QR code.`}
         value={raw}
         onChange={(v) => {
           setRaw(v);
@@ -54,13 +59,13 @@ export function ManualCode({
           autoComplete: 'off',
           autoCorrect: 'off',
           spellCheck: false,
-          maxLength: 12,
+          maxLength: 32,
         }}
       />
       <div className="flex min-h-9 items-center gap-2" aria-live="polite">
         {valid ? (
           <>
-            <IdChip code={code} />
+            <IdChip code={numbered?.code ?? code} />
             <span className="text-small text-ink-3">
               <Trans>Ready to look up</Trans>
             </span>

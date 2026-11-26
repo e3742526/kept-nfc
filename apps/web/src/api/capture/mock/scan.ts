@@ -7,6 +7,7 @@
  */
 import {
   isProductCode,
+  parseDeviceLabelReference,
   parseScan,
   productCodeForms,
   SCAN_SESSION_LIMITS,
@@ -79,7 +80,7 @@ export function scanRoutes(state: MockState): MockRoute[] {
         ? { outcome: 'open', target: { ...only.target, locationId: only.locationId } }
         : null;
     };
-    if (scan.kind !== 'homebox') {
+    if (scan.kind !== 'homebox' && scan.kind !== 'alias') {
       const shortHit =
         scan.kind === 'kept' &&
         (inv().things.some((x) => x.shortCode === scan.code && !x.deletedAt) ||
@@ -108,6 +109,7 @@ export function scanRoutes(state: MockState): MockRoute[] {
         if (code?.state === 'assigned' && code.target && access().visible(code.locationId))
           return {
             outcome: 'open',
+            ...(code.superseded ? { superseded: true } : {}),
             target: { kind: code.target.kind, id: code.target.id, locationId: code.locationId },
           };
         return miss;
@@ -156,9 +158,20 @@ export function scanRoutes(state: MockState): MockRoute[] {
             barcode: { code: scan.code, lookupEnabled: cap().barcodeLookup },
           }
         );
-      case 'alias':
-        // The mock server holds no numbered series.
-        return miss;
+      case 'alias': {
+        for (const batch of cap().labelBatches) {
+          if (!access().visible(batch.locationId)) continue;
+          const cell = batch.labels.find((label) => label.alias === scan.alias);
+          if (!cell) continue;
+          const guard = parseDeviceLabelReference(
+            new URL(cell.url).pathname.split('/').at(-1) ?? '',
+          )?.guard;
+          if (scan.guard && scan.guard !== guard) return miss;
+          const outcome = resolveOne({ text: cell.code });
+          return outcome.outcome === 'claim' ? { ...outcome, code: cell.code } : outcome;
+        }
+        return scan.guard ? miss : (anyLegacy() ?? miss);
+      }
       default:
         return byThingCode([scan.text], [scan.text]) ?? { outcome: 'not_kept', text: scan.text };
     }

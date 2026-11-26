@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   createDeviceLabelBatch,
   deviceLabelCode,
@@ -30,6 +30,18 @@ describe('device labels', () => {
     expect(() => deviceLabelCode('TMP', 'A09Z', 10000)).toThrow();
     expect(() => deviceLabelCode('TM', 'A09Z', 1)).toThrow();
     expect(randomDeviceBatchId()).toMatch(/^[0-9A-Z]{4}$/);
+  });
+  it('discards out-of-range bytes and preserves all Base36 symbols', () => {
+    const random = vi.spyOn(globalThis.crypto, 'getRandomValues');
+    random.mockImplementationOnce((array) => {
+      (array as Uint8Array).set([252, 253, 254, 255, 35, 24, 18, 21]);
+      return array;
+    });
+    try {
+      expect(randomDeviceBatchId()).toBe('ZOIL');
+    } finally {
+      random.mockRestore();
+    }
   });
   it('creates a consistent manifest with unique sequences and raw QR payloads', () => {
     const batch = createDeviceLabelBatch('TMP', 20, () => false);

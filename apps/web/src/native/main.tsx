@@ -995,7 +995,10 @@ export function Inventory({
       if (resolved.status === 'resolved') {
         const mayLeave = canLeaveCapture.current;
         if (mayLeave && !(await mayLeave())) return;
-        if (current) setScreen({ kind: 'record', target: resolved.target });
+        if (current) {
+          if (resolved.superseded) setStatus(t`Superseded label`);
+          setScreen({ kind: 'record', target: resolved.target });
+        }
       } else if (resolved.status === 'foreign')
         setStatus(t`This tag belongs to a different SheepKeep server.`);
       else setStatus(t`This label is unavailable in your SheepKeep.`);

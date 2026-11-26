@@ -2,6 +2,8 @@
 
 A printed label and an NFC tag carry one HTTPS link for good. This runbook covers how that link is
 made, how to deploy the address it uses, and what still has to be checked on real hardware.
+For printer profiles, roll layouts, offline thermal batches and calibration, see
+[thermal label printing](thermal-printing.md).
 
 ## How it fits together
 
@@ -72,9 +74,9 @@ None of these has been run yet; they need an iPhone, signing and the label host 
   its thing is merged into another and retires when its target is purged. The registry has the
   states and the audit trail; routes to move a label to another thing or place, or retire a lost
   one, are not written yet.
-- **Offline numbered labels.** The phone's snapshot carries no series, so offline a numbered
-  label is "Not on this phone" and is checked again online. Adding aliases to the sync snapshot is
-  the next step.
+- **Offline scan of numbered labels.** The phone's snapshot carries no series, so offline an
+  already printed numbered label is checked again online. Thermal batch creation supports offline
+  manifests and later registration through the thermal printing screen.
 - **NFC hardware registry.** Tags are written through Core NFC's NDEF session, which doesn't give
   the chip's UID or type. Recording the UID and chip (NTAG213/215/216) needs an ISO 14443 tag
   session and a table of its own; until then a tag is identified by what it holds, which is enough

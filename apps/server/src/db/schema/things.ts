@@ -246,6 +246,12 @@ export const shortIds = pgTable(
     printedAt: tstz('printed_at'),
     claimedAt: tstz('claimed_at'),
     claimedBy: uuid('claimed_by'),
+    nfcVerifiedAt: tstz('nfc_verified_at'),
+    uhfEpc: text('uhf_epc'),
+    supersededAt: tstz('superseded_at'),
+    supersededBy: uuid('superseded_by'),
+    replacementCode: char('replacement_code', { length: 6 }),
+    replacementReason: text('replacement_reason'),
     ...mutable(),
     changeXid: changeXid(),
   },
@@ -264,6 +270,13 @@ export const shortIds = pgTable(
     uniqueIndex('short_ids_primary_place_uq')
       .on(t.placeId)
       .where(sql`is_primary AND state = 'assigned'`),
+    foreignKey({
+      name: 'short_ids_replacement_fk',
+      columns: [t.replacementCode],
+      foreignColumns: [t.code],
+    }).onDelete('no action'),
+    unique('short_ids_uhf_epc_uq').on(t.uhfEpc),
+    check('short_ids_uhf_epc_chk', sql`uhf_epc IS NULL OR uhf_epc ~ '^(?:[0-9A-F]{2}){4,64}$'`),
     index('short_ids_thing_idx').on(t.thingId),
     index('short_ids_place_idx').on(t.placeId),
     index('short_ids_location_idx').on(t.locationId),

@@ -15,13 +15,15 @@
  * Reprinting a batch prints the same codes (D45). `?stock=` and `?start=` print it on another
  * stock or from another cell without changing the batch.
  */
-import { isSheet, LABEL_STOCKS, labelStock } from '@kept/shared';
+import { isSheet, isThermalLabelStock, LABEL_STOCKS, labelStock } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useLabelBatch } from '@/api/capture/queries';
+import type { LabelBatch } from '@/api/capture/types';
+import { useMe } from '@/api/queries';
 import { ChevronStartIcon, PrinterIcon, ShareIcon } from '@/components/icons';
 import { useLabelMeasure } from '@/components/labels/fit';
 import { perPage } from '@/components/labels/layout';
@@ -30,6 +32,7 @@ import { NotConfirmedBar, PrintedOkDialog } from '@/components/labels/printed-ok
 import { useQrEncoder } from '@/components/labels/qr';
 import { LabelSheets } from '@/components/labels/sheet';
 import { useStockText } from '@/components/labels/stock-picker';
+import { webPrintApi } from '@/components/labels/thermal/api';
 import { ErrorState, LoadingRows, Notice, useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
@@ -72,6 +75,7 @@ function PrintLabelsPage() {
     search.stock ??
     (data && LABEL_STOCKS.some((s) => s.key === data.stock) ? data.stock : 'a4_24_70x37');
   const stock = labelStock(stockKey);
+  const thermal = isThermalLabelStock(stockKey);
   const startCell = isSheet(stock)
     ? Math.min(search.start ?? (search.stock ? 1 : (data?.startCell ?? 1)), perPage(stock))
     : 1;
@@ -85,7 +89,7 @@ function PrintLabelsPage() {
 
   // From the builder: open the dialog once, when the QR and the faces are ready.
   useEffect(() => {
-    if (!search.print || !data || !encode || !ready || autoPrinted.current) return;
+    if (thermal || !search.print || !data || !encode || !ready || autoPrinted.current) return;
     autoPrinted.current = true;
     void navigate({
       to: '/labels/$batchId',
@@ -104,7 +108,7 @@ function PrintLabelsPage() {
   const prepared = useQuery({
     queryKey: ['labels', 'pngs', batchId, stock.key, batch.dataUpdatedAt],
     queryFn: () => labelPngs(stock, data?.labels ?? [], t`Contents`),
-    enabled: shareable && !!data && data.labels.length > 0,
+    enabled: !thermal && shareable && !!data && data.labels.length > 0,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: 0,
     retry: false,
@@ -132,6 +136,9 @@ function PrintLabelsPage() {
         <ErrorState error={batch.error} onRetry={() => batch.refetch()} />
       </div>
     );
+
+  if (thermal)
+    return <ThermalReprint key={`${data.id}:${stockKey}`} batch={data} stock={stockKey} />;
 
   const count = data.labels.length;
   const title =
@@ -215,5 +222,40 @@ function PrintLabelsPage() {
         hintAnchor={titleRef}
       />
     </>
+  );
+}
+
+const ThermalStudio = lazy(() =>
+  import('@/components/labels/thermal/studio').then((m) => ({
+    default: m.ThermalStudio,
+  })),
+);
+
+function ThermalReprint({ batch, stock }: { batch: LabelBatch; stock: string }) {
+  const me = useMe();
+  const source = useMemo(
+    () => ({ locationId: batch.locationId, kind: batch.kind }),
+    [batch.locationId, batch.kind],
+  );
+  return (
+    <div className="mx-auto grid max-w-4xl gap-4 p-4">
+      <Link to="/labels" className="font-semibold underline">
+        <Trans>Back to labels</Trans>
+      </Link>
+      <h1 className="m-0 font-semibold text-title">
+        <Trans>Reprint thermal labels</Trans>
+      </h1>
+      {me.data?.user.id && (
+        <Suspense fallback={<LoadingRows />}>
+          <ThermalStudio
+            owner={me.data.user.id}
+            api={webPrintApi}
+            source={source}
+            batch={batch}
+            reprintStock={batch.stock === stock ? undefined : stock}
+          />
+        </Suspense>
+      )}
+    </div>
   );
 }

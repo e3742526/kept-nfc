@@ -96,7 +96,12 @@ export type SharedInto = {
   files: SharedFile[];
 };
 
-export type CodeHit = { kind: 'thing' | 'place' | 'blank'; id?: string; locationId: string };
+export type CodeHit = {
+  kind: 'thing' | 'place' | 'blank';
+  id?: string;
+  locationId: string;
+  superseded?: true;
+};
 export type LegacyHit = { locationId: string; thingId?: string; placeId?: string };
 /** Where a legacy code came from: a Homebox import, a CSV import, the household's own (D208), or
  * a Kept import that re-issued a printed short ID because it was taken here (`kept`). */
@@ -316,8 +321,20 @@ export class MemoryStore implements OfflineStore {
     const c = this.codes.get(code);
     if (c && c.state !== 'retired') {
       if (c.state === 'blank') return { kind: 'blank', locationId: c.locationId };
-      if (c.thingId) return { kind: 'thing', id: c.thingId, locationId: c.locationId };
-      if (c.placeId) return { kind: 'place', id: c.placeId, locationId: c.locationId };
+      if (c.thingId)
+        return {
+          kind: 'thing',
+          id: c.thingId,
+          locationId: c.locationId,
+          ...(c.superseded ? { superseded: true } : {}),
+        };
+      if (c.placeId)
+        return {
+          kind: 'place',
+          id: c.placeId,
+          locationId: c.locationId,
+          ...(c.superseded ? { superseded: true } : {}),
+        };
     }
     const t = [...this.things.values()].find((x) => x.shortCode === code);
     if (t) return { kind: 'thing', id: t.id, locationId: t.locationId };
@@ -507,7 +524,7 @@ export function shownCodes(codes: Iterable<SnapCode>): Map<string, SnapCode> {
   const out = new Map<string, SnapCode>();
   const rank = (c: SnapCode) => c.printedAt ?? (c.isPrimary ? '' : null);
   for (const c of codes) {
-    if (c.thingId === null || c.state !== 'assigned') continue;
+    if (c.thingId === null || c.state !== 'assigned' || c.superseded) continue;
     const mine = rank(c);
     if (mine === null) continue;
     const had = out.get(c.thingId);
@@ -529,7 +546,7 @@ export function shownCodes(codes: Iterable<SnapCode>): Map<string, SnapCode> {
 export function printedThings(codes: Iterable<SnapCode>): Set<string> {
   const out = new Set<string>();
   for (const c of codes)
-    if (c.thingId !== null && c.state === 'assigned' && c.printedAt)
+    if (c.thingId !== null && c.state === 'assigned' && !c.superseded && c.printedAt)
       out.add(codesKey({ locationId: c.locationId, id: c.thingId }));
   return out;
 }

@@ -161,6 +161,8 @@ const KEPT_FUNCTION_EXECUTE: Record<string, string[]> = {
   'kept.writable_location_ids()': APP_ONLY,
   // Migration 0042: labels, blank claims and duplicate merges.
   'kept.claim_blank_code(character,uuid,uuid)': APP_ONLY,
+  'kept.replace_printed_label(uuid,character,character,text)': APP_ONLY,
+  'kept.register_label_tag(uuid,character,text,text)': APP_ONLY,
   'kept.guard_blank_cap()': OWNER_ONLY,
   'kept.merge_things(uuid,uuid)': APP_ONLY,
   'kept.set_file_display(uuid,jsonb)': APP_ONLY,

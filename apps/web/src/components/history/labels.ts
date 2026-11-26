@@ -492,6 +492,8 @@ export function useSummary() {
       'scan.session.move': () =>
         plural(count, { one: `Moved # thing to ${name}`, other: `Moved # things to ${name}` }),
       'label.claim': () => t`Gave ${name} a label`,
+      'label.replace': () => t`Replaced the label on ${name}`,
+      'label.tag.register': () => t`Registered a tag for ${name}`,
       'location.own_codes': () => t`Changed how ${name} numbers its codes`,
       'location.transfer_ownership': () => t`Handed ${name} to a new owner`,
       'report.generate': () => t`Made an inventory report of ${name}`,

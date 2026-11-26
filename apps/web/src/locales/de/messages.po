@@ -33685,3 +33685,478 @@ msgstr "{0, plural, one {# Feld ausfüllen} other {# Felder ausfüllen}}"
 #: src/native/photo-details.tsx
 msgid "ChatGPT could not read these photos. Try again, or choose fewer photos."
 msgstr "ChatGPT konnte diese Fotos nicht lesen. Versuch es noch einmal oder wähle weniger Fotos."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Black mark"
+msgstr "Black mark"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Bottom margin (mm)"
+msgstr "Bottom margin (mm)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Category name"
+msgstr "Category name"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Category prefix"
+msgstr "Category prefix"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Choose {queue} in the print dialog."
+msgstr "Choose {queue} in the print dialog."
+
+#: src/native/thermal-print.tsx
+msgid "Choose an AirPrint-compatible network printer. For a printer connected to a computer by USB, export the PDF and print it on that computer."
+msgstr "Choose an AirPrint-compatible network printer. For a printer connected to a computer by USB, export the PDF and print it on that computer."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Compact code for the SheepKeep scanner"
+msgstr "Compact code for the SheepKeep scanner"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Confirm printed"
+msgstr "Confirm printed"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Connect once to load this server’s permanent label address before creating an offline batch."
+msgstr "Connect once to load this server’s permanent label address before creating an offline batch."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Content scale (%)"
+msgstr "Content scale (%)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Contents summary (optional)"
+msgstr "Contents summary (optional)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Continuous"
+msgstr "Continuous"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Copy to a new profile"
+msgstr "Copy to a new profile"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Couldn’t prepare the PDF."
+msgstr "Couldn’t prepare the PDF."
+
+#: src/components/labels/thermal/epc-form.tsx
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Current label code or URL"
+msgstr "Current label code or URL"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Device batch history"
+msgstr "Device batch history"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Driver darkness setting"
+msgstr "Driver darkness setting"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Driver speed setting"
+msgstr "Driver speed setting"
+
+#: src/components/labels/thermal/epc-form.tsx
+msgid "EPC from your UHF reader"
+msgstr "EPC from your UHF reader"
+
+#: src/components/labels/thermal/output.tsx
+msgid "Export PDF"
+msgstr "Export PDF"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Gap"
+msgstr "Gap"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Gap or mark height (mm)"
+msgstr "Gap or mark height (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Handwriting lines"
+msgstr "Handwriting lines"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Horizontal offset (mm)"
+msgstr "Horizontal offset (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "HTTPS link for phone cameras"
+msgstr "HTTPS link for phone cameras"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Identification only"
+msgstr "Identification only"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Item name and tag indicators"
+msgstr "Item name and tag indicators"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Label layout"
+msgstr "Label layout"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Label mode"
+msgstr "Label mode"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Landscape"
+msgstr "Landscape"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Layout and printer calibration"
+msgstr "Layout and printer calibration"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Left"
+msgstr "Left"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Left margin (mm)"
+msgstr "Left margin (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Mark labels paired with an NFC tag"
+msgstr "Mark labels paired with an NFC tag"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Maximum media width (mm)"
+msgstr "Maximum media width (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Media tracking"
+msgstr "Media tracking"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Micro label content"
+msgstr "Micro label content"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Micro Thermal 1.2 × 0.8 in"
+msgstr "Micro Thermal 1.2 × 0.8 in"
+
+#: src/native/label-panel.tsx
+msgid "NFC readback succeeded. Inspect the tag again to save verification when connected."
+msgstr "NFC readback succeeded. Inspect the tag again to save verification when connected."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "No labels printed"
+msgstr "No labels printed"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "No output recorded. Reprint the same identifiers from this job."
+msgstr "No output recorded. Reprint the same identifiers from this job."
+
+#: src/native/label-sheets.tsx
+#: src/routes/_app/labels.tsx
+msgid "Office sheets and other stock"
+msgstr "Office sheets and other stock"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "One label per sticker"
+msgstr "One label per sticker"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Open batch for reprint"
+msgstr "Open batch for reprint"
+
+#: src/components/scan/outcome-sheet.tsx
+#: src/native/label-panel.tsx
+msgid "Open the current inventory record"
+msgstr "Open the current inventory record"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Orientation"
+msgstr "Orientation"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Partial print recorded. Reprint the missing pages using the page range in the print dialog."
+msgstr "Partial print recorded. Reprint the missing pages using the page range in the print dialog."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Pending registration. Other devices won’t resolve these QR codes until the batch syncs."
+msgstr "Pending registration. Other devices won’t resolve these QR codes until the batch syncs."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Physical stock"
+msgstr "Physical stock"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Portrait"
+msgstr "Portrait"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Preferred identifier size (pt)"
+msgstr "Preferred identifier size (pt)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Preferred QR width (mm)"
+msgstr "Preferred QR width (mm)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Prepare calibration print"
+msgstr "Prepare calibration print"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Prepare labels"
+msgstr "Prepare labels"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Prepared print job"
+msgstr "Prepared print job"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Preprinted category"
+msgstr "Preprinted category"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Preprinted inventory or batch reprint"
+msgstr "Preprinted inventory or batch reprint"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Print cancelled. The same job is ready to retry."
+msgstr "Print cancelled. The same job is ready to retry."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Print confirmed."
+msgstr "Print confirmed."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Print the product barcode on large labels"
+msgstr "Print the product barcode on large labels"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Printable height (mm)"
+msgstr "Printable height (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Printable width (mm)"
+msgstr "Printable width (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Printer name"
+msgstr "Printer name"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Printer profile"
+msgstr "Printer profile"
+
+#: src/routes/_app/labels.tsx
+msgid "Printer profiles, numbered rolls, and calibration"
+msgstr "Printer profiles, numbered rolls, and calibration"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "QR destination"
+msgstr "QR destination"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "QR side on compact labels"
+msgstr "QR side on compact labels"
+
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Reason for replacement"
+msgstr "Reason for replacement"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Record partial print"
+msgstr "Record partial print"
+
+#: src/components/labels/thermal/epc-form.tsx
+msgid "Register a UHF RFID tag"
+msgstr "Register a UHF RFID tag"
+
+#: src/components/labels/thermal/epc-form.tsx
+msgid "Register EPC"
+msgstr "Register EPC"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Registered"
+msgstr "Registered"
+
+#: src/components/history/labels.ts
+msgid "Registered a tag for {name}"
+msgstr "Registered a tag for {name}"
+
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Replace a label identity"
+msgstr "Replace a label identity"
+
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Replace label"
+msgstr "Replace label"
+
+#: src/components/history/labels.ts
+msgid "Replaced the label on {name}"
+msgstr "Replaced the label on {name}"
+
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Replacement label assigned."
+msgstr "Replacement label assigned."
+
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Replacement label code or URL"
+msgstr "Replacement label code or URL"
+
+#: src/routes/_print/labels.$batchId.tsx
+msgid "Reprint thermal labels"
+msgstr "Reprint thermal labels"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Resolution (DPI)"
+msgstr "Resolution (DPI)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Retry registration"
+msgstr "Retry registration"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Right"
+msgstr "Right"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Right margin (mm)"
+msgstr "Right margin (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Save printer profile"
+msgstr "Save printer profile"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Save profile and stock calibration"
+msgstr "Save profile and stock calibration"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Series collision. Keep this batch for review, remove any stickers printed from it, and prepare a new batch. Use the QR to check an affected sticker because its typed code may match another batch."
+msgstr "Series collision. Keep this batch for review, remove any stickers printed from it, and prepare a new batch. Use the QR to check an affected sticker because its typed code may match another batch."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Show contents when they fit"
+msgstr "Show contents when they fit"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Show item or category name"
+msgstr "Show item or category name"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Show location when it fits"
+msgstr "Show location when it fits"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Six 2 × 2 in labels · cut apart"
+msgstr "Six 2 × 2 in labels · cut apart"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Size or model (optional)"
+msgstr "Size or model (optional)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Some optional text does not fit. The QR and full identifier are preserved."
+msgstr "Some optional text does not fit. The QR and full identifier are preserved."
+
+#: src/components/scan/outcome-sheet.tsx
+#: src/native/label-panel.tsx
+#: src/native/main.tsx
+msgid "Superseded label"
+msgstr "Superseded label"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "System print dialog"
+msgstr "System print dialog"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "System printer or queue name"
+msgstr "System printer or queue name"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Temporary write-in (TMP)"
+msgstr "Temporary write-in (TMP)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "The permanent label address changed. Ask the server administrator to restore that address before retrying registration."
+msgstr "The permanent label address changed. Ask the server administrator to restore that address before retrying registration."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "The QR and complete identifier need more printable space."
+msgstr "The QR and complete identifier need more printable space."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "The QR and complete identifier need more printable space. Check the stock, margins, resolution, and label address."
+msgstr "The QR and complete identifier need more printable space. Check the stock, margins, resolution, and label address."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "The server couldn’t register this batch. Check that you can print labels in this location, then retry."
+msgstr "The server couldn’t register this batch. Check that you can print labels in this location, then retry."
+
+#: src/components/labels/thermal/output.tsx
+msgid "Thermal label preview"
+msgstr "Thermal label preview"
+
+#: src/native/label-panel.tsx
+#: src/native/label-sheets.tsx
+#: src/routes/_app/labels.tsx
+msgid "Thermal printing"
+msgstr "Thermal printing"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "This QR prints at three dots per module. Scan a test label before printing the batch."
+msgstr "This QR prints at three dots per module. Scan a test label before printing the batch."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Top margin (mm)"
+msgstr "Top margin (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Twelve 2 × 1 in labels · cut apart"
+msgstr "Twelve 2 × 1 in labels · cut apart"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Two 4 × 3 in labels · cut apart"
+msgstr "Two 4 × 3 in labels · cut apart"
+
+#: src/components/labels/thermal/epc-form.tsx
+msgid "UHF RFID tag registered."
+msgstr "UHF RFID tag registered."
+
+#: src/components/labels/thermal/replace-form.tsx
+msgid "Use a registered, unclaimed label as the replacement. The old label stays linked to the same record and shows as superseded when scanned."
+msgstr "Use a registered, unclaimed label as the replacement. The old label stays linked to the same record and shows as superseded when scanned."
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Use the matching paper size, actual size (100%), and no headers or footers."
+msgstr "Use the matching paper size, actual size (100%), and no headers or footers."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Use the system print dialog to select the queue and apply media, speed, and darkness settings."
+msgstr "Use the system print dialog to select the queue and apply media, speed, and darkness settings."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Vertical offset (mm)"
+msgstr "Vertical offset (mm)"
+
+#: src/components/scan/manual-code.tsx
+msgid "Enter a short ID like 7KQ‑4MZ or a numbered ID like TMP-A09Z-0001."
+msgstr "Gib eine Kurz-ID wie 7KQ‑4MZ oder eine nummerierte ID wie TMP-A09Z-0001 ein."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Compact Thermal — 50 × 20 mm"
+msgstr "Kompakt-Thermoetikett – 50 × 20 mm"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Compact label content"
+msgstr "Inhalt des Kompaktetiketts"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Minimum media width (mm)"
+msgstr "Minimale Medienbreite (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Minimum feed length (mm)"
+msgstr "Minimale Einzugslänge (mm)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Reprint on selected stock"
+msgstr "Auf ausgewähltem Material nachdrucken"
