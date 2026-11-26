@@ -34274,3 +34274,123 @@ msgstr "Enregistrer l’objet"
 
 msgid "Skip NFC and save"
 msgstr "Enregistrer sans étiquette NFC"
+
+msgid "Use the system print dialog for AirPrint or export the PDF for a USB printer."
+msgstr "Utilisez la boîte de dialogue d’impression du système pour AirPrint ou exportez le PDF pour une imprimante USB."
+
+msgid "Turn on Bluetooth to use the label printer."
+msgstr "Activez le Bluetooth pour utiliser l’imprimante d’étiquettes."
+
+msgid "Allow Bluetooth for SheepKeep in iPhone Settings."
+msgstr "Autorisez l’accès de SheepKeep au Bluetooth dans les réglages de l’iPhone."
+
+msgid "This printer did not identify as a NIIMBOT B1 Pro."
+msgstr "Cette imprimante ne s’est pas identifiée comme une NIIMBOT B1 Pro."
+
+msgid "A Bluetooth printer operation is already in progress."
+msgstr "Une opération Bluetooth est déjà en cours sur l’imprimante."
+
+msgid "Printer connection cancelled."
+msgstr "Connexion à l’imprimante annulée."
+
+msgid "Prepare the labels with a supported B1 Pro stock and page range."
+msgstr "Préparez les étiquettes avec un format compatible B1 Pro et une plage de pages valide."
+
+msgid "Could not communicate with the printer. Check that it is on and nearby."
+msgstr "Impossible de communiquer avec l’imprimante. Vérifiez qu’elle est allumée et à proximité."
+
+msgid "NIIMBOT B1 Pro Bluetooth"
+msgstr "NIIMBOT B1 Pro en Bluetooth"
+
+msgid "Remembered printer"
+msgstr "Imprimante mémorisée"
+
+msgid "Check printer status"
+msgstr "Vérifier l’état de l’imprimante"
+
+msgid "Forget printer"
+msgstr "Oublier l’imprimante"
+
+msgid "B1 Pro verified at 300 DPI. It reconnects when you print."
+msgstr "B1 Pro détectée à 300 ppp. Elle se reconnectera à l’impression."
+
+msgid "Firmware: {0}"
+msgstr "Micrologiciel : {0}"
+
+msgid "Protocol generation: {0}"
+msgstr "Génération du protocole : {0}"
+
+msgid "Battery: {0}%"
+msgstr "Batterie : {0} %"
+
+msgid "The printer lid is open."
+msgstr "Le capot de l’imprimante est ouvert."
+
+msgid "The printer is out of labels."
+msgstr "L’imprimante n’a plus d’étiquettes."
+
+msgid "The printer recognized the label roll."
+msgstr "L’imprimante a reconnu le rouleau d’étiquettes."
+
+msgid "The printer did not report a recognized roll."
+msgstr "L’imprimante n’a pas signalé de rouleau reconnu."
+
+msgid "Find nearby printers"
+msgstr "Rechercher des imprimantes à proximité"
+
+msgid "Show other Bluetooth devices"
+msgstr "Afficher d’autres appareils Bluetooth"
+
+msgid "Checking Bluetooth…"
+msgstr "Vérification du Bluetooth…"
+
+msgid "No nearby printers found."
+msgstr "Aucune imprimante trouvée à proximité."
+
+msgid "Print density"
+msgstr "Densité d’impression"
+
+msgid "Print these labels again?"
+msgstr "Réimprimer ces étiquettes ?"
+
+msgid "Check the printer output first. Printing again can produce duplicate labels."
+msgstr "Vérifiez d’abord les étiquettes imprimées. Une réimpression peut créer des doublons."
+
+msgid "Load the matching NIIMBOT gap stock before printing."
+msgstr "Chargez le rouleau NIIMBOT correspondant à étiquettes espacées avant d’imprimer."
+
+msgid "Pages in this job: {0}"
+msgstr "Nombre de pages : {0}"
+
+msgid "Last page"
+msgstr "Dernière page"
+
+msgid "Copies per label"
+msgstr "Copies par étiquette"
+
+msgid "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+msgstr "Sélectionnez une plage valide de {NIIMBOT_PAGE_LIMIT} pages au maximum."
+
+msgid "Prepare this job on a supported B1 Pro stock."
+msgstr "Préparez cette tâche sur un format compatible B1 Pro."
+
+msgid "Print on B1 Pro"
+msgstr "Imprimer sur B1 Pro"
+
+msgid "Cancel print"
+msgstr "Annuler l’impression"
+
+msgid "Connecting to the printer or sending labels…"
+msgstr "Connexion à l’imprimante ou envoi des étiquettes…"
+
+msgid "The printer reports completion. Check the printed labels."
+msgstr "L’imprimante indique avoir terminé. Vérifiez les étiquettes imprimées."
+
+msgid "Print completion is uncertain. Check the output before reprinting the same identifiers."
+msgstr "La fin de l’impression est incertaine. Vérifiez les étiquettes avant de réimprimer les mêmes identifiants."
+
+msgid "Labels reported complete: {reported}"
+msgstr "Étiquettes signalées comme terminées : {reported}"
+
+msgid "Partial print recorded. Reprint the missing pages using the page range."
+msgstr "Impression partielle enregistrée. Sélectionnez la plage des pages manquantes pour les réimprimer."

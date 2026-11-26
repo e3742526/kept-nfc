@@ -34274,3 +34274,123 @@ msgstr "Lưu món đồ"
 
 msgid "Skip NFC and save"
 msgstr "Bỏ qua NFC và lưu"
+
+msgid "Use the system print dialog for AirPrint or export the PDF for a USB printer."
+msgstr "Dùng hộp thoại in của hệ thống cho AirPrint hoặc xuất PDF để in qua USB."
+
+msgid "Turn on Bluetooth to use the label printer."
+msgstr "Bật Bluetooth để sử dụng máy in nhãn."
+
+msgid "Allow Bluetooth for SheepKeep in iPhone Settings."
+msgstr "Cho phép SheepKeep dùng Bluetooth trong Cài đặt iPhone."
+
+msgid "This printer did not identify as a NIIMBOT B1 Pro."
+msgstr "Máy in này không xác định được là NIIMBOT B1 Pro."
+
+msgid "A Bluetooth printer operation is already in progress."
+msgstr "Máy in Bluetooth đang thực hiện một thao tác khác."
+
+msgid "Printer connection cancelled."
+msgstr "Đã hủy kết nối với máy in."
+
+msgid "Prepare the labels with a supported B1 Pro stock and page range."
+msgstr "Chuẩn bị nhãn với khổ giấy hỗ trợ B1 Pro và khoảng trang hợp lệ."
+
+msgid "Could not communicate with the printer. Check that it is on and nearby."
+msgstr "Không thể liên lạc với máy in. Hãy kiểm tra xem máy đã bật và ở gần chưa."
+
+msgid "NIIMBOT B1 Pro Bluetooth"
+msgstr "NIIMBOT B1 Pro qua Bluetooth"
+
+msgid "Remembered printer"
+msgstr "Máy in đã lưu"
+
+msgid "Check printer status"
+msgstr "Kiểm tra trạng thái máy in"
+
+msgid "Forget printer"
+msgstr "Quên máy in"
+
+msgid "B1 Pro verified at 300 DPI. It reconnects when you print."
+msgstr "Đã xác minh B1 Pro ở độ phân giải 300 DPI. Máy sẽ kết nối lại khi in."
+
+msgid "Firmware: {0}"
+msgstr "Phần sụn: {0}"
+
+msgid "Protocol generation: {0}"
+msgstr "Thế hệ giao thức: {0}"
+
+msgid "Battery: {0}%"
+msgstr "Pin: {0}%"
+
+msgid "The printer lid is open."
+msgstr "Nắp máy in đang mở."
+
+msgid "The printer is out of labels."
+msgstr "Máy in đã hết nhãn."
+
+msgid "The printer recognized the label roll."
+msgstr "Máy in đã nhận dạng cuộn nhãn."
+
+msgid "The printer did not report a recognized roll."
+msgstr "Máy in chưa báo nhận dạng cuộn nhãn."
+
+msgid "Find nearby printers"
+msgstr "Tìm máy in ở gần"
+
+msgid "Show other Bluetooth devices"
+msgstr "Hiện thiết bị Bluetooth khác"
+
+msgid "Checking Bluetooth…"
+msgstr "Đang kiểm tra Bluetooth…"
+
+msgid "No nearby printers found."
+msgstr "Không tìm thấy máy in ở gần."
+
+msgid "Print density"
+msgstr "Mật độ in"
+
+msgid "Print these labels again?"
+msgstr "In lại những nhãn này?"
+
+msgid "Check the printer output first. Printing again can produce duplicate labels."
+msgstr "Hãy kiểm tra nhãn đã in trước. In lại có thể tạo nhãn trùng."
+
+msgid "Load the matching NIIMBOT gap stock before printing."
+msgstr "Nạp cuộn NIIMBOT đúng khổ, có khoảng cách giữa các nhãn, trước khi in."
+
+msgid "Pages in this job: {0}"
+msgstr "Số trang của lượt in: {0}"
+
+msgid "Last page"
+msgstr "Trang cuối"
+
+msgid "Copies per label"
+msgstr "Số bản sao mỗi nhãn"
+
+msgid "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+msgstr "Chọn khoảng trang hợp lệ, tối đa {NIIMBOT_PAGE_LIMIT} trang."
+
+msgid "Prepare this job on a supported B1 Pro stock."
+msgstr "Chuẩn bị lượt in với khổ nhãn tương thích B1 Pro."
+
+msgid "Print on B1 Pro"
+msgstr "In bằng B1 Pro"
+
+msgid "Cancel print"
+msgstr "Hủy in"
+
+msgid "Connecting to the printer or sending labels…"
+msgstr "Đang kết nối hoặc gửi nhãn đến máy in…"
+
+msgid "The printer reports completion. Check the printed labels."
+msgstr "Máy in báo đã hoàn tất. Hãy kiểm tra nhãn đã in."
+
+msgid "Print completion is uncertain. Check the output before reprinting the same identifiers."
+msgstr "Chưa chắc lượt in đã hoàn tất. Kiểm tra nhãn trước khi in lại các mã định danh đó."
+
+msgid "Labels reported complete: {reported}"
+msgstr "Số nhãn máy báo đã in xong: {reported}"
+
+msgid "Partial print recorded. Reprint the missing pages using the page range."
+msgstr "Đã ghi nhận in một phần. Chọn khoảng trang còn thiếu để in lại."

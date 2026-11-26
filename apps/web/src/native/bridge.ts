@@ -1,5 +1,11 @@
 import { type PluginListenerHandle, registerPlugin } from '@capacitor/core';
 import { ApiError, toApiError } from '@/api/client';
+import type {
+  NiimbotDevice,
+  NiimbotIdentity,
+  NiimbotJob,
+  NiimbotResult,
+} from '@/components/labels/thermal/niimbot';
 
 export type Connection = { id: string; origin: string; account: string; epoch: string };
 export type CaptureAIStatus = {
@@ -150,6 +156,13 @@ type NativeKept = {
     mime: string;
     variant?: 'display';
   }): Promise<void>;
+  discoverNiimbot(input: {
+    context: string;
+    showOtherDevices: boolean;
+  }): Promise<{ devices: NiimbotDevice[] }>;
+  identifyNiimbot(input: { context: string; deviceId: string }): Promise<NiimbotIdentity>;
+  printNiimbot(input: NiimbotJob & { context: string; deviceId: string }): Promise<NiimbotResult>;
+  cancelNiimbot(input: { context: string }): Promise<void>;
   thermalPdf(input: {
     context: string;
     data: string;

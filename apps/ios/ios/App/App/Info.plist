@@ -42,6 +42,8 @@
 	<string>SheepKeep connects to your inventory server when it is on your local network.</string>
 	<key>NFCReaderUsageDescription</key>
 	<string>Identify your inventory labels and write SheepKeep links to NFC tags.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>SheepKeep uses Bluetooth to print labels on the printer you select.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Take inventory photos and scan printed SheepKeep labels.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

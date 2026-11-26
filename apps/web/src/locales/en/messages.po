@@ -34274,3 +34274,123 @@ msgstr "Save item"
 
 msgid "Skip NFC and save"
 msgstr "Skip NFC and save"
+
+msgid "Use the system print dialog for AirPrint or export the PDF for a USB printer."
+msgstr "Use the system print dialog for AirPrint or export the PDF for a USB printer."
+
+msgid "Turn on Bluetooth to use the label printer."
+msgstr "Turn on Bluetooth to use the label printer."
+
+msgid "Allow Bluetooth for SheepKeep in iPhone Settings."
+msgstr "Allow Bluetooth for SheepKeep in iPhone Settings."
+
+msgid "This printer did not identify as a NIIMBOT B1 Pro."
+msgstr "This printer did not identify as a NIIMBOT B1 Pro."
+
+msgid "A Bluetooth printer operation is already in progress."
+msgstr "A Bluetooth printer operation is already in progress."
+
+msgid "Printer connection cancelled."
+msgstr "Printer connection cancelled."
+
+msgid "Prepare the labels with a supported B1 Pro stock and page range."
+msgstr "Prepare the labels with a supported B1 Pro stock and page range."
+
+msgid "Could not communicate with the printer. Check that it is on and nearby."
+msgstr "Could not communicate with the printer. Check that it is on and nearby."
+
+msgid "NIIMBOT B1 Pro Bluetooth"
+msgstr "NIIMBOT B1 Pro Bluetooth"
+
+msgid "Remembered printer"
+msgstr "Remembered printer"
+
+msgid "Check printer status"
+msgstr "Check printer status"
+
+msgid "Forget printer"
+msgstr "Forget printer"
+
+msgid "B1 Pro verified at 300 DPI. It reconnects when you print."
+msgstr "B1 Pro verified at 300 DPI. It reconnects when you print."
+
+msgid "Firmware: {0}"
+msgstr "Firmware: {0}"
+
+msgid "Protocol generation: {0}"
+msgstr "Protocol generation: {0}"
+
+msgid "Battery: {0}%"
+msgstr "Battery: {0}%"
+
+msgid "The printer lid is open."
+msgstr "The printer lid is open."
+
+msgid "The printer is out of labels."
+msgstr "The printer is out of labels."
+
+msgid "The printer recognized the label roll."
+msgstr "The printer recognized the label roll."
+
+msgid "The printer did not report a recognized roll."
+msgstr "The printer did not report a recognized roll."
+
+msgid "Find nearby printers"
+msgstr "Find nearby printers"
+
+msgid "Show other Bluetooth devices"
+msgstr "Show other Bluetooth devices"
+
+msgid "Checking Bluetooth…"
+msgstr "Checking Bluetooth…"
+
+msgid "No nearby printers found."
+msgstr "No nearby printers found."
+
+msgid "Print density"
+msgstr "Print density"
+
+msgid "Print these labels again?"
+msgstr "Print these labels again?"
+
+msgid "Check the printer output first. Printing again can produce duplicate labels."
+msgstr "Check the printer output first. Printing again can produce duplicate labels."
+
+msgid "Load the matching NIIMBOT gap stock before printing."
+msgstr "Load the matching NIIMBOT gap stock before printing."
+
+msgid "Pages in this job: {0}"
+msgstr "Pages in this job: {0}"
+
+msgid "Last page"
+msgstr "Last page"
+
+msgid "Copies per label"
+msgstr "Copies per label"
+
+msgid "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+msgstr "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+
+msgid "Prepare this job on a supported B1 Pro stock."
+msgstr "Prepare this job on a supported B1 Pro stock."
+
+msgid "Print on B1 Pro"
+msgstr "Print on B1 Pro"
+
+msgid "Cancel print"
+msgstr "Cancel print"
+
+msgid "Connecting to the printer or sending labels…"
+msgstr "Connecting to the printer or sending labels…"
+
+msgid "The printer reports completion. Check the printed labels."
+msgstr "The printer reports completion. Check the printed labels."
+
+msgid "Print completion is uncertain. Check the output before reprinting the same identifiers."
+msgstr "Print completion is uncertain. Check the output before reprinting the same identifiers."
+
+msgid "Labels reported complete: {reported}"
+msgstr "Labels reported complete: {reported}"
+
+msgid "Partial print recorded. Reprint the missing pages using the page range."
+msgstr "Partial print recorded. Reprint the missing pages using the page range."

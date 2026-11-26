@@ -581,6 +581,10 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "readThumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareLabelPdf", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "thermalPdf", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "discoverNiimbot", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "identifyNiimbot", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "printNiimbot", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "cancelNiimbot", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "shareLabelSheet", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openPendingMedia", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openHeldMedia", returnType: CAPPluginReturnPromise),
@@ -597,6 +601,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @MainActor private var findGate = NFCFindSessionGate()
     @MainActor private let match = KeptMatchFeedback()
     @MainActor private lazy var preview = KeptPreview()
+    @MainActor private lazy var niimbot = NiimbotBluetooth()
 
     private static let mimeExtensions = [
         "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/heic": "heic",
@@ -622,6 +627,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             // The Core NFC system sheet can temporarily take focus while the app is still foregrounded.
             guard UIApplication.shared.applicationState == .background else { return }
             self.nfc?.interruptForBackground()
+            self.niimbot.cancel()
             self.notifyListeners("appState", data: ["active": false])
         }
     }
@@ -705,6 +711,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func disconnect(_ call: CAPPluginCall) {
         run(call) {
             let connection = try KeptKeychain.read()
+            self.niimbot.cancel()
             try KeptKeychain.delete()
             self.loggedAuthorizedRequest = false
             var revoked = true
@@ -1110,6 +1117,63 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    @objc func discoverNiimbot(_ call: CAPPluginCall) {
+        run(call) {
+            _ = try self.requireConnection(call)
+            let devices = try await self.niimbot.discover(showOtherDevices: call.getBool("showOtherDevices") == true)
+            call.resolve(["devices": devices.map { ["id": $0.id.uuidString, "name": $0.name] }])
+        }
+    }
+
+    @objc func identifyNiimbot(_ call: CAPPluginCall) {
+        run(call) {
+            let connection = try self.requireConnection(call)
+            guard let id = call.getString("deviceId").flatMap(UUID.init(uuidString:))
+            else { throw KeptNativeError.invalidRequest }
+            let info = try await self.niimbot.identify(id)
+            guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+            var result: JSObject = ["modelId": info.modelId]
+            if let generation = info.protocolGeneration { result["protocolGeneration"] = generation }
+            if let firmware = info.firmware { result["firmware"] = firmware }
+            if let lidOpen = info.lidOpen { result["lidOpen"] = lidOpen }
+            if let paperOut = info.paperOut { result["paperOut"] = paperOut }
+            if let rollRecognized = info.rollRecognized { result["rollRecognized"] = rollRecognized }
+            if let battery = info.batteryPercent { result["batteryPercent"] = battery }
+            call.resolve(result)
+        }
+    }
+
+    @objc func printNiimbot(_ call: CAPPluginCall) {
+        run(call) {
+            _ = try self.requireConnection(call)
+            guard let id = call.getString("deviceId").flatMap(UUID.init(uuidString:)),
+                  let width = call.getInt("width"), (1...NiimbotPage.maximumWidth).contains(width),
+                  let height = call.getInt("height"), (1...NiimbotPage.maximumHeight).contains(height),
+                  let copies = call.getInt("copies"), (1...NiimbotPage.maximumCopies).contains(copies),
+                  let density = call.getInt("density"), (1...5).contains(density),
+                  let encoded = call.getArray("pages", String.self),
+                  (1...NiimbotPage.maximumPages).contains(encoded.count)
+            else { throw NiimbotError.invalidImage }
+            let byteCount = ((width + 7) / 8) * height
+            let pages = try encoded.map { text in
+                guard text.utf8.count == ((byteCount + 2) / 3) * 4,
+                      let bitmap = Data(base64Encoded: text)
+                else { throw NiimbotError.invalidImage }
+                return try NiimbotPage(width: width, height: height, bitmap: bitmap)
+            }
+            let result = try await self.niimbot.print(id, pages: pages, copies: copies, density: density)
+            call.resolve(["state": result.state.rawValue, "completed": result.completed])
+        }
+    }
+
+    @objc func cancelNiimbot(_ call: CAPPluginCall) {
+        run(call) {
+            _ = try self.requireConnection(call)
+            self.niimbot.cancel()
+            call.resolve()
+        }
+    }
+
     @objc func thermalPdf(_ call: CAPPluginCall) {
         run(call) {
             _ = try self.requireConnection(call)
@@ -1458,6 +1522,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             catch KeptNativeError.invalidVisualPhoto {
                 call.reject(KeptNativeError.invalidVisualPhoto.localizedDescription, "invalid_visual_photo")
             }
+            catch let error as NiimbotError { call.reject("Bluetooth printer operation failed.", "niimbot_" + error.rawValue) }
             catch let error as URLError { call.reject("Could not connect to SheepKeep.", "network", error) }
             catch { call.reject(error.localizedDescription) }
         }

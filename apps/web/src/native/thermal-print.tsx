@@ -2,7 +2,7 @@ import { DevicePhotoProposals } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import { capturePaths } from '@/api/capture/paths';
-import type { LabelBatch } from '@/api/capture/types';
+import type { LabelBatch, LabelCellContent } from '@/api/capture/types';
 import type { PrintApi } from '@/components/labels/thermal/api';
 import type { NativeThermalOutput } from '@/components/labels/thermal/output';
 import { type ThermalSource, ThermalStudio } from '@/components/labels/thermal/studio';
@@ -17,6 +17,7 @@ export function NativeThermalPrint({
   thingId,
   placeId,
   onSaved,
+  cachedLabel,
 }: {
   connection: Connection;
   locationId: string;
@@ -24,9 +25,11 @@ export function NativeThermalPrint({
   thingId?: string | undefined;
   placeId?: string | undefined;
   onSaved?: (batch: LabelBatch) => void;
+  cachedLabel?: LabelCellContent | undefined;
 }) {
   const { t } = useLingui();
-  const { transport, media, captureAI } = usePlatform();
+  const { transport, media, captureAI, niimbot } = usePlatform();
+  const bluetooth = useMemo(() => niimbot?.(connection), [connection, niimbot]);
   const sourceLocationId = batch?.locationId ?? locationId;
   const batchKind = batch?.kind;
   const api = useMemo<PrintApi>(
@@ -73,10 +76,7 @@ export function NativeThermalPrint({
   return (
     <div className="grid gap-4">
       <p className="m-0 text-small text-ink-2">
-        <Trans>
-          Choose an AirPrint-compatible network printer. For a printer connected to a computer by
-          USB, export the PDF and print it on that computer.
-        </Trans>
+        <Trans>Use the system print dialog for AirPrint or export the PDF for a USB printer.</Trans>
       </p>
       <ThermalStudio
         key={JSON.stringify([connection.id, source, batch?.id])}
@@ -84,6 +84,8 @@ export function NativeThermalPrint({
         source={source}
         api={api}
         nativeOutput={output}
+        bluetooth={bluetooth}
+        cachedLabel={cachedLabel}
         batch={batch}
         suggestIcon={
           propose &&

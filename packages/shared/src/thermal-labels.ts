@@ -46,7 +46,8 @@ export type PrinterProfile = {
   darkness?: number;
   qrMm?: number;
   layout: ThermalLayout;
-  adapter?: 'system' | 'browser';
+  adapter?: 'system' | 'browser' | 'niimbot-b1-pro';
+  bluetoothId?: string;
   calibration: Record<string, StockCalibration>;
   settingsByStock?: Record<string, StockPrintSettings>;
 };
