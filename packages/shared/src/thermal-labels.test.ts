@@ -9,6 +9,7 @@ import {
 
 describe('thermal print geometry', () => {
   it.each([
+    ['thermal_50x20', 50, 20, 400, 160, 591, 236],
     ['thermal_4x6in', 101.6, 152.4, 812, 1218, 1200, 1800],
     ['thermal_1_75x0_75in', 44.45, 19.05, 355, 152, 525, 225],
     ['thermal_2x1in', 50.8, 25.4, 406, 203, 600, 300],
@@ -26,6 +27,35 @@ describe('thermal print geometry', () => {
       ).toEqual({ w: x300, h: y300 });
     },
   );
+
+  it('uses the compact roll by default and checks the actual feed dimensions before rotation', () => {
+    const profile = defaultPrinterProfile();
+    expect(profile).toMatchObject({ stock: 'thermal_50x20', media: 'gap', speed: 3, darkness: 8 });
+    expect(labelStock(profile.stock)).toMatchObject({ cols: 1, rows: 1 });
+    expect(() =>
+      thermalGeometry(
+        profile.stock,
+        'single',
+        {
+          ...profile,
+          orientation: 'landscape',
+          minMediaWidth: 51,
+        },
+        1,
+      ),
+    ).toThrow('media-width');
+    expect(() =>
+      thermalGeometry(
+        profile.stock,
+        'single',
+        {
+          ...profile,
+          minFeedLength: 21,
+        },
+        1,
+      ),
+    ).toThrow('feed-length');
+  });
 
   it('rotates the page and logical grid, and retains empty space on partial sheets', () => {
     const job = thermalGeometry(

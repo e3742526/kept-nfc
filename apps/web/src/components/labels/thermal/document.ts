@@ -1,4 +1,5 @@
 import {
+  COMPACT_THERMAL_STOCK,
   MICRO_THERMAL_STOCK,
   type PrinterProfile,
   type PrintRect,
@@ -19,6 +20,7 @@ export type ThermalContent = {
   nfc?: 'verified' | 'pending' | 'unknown' | undefined;
   uhf?: boolean | undefined;
   barcode?: string | undefined;
+  writeIn?: boolean | undefined;
 };
 
 export type ThermalOptions = {
@@ -45,7 +47,7 @@ export const DEFAULT_THERMAL_OPTIONS: ThermalOptions = {
   identifierPt: 0,
 };
 
-type Text = { value: string; x: number; y: number; size: number; bold?: boolean };
+type Text = { value: string; x: number; y: number; size: number; bold?: boolean; rotate?: 90 };
 export type DotPage = { ink: PrintRect[]; text: Text[] };
 type FitWarnings = { threeDotQr: boolean; omittedText: boolean };
 export type ThermalDocument = Omit<ThermalGeometry, 'pages'> & {
@@ -69,7 +71,8 @@ function printableText(value: string): string {
   return value
     .normalize('NFKD')
     .replace(/\p{Mark}/gu, '')
-    .replace(/[^\x20-\x7E]+/g, ' ')
+    .replaceAll('⁄', '/')
+    .replace(/[^\x20-\x7E·]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -118,6 +121,48 @@ function barcodeInk(page: DotPage, barcode: string, box: PrintRect, dpi: number)
   }
 }
 
+/** Use the space to the right of the QR for one short name, one description and the actual
+ * tag associations. Reserve the tag line before fitting the optional copy. */
+function drawCompactFields(
+  page: DotPage,
+  label: ThermalContent,
+  options: ThermalOptions,
+  box: PrintRect,
+  dpi: number,
+  warnings: FitWarnings,
+) {
+  const tags = [label.nfc === 'verified' ? 'NFC' : '', label.uhf ? 'UHF' : '']
+    .filter(Boolean)
+    .join(' + ');
+  const font = Math.ceil((6 * dpi) / 72);
+  const line = Math.ceil(font * 1.25);
+  const bottom = box.y + box.h;
+  const lastOptional = bottom - (tags ? line : 0);
+  const identity = options.variant === 'identity';
+  let y = box.y;
+  const add = (value: string, last: number) => {
+    const text = printableText(value);
+    if (!text || text.length * font * glyphWidth > box.w || y + line > last) {
+      warnings.omittedText = true;
+      return;
+    }
+    y += line;
+    page.text.push({ value: text, x: box.x, y, size: font });
+  };
+  if (!identity && !label.writeIn) {
+    if (options.showName && label.name) add(label.name, lastOptional);
+    if (options.showContents && label.contents) add(label.contents, lastOptional);
+  }
+  if (tags) add(tags, bottom);
+  if (identity) return;
+  const writingSpace = mmToDots(3.2, dpi);
+  const requested = label.name && !label.writeIn ? 1 : 2;
+  const rows = Math.min(options.handwriting, requested, Math.floor((bottom - y) / writingSpace));
+  for (let row = 0; row < rows; row++) {
+    page.ink.push({ x: box.x, y: bottom - 1 - row * writingSpace, w: box.w, h: 1 });
+  }
+}
+
 function drawCell(
   page: DotPage,
   box: PrintRect,
@@ -126,11 +171,12 @@ function drawCell(
   profile: PrinterProfile,
   options: ThermalOptions,
   encode: Encode,
+  compactWarnings?: FitWarnings,
 ) {
   const matrix = qrMatrix(encode, labelPayload(label, options));
   const dots = (mm: number) => mmToDots(mm, dpi);
   const pts = (pt: number) => Math.ceil((pt * dpi) / 72);
-  const compact = box.h < dots(29);
+  const compact = !!compactWarnings || box.h < dots(29);
   const stacked = !compact && box.w < box.h * 1.25;
   const gap = dots(compact ? 0.9 : 2.5);
   const id = label.identifier;
@@ -140,7 +186,13 @@ function drawCell(
   const minTextWidth = Math.ceil(minId * glyphWidth * id.length);
   const minTextHeight = Math.ceil(minId * 1.2);
   const minimumModule = Math.max(3, Math.ceil((dpi * 0.3) / 25.4));
-  const target = Math.max(matrix.length * minimumModule, dots(profile.qrMm ?? (compact ? 17 : 48)));
+  const target = compactWarnings
+    ? matrix.length *
+      Math.max(
+        profile.qrMm === undefined ? 4 : minimumModule,
+        Math.round(dots(profile.qrMm ?? 16) / matrix.length),
+      )
+    : Math.max(matrix.length * minimumModule, dots(profile.qrMm ?? (compact ? 17 : 48)));
   const qrSpace = Math.min(
     target,
     stacked ? box.w : box.w - minTextWidth - gap,
@@ -149,7 +201,7 @@ function drawCell(
   const module = Math.floor(qrSpace / matrix.length);
   if (module < minimumModule) throw new ThermalFitError('qr');
   const qrSize = module * matrix.length;
-  const right = options.qrSide === 'right';
+  const right = !compactWarnings && options.qrSide === 'right';
   const qx = box.x + (stacked ? Math.floor((box.w - qrSize) / 2) : right ? box.w - qrSize : 0);
   const qy = box.y + (compact ? Math.floor((box.h - qrSize) / 2) : 0);
   qrInk(page.ink, matrix, qx, qy, module);
@@ -166,6 +218,18 @@ function drawCell(
   if (size < minId || bottom - top < minTextHeight) throw new ThermalFitError('identifier');
   const baseline = top + size;
   page.text.push({ value: id, x: tx, y: baseline, size, bold: true });
+  if (compactWarnings) {
+    compactWarnings.threeDotQr ||= module === 3;
+    drawCompactFields(
+      page,
+      label,
+      options,
+      { x: tx, y: baseline, w: width, h: bottom - baseline },
+      dpi,
+      compactWarnings,
+    );
+    return;
+  }
 
   const small = pts(compact ? 6 : 9);
   const line = Math.ceil(small * 1.25);
@@ -200,6 +264,41 @@ function drawCell(
   const stroke = Math.max(1, dots(0.18));
   for (let row = 0; row < rows; row++) {
     page.ink.push({ x: tx, y: bottom - stroke - row * handwritingHeight, w: width, h: stroke });
+  }
+}
+
+function drawCompact(
+  page: DotPage,
+  box: PrintRect,
+  label: ThermalContent,
+  dpi: number,
+  profile: PrinterProfile,
+  options: ThermalOptions,
+  encode: Encode,
+  warnings: FitWarnings,
+) {
+  if (profile.orientation === 'portrait') {
+    drawCell(page, box, label, dpi, profile, options, encode, warnings);
+    return;
+  }
+
+  // Rotate the horizontal design as a unit so the full label fits the same physical stock.
+  const drawing: DotPage = { ink: [], text: [] };
+  drawCell(
+    drawing,
+    { x: 0, y: 0, w: box.h, h: box.w },
+    label,
+    dpi,
+    profile,
+    options,
+    encode,
+    warnings,
+  );
+  for (const { x, y, w, h } of drawing.ink) {
+    page.ink.push({ x: box.x + box.w - y - h, y: box.y + x, w: h, h: w });
+  }
+  for (const line of drawing.text) {
+    page.text.push({ ...line, x: box.x + box.w - line.y, y: box.y + line.x, rotate: 90 });
   }
 }
 
@@ -344,6 +443,8 @@ export function thermalDocument(
         if (!label) continue;
         if (stock === MICRO_THERMAL_STOCK) {
           drawMicro(page, slot.ink, label, size.dpi, profile, options, encode, warnings);
+        } else if (stock === COMPACT_THERMAL_STOCK) {
+          drawCompact(page, slot.ink, label, size.dpi, profile, options, encode, warnings);
         } else drawCell(page, slot.ink, label, size.dpi, profile, options, encode);
       }
       return page;
@@ -362,7 +463,7 @@ export function calibrationDocument(
   if (!box) throw new ThermalFitError('settings');
   const dots = (mm: number) => mmToDots(mm, size.dpi);
   const stroke = Math.max(1, dots(0.18));
-  const inset = dots(box.h < dots(29) ? 0.65 : 1.2);
+  const inset = dots(Math.min(box.w, box.h) < dots(29) ? 0.65 : 1.2);
   const page: DotPage = { ink: [], text: [] };
   const sampleBox = {
     x: box.x + inset,
@@ -378,6 +479,11 @@ export function calibrationDocument(
   const options = { ...DEFAULT_THERMAL_OPTIONS, handwriting: 0 };
   if (stock === MICRO_THERMAL_STOCK) {
     drawMicro(page, sampleBox, sample, size.dpi, profile, options, encode, {
+      threeDotQr: false,
+      omittedText: false,
+    });
+  } else if (stock === COMPACT_THERMAL_STOCK) {
+    drawCompact(page, sampleBox, sample, size.dpi, profile, options, encode, {
       threeDotQr: false,
       omittedText: false,
     });

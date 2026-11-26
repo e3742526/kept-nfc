@@ -613,6 +613,7 @@ test('prepares micro thermal stock, remembers the printer, and reprints exact ID
   try {
     const home = await homeId(page);
     await page.goto(`/labels?loc=${home}&blank=2&thermal=1`);
+    await expect(page.getByRole('button', { name: 'Physical stock' })).toContainText('50 × 20 mm');
     await page.getByRole('button', { name: 'Physical stock' }).click();
     await page.getByRole('option', { name: 'Micro Thermal 1.2 × 0.8 in' }).click();
     await page.getByText('Save printer profile', { exact: true }).click();
@@ -641,6 +642,14 @@ test('prepares micro thermal stock, remembers the printer, and reprints exact ID
     );
     await page.getByRole('button', { name: 'Open batch for reprint' }).click();
     await expect(job.getByText(/Partial print recorded/)).toBeVisible();
+    expect(await page.locator('#kept-thermal-pages svg text').allTextContents()).toEqual(first);
+    await page.getByRole('button', { name: 'Physical stock' }).click();
+    await page.getByRole('option', { name: 'Compact Thermal — 50 × 20 mm' }).click();
+    await page.getByRole('button', { name: 'Reprint on selected stock' }).click();
+    await expect(page.locator('#kept-thermal-pages svg').first()).toHaveAttribute(
+      'viewBox',
+      '0 0 400 160',
+    );
     expect(await page.locator('#kept-thermal-pages svg text').allTextContents()).toEqual(first);
   } finally {
     await context.close();

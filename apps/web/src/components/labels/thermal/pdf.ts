@@ -3,7 +3,7 @@ import type { ThermalDocument } from './document';
 export const loadThermalPdf = () => import('pdf-lib');
 
 export async function thermalPdf(document: ThermalDocument): Promise<Uint8Array<ArrayBuffer>> {
-  const { PDFDocument, StandardFonts, rgb } = await loadThermalPdf();
+  const { degrees, PDFDocument, StandardFonts, rgb } = await loadThermalPdf();
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Courier);
   const bold = await pdf.embedFont(StandardFonts.CourierBold);
@@ -30,6 +30,7 @@ export async function thermalPdf(document: ThermalDocument): Promise<Uint8Array<
         y: height - dot * text.y,
         size: dot * text.size,
         font: text.bold ? bold : font,
+        ...(text.rotate ? { rotate: degrees(-text.rotate) } : {}),
         color: black,
       });
     }

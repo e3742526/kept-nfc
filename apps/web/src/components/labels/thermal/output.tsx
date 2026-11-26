@@ -22,7 +22,7 @@ function Page({ doc, page }: { doc: ThermalDocument; page: DotPage }) {
         shapeRendering="crispEdges"
         d={page.ink.map(({ x, y, w, h }) => `M${x} ${y}h${w}v${h}h-${w}Z`).join('')}
       />
-      {page.text.map(({ value, x, y, size, bold }, i) => (
+      {page.text.map(({ value, x, y, size, bold, rotate }, i) => (
         <text
           // biome-ignore lint/suspicious/noArrayIndexKey: text at a position on a fixed page
           key={i}
@@ -31,6 +31,7 @@ function Page({ doc, page }: { doc: ThermalDocument; page: DotPage }) {
           fill="#000"
           fontFamily="Courier New, monospace"
           fontSize={size}
+          transform={rotate ? `rotate(${rotate} ${x} ${y})` : undefined}
           fontWeight={bold ? 700 : 400}
           textLength={value.length * size * 0.6}
           lengthAdjust="spacingAndGlyphs"

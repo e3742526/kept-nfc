@@ -27,6 +27,8 @@ export function printSpec(
       printableWidth: profile.printableWidth,
       printableHeight: profile.printableHeight,
       maxMediaWidth: profile.maxMediaWidth,
+      minMediaWidth: profile.minMediaWidth,
+      minFeedLength: profile.minFeedLength,
       qrMm: profile.qrMm,
       calibration: profile.calibration[stock],
     },

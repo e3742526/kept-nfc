@@ -34140,3 +34140,23 @@ msgstr "Vertical offset (mm)"
 #: src/components/scan/manual-code.tsx
 msgid "Enter a short ID like 7KQ‑4MZ or a numbered ID like TMP-A09Z-0001."
 msgstr "Saisissez un identifiant court comme 7KQ‑4MZ ou un identifiant numéroté comme TMP-A09Z-0001."
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Compact Thermal — 50 × 20 mm"
+msgstr "Étiquette thermique compacte de 50 × 20 mm"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Compact label content"
+msgstr "Contenu de l’étiquette compacte"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Minimum media width (mm)"
+msgstr "Largeur minimale du support (mm)"
+
+#: src/components/labels/thermal/settings.tsx
+msgid "Minimum feed length (mm)"
+msgstr "Longueur d’alimentation minimale (mm)"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Reprint on selected stock"
+msgstr "Réimprimer sur le support sélectionné"

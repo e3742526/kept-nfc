@@ -1,4 +1,5 @@
 import {
+  COMPACT_THERMAL_STOCK,
   MICRO_THERMAL_STOCK,
   type PrinterProfile,
   type StockCalibration,
@@ -90,7 +91,9 @@ export function ThermalSettings({
 }) {
   const { t } = useLingui();
   const stockText = useStockText();
-  const maxLines = stock === MICRO_THERMAL_STOCK ? 1 : 6;
+  const compact = stock === COMPACT_THERMAL_STOCK;
+  const micro = stock === MICRO_THERMAL_STOCK;
+  const maxLines = micro ? 1 : compact ? 2 : 6;
   const defaults = stockCalibration(stock);
   const calibration = profile.calibration[stock] ?? defaults;
   const setCalibration = (key: keyof StockCalibration, value: number | undefined) =>
@@ -144,9 +147,11 @@ export function ThermalSettings({
           items={THERMAL_LABEL_STOCKS.map((item) => ({
             id: item.key,
             name:
-              item.key === MICRO_THERMAL_STOCK
-                ? t`Micro Thermal 1.2 × 0.8 in`
-                : stockText(item).title,
+              item.key === COMPACT_THERMAL_STOCK
+                ? t`Compact Thermal — 50 × 20 mm`
+                : item.key === MICRO_THERMAL_STOCK
+                  ? t`Micro Thermal 1.2 × 0.8 in`
+                  : stockText(item).title,
           }))}
           change={setStock}
         />
@@ -166,10 +171,10 @@ export function ThermalSettings({
           }
         />
       </div>
-      {stock === MICRO_THERMAL_STOCK && (
+      {(compact || micro) && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Choices
-            label={t`Micro label content`}
+            label={compact ? t`Compact label content` : t`Micro label content`}
             value={options.variant ?? 'standard'}
             items={[
               { id: 'standard', name: t`Item name and tag indicators` },
@@ -193,18 +198,20 @@ export function ThermalSettings({
           <Trans>Layout and printer calibration</Trans>
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <Choices
-            label={t`QR side on compact labels`}
-            value={options.qrSide}
-            items={[
-              { id: 'left', name: t`Left` },
-              { id: 'right', name: t`Right` },
-            ]}
-            change={(qrSide) => setOptions({ ...options, qrSide })}
-          />
+          {!compact && (
+            <Choices
+              label={t`QR side on compact labels`}
+              value={options.qrSide}
+              items={[
+                { id: 'left', name: t`Left` },
+                { id: 'right', name: t`Right` },
+              ]}
+              change={(qrSide) => setOptions({ ...options, qrSide })}
+            />
+          )}
           <PrintNumber
             label={t`Preferred QR width (mm)`}
-            value={profile.qrMm}
+            value={profile.qrMm ?? (compact ? 16 : undefined)}
             min={5}
             max={125}
             change={(qrMm) => {
@@ -246,7 +253,9 @@ export function ThermalSettings({
             [
               ['printableWidth', t`Printable width (mm)`],
               ['printableHeight', t`Printable height (mm)`],
+              ['minMediaWidth', t`Minimum media width (mm)`],
               ['maxMediaWidth', t`Maximum media width (mm)`],
+              ['minFeedLength', t`Minimum feed length (mm)`],
             ] as const
           ).map(([key, label]) => (
             <PrintNumber
@@ -274,7 +283,7 @@ export function ThermalSettings({
           {visibility
             .filter(
               ([key]) =>
-                stock !== MICRO_THERMAL_STOCK ||
+                !(micro || compact) ||
                 (key !== 'showNfc' && key !== 'showBarcode' && key !== 'showLocation'),
             )
             .map(([key, label]) => (

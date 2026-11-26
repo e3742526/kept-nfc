@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { isThermalLabelStock, labelStock, MICRO_THERMAL_STOCK } from './label-stocks.js';
+import {
+  COMPACT_THERMAL_STOCK,
+  isThermalLabelStock,
+  labelStock,
+  MICRO_THERMAL_STOCK,
+} from './label-stocks.js';
 
 export const THERMAL_LAYOUTS = {
   single: { cols: 1, rows: 1 },
@@ -30,6 +35,8 @@ export type PrinterProfile = {
   printableWidth?: number;
   printableHeight?: number;
   maxMediaWidth?: number;
+  minMediaWidth?: number;
+  minFeedLength?: number;
   orientation: 'portrait' | 'landscape';
   scale: number;
   media: 'gap' | 'mark' | 'continuous';
@@ -51,6 +58,8 @@ type StockPrintSettings = Pick<
   | 'printableWidth'
   | 'printableHeight'
   | 'maxMediaWidth'
+  | 'minMediaWidth'
+  | 'minFeedLength'
   | 'media'
   | 'gapOrMark'
   | 'speed'
@@ -76,6 +85,8 @@ export function savePrinterStock(
     printableWidth,
     printableHeight,
     maxMediaWidth,
+    minMediaWidth,
+    minFeedLength,
     media,
     gapOrMark,
     speed,
@@ -89,6 +100,8 @@ export function savePrinterStock(
     printableWidth,
     printableHeight,
     maxMediaWidth,
+    minMediaWidth,
+    minFeedLength,
     media,
     gapOrMark,
     speed,
@@ -126,6 +139,8 @@ export const ThermalBatchSpecSchema = z.strictObject({
     printableWidth: printDistance.optional(),
     printableHeight: printDistance.optional(),
     maxMediaWidth: printDistance.optional(),
+    minMediaWidth: printDistance.optional(),
+    minFeedLength: printDistance.optional(),
     qrMm: z.number().min(5).max(125).optional(),
     calibration: StockCalibrationSchema.optional(),
   }),
@@ -176,11 +191,13 @@ export function defaultPrinterProfile(): PrinterProfile {
   return {
     id: '',
     name: '',
-    stock: 'thermal_4x6in',
+    stock: COMPACT_THERMAL_STOCK,
     dpi: 203,
     orientation: 'portrait',
     scale: 100,
     media: 'gap',
+    speed: 3,
+    darkness: 8,
     layout: 'single',
     calibration: {},
   };
@@ -239,14 +256,24 @@ export function thermalGeometry(
     scale > 100 ||
     [cal.top, cal.right, cal.bottom, cal.left].some((n) => !Number.isFinite(n) || n < 0) ||
     [cal.offsetX, cal.offsetY].some((n) => !Number.isFinite(n) || Math.abs(n) > 25) ||
-    [profile.maxMediaWidth, profile.printableWidth, profile.printableHeight].some(
-      (n) => n !== undefined && (!Number.isFinite(n) || n <= 0),
-    )
+    [
+      profile.maxMediaWidth,
+      profile.minMediaWidth,
+      profile.minFeedLength,
+      profile.printableWidth,
+      profile.printableHeight,
+    ].some((n) => n !== undefined && (!Number.isFinite(n) || n <= 0))
   ) {
     throw new RangeError('settings');
   }
   if (profile.maxMediaWidth !== undefined && stock.page.w > profile.maxMediaWidth) {
     throw new RangeError('media-width');
+  }
+  if (profile.minMediaWidth !== undefined && stock.page.w < profile.minMediaWidth) {
+    throw new RangeError('media-width');
+  }
+  if (profile.minFeedLength !== undefined && stock.page.h < profile.minFeedLength) {
+    throw new RangeError('feed-length');
   }
 
   const landscape = profile.orientation === 'landscape';

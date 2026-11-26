@@ -103,9 +103,11 @@ const letterWritable = (cols: number, rows: number): LabelStock => ({
   content: 'full',
 });
 
+export const COMPACT_THERMAL_STOCK = 'thermal_50x20';
 export const MICRO_THERMAL_STOCK = 'thermal_30_48x20_32';
 
 export const THERMAL_LABEL_STOCKS = [
+  roll(COMPACT_THERMAL_STOCK, 50, 20, 'Compact Thermal — 50 × 20 mm', 'حراري مدمج — ٥٠ × ٢٠ مم'),
   roll(
     MICRO_THERMAL_STOCK,
     30.48,

@@ -65,6 +65,8 @@ async function rendered(doc: ThermalDocument, bytes: Uint8Array<ArrayBuffer>) {
 
 describe('thermal vector pages', () => {
   it.each([
+    ['thermal_50x20', 203],
+    ['thermal_50x20', 300],
     ['thermal_4x6in', 203],
     ['thermal_4x6in', 300],
     ['thermal_1_75x0_75in', 203],
@@ -100,6 +102,111 @@ describe('thermal vector pages', () => {
       }
     },
   );
+
+  it('lays out a compact asset without a storage path and reserves space for both tags', () => {
+    const doc = thermalDocument(
+      'thermal_50x20',
+      'single',
+      profile,
+      DEFAULT_THERMAL_OPTIONS,
+      [
+        {
+          ...label,
+          name: 'Socket',
+          contents: '10 mm · ¼-inch drive',
+          location: 'Main workshop',
+          nfc: 'verified',
+          uhf: true,
+        },
+      ],
+      encode,
+    );
+    const page = doc.pages[0];
+    expect(page?.text.map((line) => line.value)).toEqual([
+      identifier,
+      'Socket',
+      '10 mm · 1/4-inch drive',
+      'NFC + UHF',
+    ]);
+    expect(page?.text[0]?.x).toBeGreaterThan(page?.ink[0]?.x ?? Infinity);
+    expect(doc.warnings?.threeDotQr).toBe(true);
+    expect(doc.warnings?.omittedText).toBe(false);
+  });
+
+  it('preserves integer modules and a four-module quiet zone in the compact app QR', async () => {
+    const payload = `${identifier}-010203040506`;
+    const doc = thermalDocument(
+      'thermal_50x20',
+      'single',
+      profile,
+      { ...DEFAULT_THERMAL_OPTIONS, payload: 'app', variant: 'identity' },
+      [{ ...label, name: 'Hidden', contents: 'Hidden', nfc: 'pending', uhf: true }],
+      encode,
+    );
+    const page = doc.pages[0];
+    if (!page) throw new Error('Missing page');
+    const modules = qrMatrix(encode, payload).length;
+    const module = page.ink[0]?.h ?? 0;
+    expect(module).toBeGreaterThanOrEqual(4);
+    const left = Math.min(...page.ink.map((r) => r.x));
+    const top = Math.min(...page.ink.map((r) => r.y));
+    const bottom = Math.max(...page.ink.map((r) => r.y + r.h));
+    const right = Math.max(...page.ink.map((r) => r.x + r.w));
+    expect(left - doc.printable.x).toBe(4 * module);
+    expect(top - doc.printable.y).toBeGreaterThanOrEqual(4 * module);
+    expect(doc.printable.y + doc.printable.h - bottom).toBeGreaterThanOrEqual(4 * module);
+    expect(right - left).toBe((modules - 8) * module);
+    expect((page.text[0]?.x ?? 0) - right).toBeGreaterThanOrEqual(4 * module);
+    expect(page.ink.every((r) => r.h === module && r.w % module === 0)).toBe(true);
+    expect(page.text.map((t) => t.value)).toEqual([identifier, 'UHF']);
+    expect((await rendered(doc, await thermalPdf(doc))).reads).toContainEqual(
+      expect.objectContaining({ text: payload }),
+    );
+  });
+
+  it('omits overflow while retaining tags and fits a write-in rectangle beside the QR', () => {
+    const docs = (content: ThermalContent) =>
+      thermalDocument(
+        'thermal_50x20',
+        'single',
+        profile,
+        DEFAULT_THERMAL_OPTIONS,
+        [content],
+        encode,
+      );
+    const oversized = docs({ ...label, contents: 'A'.repeat(160), nfc: 'verified' });
+    expect(oversized.warnings?.omittedText).toBe(true);
+    expect(oversized.pages[0]?.text.map((t) => t.value)).toEqual([identifier, 'NFC']);
+    // A temporary label avoids printing incidental contents and puts two rules in the text column.
+    const temporary = docs({ ...label, name: 'Socket', contents: '10 mm', writeIn: true });
+    expect(temporary.pages[0]?.text.map((t) => t.value)).toEqual([identifier]);
+    expect(temporary.pages[0]?.ink.filter((r) => r.h === 1)).toHaveLength(2);
+    const category = docs({ ...label, name: 'Sockets', nfc: 'verified', uhf: false });
+    expect(category.pages[0]?.text.map((t) => t.value)).toEqual([identifier, 'Sockets', 'NFC']);
+    expect(category.pages[0]?.ink.filter((r) => r.h === 1)).toHaveLength(1);
+  });
+
+  it('rotates the compact design and renders a single calibration page', async () => {
+    const rotated = thermalDocument(
+      'thermal_50x20',
+      'single',
+      { ...profile, orientation: 'landscape' },
+      DEFAULT_THERMAL_OPTIONS,
+      [label],
+      encode,
+    );
+    expect(rotated.mm).toEqual({ w: 20, h: 50 });
+    expect(rotated.pages[0]?.text[0]?.rotate).toBe(90);
+    expect((await rendered(rotated, await thermalPdf(rotated))).reads).toContainEqual(
+      expect.objectContaining({ text: url }),
+    );
+    const sampleUrl = 'https://example.org/calibration';
+    const cal = calibrationDocument('thermal_50x20', profile, sampleUrl, encode);
+    expect(cal.pages).toHaveLength(1);
+    const proof = await rendered(cal, await thermalPdf(cal));
+    expect(proof.text).toEqual(expect.arrayContaining(['TMP-A09Z-0001', 'TOP / QR sample']));
+    expect(proof.reads).toContainEqual(expect.objectContaining({ text: sampleUrl }));
+  });
 
   it('leaves four whole white modules on every side of the micro QR at 203 DPI', () => {
     const doc = thermalDocument(

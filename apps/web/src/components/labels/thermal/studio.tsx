@@ -1,4 +1,5 @@
 import {
+  COMPACT_THERMAL_STOCK,
   defaultPrinterProfile,
   deviceLabelReference,
   isThermalLabelStock,
@@ -51,9 +52,9 @@ import {
 } from './store';
 
 export type ThermalSource = Omit<CreateLabelBatchBody, 'stock' | 'thermal' | 'dryRun'>;
-const initialStock = 'thermal_4x6in';
+const initialStock = COMPACT_THERMAL_STOCK;
 const stocksMatch = (stock: string, layout: ThermalLayout) =>
-  stock === initialStock ? layout : 'single';
+  stock === 'thermal_4x6in' ? layout : 'single';
 
 type Prepared =
   | { kind: 'calibration'; doc: ThermalDocument }
@@ -222,6 +223,7 @@ export function ThermalStudio({
           identifier: example,
           url: exampleUrl,
           name: mode === 'category' ? category : undefined,
+          writeIn: mode === 'temporary',
           contents,
         }))
       : labels.slice(0, 12).map((label) => ({ ...label, contents: contents || label.contents }));
@@ -358,12 +360,12 @@ export function ThermalStudio({
     onSaved?.(ready);
   }
 
-  function openJob(job: PrintManifest) {
+  function openJob(job: PrintManifest, useSelectedStock = false) {
     if (!encode) return;
     const doc = thermalDocument(
-      job.stock,
-      job.spec.layout,
-      profileForBatch(job.stock, job.spec),
+      useSelectedStock ? stock : job.stock,
+      useSelectedStock ? layout : job.spec.layout,
+      useSelectedStock ? profile : profileForBatch(job.stock, job.spec),
       job.spec.options,
       manifestLabels(job),
       encode,
@@ -509,7 +511,7 @@ export function ThermalStudio({
           />
           <TextField
             label={
-              stock === MICRO_THERMAL_STOCK
+              stock === MICRO_THERMAL_STOCK || stock === COMPACT_THERMAL_STOCK
                 ? t`Size or model (optional)`
                 : t`Contents summary (optional)`
             }
@@ -583,6 +585,21 @@ export function ThermalStudio({
         >
           <ThermalPreview doc={selected.doc} />
           {selected.kind === 'local' && <RegistrationStatus job={selected.job} />}
+          {selected.doc.warnings?.threeDotQr && (
+            <Notice tone="warn">
+              <Trans>
+                This QR prints at three dots per module. Scan a test label before printing the
+                batch.
+              </Trans>
+            </Notice>
+          )}
+          {selected.doc.warnings?.omittedText && (
+            <Notice>
+              <Trans>
+                Some optional text does not fit. The QR and full identifier are preserved.
+              </Trans>
+            </Notice>
+          )}
           {queue && (
             <p className="m-0">
               <Trans>Choose {queue} in the print dialog.</Trans>
@@ -690,6 +707,15 @@ export function ThermalStudio({
                       onPress={() => void run(async () => openJob(job))}
                     >
                       <Trans>Open batch for reprint</Trans>
+                    </Button>
+                  )}
+                  {job.stock !== stock && job.registration !== 'collision' && (
+                    <Button
+                      variant="secondary"
+                      isDisabled={!encode || busy}
+                      onPress={() => void run(async () => openJob(job, true))}
+                    >
+                      <Trans>Reprint on selected stock</Trans>
                     </Button>
                   )}
                   {job.registration !== 'registered' && job.registration !== 'collision' && (

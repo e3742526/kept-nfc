@@ -98,6 +98,7 @@ export function manifestLabels(job: PrintManifest): ThermalContent[] {
     identifier,
     url: `${job.origin}/l/${deviceLabelReference(identifier, job.id)}`,
     name: job.spec.category,
+    writeIn: job.prefix === 'TMP' && !job.spec.category,
     contents: job.spec.contents,
   }));
 }
@@ -107,6 +108,7 @@ export function batchLabels(batch: Pick<LabelBatch, 'labels' | 'thermal'>): Ther
     identifier: label.alias ?? label.code,
     url: label.url,
     name: label.name ?? batch.thermal?.category,
+    writeIn: label.kind === 'blank' && label.alias?.startsWith('TMP-') && !batch.thermal?.category,
     location: label.path,
     barcode: label.barcode,
     contents: batch.thermal?.contents || label.model,

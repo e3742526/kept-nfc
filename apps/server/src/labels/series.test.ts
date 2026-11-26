@@ -117,7 +117,7 @@ describe('a numbered series', () => {
       locationId: home.id,
       kind: 'blank',
       blankCount: 2,
-      stock: 'thermal_1_75x0_75in',
+      stock: 'thermal_50x20',
       series: { prefix: 'TMP', id: 'OIL0', origin: LABELS },
     };
     const register = (as: Person, request = body) =>

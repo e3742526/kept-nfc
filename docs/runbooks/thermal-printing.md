@@ -7,10 +7,21 @@ save its name, queue, resolution and calibration in **Save printer profile**.
 
 | Stock | Physical size | PDF page (points) | At 203 DPI | At 300 DPI |
 | --- | --- | --- | --- | --- |
+| Compact Thermal | 50 × 20 mm | 141.7323 × 56.6929 | 400 × 160 | 591 × 236 |
 | Large | 4 × 6 in · 101.6 × 152.4 mm | 288 × 432 | 812 × 1218 | 1200 × 1800 |
 | Small | 2 × 1 in · 50.8 × 25.4 mm | 144 × 72 | 406 × 203 | 600 × 300 |
 | Micro | 1.75 × 0.75 in · 44.45 × 19.05 mm | 126 × 54 | 355 × 152 | 525 × 225 |
 | Micro Thermal | 1.2 × 0.8 in · 30.48 × 20.32 mm | 86.4 × 57.6 | 244 × 162 | 360 × 240 |
+
+New thermal setups start with **Compact Thermal — 50 × 20 mm**. Select and save a stock in a
+printer profile to make it that profile’s default. The compact layout places the QR on the left
+and the complete identifier at the top right. It fits a short name, size or model, and registered tag
+indicators as space permits. For temporary labels, use the available space for handwriting.
+
+The 50 × 20 profile matches the advertised BrokSilent 310-label gap roll. Measure the gap on the
+physical roll. Enter the printer’s minimum media width and feed length when known and position its
+optical sensor over the stock gap. The reference queue offers speed 3 and darkness 8 as starting
+settings. Verify the setting units in your driver before applying them.
 
 The 1.2 × 0.8 profile matches the advertised LUCKIPLUS 1,000-label direct thermal roll. Measure
 the gap on the actual roll. The calibration label uses a QR with a known scale chosen from the
@@ -51,7 +62,7 @@ Open an exported PDF in Preview or use SheepKeep’s browser **Print** button. F
 advertises custom media, a one-label test can also be sent from the computer that owns the queue:
 
 ```sh
-lp -d YOUR_QUEUE -n 1 -o media=Custom.30.48x20.32mm -o print-scaling=none calibration.pdf
+lp -d YOUR_QUEUE -n 1 -o media=Custom.50x20mm -o print-scaling=none calibration.pdf
 ```
 
 CUPS or the driver may reject this size if the press or filter imposes a minimum. Check the
@@ -83,7 +94,7 @@ driver options and feed guides before trying narrow media. [CUPS printing option
   tag indicators beside the QR. Choose **Identification only** to leave that space available to
   the QR. Handwriting space is optional and fits when the selected layout leaves room.
 - **HTTPS link for phone cameras** is the default. **Compact code for the SheepKeep scanner** is
-  an explicit choice on the 1.2 × 0.8 stock and works through SheepKeep’s scanner or code entry.
+  an explicit choice on the 50 × 20 mm and 1.2 × 0.8 in stocks and works through SheepKeep’s scanner or code entry.
   The QR has medium error correction and a four-module quiet zone. A long HTTPS address can
   require three dots per module or exceed the available area. Scan a calibration or proof at the
   actual size. Use a shorter permanent HTTPS label address, increase the stock size, or choose
@@ -108,7 +119,10 @@ A series collision goes into review. Remove any stickers printed from that batch
 record of the collision and issue a fresh batch. The typed aliases may match another
 reservation. The QR includes the batch guard so its resolution fails safely.
 
-Use **Device batch history** or **Recent batches** to reprint existing identifiers. After a partial
+Use **Device batch history** or **Recent batches** to reprint existing identifiers. To switch
+sizes, choose the destination stock and use **Reprint on selected stock** for a device batch.
+For a server batch, choose the stock in its reprint editor. The original identifiers and QR
+payloads are reused when changing physical stock. After a partial
 print, reprint the missing pages via the system dialog's page range. Confirm only after you have
 checked the output. **Replace a label identity** takes a registered, unclaimed label and a reason.
 The previous sticker still resolves for authorized users and shows its superseded status. NFC
@@ -126,6 +140,8 @@ registry. Portable household exports currently omit series reservations and batc
 - CUPS job completion reports spooler status. Look at the physical label before confirming.
 
 One 4 × 6 calibration document from this renderer printed through the reference macOS CUPS queue.
-The 2 × 1, 1.75 × 0.75 and 1.2 × 0.8 rolls still require feed, gap, speed, darkness, alignment and
-phone-camera qualification on physical stock. Automated rendering and decoding cover both 203
+The 50 × 20 mm, 2 × 1 in, 1.75 × 0.75 in and 1.2 × 0.8 in rolls still require feed, gap,
+speed, darkness, alignment and phone-camera qualification on physical stock. For 50 × 20 mm,
+check consecutive labels, NFC operation through the sticker and adhesion on your bin and tool
+surfaces. Automated rendering and decoding cover both 203
 and 300 DPI.

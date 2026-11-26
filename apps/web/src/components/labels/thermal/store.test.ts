@@ -15,7 +15,7 @@ import {
   recordPrint,
 } from './store';
 
-const stock = 'thermal_30_48x20_32';
+const stock = 'thermal_50x20';
 const input = {
   owner: 'user',
   locationId: 'location',
