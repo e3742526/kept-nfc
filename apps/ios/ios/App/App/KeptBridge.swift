@@ -147,9 +147,11 @@ enum KeptLabelAddress {
     /// The server's answer: its label address, nil when it has none of its own (the same origin, or
     /// not https). Throws when the server can't be asked.
     private static func fetch(_ connection: KeptConnection) async throws -> URL? {
-        let request = try KeptHTTP.request(
+        var request = try KeptHTTP.request(
             connection.origin, path: "/api/v1/labels/address", method: "GET", connection: connection
         )
+        // A scan waits on this: a dead network falls back to the remembered answer soon.
+        request.timeoutInterval = 5
         let (data, response) = try await KeptHTTP.send(request)
         guard response.statusCode == 200 else { throw KeptNativeError.invalidRequest }
         guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -589,6 +591,9 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @MainActor private var loggedAuthorizedRequest = false
     private let store = NativeOutbox()
     @MainActor private var nfc: KeptNFC?
+    /// A scan still asking the server for its label address (before `nfc` exists): `cancelTag`
+    /// clears it, so the reader never opens over a screen the person has already left.
+    @MainActor private var pendingScan: UUID?
     @MainActor private var findGate = NFCFindSessionGate()
     @MainActor private let match = KeptMatchFeedback()
     @MainActor private lazy var preview = KeptPreview()
@@ -919,13 +924,22 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func scanTag(_ call: CAPPluginCall) {
         run(call) {
             let connection = try self.requireConnection(call)
-            guard self.nfc == nil else { call.resolve(["status": "busy"]); return }
-            let origins = await KeptLabelAddress.origins(for: connection)
-            guard self.nfc == nil else { call.resolve(["status": "busy"]); return }
+            guard self.nfc == nil, self.pendingScan == nil else { call.resolve(["status": "busy"]); return }
             let mode: KeptNFC.Mode
             switch call.getString("mode") {
+            // Reading checks nothing against the label address: the web side validates the URL.
             case "read": mode = .read
             case "inspect", "write":
+                let token = UUID()
+                self.pendingScan = token
+                let origins = await KeptLabelAddress.origins(for: connection)
+                guard self.pendingScan == token else {
+                    call.resolve(["status": "cancelled", "writeStarted": false])
+                    return
+                }
+                self.pendingScan = nil
+                guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+                guard self.nfc == nil else { call.resolve(["status": "busy"]); return }
                 guard let raw = call.getString("url"),
                       case .approved = NFCLabelValidation.validate(urlText: raw, expectedOrigins: origins),
                       let url = URL(string: raw)
@@ -951,7 +965,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func startFind(_ call: CAPPluginCall) {
         run(call) {
             _ = try self.requireConnection(call)
-            guard self.nfc == nil else { call.resolve(["status": "busy"]); return }
+            guard self.nfc == nil, self.pendingScan == nil else { call.resolve(["status": "busy"]); return }
             guard let sessionId = call.getString("sessionId"), self.findGate.begin(sessionId)
             else {
                 if self.findGate.activeSessionId != nil {
@@ -1011,6 +1025,7 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func cancelTag(_ call: CAPPluginCall) {
         run(call) {
             guard self.canCancelTag(call) else { call.resolve(); return }
+            if call.getString("sessionId") == nil { self.pendingScan = nil }
             self.nfc?.cancel()
             call.resolve()
         }

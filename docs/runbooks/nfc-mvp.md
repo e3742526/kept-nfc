@@ -101,30 +101,19 @@ on a small tag. The payload is one NDEF URI record containing
 
 ### Optional Universal Links
 
-Keep foreground NFC available before adding a domain association. On a controlled
-HTTPS label hostname, deploy `/.well-known/apple-app-site-association` from the
-proxy or web root using the signing team and bundle ID of the installed app.
-Serve it as JSON over HTTPS, with no redirect. Scope the app's paths to `/l/*`.
-
-```json
-{
-  "applinks": {
-    "apps": [],
-    "details": [
-      {
-        "appID": "<TEAM_ID>.info.keptinventory.nfc",
-        "paths": ["/l/*"]
-      }
-    ]
-  }
-}
-```
+Keep foreground NFC available before adding a domain association. The server
+serves the association file itself: set `KEPT_APPLE_APP_IDS` to the app's
+`<TEAM_ID>.<bundle id>`, and it answers `/.well-known/apple-app-site-association`
+(`/l/*` and `/t/*`) as JSON, with no redirect, on both `KEPT_LABEL_URL` and
+`KEPT_PUBLIC_URL`. No proxy or web-root file is needed.
 
 Enable Associated Domains for the signed target. Use the optional
 `App/KeptNFC-AssociatedDomains.entitlements` file in the iOS project as
-`CODE_SIGN_ENTITLEMENTS` and set `KEPT_NFC_ASSOCIATED_DOMAIN` to the host.
-Reinstall and test a known URL both with the app running and after terminating
-it. The chosen host must match the app's configured Kept origin.
+`CODE_SIGN_ENTITLEMENTS` and set `KEPT_NFC_ASSOCIATED_DOMAIN` to the host labels
+carry: the `KEPT_LABEL_URL` host when the server has one, else its
+`KEPT_PUBLIC_URL` host. Reinstall and test a known URL both with the app running
+and after terminating it. See `apps/ios/README.md` (Entitlements) for the full
+steps and the file the server serves.
 [Apple Associated Domains documentation](https://developer.apple.com/documentation/xcode/supporting-associated-domains).
 
 ## Offline and recovery

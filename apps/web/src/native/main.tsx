@@ -1001,6 +1001,17 @@ export function Inventory({
         }
       } else if (resolved.status === 'foreign')
         setStatus(t`This tag belongs to a different SheepKeep server.`);
+      // The same answers Scan gives; Scan is where a blank label is claimed or a match chosen.
+      else if (resolved.status === 'unassigned')
+        setStatus(t`This label has not been assigned. Scan it from the Scan tab to use it.`);
+      else if (resolved.status === 'ambiguous')
+        setStatus(
+          t`That code matches more than one item. Scan it from the Scan tab to choose one.`,
+        );
+      else if (resolved.status === 'unresolved')
+        setStatus(t`This label could not be checked offline.`);
+      else if (resolved.status === 'malformed')
+        setStatus(t`This tag does not contain a SheepKeep label URL.`);
       else setStatus(t`This label is unavailable in your SheepKeep.`);
     };
     const listen = adapters.lifecycle.onLink(() => {

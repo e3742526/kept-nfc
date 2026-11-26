@@ -34244,3 +34244,15 @@ msgstr "Für einige optionale Texte oder Symbole fehlt Platz. Der QR-Code und di
 
 msgid "This stock uses the standard inventory label for this reprint."
 msgstr "Auf diesem Druckmaterial wird das Standard-Inventaretikett nachgedruckt."
+
+#: src/native/label-panel.tsx
+msgid "Point the camera at a QR label."
+msgstr "Richte die Kamera auf ein QR-Etikett."
+
+#: src/native/main.tsx
+msgid "This label has not been assigned. Scan it from the Scan tab to use it."
+msgstr "Dieses Etikett wurde noch nicht zugewiesen. Scanne es im Tab „Scannen“, um es zu verwenden."
+
+#: src/native/main.tsx
+msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
+msgstr "Dieser Code passt zu mehreren Gegenständen. Scanne ihn im Tab „Scannen“, um einen auszuwählen."

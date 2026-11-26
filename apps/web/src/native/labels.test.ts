@@ -498,4 +498,91 @@ describe('the label address and numbered labels', () => {
     );
     expect(labelOrigins(fourth)).toEqual([connection.origin]);
   });
+
+  it('reads a tag under the remembered label address while the server is still being asked', async () => {
+    const remembered = kv();
+    remembered.values.set('labelAddressV1', 'https://labels.example.org');
+    const fifth = { ...connection, id: 'https://kept.example.com|user-5|epoch-1' };
+    let answer: (value: unknown) => void = () => {};
+    const request = vi.fn((_c: Connection, path: string) =>
+      path.includes('/labels/address')
+        ? new Promise((resolve) => {
+            answer = resolve;
+          })
+        : Promise.resolve({
+            outcome: 'open',
+            target: { id: 'box-1', kind: 'thing', locationId: 'loc-1' },
+          }),
+    ) as unknown as PlatformAdapters['transport']['request'];
+    const adapters = { ...makeAdapters(request), outbox: remembered.outbox };
+    const load = loadLabelAddress(fifth, adapters);
+    expect(
+      await resolveLabel(
+        fifth,
+        baseCache,
+        'https://labels.example.org/l/7KQ4MZ',
+        'nfc',
+        undefined,
+        false,
+        adapters,
+      ),
+    ).toMatchObject({ status: 'resolved', target: { id: 'box-1' } });
+    expect(labelBase(fifth)).toBe('https://labels.example.org');
+    answer({ url: 'https://labels.example.org' });
+    expect(await load).toBe('https://labels.example.org');
+  });
+
+  it('opens a numbered label offline from the cached codes', async () => {
+    const offline = vi.fn().mockRejectedValue(new ApiError(0, 'offline', 'offline'));
+    const cache: InventoryCache = {
+      ...baseCache,
+      codes: [
+        ...baseCache.codes,
+        {
+          ...baseCache.codes[1],
+          code: 'BNK003',
+          alias: 'BIN-A09Z-0002',
+        } as InventoryCache['codes'][number],
+        {
+          code: 'ALS001',
+          locationId: 'loc-1',
+          state: 'assigned',
+          thingId: 'box-1',
+          placeId: null,
+          isPrimary: false,
+          alias: 'BIN-A09Z-0001',
+        },
+      ],
+    };
+    const adapters = makeAdapters(offline);
+    expect(
+      await resolveLabel(
+        connection,
+        cache,
+        'https://kept.example.com/l/bin-a09z-0001',
+        'nfc',
+        undefined,
+        false,
+        adapters,
+      ),
+    ).toEqual({
+      status: 'resolved',
+      target: { id: 'box-1', kind: 'thing', locationId: 'loc-1' },
+      cached: true,
+    });
+    expect(
+      await resolveLabel(connection, cache, 'BIN-A09Z-0002', 'qr', undefined, false, adapters),
+    ).toEqual({ status: 'unassigned', claim: { code: 'BNK003', locationId: 'loc-1' } });
+    expect(
+      await resolveLabel(
+        connection,
+        cache,
+        'https://kept.example.com/l/BIN-A09Z-0009',
+        'nfc',
+        undefined,
+        false,
+        adapters,
+      ),
+    ).toEqual({ status: 'unresolved' });
+  });
 });

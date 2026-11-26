@@ -41,6 +41,9 @@ export type ReviewEntry = {
   tags: string[];
   /** A label given to this item while adding it; the server claims it at sync. */
   claimCode?: string;
+  /** `claimCode` is on an NFC tag written and read back while adding it: registered as the
+   * item's verified NFC tag once the server has claimed it. */
+  claimNfcVerified?: true;
 };
 export type PhotoReviewDraft = {
   accepted: boolean;
@@ -73,6 +76,8 @@ export type DraftFields = {
   /** A label given to the item while adding it (a scanned blank, or one reserved for a new NFC
    * tag or QR label): `create_thing`'s `claimCode`, claimed when the capture syncs. */
   claimCode?: string;
+  /** See `ReviewEntry.claimNfcVerified`. */
+  claimNfcVerified?: true;
 };
 type StoredFields = DraftFields & {
   version: number;
@@ -477,6 +482,7 @@ export async function replayCapture(
       tags: fields.tags ?? [],
       existing: fields.attachToThingId ? { id: fields.attachToThingId } : undefined,
       claimCode: fields.attachToThingId ? undefined : fields.claimCode,
+      claimNfcVerified: fields.attachToThingId ? undefined : fields.claimNfcVerified,
     },
   ];
   const work = [
@@ -491,6 +497,7 @@ export async function replayCapture(
             tags: [],
             existing: { id: fields.boxId },
             claimCode: undefined,
+            claimNfcVerified: undefined,
           },
         ]
       : []),
@@ -578,6 +585,9 @@ export async function replayCapture(
       continue;
     }
     try {
+      if (entry.claimCode && entry.claimNfcVerified && !labelTaken) {
+        await registerWrittenTag(connection, adapters, fields.locationId, entry.claimCode);
+      }
       if (entry.existing && 'update' in entry.existing && entry.existing.update) {
         const { key, rowVersion, name, note } = entry.existing.update;
         await adapters.transport.request(connection, inventoryPaths.thing(subject), {
@@ -649,6 +659,33 @@ export async function replayCapture(
   const destinationId = fields.boxId ?? fields.placeId;
   if (destinationId && !fields.attachToThingId)
     void rememberDestination(connection, adapters, destinationId);
+}
+
+/** Marks a claimed label's NFC tag verified (its readback passed while the item was added), so
+ * its label shows the NFC mark. Repeating it changes nothing. Being offline, signed out or a server
+ * fault retries the capture; a refusal leaves the item as made, without the mark. */
+async function registerWrittenTag(
+  connection: Connection,
+  adapters: PlatformAdapters,
+  locationId: string,
+  code: string,
+) {
+  try {
+    await adapters.transport.request(connection, capturePaths.labelTags, {
+      method: 'POST',
+      body: { locationId, label: code, kind: 'nfc' },
+    });
+  } catch (error) {
+    if (
+      !(error instanceof ApiError) ||
+      error.status === 0 ||
+      error.status === 429 ||
+      error.status >= 500 ||
+      isAuthRefusal(error) ||
+      isRestoreEpochMismatch(error)
+    )
+      throw error;
+  }
 }
 
 function classifyFailure(error: unknown): string {

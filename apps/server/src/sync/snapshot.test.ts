@@ -437,6 +437,28 @@ describe('deltas', () => {
     expect(after.find((c) => c.code === 'NP2345')).not.toHaveProperty('superseded');
   });
 
+  it('carry a numbered label’s alias, only for an unguarded series', async () => {
+    const owner = await accountOf(ibrahim);
+    await own(
+      `INSERT INTO public.short_ids (code, location_id, thing_id, is_primary)
+       VALUES ('AK1234', $1, $2, false), ('GD2345', $1, $2, false)`,
+      [home.id, ladder],
+    );
+    const [open, guarded] = await own<{ id: string }>(
+      `INSERT INTO public.label_series (location_id, prefix, series, label_count, created_by, guarded)
+       VALUES ($1, 'BIN', 'A09Z', 1, $2, false), ($1, 'BIN', 'G00D', 1, $2, true) RETURNING id`,
+      [home.id, owner],
+    );
+    await own(
+      `INSERT INTO public.label_aliases (code, location_id, series_id, sequence)
+       VALUES ('AK1234', $1, $2, 1), ('GD2345', $1, $3, 1)`,
+      [home.id, open?.id, guarded?.id],
+    );
+    const codes = allOf((await pull(louis)).pages, 'codes');
+    expect(codes.find((c) => c.code === 'AK1234')).toMatchObject({ alias: 'BIN-A09Z-0001' });
+    expect(codes.find((c) => c.code === 'GD2345')).not.toHaveProperty('alias');
+  });
+
   it('carry a thing whose tags changed, with its tag ids', async () => {
     const { cursor } = await pull(louis);
     const [g] = await own<{ id: string }>(

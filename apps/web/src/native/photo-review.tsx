@@ -191,6 +191,7 @@ export function PhotoReview({
         return;
       replace(row.id, {
         claimCode: undefined,
+        claimNfcVerified: undefined,
         existing: {
           id: target,
           update: {

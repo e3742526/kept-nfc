@@ -173,6 +173,9 @@ export function CaptureForm({
   // A label is claimed only in the location it was made for.
   const claimCode =
     !evidenceOnly && label && label.locationId === destination?.locationId ? label.code : undefined;
+  // A tag written and read back here: the item's verified NFC tag once the label is claimed.
+  const nfcVerified =
+    claimCode && label?.source === 'nfc' ? ({ claimNfcVerified: true } as const) : {};
 
   function clearLabel() {
     setLabel(undefined);
@@ -296,7 +299,7 @@ export function CaptureForm({
               include: true,
               categories: single ? [...categories.values()].slice(0, 8) : (item.categories ?? []),
               tags,
-              ...(labelled ? { claimCode: labelled } : {}),
+              ...(labelled ? { claimCode: labelled, ...nfcVerified } : {}),
             })),
           },
         },
@@ -344,7 +347,7 @@ export function CaptureForm({
           ...(firstPhoto ? { skipServerSuggestions: true } : {}),
           ...(note.trim() ? { note: note.trim() } : {}),
           ...(quantity ? { quantity } : {}),
-          ...(claimCode ? { claimCode } : {}),
+          ...(claimCode ? { claimCode, ...nfcVerified } : {}),
           batchId,
         },
         files,

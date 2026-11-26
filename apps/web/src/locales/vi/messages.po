@@ -34244,3 +34244,15 @@ msgstr "Một số nội dung hoặc biểu tượng tùy chọn không vừa. M
 
 msgid "This stock uses the standard inventory label for this reprint."
 msgstr "Lần in lại trên khổ này sử dụng nhãn kiểm kê tiêu chuẩn."
+
+#: src/native/label-panel.tsx
+msgid "Point the camera at a QR label."
+msgstr "Hướng camera vào nhãn QR."
+
+#: src/native/main.tsx
+msgid "This label has not been assigned. Scan it from the Scan tab to use it."
+msgstr "Nhãn này chưa được gán. Quét nhãn từ thẻ Quét để sử dụng."
+
+#: src/native/main.tsx
+msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
+msgstr "Mã đó khớp với nhiều món đồ. Quét mã từ thẻ Quét để chọn một món."

@@ -34244,3 +34244,15 @@ msgstr "Для деяких необов’язкових написів або 
 
 msgid "This stock uses the standard inventory label for this reprint."
 msgstr "На цьому носії повторно друкується стандартна етикетка інвентарю."
+
+#: src/native/label-panel.tsx
+msgid "Point the camera at a QR label."
+msgstr "Наведіть камеру на QR-мітку."
+
+#: src/native/main.tsx
+msgid "This label has not been assigned. Scan it from the Scan tab to use it."
+msgstr "Цю мітку ще не призначено. Відскануйте її на вкладці «Сканувати», щоб використати."
+
+#: src/native/main.tsx
+msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
+msgstr "Цей код відповідає кільком речам. Відскануйте його на вкладці «Сканувати», щоб вибрати одну."

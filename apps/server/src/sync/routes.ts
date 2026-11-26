@@ -156,6 +156,7 @@ const SnapshotResponse = z.object({
         isPrimary: z.boolean(),
         printedAt: z.string().optional(),
         superseded: z.literal(true).optional(),
+        alias: z.string().optional(),
       }),
     ),
     legacyCodes: z.array(

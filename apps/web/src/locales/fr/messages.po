@@ -34244,3 +34244,15 @@ msgstr "Certains textes ou certaines icônes facultatives ne tiennent pas. Le co
 
 msgid "This stock uses the standard inventory label for this reprint."
 msgstr "Sur ce support, la réimpression utilise l’étiquette d’inventaire standard."
+
+#: src/native/label-panel.tsx
+msgid "Point the camera at a QR label."
+msgstr "Pointez l’appareil photo vers une étiquette QR."
+
+#: src/native/main.tsx
+msgid "This label has not been assigned. Scan it from the Scan tab to use it."
+msgstr "Cette étiquette n’a pas encore été attribuée. Scannez-la depuis l’onglet Scanner pour l’utiliser."
+
+#: src/native/main.tsx
+msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
+msgstr "Ce code correspond à plusieurs objets. Scannez-le depuis l’onglet Scanner pour en choisir un."

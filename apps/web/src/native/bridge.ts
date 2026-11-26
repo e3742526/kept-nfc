@@ -45,6 +45,9 @@ export type TagReading = {
   writable?: boolean;
   capacity?: number;
   required?: number;
+  /** A write's answer: whether the tag was written to (it may then hold the new payload). Left
+   * out by an app from before it was reported. */
+  writeStarted?: boolean;
 };
 
 export type FindTagEvent = {

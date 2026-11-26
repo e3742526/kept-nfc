@@ -717,6 +717,65 @@ describe('native outbox staging and replay', () => {
     expect(captures.get(third)?.failure).toBe('already_claimed');
   });
 
+  it('registers an NFC tag written while adding once its label is claimed, and retries it offline', async () => {
+    type SentOp = { clientId: string; idempotencyKey: string; payload: Record<string, unknown> };
+    const tagBodies: unknown[] = [];
+    let tagsOffline = true;
+    let answer: 'applied' | 'needs_review' = 'applied';
+    const request = vi.fn().mockImplementation(async (_conn, path, options) => {
+      if (path === capturePaths.labelTags) {
+        if (tagsOffline) throw new ApiError(0, 'offline', 'Offline');
+        tagBodies.push((options as { body: unknown }).body);
+        return { configured: true };
+      }
+      if (path !== capturePaths.syncOps) throw new Error(`unexpected ${path}`);
+      const { ops } = (options as { body: { ops: SentOp[] } }).body;
+      return {
+        results: ops.map((op) => ({
+          clientId: op.clientId,
+          idempotencyKey: op.idempotencyKey,
+          outcome: answer,
+          ...(answer === 'needs_review' ? { reason: 'already_claimed', inboxItemId: newId() } : {}),
+          entity: { type: 'thing', id: op.clientId, shortCode: 'NFC234' },
+        })),
+      };
+    });
+    const { adapters, captures, completionStates } = makeInMemoryAdapters({
+      request,
+      capabilities: () => ({
+        contractVersion: 1,
+        capturePayloadVersions: [2, 3],
+        account: connection.account,
+        epoch: connection.epoch,
+      }),
+    });
+    const locationId = newId();
+    const placeId = newId();
+    const fields = {
+      locationId,
+      placeId,
+      name: 'Drill',
+      captureIntent: 'record',
+      claimCode: 'NFC234',
+      claimNfcVerified: true,
+    } as const;
+
+    const first = await saveOnPhone(connection, fields, [], adapters);
+    await expect(syncOutbox(connection, adapters)).rejects.toThrow('Offline');
+    expect(captures.has(first)).toBe(true);
+    tagsOffline = false;
+    await syncOutbox(connection, adapters);
+    expect(completionStates.get(first)).toBe('synced');
+    expect(tagBodies).toEqual([{ locationId, label: 'NFC234', kind: 'nfc' }]);
+
+    // A label claimed first elsewhere is not this item's: its tag is not registered.
+    answer = 'needs_review';
+    const second = await saveOnPhone(connection, { ...fields, name: 'Saw' }, [], adapters);
+    await syncOutbox(connection, adapters);
+    expect(completionStates.get(second)).toBe('synced');
+    expect(tagBodies).toHaveLength(1);
+  });
+
   it('retries only the unfinished review work after a record-version conflict', async () => {
     const existingId = newId();
     const binId = newId();

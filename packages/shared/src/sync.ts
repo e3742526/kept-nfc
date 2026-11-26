@@ -707,6 +707,9 @@ export type SnapCode = {
    * additive, so an older copy has none. */
   printedAt?: string;
   superseded?: true;
+  /** Its numbered label (`BIN-A09Z-0001`), so the phone can read that label offline. Only an
+   * unguarded series: a guarded one is checked by the server. Additive. */
+  alias?: string;
 };
 
 /** Keyed by location, source, collection and code (the table's primary key); `legacyCodeKey()`

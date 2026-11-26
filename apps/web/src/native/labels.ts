@@ -5,6 +5,7 @@ import {
   SHORT_CODE,
   storedCodeOf,
 } from '@kept/shared';
+import { useCallback, useSyncExternalStore } from 'react';
 import { capturePaths } from '@/api/capture/paths';
 import type { ReservedLabel, ScanOutcome } from '@/api/capture/types';
 import { ApiError } from '@/api/client';
@@ -77,10 +78,37 @@ export function labelUrl(origin: string, code: string): string {
 // The label address (KEPT_LABEL_URL on the server): the origin new labels and NFC tags carry, so
 // they keep working while the server moves. Asked once per connection, remembered for offline
 // use; until it is known, and for a server with none, it is the server's own origin. Labels and
-// tags made under either origin are this server's.
+// tags made under either origin are this server's. The remembered answer is read back first, so a
+// tag read while the server is still being asked (or can't be) is not taken for another server's.
 const LABEL_ADDRESS_KEY = 'labelAddressV1';
 const labelAddresses = new Map<string, string>();
 const labelAddressLoads = new Map<string, Promise<string>>();
+const labelAddressSeeds = new Map<string, Promise<void>>();
+const labelAddressListeners = new Set<() => void>();
+
+function setLabelAddress(connectionId: string, origin: string) {
+  if (labelAddresses.get(connectionId) === origin) return;
+  labelAddresses.set(connectionId, origin);
+  for (const listener of labelAddressListeners) listener();
+}
+
+/** The remembered label address, read once per connection. */
+function seedLabelAddress(connection: Connection, adapters: PlatformAdapters): Promise<void> {
+  if (labelAddresses.has(connection.id)) return Promise.resolve();
+  let seed = labelAddressSeeds.get(connection.id);
+  if (!seed) {
+    seed = (async () => {
+      try {
+        const stored = httpsOrigin(await adapters.outbox.getValue(connection, LABEL_ADDRESS_KEY));
+        if (stored && !labelAddresses.has(connection.id)) setLabelAddress(connection.id, stored);
+      } catch {
+        // Nothing remembered: the server's answer, else its own origin.
+      }
+    })();
+    labelAddressSeeds.set(connection.id, seed);
+  }
+  return seed;
+}
 
 function httpsOrigin(text: unknown): string | null {
   if (typeof text !== 'string') return null;
@@ -101,6 +129,7 @@ export function loadLabelAddress(
 ): Promise<string> {
   const known = labelAddressLoads.get(connection.id);
   if (known) return known;
+  void seedLabelAddress(connection, adapters);
   const load = (async () => {
     let address: string | null = null;
     try {
@@ -118,7 +147,7 @@ export function loadLabelAddress(
       );
     }
     const origin = address ?? connection.origin;
-    labelAddresses.set(connection.id, origin);
+    setLabelAddress(connection.id, origin);
     return origin;
   })();
   labelAddressLoads.set(connection.id, load);
@@ -130,12 +159,35 @@ export function labelBase(connection: Connection): string {
   return labelAddresses.get(connection.id) ?? connection.origin;
 }
 
+/** `labelBase`, re-rendering when the label address becomes known. */
+export function useLabelBase(connection: Connection): string {
+  const subscribe = useCallback((listener: () => void) => {
+    labelAddressListeners.add(listener);
+    return () => {
+      labelAddressListeners.delete(listener);
+    };
+  }, []);
+  return useSyncExternalStore(subscribe, () => labelBase(connection));
+}
+
 /** The origins a label of this server may carry: its own, and its label address. */
 export function labelOrigins(connection: Connection): string[] {
   const address = labelAddresses.get(connection.id);
   return address && address !== connection.origin
     ? [connection.origin, address]
     : [connection.origin];
+}
+
+/** `labelOrigins` once the label address is as known as it can be: the remembered answer, else
+ * the server's answer when it is being asked. */
+export async function knownLabelOrigins(
+  connection: Connection,
+  adapters: PlatformAdapters = capacitorAdapters,
+): Promise<string[]> {
+  await seedLabelAddress(connection, adapters);
+  const load = labelAddressLoads.get(connection.id);
+  if (!labelAddresses.has(connection.id) && load) await load.catch(() => {});
+  return labelOrigins(connection);
 }
 
 // Older entries may already be on a tag whose readback failed. Leave them for a physical scan.
@@ -238,6 +290,37 @@ export function reserveLabel(
   });
 }
 
+/** What a cached short ID opens offline, or null when the cache can't say. */
+function fromCachedCode(
+  cache: InventoryCache,
+  hit: InventoryCache['codes'][number],
+): ReadResult | null {
+  if (hit.state === 'retired') return { status: 'not_in_your_kept' };
+  if (hit.state === 'blank') {
+    const location = cache.locations.find((entry) => entry.id === hit.locationId);
+    return location && location.role !== 'viewer'
+      ? { status: 'unassigned', claim: { code: hit.code, locationId: hit.locationId } }
+      : { status: 'not_in_your_kept' };
+  }
+  if (hit.thingId && cache.things.some((item) => item.id === hit.thingId)) {
+    return {
+      status: 'resolved',
+      target: { id: hit.thingId, kind: 'thing', locationId: hit.locationId },
+      cached: true,
+      ...(hit.superseded ? { superseded: true as const } : {}),
+    };
+  }
+  if (hit.placeId && cache.places.some((item) => item.id === hit.placeId)) {
+    return {
+      status: 'resolved',
+      target: { id: hit.placeId, kind: 'place', locationId: hit.locationId },
+      cached: true,
+      ...(hit.superseded ? { superseded: true as const } : {}),
+    };
+  }
+  return null;
+}
+
 function resolveOfflineFromCache(
   cache: InventoryCache | undefined,
   parsed: ReturnType<typeof parseScan>,
@@ -245,36 +328,18 @@ function resolveOfflineFromCache(
 ): ReadResult {
   if (!cache || (parsed.kind === 'alias' && parsed.guard)) return { status: 'unresolved' };
 
+  // A numbered label: its short ID, when the snapshot named it (else maybe a household's own code).
+  if (parsed.kind === 'alias') {
+    const hit = cache.codes.find((entry) => entry.alias === parsed.alias);
+    const known = hit && fromCachedCode(cache, hit);
+    if (known) return known;
+  }
+
   if (parsed.kind === 'kept') {
     const code = parsed.code;
     const hit = cache.codes.find((entry) => entry.code === code);
-    if (hit) {
-      if (hit.state === 'retired') return { status: 'not_in_your_kept' };
-      if (hit.state === 'blank') {
-        const location = cache.locations.find((entry) => entry.id === hit.locationId);
-        return location && location.role !== 'viewer'
-          ? { status: 'unassigned', claim: { code, locationId: hit.locationId } }
-          : { status: 'not_in_your_kept' };
-      }
-      if (hit.state === 'assigned') {
-        if (hit.thingId && cache.things.some((item) => item.id === hit.thingId)) {
-          return {
-            status: 'resolved',
-            target: { id: hit.thingId, kind: 'thing', locationId: hit.locationId },
-            cached: true,
-            ...(hit.superseded ? { superseded: true as const } : {}),
-          };
-        }
-        if (hit.placeId && cache.places.some((item) => item.id === hit.placeId)) {
-          return {
-            status: 'resolved',
-            target: { id: hit.placeId, kind: 'place', locationId: hit.locationId },
-            cached: true,
-            ...(hit.superseded ? { superseded: true as const } : {}),
-          };
-        }
-      }
-    }
+    const known = hit && fromCachedCode(cache, hit);
+    if (known) return known;
     const cachedThing = cache.things.find((item) => item.shortCode === code);
     if (cachedThing) {
       return {
@@ -308,7 +373,7 @@ function resolveOfflineFromCache(
   const legacyCode =
     parsed.kind === 'homebox'
       ? (parsed.assetId ?? parsed.uuid ?? '').toUpperCase()
-      : storedCodeOf(rawText);
+      : storedCodeOf(parsed.kind === 'alias' ? parsed.alias : rawText);
   if (legacyCode) {
     const matches = cache.legacyCodes.filter((entry) =>
       parsed.kind === 'homebox'
@@ -373,7 +438,7 @@ export async function resolveLabel(
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<ReadResult> {
   // The label address as known (main.tsx asks for it on start, and before a link is read).
-  const origins = labelOrigins(connection);
+  const origins = await knownLabelOrigins(connection, adapters);
   const nfcCheck = mode === 'nfc' ? approvedLabel(text, origins) : undefined;
   if (nfcCheck && nfcCheck.status !== 'approved') return nfcCheck;
 
@@ -444,7 +509,7 @@ export async function inspectTagOwner(
   existingUrl: string,
   adapters: PlatformAdapters = capacitorAdapters,
 ): Promise<string | null> {
-  const checked = approvedLabel(existingUrl, labelOrigins(connection));
+  const checked = approvedLabel(existingUrl, await knownLabelOrigins(connection, adapters));
   if (checked.status !== 'approved') return null;
   try {
     const resolved = await resolveLabel(

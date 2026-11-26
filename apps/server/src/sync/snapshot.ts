@@ -511,9 +511,15 @@ async function readCodes({ client, out }: PageContext, q: Slice): Promise<Read> 
     is_primary: boolean;
     printed_at: Date | null;
     superseded_at: Date | null;
+    alias: string | null;
   }>(
+    // A numbered label's alias, for reading it offline: only an unguarded series (a guarded
+    // label carries a check the phone leaves to the server).
     `SELECT c.code, c.location_id, c.thing_id, c.place_id, c.state, c.is_primary,
-            c.printed_at, c.superseded_at
+            c.printed_at, c.superseded_at,
+            (SELECT ls.prefix || '-' || ls.series || '-' || lpad(la.sequence::text, 4, '0')
+               FROM public.label_aliases la JOIN public.label_series ls ON ls.id = la.series_id
+              WHERE la.code = c.code AND NOT ls.guarded) AS alias
        FROM public.short_ids c
       WHERE ${w.where}
       ORDER BY ${w.order}
@@ -530,6 +536,7 @@ async function readCodes({ client, out }: PageContext, q: Slice): Promise<Read> 
       isPrimary: r.is_primary,
       ...(r.printed_at ? { printedAt: r.printed_at.toISOString() } : {}),
       ...(r.superseded_at ? { superseded: true } : {}),
+      ...(r.alias ? { alias: r.alias } : {}),
     });
   }
   return readOf(rows, (r) => [r.code]);

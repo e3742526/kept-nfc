@@ -17,8 +17,7 @@ import type { InventoryCache } from './inventory';
 import {
   approvedLabel,
   describeTargetFromCache,
-  labelBase,
-  labelOrigins,
+  knownLabelOrigins,
   labelUrl,
   loadLabelAddress,
   type ReadResult,
@@ -26,6 +25,7 @@ import {
   resolveLabel,
   shelveReservedCode,
   takeShelvedCode,
+  useLabelBase,
 } from './labels';
 import { useNfcStatusText } from './nfc-status';
 
@@ -44,7 +44,8 @@ export type ItemLabel = {
 };
 
 // These native results are only emitted before the write starts. Session invalidation and
-// failed readback can occur after the tag already holds the new code.
+// failed readback can occur after the tag already holds the new code: an app that reports
+// `writeStarted` says which, and an older one leaves those codes off the shelf.
 const NFC_WRITE_NOT_STARTED = new Set([
   'unavailable',
   'unsupported',
@@ -52,7 +53,12 @@ const NFC_WRITE_NOT_STARTED = new Set([
   'read_only',
   'too_small',
   'malformed',
+  'busy',
 ]);
+
+function writeNotStarted(result: TagReading): boolean {
+  return result.writeStarted === false || NFC_WRITE_NOT_STARTED.has(result.status);
+}
 
 export function ItemLabelPicker({
   connection,
@@ -275,7 +281,8 @@ export function ItemLabelPicker({
       // A tag that already holds a blank label of this location is that label: no write.
       if (
         reading.url &&
-        approvedLabel(reading.url, labelOrigins(connection)).status === 'approved'
+        approvedLabel(reading.url, await knownLabelOrigins(connection, adapters)).status ===
+          'approved'
       ) {
         const result = await resolveLabel(
           connection,
@@ -319,18 +326,28 @@ export function ItemLabelPicker({
       reserved.current = undefined;
       setInspection(undefined);
       setExistingOwner(null);
-      const result = await adapters.nfc.scanTag(connection, {
-        mode: 'write',
-        url,
-        fingerprint: pending.reading.fingerprint,
-        messages,
-      });
-      if (held && NFC_WRITE_NOT_STARTED.has(result.status)) {
+      // A code no tag can hold yet stays this picker's, or goes back on the shelf.
+      const keep = async () => {
+        if (!held) return;
         if (live.current) reserved.current = held;
         else if (!inUse.current.has(held.code) && !shared.current.has(held.code)) {
           await shelveReservedCode(connection, held.locationId, held.code, adapters);
         }
+      };
+      let result: TagReading;
+      try {
+        result = await adapters.nfc.scanTag(connection, {
+          mode: 'write',
+          url,
+          fingerprint: pending.reading.fingerprint,
+          messages,
+        });
+      } catch (error) {
+        // The reader refused the request: nothing was written.
+        await keep();
+        throw error;
       }
+      if (result.status !== 'written' && writeNotStarted(result)) await keep();
       if (!live.current) return;
       if (result.status === 'written') {
         pick({ code: codeOf(url), locationId, source: 'nfc' });
@@ -367,7 +384,8 @@ export function ItemLabelPicker({
     setStatus('');
   }
 
-  const valueUrl = value ? labelUrl(labelBase(connection), value.code) : null;
+  const base = useLabelBase(connection);
+  const valueUrl = value ? labelUrl(base, value.code) : null;
   const locked = disabled || busy;
 
   return (

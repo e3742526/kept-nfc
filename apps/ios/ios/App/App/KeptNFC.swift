@@ -25,6 +25,9 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
     private var result: ((JSObject) -> Void)?
     private var session: NFCNDEFReaderSession?
     private var processing = false
+    /// Set just before `writeNDEF`: from then on the tag may hold the new payload, so an ended
+    /// session is `write_unverified`, never a write that did not start.
+    private var writeStarted = false
     private var debouncer = NFCRepeatDebouncer(window: 2.5)
 
     init(
@@ -54,6 +57,7 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
         }
         debouncer.reset()
         processing = false
+        writeStarted = false
         let reader = NFCNDEFReaderSession(delegate: self, queue: .main, invalidateAfterFirstRead: false)
         session = reader
         reader.alertMessage = messages["scan"] ?? "Hold the top of your iPhone near one NFC tag."
@@ -61,13 +65,13 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
     }
 
     func cancel() {
-        finish("cancelled")
+        finish(writeStarted ? "write_unverified" : "cancelled")
     }
 
     func interruptForBackground() {
         guard result != nil else { return }
         Self.log.notice("NFC reader interrupted when the app entered the background.")
-        finish("interrupted")
+        finish(writeStarted ? "write_unverified" : "interrupted")
     }
 
     func continuePolling(alertMessage: String?) {
@@ -96,6 +100,7 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
         var answer = data
         answer["status"] = state
         if let sessionId { answer["sessionId"] = sessionId }
+        if case .write = mode { answer["writeStarted"] = writeStarted }
         if state == "written", let message = messages["written"] {
             session?.alertMessage = message
         } else if state == "matched", let message = messages["matched"], !(session?.alertMessage.isEmpty == false) {
@@ -113,6 +118,8 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
         guard self.session === session else { return }
         let code = (error as? NFCReaderError)?.code
         Self.log.notice("Core NFC ended the session with error code \((error as NSError).code, privacy: .public).")
+        // The tag may already hold the new payload; only a readback can tell.
+        if writeStarted { finish("write_unverified"); return }
         switch code {
         case .readerSessionInvalidationErrorUserCanceled: finish("cancelled")
         case .readerSessionInvalidationErrorSessionTimeout: finish("timeout")
@@ -150,7 +157,8 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
                         }
                         guard status != .notSupported else {
                             if case .find = self.mode {
-                                self.event(["status": "unsupported"])
+                                // A card held still would otherwise buzz and speak every poll.
+                                self.findUnsupported(in: session)
                             } else {
                                 self.finish("unsupported")
                             }
@@ -171,6 +179,19 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
                 }
             }
         }
+    }
+
+    private func findUnsupported(in session: NFCNDEFReaderSession) {
+        guard debouncer.shouldAccept(fingerprint: "unsupported") else {
+            event(["status": "repeated", "fingerprint": "unsupported"])
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
+                guard let self, self.session === session, self.result != nil else { return }
+                self.processing = false
+                session.restartPolling()
+            }
+            return
+        }
+        event(["status": "unsupported"])
     }
 
     private func handleTagReadFailure(in session: NFCNDEFReaderSession) {
@@ -242,6 +263,7 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
             }
             let intended = NFCNDEFMessage(records: [payload])
             guard intended.length <= capacity else { finish("too_small"); return }
+            writeStarted = true
             tag.writeNDEF(intended) { [weak self] error in
                 DispatchQueue.main.async {
                     guard let self, self.result != nil else { return }
@@ -284,12 +306,18 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
 
 final class KeptMatchFeedback {
     private var sound: AVAudioPlayer?
+    private let success = UINotificationFeedbackGenerator()
+    private let impact = UIImpactFeedbackGenerator(style: .light)
+    /// Made once: the same two notes every time.
+    private static let chimeData = chime()
 
     func playMatch(announcement: String? = nil) {
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        success.notificationOccurred(.success)
+        success.prepare()
         do {
             try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
-            sound = try AVAudioPlayer(data: chime())
+            if sound == nil { sound = try AVAudioPlayer(data: Self.chimeData) }
+            sound?.currentTime = 0
             sound?.play()
         } catch {
             // Visual feedback still works when the system is using the audio session.
@@ -300,13 +328,14 @@ final class KeptMatchFeedback {
     }
 
     func playNonMatch(announcement: String? = nil) {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        impact.impactOccurred()
+        impact.prepare()
         if let announcement, !announcement.isEmpty {
             UIAccessibility.post(notification: .announcement, argument: announcement)
         }
     }
 
-    private func chime() -> Data {
+    private static func chime() -> Data {
         let sampleRate = 12_000
         let noteSamples = 1_200
         var wave = Data("RIFF".utf8)

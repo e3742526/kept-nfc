@@ -4627,6 +4627,42 @@ describe('KeptPhone mobile workflows', () => {
     ).toEqual({});
   });
 
+  it('keeps a reserved code for the next tag when the write never started', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.type(screen.getByLabelText('Description'), 'Ring');
+    await user.click(screen.getByText('QR or NFC label'));
+    const inspected = {
+      status: 'inspected',
+      fingerprint: 'tag-contents',
+      writable: true,
+      capacity: 137,
+      required: 36,
+    };
+    env.pushScan(inspected, { status: 'cancelled', writeStarted: false }, inspected, {
+      status: 'written',
+      writeStarted: true,
+    });
+    await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
+    await user.click(await screen.findByRole('button', { name: 'Write and verify' }));
+    await screen.findByText('Scan cancelled.');
+    await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
+    await user.click(await screen.findByRole('button', { name: 'Write and verify' }));
+    await screen.findByText(/NFC tag written and verified/);
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+  });
+
   it('shelves a late reservation for the next capture without opening the NFC reader', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
