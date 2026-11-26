@@ -250,6 +250,9 @@ export function PhotoDetailsPanel({
     else if (code === 'quota') setStatus(t`Your ChatGPT plan reached a usage limit.`);
     else if (code === 'reconnect') setStatus(t`Reconnect ChatGPT and try again.`);
     else if (code === 'ai_unavailable') setStatus(t`AI isn't set up here`);
+    else if (code === 'image') setStatus(t`Choose a readable photo.`);
+    else if (code === 'suggestion')
+      setStatus(t`ChatGPT could not read these photos. Try again, or choose fewer photos.`);
     else if (error instanceof SyntaxError || (using === 'chatgpt' && !code))
       setStatus(t`Nothing new was found in these photos.`);
     else setStatus(errorText(error));
@@ -273,9 +276,11 @@ export function PhotoDetailsPanel({
           ).url,
       ),
     );
+    // Local storage signs a path (`/f/<token>`): the iPhone fetches it from this server.
+    const absolute = urls.map((url) => new URL(url, connection.origin).href);
     void outbox.setValue(connection, DETAILS_MODEL_KEY, model).catch(() => {});
     const { details, typeHint } = parseChatGPTDetails(
-      await viaPlan(connection, model, { urls, photo }),
+      await viaPlan(connection, model, { urls: absolute, photo }),
     );
     const type = typeHint
       ? cache.types.find((entry) => normalize(entry.name ?? '') === normalize(typeHint.value))

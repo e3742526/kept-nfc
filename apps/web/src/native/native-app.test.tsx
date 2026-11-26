@@ -2913,7 +2913,8 @@ describe('KeptPhone mobile workflows', () => {
       }
       if (path.startsWith(inventoryPaths.fileUrl('nameplate-file'))) {
         signed.push({ path, body: options?.body });
-        return { url: `${origin}/f/signed-display.jpg`, expiresAt: '2026-11-26T02:00:00Z' } as T;
+        // As local storage answers: a path on this server, not a full address.
+        return { url: '/f/signed-display.jpg', expiresAt: '2026-11-26T02:00:00Z' } as T;
       }
       return request<T>(conn, path, options);
     };
@@ -2949,6 +2950,18 @@ describe('KeptPhone mobile workflows', () => {
     ).toBe('gpt-6.1-terra');
     await user.click(screen.getByRole('button', { name: /Fill in 1 field/ }));
     expect(screen.getByRole('textbox', { name: 'Model' })).toHaveValue('DCF887');
+
+    // The iPhone's refusals say what went wrong, not "Something went wrong".
+    chatGPTDetails.mockRejectedValueOnce({ code: 'image' });
+    await user.click(screen.getByRole('button', { name: 'Read selected photos' }));
+    expect(await screen.findByText('Choose a readable photo.')).toBeInTheDocument();
+    chatGPTDetails.mockRejectedValueOnce({ code: 'suggestion' });
+    await user.click(screen.getByRole('button', { name: 'Read selected photos' }));
+    expect(
+      await screen.findByText(
+        'ChatGPT could not read these photos. Try again, or choose fewer photos.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('edits a bin in place and shows the last known location and photo history', async () => {

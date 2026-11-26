@@ -33681,3 +33681,7 @@ msgstr "Зробити фото для зчитування"
 #: src/native/photo-details.tsx
 msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
 msgstr "{0, plural, one {Заповнити # поле} few {Заповнити # поля} many {Заповнити # полів} other {Заповнити # поля}}"
+
+#: src/native/photo-details.tsx
+msgid "ChatGPT could not read these photos. Try again, or choose fewer photos."
+msgstr "ChatGPT не зміг прочитати ці фото. Спробуйте ще раз або виберіть менше фото."

@@ -33681,3 +33681,7 @@ msgstr "Prendre une photo à lire"
 #: src/native/photo-details.tsx
 msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
 msgstr "{0, plural, one {Remplir # champ} other {Remplir # champs}}"
+
+#: src/native/photo-details.tsx
+msgid "ChatGPT could not read these photos. Try again, or choose fewer photos."
+msgstr "ChatGPT n’a pas pu lire ces photos. Réessayez ou choisissez moins de photos."

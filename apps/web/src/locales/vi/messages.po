@@ -33681,3 +33681,7 @@ msgstr "Chụp ảnh để đọc"
 #: src/native/photo-details.tsx
 msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
 msgstr "{0, plural, other {Điền # trường}}"
+
+#: src/native/photo-details.tsx
+msgid "ChatGPT could not read these photos. Try again, or choose fewer photos."
+msgstr "ChatGPT không đọc được các ảnh này. Hãy thử lại hoặc chọn ít ảnh hơn."

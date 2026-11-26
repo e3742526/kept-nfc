@@ -181,9 +181,11 @@ extension KeptBridge {
         return (1...4096).contains(width) && (1...4096).contains(height)
     }
 
-    /// One of the thing's photos, from a signed link on this connection's own server only.
+    /// One of the thing's photos, from a signed link on this connection's own server only. The
+    /// server answers a path (`/f/<token>`) for local storage, so it is read against the origin.
     private static func ownPhoto(_ raw: String, connection: KeptConnection) async throws -> Data {
-        guard raw.utf8.count <= 2048, let url = URL(string: raw), url.scheme == "https",
+        guard raw.utf8.count <= 2048,
+              let url = URL(string: raw, relativeTo: connection.origin)?.absoluteURL, url.scheme == "https",
               url.user == nil, url.password == nil,
               let host = url.host?.lowercased(), host == connection.origin.host?.lowercased()
         else { throw CaptureAIError.image }
