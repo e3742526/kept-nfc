@@ -62,6 +62,7 @@ export function ItemLabelPicker({
   online,
   value,
   onChange,
+  blankTag,
   disabled = false,
 }: {
   connection: Connection;
@@ -72,17 +73,24 @@ export function ItemLabelPicker({
   online: boolean;
   value: ItemLabel | undefined;
   onChange: (label: ItemLabel | undefined) => void;
+  /** A blank NFC tag already read (on Scan): offered for writing straight away. */
+  blankTag?: TagReading;
   disabled?: boolean;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
   const errorText = useErrorText();
   const nfcStatus = useNfcStatusText();
-  const [open, setOpen] = useState(!!value);
+  const https = connection.origin.startsWith('https://');
+  // A blank tag read on Scan is already inspected: its code is reserved when it is written.
+  const offerBlank = !value && !!blankTag?.fingerprint && blankTag.writable !== false;
+  const [open, setOpen] = useState(!!value || offerBlank);
   const [camera, setCamera] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
-  const [inspection, setInspection] = useState<{ reading: TagReading; url: string }>();
+  const [inspection, setInspection] = useState<{ reading: TagReading; url?: string } | undefined>(
+    () => (offerBlank && https && blankTag ? { reading: blankTag } : undefined),
+  );
   const [existingOwner, setExistingOwner] = useState<string | null>(null);
   // The code reserved for a new label, kept so a cancelled or repeated attempt doesn't make
   // another blank. The form remounts this picker after each save, which starts afresh.
@@ -100,7 +108,6 @@ export function ItemLabelPicker({
   adaptersRef.current = adapters;
   const connectionRef = useRef(connection);
   connectionRef.current = connection;
-  const https = connection.origin.startsWith('https://');
   const messages = {
     scan: t`Hold the top of your iPhone near one NFC tag.`,
     multiple: t`Move other tags away and scan one tag.`,
@@ -304,6 +311,9 @@ export function ItemLabelPicker({
     const pending = inspection;
     if (!pending?.reading.fingerprint) return;
     return run(async () => {
+      // A blank tag from Scan has no code yet: reserve it now, as Write new NFC tag does.
+      const url = pending.url ?? (await reserve())?.url;
+      if (!url || !live.current) return;
       const held = reserved.current;
       // Keep potentially written codes out of both the shelf and a retry on a different tag.
       reserved.current = undefined;
@@ -311,7 +321,7 @@ export function ItemLabelPicker({
       setExistingOwner(null);
       const result = await adapters.nfc.scanTag(connection, {
         mode: 'write',
-        url: pending.url,
+        url,
         fingerprint: pending.reading.fingerprint,
         messages,
       });
@@ -323,7 +333,7 @@ export function ItemLabelPicker({
       }
       if (!live.current) return;
       if (result.status === 'written') {
-        pick({ code: codeOf(pending.url), locationId, source: 'nfc' });
+        pick({ code: codeOf(url), locationId, source: 'nfc' });
         setStatus(t`SheepKeep tag verified.`);
       } else {
         setStatus(nfcStatus(result));
@@ -486,6 +496,11 @@ export function ItemLabelPicker({
             {!online && (
               <p className="text-small text-ink-2">
                 <Trans>Connect to make a new label. You can still scan a blank label.</Trans>
+              </p>
+            )}
+            {offerBlank && !https && (
+              <p className="text-small text-ink-2">
+                <Trans>Connect to your SheepKeep server over HTTPS to enroll NFC tags.</Trans>
               </p>
             )}
             {camera && (

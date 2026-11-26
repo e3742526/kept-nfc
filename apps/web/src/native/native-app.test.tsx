@@ -1741,7 +1741,7 @@ describe('KeptPhone mobile workflows', () => {
     );
   });
 
-  it('starts with the QR camera and switches between QR and NFC from Scan', async ({
+  it('listens for an NFC tag while the QR camera runs on Scan, and the first read wins', async ({
     onTestFinished,
   }) => {
     const origin = 'https://kept.example.com';
@@ -1766,13 +1766,17 @@ describe('KeptPhone mobile workflows', () => {
       camera.mockRestore();
       play.mockRestore();
     });
-    let deliverTag: (tag: TagReading) => void = () => {};
-    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag').mockImplementationOnce(
-      () =>
-        new Promise<TagReading>((resolve) => {
-          deliverTag = resolve;
-        }),
-    );
+    const pendingTag = () => {
+      let deliver: (tag: TagReading) => void = () => {};
+      const reading = new Promise<TagReading>((resolve) => {
+        deliver = resolve;
+      });
+      return { reading, deliver: (tag: TagReading) => deliver(tag) };
+    };
+    const first = pendingTag();
+    const scanTag = vi
+      .spyOn(env.adapters.nfc, 'scanTag')
+      .mockImplementationOnce(() => first.reading);
     const cancelTag = vi.spyOn(env.adapters.nfc, 'cancelTag');
     const user = userEvent.setup();
     env.renderApp();
@@ -1781,37 +1785,108 @@ describe('KeptPhone mobile workflows', () => {
       name: 'Scan',
     });
     await user.click(scanTab);
+    // Both at once: the camera opens and the NFC reader listens.
     expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
     await waitFor(() => expect(play).toHaveBeenCalledTimes(1));
     expect(getUserMedia).toHaveBeenCalledTimes(1);
-    expect(scanTag).not.toHaveBeenCalled();
-
-    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
-    expect(screen.queryByLabelText('Camera view')).not.toBeInTheDocument();
-    expect(stopCamera).toHaveBeenCalledBefore(scanTag);
     expect(scanTag).toHaveBeenCalledTimes(1);
+    expect(scanTag).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ mode: 'read' }),
+    );
+    expect(
+      screen.getByText(
+        'Point the camera at a QR label, or hold the top of your iPhone near an NFC tag.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Scan NFC tag' })).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: 'Scan QR code' }));
-    expect(cancelTag).toHaveBeenCalledTimes(1);
-    expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
-    expect(getUserMedia).toHaveBeenCalledTimes(2);
-
-    // A tag result already on its way from the bridge cannot open a box after switching.
-    await act(async () => deliverTag({ status: 'read', url: `${origin}/l/7KQ4MZ` }));
+    // A typed code answers first: the NFC reader stops, and its late reading is dropped.
+    await user.type(screen.getByRole('textbox', { name: 'Type the code' }), 'NOPE99');
+    await user.click(screen.getByRole('button', { name: 'Open label' }));
+    expect(cancelTag).toHaveBeenCalled();
+    await act(async () => first.deliver({ status: 'read', url: `${origin}/l/7KQ4MZ` }));
     expect(screen.getByRole('heading', { name: 'Identify a label' })).toBeInTheDocument();
 
-    env.pushScan({ status: 'cancelled' }, { status: 'read', url: `${origin}/l/7KQ4MZ` });
+    // The camera carries on; NFC listens again on request, and closing its sheet is quiet.
+    expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
+    const second = pendingTag();
+    scanTag.mockImplementationOnce(() => second.reading);
+    await user.click(await screen.findByRole('button', { name: 'Scan NFC tag' }));
+    expect(scanTag).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('button', { name: 'Scan NFC tag' })).toBeNull();
+    await act(async () => second.deliver({ status: 'cancelled' }));
+    expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
+    expect(screen.queryByText('Scan cancelled.')).toBeNull();
+
+    // Listening again, a tag opens its box and the camera lets go.
+    env.pushScan({ status: 'read', url: `${origin}/l/7KQ4MZ` });
     await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
-    expect(await screen.findByText('Scan cancelled.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Scan QR code' })).toBeEnabled();
-    await user.click(screen.getByRole('button', { name: 'Scan again' }));
     expect(await screen.findByRole('heading', { name: 'Winter Box' })).toBeInTheDocument();
+    expect(stopCamera).toHaveBeenCalled();
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Scan' }));
     expect(screen.getByLabelText('Camera view')).toBeInTheDocument();
-    expect(getUserMedia).toHaveBeenCalledTimes(3);
-    expect(scanTag).toHaveBeenCalledTimes(3);
+    expect(scanTag).toHaveBeenCalledTimes(4);
+  });
+
+  it('starts adding an item from a blank NFC tag found on Scan, and writes it as the label', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    const user = userEvent.setup();
+    env.renderApp();
+    const boxes = await screen.findByRole('button', { name: '2 Boxes' });
+    await waitFor(() => expect(boxes).toBeEnabled());
+
+    env.pushScan(
+      { status: 'blank', fingerprint: 'fp-blank', occupied: false, writable: true, capacity: 137 },
+      { status: 'written' },
+    );
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Scan' }));
+    // The Add form opens with the tag ready to write; no code is reserved until it is written.
+    expect(await screen.findByRole('textbox', { name: 'Description' })).toBeInTheDocument();
+    expect(await screen.findByText('This tag is blank and ready to write.')).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(0);
+
+    await user.type(screen.getByLabelText('Description'), 'Tripod');
+    await user.click(screen.getByRole('button', { name: 'Write and verify' }));
+    expect(await screen.findByText(/NFC tag written and verified/)).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(1);
+    expect(scanTag.mock.calls.at(-1)?.[1]).toMatchObject({
+      mode: 'write',
+      url: `${origin}/l/RSV234`,
+      fingerprint: 'fp-blank',
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await waitFor(() =>
+      expect(request).toHaveBeenCalledWith(
+        expect.anything(),
+        capturePaths.syncOps,
+        expect.objectContaining({
+          body: expect.objectContaining({
+            ops: [
+              expect.objectContaining({
+                payload: expect.objectContaining({ name: 'Tripod', claimCode: 'RSV234' }),
+              }),
+            ],
+          }),
+        }),
+      ),
+    );
+    // The next item starts without the tag.
+    expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+    expect(screen.queryByText('This tag is blank and ready to write.')).toBeNull();
   });
 
   it('creates a place and captures an item there from the home destination picker', async () => {
@@ -2920,7 +2995,8 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: /Winter Box/ }));
     expect(await screen.findByRole('button', { name: 'Inspect NFC tag' })).toBeEnabled();
     expect(screen.getByText('7KQ4MZ')).toBeInTheDocument();
-    expect(scanTag).not.toHaveBeenCalled();
+    // Only Scan's own listening read: nothing inspected or written yet.
+    expect(scanTag.mock.calls.map(([, input]) => input.mode)).toEqual(['read']);
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(
       await screen.findByRole('heading', { name: 'Choose an item or bin' }),

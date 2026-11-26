@@ -24,6 +24,7 @@ import {
   type CompletionState,
   type Connection,
   StorageFullError,
+  type TagReading,
 } from './bridge';
 import { CaptureSuggestion, type PhotoSuggestion } from './capture-ai';
 import { CategoryPicker } from './category-picker';
@@ -70,6 +71,7 @@ export function CaptureForm({
   cache,
   initialName = '',
   initialPhoto,
+  blankTag,
   suggested,
   pending = [],
   completions = {},
@@ -91,6 +93,8 @@ export function CaptureForm({
   /** Description prefilled from a search that found nothing. */
   initialName?: string;
   initialPhoto?: File;
+  /** A blank NFC tag scanned on the way here: the label section offers to write it. */
+  blankTag?: TagReading;
   /** Where the next item most likely goes (the box used last); the picker changes it. */
   suggested?: Destination;
   pending?: readonly PendingCapture[];
@@ -676,6 +680,7 @@ export function CaptureForm({
             itemName={name}
             online={online}
             value={claimCode ? label : undefined}
+            blankTag={labelSession === 0 ? blankTag : undefined}
             onChange={setLabel}
             disabled={busy}
           />

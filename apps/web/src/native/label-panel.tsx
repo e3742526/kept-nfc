@@ -70,6 +70,7 @@ export function LabelPanel({
   onProgram,
   onClearFindTarget,
   onAuthError,
+  onBlankTag,
 }: {
   connection: Connection;
   cache: InventoryCache | undefined;
@@ -82,6 +83,8 @@ export function LabelPanel({
   onProgram?: () => void;
   onClearFindTarget?: () => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
+  /** Scan found a blank NFC tag: start adding an item that gets it as its label. */
+  onBlankTag?: (reading: TagReading) => void;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
@@ -98,6 +101,9 @@ export function LabelPanel({
   const [existingOwner, setExistingOwner] = useState<string | null>(null);
   const [unverifiedWrite, setUnverifiedWrite] = useState(false);
   const [matched, setMatched] = useState(false);
+  // Identify listens for an NFC tag while the camera looks for a QR code; the first read wins.
+  const [nfcListening, setNfcListening] = useState(false);
+  const listensBoth = action === 'identify' && !placeOnly;
   const inFlight = useRef(false);
   const alreadyAlerted = useRef(false);
   const live = useRef(true);
@@ -328,6 +334,50 @@ export function LabelPanel({
     else setStatus(t`This label is unavailable in your SheepKeep.`);
   }
 
+  /** Stop listening for an NFC tag; a reading already on its way is dropped. */
+  function stopNfc() {
+    if (!identifyRead.current) return;
+    identifyRead.current.abort();
+    identifyRead.current = null;
+    setNfcListening(false);
+    void adapters.nfc.cancelTag().catch(() => {});
+  }
+
+  /** Listen for an NFC tag alongside the camera, until a tag, a QR code or a typed code answers. */
+  function listenNfc() {
+    if (identifyRead.current) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    identifyRead.current = controller;
+    setNfcListening(true);
+    const done = () => {
+      if (identifyRead.current === controller) identifyRead.current = null;
+      setNfcListening(false);
+    };
+    void adapters.nfc
+      .scanTag(connection, { mode: 'read', messages })
+      .then(async (result) => {
+        if (!live.current || signal.aborted) return;
+        done();
+        if (result.status === 'read' && result.url) {
+          const url = result.url;
+          setScanMode('qr-result');
+          await run(() => read(url, 'nfc', undefined, signal));
+        } else if (result.status === 'blank' && onBlankTag) {
+          setScanMode('qr-result');
+          onBlankTag(result);
+        } else if (result.status !== 'cancelled') {
+          // Cancelled is the person closing the NFC sheet: the camera carries on, quietly.
+          setStatus(nfcStatus(result));
+        }
+      })
+      .catch((error: unknown) => {
+        if (!live.current || signal.aborted) return;
+        done();
+        setStatus(errorText(error));
+      });
+  }
+
   function scanIdentify() {
     if (inFlight.current) return;
     // Release the camera before asking iOS to start its NFC reader.
@@ -362,6 +412,23 @@ export function LabelPanel({
     setClaim(undefined);
     setScanMode('qr');
   }
+
+  /** Scan again: the camera and the NFC reader both start afresh. */
+  function scanBoth() {
+    startQr();
+    listenNfc();
+  }
+
+  // The Scan screen opens listening for both; leaving it stops the NFC reader.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per visit to the screen.
+  useEffect(() => {
+    if (!listensBoth) return;
+    listenNfc();
+    return () => {
+      identifyRead.current?.abort();
+      identifyRead.current = null;
+    };
+  }, []);
 
   function startContinuousFind() {
     return run(async () => {
@@ -534,6 +601,7 @@ export function LabelPanel({
 
   const readCamera = (readout: Read) => {
     if (inFlight.current) return;
+    stopNfc();
     setScanMode(action === 'identify' ? 'qr-result' : 'nfc');
     void run(() => read(readout.text, 'qr', readout.format));
   };
@@ -674,13 +742,34 @@ export function LabelPanel({
       ) : (
         <>
           <div className="kept-card">
-            {(action === 'find' || scanMode === 'nfc') && (
+            {listensBoth && scanMode === 'qr' ? (
               <p className="text-small text-ink-2">
-                <Trans>Hold the top of your iPhone close to one tag at a time.</Trans>
+                <Trans>
+                  Point the camera at a QR label, or hold the top of your iPhone near an NFC tag.
+                </Trans>
               </p>
+            ) : (
+              (action === 'find' || scanMode === 'nfc') && (
+                <p className="text-small text-ink-2">
+                  <Trans>Hold the top of your iPhone close to one tag at a time.</Trans>
+                </p>
+              )
             )}
             <div className="flex flex-wrap gap-2">
-              {action === 'identify' ? (
+              {listensBoth ? (
+                scanMode === 'qr' ? (
+                  !nfcListening && (
+                    <Button isDisabled={busy} onPress={listenNfc}>
+                      <Nfc size={18} aria-hidden />
+                      <Trans>Scan NFC tag</Trans>
+                    </Button>
+                  )
+                ) : (
+                  <Button isDisabled={busy} onPress={scanBoth}>
+                    <Trans>Scan again</Trans>
+                  </Button>
+                )
+              ) : action === 'identify' ? (
                 <>
                   <Button
                     isDisabled={scanMode !== 'nfc' && busy}
@@ -780,7 +869,9 @@ export function LabelPanel({
             onSubmit={(event) => {
               event.preventDefault();
               event.stopPropagation();
-              if (typed.trim()) void run(() => read(typed.trim(), 'qr'));
+              if (!typed.trim()) return;
+              stopNfc();
+              void run(() => read(typed.trim(), 'qr'));
             }}
           >
             <TextField label={t`Type the code`} value={typed} onChange={setTyped} />

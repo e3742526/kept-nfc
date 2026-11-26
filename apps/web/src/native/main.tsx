@@ -58,6 +58,7 @@ import {
   type Connection,
   nativeErrorCode,
   type StorageStats,
+  type TagReading,
 } from './bridge';
 import { Browse, browseDefaults } from './browse';
 import { CaptureAISettings } from './capture-ai';
@@ -126,6 +127,8 @@ type Screen =
       fromRecord?: boolean;
       name?: string;
       initialPhoto?: File;
+      /** A blank NFC tag from Scan, ready to be written as the new item's label. */
+      blankTag?: TagReading;
     }
   | { kind: 'identify' }
   | { kind: 'nfcTarget' }
@@ -1817,6 +1820,7 @@ export function Inventory({
           location={screen.location}
           initialName={screen.name}
           initialPhoto={screen.initialPhoto}
+          blankTag={screen.blankTag}
           suggested={suggestedDestination}
           pending={pending}
           completions={completions}
@@ -1857,6 +1861,9 @@ export function Inventory({
           }}
           onClose={goBack}
           onProgram={canWrite ? () => pushScreen({ kind: 'nfcTarget' }) : undefined}
+          onBlankTag={
+            canWrite ? (blankTag) => pushScreen({ kind: 'capture', blankTag }) : undefined
+          }
           onAuthError={onSignOut}
         />
       )}

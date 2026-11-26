@@ -12821,6 +12821,10 @@ msgid "Hold steady against the tag and try again."
 msgstr "ثبّت الهاتف قرب البطاقة وأعد المحاولة."
 
 #: src/native/label-panel.tsx
+msgid "Point the camera at a QR label, or hold the top of your iPhone near an NFC tag."
+msgstr "وجّه الكاميرا إلى ملصق QR، أو قرّب أعلى الآيفون من بطاقة NFC."
+
+#: src/native/label-panel.tsx
 msgid "Hold the top of your iPhone close to one tag at a time."
 msgstr "قرّب أعلى الآيفون من بطاقة واحدة في كل مرة."
 
