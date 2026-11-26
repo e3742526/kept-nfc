@@ -15,7 +15,7 @@
  * Reprinting a batch prints the same codes (D45). `?stock=` and `?start=` print it on another
  * stock or from another cell without changing the batch.
  */
-import { isSheet, isThermalLabelStock, LABEL_STOCKS, labelStock } from '@kept/shared';
+import { isSheet, LABEL_STOCKS, labelStock, usesThermalLabelEditor } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useQuery } from '@tanstack/react-query';
@@ -75,7 +75,7 @@ function PrintLabelsPage() {
     search.stock ??
     (data && LABEL_STOCKS.some((s) => s.key === data.stock) ? data.stock : 'a4_24_70x37');
   const stock = labelStock(stockKey);
-  const thermal = isThermalLabelStock(stockKey);
+  const thermal = usesThermalLabelEditor(stockKey, Boolean(data?.thermal));
   const startCell = isSheet(stock)
     ? Math.min(search.start ?? (search.stock ? 1 : (data?.startCell ?? 1)), perPage(stock))
     : 1;

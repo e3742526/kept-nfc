@@ -4,8 +4,11 @@ import {
   type PrinterProfile,
   type StockCalibration,
   stockCalibration,
+  supportsDrawerTemplate,
   THERMAL_LABEL_STOCKS,
   type ThermalLayout,
+  WORKSHOP_ICON_CODES,
+  type WorkshopIcon,
 } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Checkbox } from 'react-aria-components';
@@ -14,6 +17,7 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
 import { useStockText } from '../stock-picker';
 import type { ThermalOptions } from './document';
+import { useWorkshopIconNames, WorkshopPhoto } from './workshop-photo';
 
 export function Choices<T extends string>({
   label,
@@ -76,6 +80,7 @@ export function ThermalSettings({
   saveProfile,
   options,
   setOptions,
+  suggestIcon,
 }: {
   stock: string;
   setStock: (stock: string) => void;
@@ -88,11 +93,15 @@ export function ThermalSettings({
   saveProfile: () => void;
   options: ThermalOptions;
   setOptions: (options: ThermalOptions) => void;
+  suggestIcon?: ((photo: File) => Promise<WorkshopIcon | undefined>) | undefined;
 }) {
   const { t } = useLingui();
   const stockText = useStockText();
+  const iconNames = useWorkshopIconNames();
   const compact = stock === COMPACT_THERMAL_STOCK;
   const micro = stock === MICRO_THERMAL_STOCK;
+  const supportsDrawer = supportsDrawerTemplate(stock);
+  const drawer = supportsDrawer && options.template === 'drawer';
   const maxLines = micro ? 1 : compact ? 2 : 6;
   const defaults = stockCalibration(stock);
   const calibration = profile.calibration[stock] ?? defaults;
@@ -171,17 +180,67 @@ export function ThermalSettings({
           }
         />
       </div>
-      {(compact || micro) && (
+      {supportsDrawer && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Choices
-            label={compact ? t`Compact label content` : t`Micro label content`}
-            value={options.variant ?? 'standard'}
+            label={t`Label template`}
+            value={options.template ?? 'standard'}
             items={[
-              { id: 'standard', name: t`Item name and tag indicators` },
-              { id: 'identity', name: t`Identification only` },
+              { id: 'standard', name: t`Standard inventory label` },
+              { id: 'drawer', name: t`Small-parts drawer` },
             ]}
-            change={(variant) => setOptions({ ...options, variant })}
+            change={(template) =>
+              setOptions({ ...options, template: template === 'drawer' ? template : undefined })
+            }
           />
+          {drawer && (
+            <>
+              <Choices<WorkshopIcon | 'auto' | 'none'>
+                label={t`Category icon`}
+                value={options.workshopIcon ?? 'auto'}
+                items={[
+                  { id: 'auto', name: t`Automatic from category and contents` },
+                  { id: 'none', name: t`No icon` },
+                  ...WORKSHOP_ICON_CODES.map((id) => ({ id, name: iconNames[id] })),
+                ]}
+                change={(icon) =>
+                  setOptions({ ...options, workshopIcon: icon === 'auto' ? undefined : icon })
+                }
+              />
+              {options.workshopIcon !== 'none' && (
+                <Choices
+                  label={t`Icon placement`}
+                  value={options.iconPlacement ?? 'beside'}
+                  items={[
+                    { id: 'beside', name: t`Beside the QR` },
+                    { id: 'embedded', name: t`Inside the QR (experimental)` },
+                  ]}
+                  change={(iconPlacement) => setOptions({ ...options, iconPlacement })}
+                />
+              )}
+              {suggestIcon && (
+                <WorkshopPhoto
+                  suggest={suggestIcon}
+                  apply={(workshopIcon) => setOptions({ ...options, workshopIcon })}
+                />
+              )}
+            </>
+          )}
+        </div>
+      )}
+      {(compact || micro || drawer) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {!drawer && (
+            <Choices
+              label={compact ? t`Compact label content` : t`Micro label content`}
+              value={options.variant ?? 'standard'}
+              items={[
+                { id: 'standard', name: t`Item name and tag indicators` },
+                { id: 'identity', name: t`Identification only` },
+              ]}
+              change={(variant) => setOptions({ ...options, variant })}
+            />
+          )}
           <Choices
             label={t`QR destination`}
             value={options.payload ?? 'url'}
@@ -198,7 +257,7 @@ export function ThermalSettings({
           <Trans>Layout and printer calibration</Trans>
         </summary>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {!compact && (
+          {!compact && !drawer && (
             <Choices
               label={t`QR side on compact labels`}
               value={options.qrSide}
@@ -211,7 +270,7 @@ export function ThermalSettings({
           )}
           <PrintNumber
             label={t`Preferred QR width (mm)`}
-            value={profile.qrMm ?? (compact ? 16 : undefined)}
+            value={profile.qrMm ?? (compact ? (drawer ? 17 : 16) : undefined)}
             min={5}
             max={125}
             change={(qrMm) => {

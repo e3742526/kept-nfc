@@ -1,4 +1,4 @@
-import { isThermalLabelStock, labelStock, newId } from '@kept/shared';
+import { labelStock, newId, usesThermalLabelEditor } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ChevronRight, Printer, Tags } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -58,7 +58,8 @@ export function LabelSheets({
             setBatches(
               page.items.filter(
                 (batch) =>
-                  batch.stock.startsWith('letter_writable_') || isThermalLabelStock(batch.stock),
+                  batch.stock.startsWith('letter_writable_') ||
+                  usesThermalLabelEditor(batch.stock, Boolean(batch.thermal)),
               ),
             );
         })
@@ -194,7 +195,9 @@ export function LabelSheets({
       {batches.length > 0 && (
         <ul className="grid gap-2">
           {batches
-            .filter((batch) => isThermalLabelStock(batch.stock) === thermal)
+            .filter(
+              (batch) => usesThermalLabelEditor(batch.stock, Boolean(batch.thermal)) === thermal,
+            )
             .map((batch) => (
               <li key={batch.id}>
                 <Button

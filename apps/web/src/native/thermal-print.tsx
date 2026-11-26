@@ -1,3 +1,4 @@
+import { DevicePhotoProposals } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import { capturePaths } from '@/api/capture/paths';
@@ -5,6 +6,7 @@ import type { LabelBatch } from '@/api/capture/types';
 import type { PrintApi } from '@/components/labels/thermal/api';
 import type { NativeThermalOutput } from '@/components/labels/thermal/output';
 import { type ThermalSource, ThermalStudio } from '@/components/labels/thermal/studio';
+import { suggestWorkshopIcon } from '@/components/labels/thermal/workshop-icons';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
 
@@ -24,7 +26,7 @@ export function NativeThermalPrint({
   onSaved?: (batch: LabelBatch) => void;
 }) {
   const { t } = useLingui();
-  const { transport, media } = usePlatform();
+  const { transport, media, captureAI } = usePlatform();
   const api = useMemo<PrintApi>(
     () => ({
       address: async () =>
@@ -62,6 +64,7 @@ export function NativeThermalPrint({
   const output: NativeThermalOutput | undefined = send
     ? (pdf, share) => send(connection, pdf, share, t`SheepKeep labels`)
     : undefined;
+  const propose = captureAI?.serverProposals;
 
   return (
     <div className="grid gap-4">
@@ -77,6 +80,17 @@ export function NativeThermalPrint({
         api={api}
         nativeOutput={output}
         batch={batch}
+        suggestIcon={
+          propose &&
+          (async (photo) => {
+            const { items } = DevicePhotoProposals.parse(
+              await propose(connection, locationId, photo),
+            );
+            return items
+              .map((item) => suggestWorkshopIcon('', item.categories?.join(' ') ?? '', item.name))
+              .find((icon) => icon !== 'MSC');
+          })
+        }
         {...(onSaved ? { onSaved } : {})}
       />
     </div>

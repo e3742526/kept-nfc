@@ -4,12 +4,15 @@ import {
   type PrinterProfile,
   type PrintRect,
   parseScan,
+  supportsDrawerTemplate,
   type ThermalGeometry,
   type ThermalLayout,
   thermalGeometry,
+  type WorkshopIcon,
 } from '@kept/shared';
 import JsBarcode from 'jsbarcode';
-import { type Encode, qrMatrix } from '../qr';
+import { type Encode, QUIET_ZONE, qrMatrix } from '../qr';
+import { suggestWorkshopIcon, workshopInk } from './workshop-icons';
 
 export type ThermalContent = {
   identifier: string;
@@ -17,6 +20,9 @@ export type ThermalContent = {
   name?: string | undefined;
   location?: string | undefined;
   contents?: string | undefined;
+  category?: string | undefined;
+  drawerContents?: string | undefined;
+  drawerPosition?: string | undefined;
   nfc?: 'verified' | 'pending' | 'unknown' | undefined;
   uhf?: boolean | undefined;
   barcode?: string | undefined;
@@ -33,6 +39,9 @@ export type ThermalOptions = {
   showBarcode?: boolean | undefined;
   payload?: 'url' | 'app' | undefined;
   variant?: 'standard' | 'identity' | undefined;
+  template?: 'drawer' | undefined;
+  workshopIcon?: WorkshopIcon | 'none' | undefined;
+  iconPlacement?: 'beside' | 'embedded' | undefined;
   identifierPt: number;
 };
 
@@ -49,7 +58,7 @@ export const DEFAULT_THERMAL_OPTIONS: ThermalOptions = {
 
 type Text = { value: string; x: number; y: number; size: number; bold?: boolean; rotate?: 90 };
 export type DotPage = { ink: PrintRect[]; text: Text[] };
-type FitWarnings = { threeDotQr: boolean; omittedText: boolean };
+type FitWarnings = { threeDotQr: boolean; omittedText: boolean; separateIcon?: boolean };
 export type ThermalDocument = Omit<ThermalGeometry, 'pages'> & {
   pages: DotPage[];
   warnings?: FitWarnings;
@@ -79,7 +88,7 @@ function printableText(value: string): string {
 
 function fitOptional(value: string, width: number, size: number): string {
   return printableText(value)
-    .slice(0, Math.floor(width / (size * glyphWidth)))
+    .slice(0, Math.max(0, Math.floor(width / (size * glyphWidth))))
     .trimEnd();
 }
 
@@ -267,6 +276,189 @@ function drawCell(
   }
 }
 
+function wrapDrawerTitle(value: string, width: number, size: number, rows: number): string[] {
+  const columns = Math.floor(width / (size * glyphWidth));
+  if (columns < 1) return [];
+  const result: string[] = [];
+  let rest = value;
+  while (rest && result.length < rows) {
+    if (rest.length <= columns) {
+      result.push(rest);
+      return result;
+    }
+    const wordEnd = rest.lastIndexOf(' ', columns);
+    if (wordEnd <= 0) return [];
+    result.push(rest.slice(0, wordEnd));
+    rest = rest.slice(wordEnd).trimStart();
+  }
+  return rest ? [] : result;
+}
+
+function drawDrawer(
+  page: DotPage,
+  box: PrintRect,
+  label: ThermalContent,
+  dpi: number,
+  profile: PrinterProfile,
+  options: ThermalOptions,
+  encode: Encode,
+  warnings: FitWarnings,
+) {
+  const dots = (mm: number) => mmToDots(mm, dpi);
+  const pts = (pt: number) => Math.ceil((pt * dpi) / 72);
+  const compact = box.h < dots(29);
+  const gap = dots(compact ? 1.1 : 2.5);
+  const id = label.identifier;
+  if (!idPattern.test(id)) throw new ThermalFitError('identifier');
+  const minIdSize = pts(compact ? 6 : 8);
+  const idEmWidth = id.length * glyphWidth;
+  const maxQr = Math.min(box.h, box.w - gap - Math.ceil(idEmWidth * minIdSize));
+  const preferredQr = dots(profile.qrMm ?? (compact ? 17 : box.w < dots(65) ? 22 : 38));
+  const payload = labelPayload(label, options);
+  const minModule = Math.max(3, Math.ceil((dpi * 0.3) / 25.4));
+  const icon =
+    options.workshopIcon === 'none'
+      ? null
+      : (options.workshopIcon ??
+        suggestWorkshopIcon(
+          id,
+          label.category ?? '',
+          label.contents ?? '',
+          label.drawerContents ?? '',
+          label.name ?? '',
+        ));
+  let matrix = qrMatrix(encode, payload);
+  const moduleFor = (side: number, minimum: number) =>
+    Math.min(Math.floor(maxQr / side), Math.max(minimum, Math.round(preferredQr / side)));
+  let module = moduleFor(matrix.length, minModule);
+  let embedded = false;
+  if (icon && options.iconPlacement === 'embedded') {
+    const stronger = encode(payload, { ecc: 'H', border: QUIET_ZONE, minVersion: 2 }).data;
+    const strongModule = moduleFor(stronger.length, Math.max(4, minModule));
+    // Versions 2–6 keep the centered seven-module patch clear of finder, format and alignment patterns.
+    if (stronger.length <= 41 + 2 * QUIET_ZONE && strongModule >= Math.max(4, minModule)) {
+      matrix = stronger;
+      module = strongModule;
+      embedded = true;
+    } else warnings.separateIcon = true;
+  }
+  if (module < minModule) throw new ThermalFitError('qr');
+  warnings.threeDotQr ||= module === 3;
+  const qrSize = matrix.length * module;
+  const qx = box.x;
+  const qy = box.y + (compact ? Math.floor((box.h - qrSize) / 2) : 0);
+  const center = Math.floor(matrix.length / 2);
+  if (embedded) {
+    for (const row of matrix.slice(center - 3, center + 4)) row.fill(false, center - 3, center + 4);
+  }
+  qrInk(page.ink, matrix, qx, qy, module);
+  if (embedded && icon) {
+    workshopInk(page.ink, icon, {
+      x: qx + (center - 2) * module,
+      y: qy + (center - 2) * module,
+      w: 5 * module,
+      h: 5 * module,
+    });
+  }
+
+  const x = qx + qrSize + gap;
+  const w = box.x + box.w - x;
+  const idSize = Math.min(
+    pts(options.identifierPt || (compact ? 8 : 12)),
+    Math.floor(w / idEmWidth),
+  );
+  if (idSize < minIdSize || box.h < idSize + gap) throw new ThermalFitError('identifier');
+  const small = pts(compact ? 6 : 8);
+  const tagParts = [
+    options.showNfc && label.nfc === 'verified' ? 'NFC' : '',
+    label.uhf ? 'UHF' : '',
+  ].filter(Boolean);
+  const tags = tagParts.join(' / ');
+  const position = options.showLocation ? printableText(label.drawerPosition ?? '') : '';
+  const metadata = [position, tags].filter(Boolean).join(' · ');
+  const fits = (text: string) => !!text && text.length * small * glyphWidth <= w;
+  const footer = fits(metadata)
+    ? [metadata]
+    : [...(fits(tags) ? [tags] : tagParts), position].filter(fits).slice(0, 2);
+  const bottom = box.y + Math.min(box.h, Math.max(qrSize, dots(compact ? 17 : 34)));
+  const footerAdvance = small + Math.floor(gap / 2);
+  const idBaseline = bottom - footer.length * footerAdvance - (footer.length ? gap : 0);
+  if (idBaseline - idSize < box.y) throw new ThermalFitError('identifier');
+  page.text.push({ value: id, x, y: idBaseline, size: idSize });
+  footer.forEach((value, index) => {
+    page.text.push({
+      value,
+      x,
+      y: bottom - (footer.length - index - 1) * footerAdvance,
+      size: small,
+    });
+  });
+
+  const iconSize = icon && !embedded ? dots(compact ? 5.5 : 8) : 0;
+  const iconBelowQr =
+    !compact && box.w < dots(65) && qy + qrSize + gap + iconSize <= bottom && qrSize >= iconSize;
+  const titleWidth = w - (iconSize && !iconBelowQr ? iconSize + gap : 0);
+  const maxTitleHeight = idBaseline - idSize - box.y - gap;
+  if (icon && iconSize) {
+    if (!iconBelowQr && (maxTitleHeight < iconSize || w < iconSize))
+      throw new ThermalFitError('settings');
+    workshopInk(page.ink, icon, {
+      x: iconBelowQr ? qx + Math.floor((qrSize - iconSize) / 2) : x + w - iconSize,
+      y: iconBelowQr ? qy + qrSize + gap : box.y,
+      w: iconSize,
+      h: iconSize,
+    });
+  }
+  const title = printableText(
+    (options.showContents && (label.drawerContents || label.contents)) ||
+      (options.showName && label.name) ||
+      '',
+  );
+  let titleBottom = box.y;
+  if (title) {
+    const minTitleSize = pts(compact ? 7 : 10);
+    let size = pts(compact ? 11 : 20);
+    let lines: string[] = [];
+    for (; size >= minTitleSize; size--) {
+      const advance = Math.ceil(size * 1.15);
+      const rows = Math.min(2, Math.floor(maxTitleHeight / advance));
+      lines = wrapDrawerTitle(title, titleWidth, size, rows);
+      if (lines.length) break;
+    }
+    if (!lines.length) {
+      const fitted = fitOptional(title, titleWidth - 3 * minTitleSize * glyphWidth, minTitleSize);
+      if (fitted && maxTitleHeight >= Math.ceil(minTitleSize * 1.15)) lines = [`${fitted}...`];
+      size = minTitleSize;
+      warnings.omittedText = true;
+    }
+    for (const line of lines) {
+      titleBottom += Math.ceil(size * 1.15);
+      page.text.push({ value: line, x, y: titleBottom, size, bold: true });
+    }
+  }
+  const handwritingHeight = dots(compact ? 3.2 : box.h >= dots(85) ? 10 : 7);
+  const writingTop = Math.max(bottom + gap, titleBottom + gap);
+  const rows = Math.min(
+    options.handwriting,
+    Math.floor((box.y + box.h - writingTop) / handwritingHeight),
+  );
+  for (let row = 1; row <= rows; row++) {
+    page.ink.push({
+      x: compact ? x : box.x,
+      y: writingTop + row * handwritingHeight - 1,
+      w: compact ? w : box.w,
+      h: 1,
+    });
+  }
+  if (
+    compact &&
+    options.handwriting > 0 &&
+    maxTitleHeight >= Math.max(iconSize, titleBottom - box.y) + handwritingHeight
+  ) {
+    page.ink.push({ x, y: box.y + maxTitleHeight - 1, w, h: 1 });
+  }
+}
+
 function drawCompact(
   page: DotPage,
   box: PrintRect,
@@ -277,23 +469,15 @@ function drawCompact(
   encode: Encode,
   warnings: FitWarnings,
 ) {
+  const draw = options.template === 'drawer' ? drawDrawer : drawCell;
   if (profile.orientation === 'portrait') {
-    drawCell(page, box, label, dpi, profile, options, encode, warnings);
+    draw(page, box, label, dpi, profile, options, encode, warnings);
     return;
   }
 
   // Rotate the horizontal design as a unit so the full label fits the same physical stock.
   const drawing: DotPage = { ink: [], text: [] };
-  drawCell(
-    drawing,
-    { x: 0, y: 0, w: box.h, h: box.w },
-    label,
-    dpi,
-    profile,
-    options,
-    encode,
-    warnings,
-  );
+  draw(drawing, { x: 0, y: 0, w: box.h, h: box.w }, label, dpi, profile, options, encode, warnings);
   for (const { x, y, w, h } of drawing.ink) {
     page.ink.push({ x: box.x + box.w - y - h, y: box.y + x, w: h, h: w });
   }
@@ -418,6 +602,10 @@ export function thermalDocument(
   labels: readonly ThermalContent[],
   encode: Encode,
 ): ThermalDocument {
+  if (options.template === 'drawer' && !supportsDrawerTemplate(stock)) {
+    // A cross-stock reprint still uses the original payload and ID.
+    options = { ...options, template: undefined };
+  }
   if (
     !Number.isInteger(options.handwriting) ||
     options.handwriting < 0 ||
@@ -445,6 +633,8 @@ export function thermalDocument(
           drawMicro(page, slot.ink, label, size.dpi, profile, options, encode, warnings);
         } else if (stock === COMPACT_THERMAL_STOCK) {
           drawCompact(page, slot.ink, label, size.dpi, profile, options, encode, warnings);
+        } else if (options.template === 'drawer') {
+          drawDrawer(page, slot.ink, label, size.dpi, profile, options, encode, warnings);
         } else drawCell(page, slot.ink, label, size.dpi, profile, options, encode);
       }
       return page;

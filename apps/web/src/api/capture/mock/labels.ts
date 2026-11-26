@@ -236,6 +236,7 @@ export function labelsRoutes(state: MockState): MockRoute[] {
             url: urlOf(t.shortCode),
             kind: 'thing',
             name: t.name ?? '',
+            ...(t.type?.name ? { category: t.type.name } : {}),
             path: pathText(thingPath(inv(), t)),
             targetId: t.id,
           });
@@ -273,11 +274,19 @@ export function labelsRoutes(state: MockState): MockRoute[] {
           }
           // A place with no code is given one, on a dry run too, as the server does.
           if (!pl.shortCode) pl.shortCode = allocateCode(codeTaken);
+          const position =
+            pl.kindKey === 'drawer'
+              ? pl.ownCodes?.find((code) => /-R[0-9]{2}-C[0-9]{2}$/.test(code))
+              : undefined;
           labels.push({
             code: pl.shortCode,
             url: urlOf(pl.shortCode),
             kind: 'place',
             name: pl.name,
+            ...(pl.kindKey === 'drawer' && pl.description
+              ? { drawerContents: pl.description }
+              : {}),
+            ...(position ? { drawerPosition: position } : {}),
             path: pathText(placePath(inv(), pl.parentId)),
             targetId: pl.id,
           });

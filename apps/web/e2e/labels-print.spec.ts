@@ -700,3 +700,33 @@ test('reprints a 4 × 6 cut-apart batch on compact stock from a stock override',
     await context.close();
   }
 });
+
+test('selects the small-parts drawer template and reprints the saved contents and icon', async ({
+  browser,
+}) => {
+  const { context, page } = await person(browser);
+  try {
+    const home = await homeId(page);
+    await page.goto(`/labels?loc=${home}&blank=1&thermal=1`);
+    await page.getByRole('button', { name: 'Label template' }).click();
+    await page.getByRole('option', { name: 'Small-parts drawer' }).click();
+    await page.getByRole('textbox', { name: 'Drawer contents' }).fill('Phillips bits');
+    await page.getByRole('button', { name: 'Category icon' }).click();
+    await page.getByRole('option', { name: 'Driver bits' }).click();
+    await page.getByRole('button', { name: 'Prepare labels', exact: true }).click();
+    const job = page.getByRole('region', { name: 'Prepared print job' });
+    await expect(job.getByRole('button', { name: 'Print', exact: true })).toBeEnabled();
+    const sticker = page.locator('#kept-thermal-pages svg');
+    const lines = await sticker.locator('text').allTextContents();
+    expect(lines[0]).toMatch(/^TMP-[0-9A-Z]{4}-0001$/);
+    expect(lines.slice(1).join(' ')).toBe('Phillips bits');
+    const ink = await sticker.locator('path').last().getAttribute('d');
+    await page.reload();
+    await page.getByRole('button', { name: 'Open batch for reprint' }).first().click();
+    await expect(job.getByRole('button', { name: 'Print', exact: true })).toBeEnabled();
+    expect(await sticker.locator('text').allTextContents()).toEqual(lines);
+    expect(await sticker.locator('path').last().getAttribute('d')).toBe(ink);
+  } finally {
+    await context.close();
+  }
+});

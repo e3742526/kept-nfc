@@ -150,13 +150,14 @@ describe('patterns', () => {
 });
 
 describe('the built-in templates', () => {
-  it('has cube shelves 1×4, 2×2, 2×4, 4×4, 2×8, a bookcase of 6, a chest of 9 and a shelving unit', () => {
+  it('ships shelf and drawer presets with valid layouts', () => {
     expect(BUILTIN_PLACE_TEMPLATES.map((b) => b.key)).toEqual([
       'cube_1x4',
       'cube_2x2',
       'cube_2x4',
       'cube_4x4',
       'cube_2x8',
+      'small_parts_cabinet',
       'bookcase',
       'chest',
       'shelving',
@@ -164,6 +165,11 @@ describe('the built-in templates', () => {
     expect(builtinPlaceTemplate('cube_2x8')?.layout).toEqual(grid(2, 8));
     expect(builtinPlaceTemplate('bookcase')?.layout).toEqual({ kind: 'levels', count: 6 });
     expect(builtinPlaceTemplate('chest')?.layout).toEqual({ kind: 'drawers', count: 9 });
+    expect(builtinPlaceTemplate('small_parts_cabinet')).toMatchObject({
+      layout: grid(6, 4),
+      compartmentKindKey: 'drawer',
+      codePattern: '{parent}-R{row:02}-C{col:02}',
+    });
     for (const b of BUILTIN_PLACE_TEMPLATES) expect(layoutProblem(b.layout)).toBeNull();
   });
 });

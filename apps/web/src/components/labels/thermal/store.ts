@@ -98,8 +98,10 @@ export function manifestLabels(job: PrintManifest): ThermalContent[] {
     identifier,
     url: `${job.origin}/l/${deviceLabelReference(identifier, job.id)}`,
     name: job.spec.category,
+    category: job.spec.category,
     writeIn: job.prefix === 'TMP' && !job.spec.category,
     contents: job.spec.contents,
+    drawerContents: job.spec.contents,
   }));
 }
 
@@ -112,6 +114,9 @@ export function batchLabels(batch: Pick<LabelBatch, 'labels' | 'thermal'>): Ther
     location: label.path,
     barcode: label.barcode,
     contents: batch.thermal?.contents || label.model,
+    category: label.category ?? batch.thermal?.category,
+    drawerContents: batch.thermal?.contents || label.drawerContents || label.name,
+    drawerPosition: label.drawerPosition,
     nfc: label.nfc,
     uhf: label.uhf,
   }));

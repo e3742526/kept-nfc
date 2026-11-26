@@ -6,12 +6,21 @@ import {
   isSheet,
   isStacked,
   isTape,
+  isThermalLabelStock,
   LABEL_STOCKS,
   type LabelStock,
   labelStock,
+  SQUARE_THERMAL_STOCK,
+  usesThermalLabelEditor,
 } from './label-stocks.js';
 
 describe('LABEL_STOCKS', () => {
+  it('offers square rolls in the thermal editor and preserves the original square roll builder', () => {
+    expect(isThermalLabelStock(SQUARE_THERMAL_STOCK)).toBe(true);
+    expect(usesThermalLabelEditor(SQUARE_THERMAL_STOCK)).toBe(false);
+    expect(usesThermalLabelEditor(SQUARE_THERMAL_STOCK, true)).toBe(true);
+  });
+
   it('has the supported stocks, in order', () => {
     expect(LABEL_STOCKS.map((s) => s.key)).toEqual([
       'thermal_50x20',

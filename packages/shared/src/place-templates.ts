@@ -184,6 +184,8 @@ export type BuiltinPlaceTemplate = {
   /** The furniture's kind and its compartments'. */
   kindKey: string;
   compartmentKindKey: string;
+  compartmentName?: string;
+  codePattern?: string;
   /** The count can be changed when the place is made (levels and drawers). */
   adjustable: boolean;
 };
@@ -204,6 +206,15 @@ export const BUILTIN_PLACE_TEMPLATES: readonly BuiltinPlaceTemplate[] = [
   cubes(2, 4),
   cubes(4, 4),
   cubes(2, 8),
+  {
+    key: 'small_parts_cabinet',
+    layout: { kind: 'grid', across: 6, up: 4 },
+    kindKey: FURNITURE_KIND,
+    compartmentKindKey: 'drawer',
+    compartmentName: 'Drawer {n}',
+    codePattern: '{parent}-R{row:02}-C{col:02}',
+    adjustable: false,
+  },
   {
     key: 'bookcase',
     layout: { kind: 'levels', count: 6 },

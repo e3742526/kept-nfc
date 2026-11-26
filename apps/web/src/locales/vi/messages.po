@@ -34160,3 +34160,81 @@ msgstr "Chiều dài nạp tối thiểu (mm)"
 #: src/components/labels/thermal/studio.tsx
 msgid "Reprint on selected stock"
 msgstr "In lại trên vật liệu đã chọn"
+
+msgid "Adhesives"
+msgstr "Keo dán"
+
+msgid "Automatic from category and contents"
+msgstr "Tự động theo danh mục và nội dung"
+
+msgid "Beside the QR"
+msgstr "Bên cạnh mã QR"
+
+msgid "Category icon"
+msgstr "Biểu tượng danh mục"
+
+msgid "Could not suggest a category icon. Check that server AI is available."
+msgstr "Không thể đề xuất biểu tượng danh mục. Hãy kiểm tra xem AI trên máy chủ có hoạt động không."
+
+msgid "Drawer contents"
+msgstr "Đồ trong ngăn kéo"
+
+msgid "Drill bits"
+msgstr "Mũi khoan"
+
+msgid "Driver bits"
+msgstr "Đầu vít"
+
+msgid "Hex bits"
+msgstr "Đầu vít lục giác"
+
+msgid "Icon placement"
+msgstr "Vị trí biểu tượng"
+
+msgid "Inside the QR (experimental)"
+msgstr "Trong mã QR (thử nghiệm)"
+
+msgid "Label template"
+msgstr "Mẫu nhãn"
+
+msgid "Measuring"
+msgstr "Dụng cụ đo"
+
+msgid "Miscellaneous"
+msgstr "Khác"
+
+msgid "No category icon was suggested."
+msgstr "Không có biểu tượng danh mục nào được đề xuất."
+
+msgid "No icon"
+msgstr "Không có biểu tượng"
+
+msgid "Nuts and bolts"
+msgstr "Đai ốc và bu lông"
+
+msgid "Rotary discs"
+msgstr "Đĩa quay"
+
+msgid "Sends the photo to your configured server AI."
+msgstr "Gửi ảnh đến AI đã cấu hình trên máy chủ của bạn."
+
+msgid "Small-parts cabinet"
+msgstr "Tủ đựng linh kiện nhỏ"
+
+msgid "Small-parts drawer"
+msgstr "Ngăn kéo đựng linh kiện nhỏ"
+
+msgid "Standard inventory label"
+msgstr "Nhãn kiểm kê tiêu chuẩn"
+
+msgid "Suggest icon from photo"
+msgstr "Đề xuất biểu tượng từ ảnh"
+
+msgid "The category icon moved beside the QR because there is not enough room to embed it."
+msgstr "Biểu tượng danh mục đã được chuyển ra cạnh mã QR vì không đủ chỗ bên trong."
+
+msgid "Use suggested icon: {0}"
+msgstr "Dùng biểu tượng được đề xuất: {0}"
+
+msgid "Washers"
+msgstr "Vòng đệm"

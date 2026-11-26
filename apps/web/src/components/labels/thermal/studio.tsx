@@ -8,8 +8,10 @@ import {
   printerOnStock,
   profileForBatch,
   savePrinterStock,
+  supportsDrawerTemplate,
   ThermalBatchSpecSchema,
   type ThermalLayout,
+  type WorkshopIcon,
 } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -68,6 +70,7 @@ export function ThermalStudio({
   nativeOutput,
   batch,
   reprintStock,
+  suggestIcon,
   onSaved,
 }: {
   owner: string;
@@ -76,6 +79,7 @@ export function ThermalStudio({
   nativeOutput?: NativeThermalOutput | undefined;
   batch?: LabelBatch | undefined;
   reprintStock?: string | undefined;
+  suggestIcon?: ((photo: File) => Promise<WorkshopIcon | undefined>) | undefined;
   onSaved?: (batch: LabelBatch) => void;
 }) {
   const { t } = useLingui();
@@ -229,10 +233,15 @@ export function ThermalStudio({
           identifier: example,
           url: exampleUrl,
           name: mode === 'category' ? category : undefined,
+          category: mode === 'category' ? category : undefined,
           writeIn: mode === 'temporary',
           contents,
         }))
-      : labels.slice(0, 12).map((label) => ({ ...label, contents: contents || label.contents }));
+      : labels.slice(0, 12).map((label) => ({
+          ...label,
+          contents: contents || label.contents,
+          drawerContents: contents || label.drawerContents,
+        }));
     if (previewLabels.length === 0) return null;
     try {
       return { doc: thermalDocument(stock, layout, profile, options, previewLabels, encode) };
@@ -514,12 +523,15 @@ export function ThermalStudio({
             }
             options={options}
             setOptions={setOptions}
+            suggestIcon={suggestIcon}
           />
           <TextField
             label={
-              stock === MICRO_THERMAL_STOCK || stock === COMPACT_THERMAL_STOCK
-                ? t`Size or model (optional)`
-                : t`Contents summary (optional)`
+              options.template === 'drawer' && supportsDrawerTemplate(stock)
+                ? t`Drawer contents`
+                : stock === MICRO_THERMAL_STOCK || stock === COMPACT_THERMAL_STOCK
+                  ? t`Size or model (optional)`
+                  : t`Contents summary (optional)`
             }
             value={contents}
             onChange={setContents}
@@ -545,6 +557,13 @@ export function ThermalStudio({
             <Notice>
               <Trans>
                 Some optional text does not fit. The QR and full identifier are preserved.
+              </Trans>
+            </Notice>
+          )}
+          {preview?.doc?.warnings?.separateIcon && (
+            <Notice tone="warn">
+              <Trans>
+                The category icon moved beside the QR because there is not enough room to embed it.
               </Trans>
             </Notice>
           )}
@@ -603,6 +622,13 @@ export function ThermalStudio({
             <Notice>
               <Trans>
                 Some optional text does not fit. The QR and full identifier are preserved.
+              </Trans>
+            </Notice>
+          )}
+          {selected.doc.warnings?.separateIcon && (
+            <Notice tone="warn">
+              <Trans>
+                The category icon moved beside the QR because there is not enough room to embed it.
               </Trans>
             </Notice>
           )}

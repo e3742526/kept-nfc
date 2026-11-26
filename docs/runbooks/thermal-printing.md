@@ -10,6 +10,7 @@ save its name, queue, resolution and calibration in **Save printer profile**.
 | Compact Thermal | 50 × 20 mm | 141.7323 × 56.6929 | 400 × 160 | 591 × 236 |
 | Large | 4 × 6 in · 101.6 × 152.4 mm | 288 × 432 | 812 × 1218 | 1200 × 1800 |
 | Small | 2 × 1 in · 50.8 × 25.4 mm | 144 × 72 | 406 × 203 | 600 × 300 |
+| Square | 2 × 2 in · 50.8 × 50.8 mm | 144 × 144 | 406 × 406 | 600 × 600 |
 | Micro | 1.75 × 0.75 in · 44.45 × 19.05 mm | 126 × 54 | 355 × 152 | 525 × 225 |
 | Micro Thermal | 1.2 × 0.8 in · 30.48 × 20.32 mm | 86.4 × 57.6 | 244 × 162 | 360 × 240 |
 
@@ -107,6 +108,28 @@ driver options and feed guides before trying narrow media. [CUPS printing option
   external reader integration can resolve it through the scan API with format `uhf_rfid`.
   The web and iPhone apps use their existing camera and NFC radios. Product barcodes remain
   product identifiers and several records can share one product code.
+
+## Small-parts drawers
+
+In **Thermal printing**, choose **Small-parts drawer** from **Label template**. The template
+works on 50 × 20 mm, 2 × 2 in rolls, and 4 × 6 in rolls including the 2 × 2 in cut-apart
+layout. Put the contents in **Drawer contents** or enter them as the drawer place's
+description. The template prints that text prominently. The full label identifier, linked
+NFC/UHF marks, and drawer position appear below as space permits.
+
+The category icon is chosen from the label prefix, inventory category, and contents. Choose a
+specific icon or **No icon** to override it. On iPhone, **Suggest icon from photo** uses your
+configured server AI. Review the recommendation before applying it. The separate icon is the
+default. **Inside the QR (experimental)** uses high error correction and a small inset.
+Dense codes fall back to a separate icon. Scan a test sticker before using embedded icons
+on a batch. [QR error correction](https://www.qrcode.com/en/about/error_correction.html)
+
+In **Add furniture**, choose **Small-parts cabinet** for six columns and four rows. Give the
+cabinet its own code, such as `CAB01`. SheepKeep creates drawer places with position codes
+such as `CAB01-R01-C02`. For other sizes, use a custom grid template with drawer compartments
+and the pattern `{parent}-R{row:02}-C{col:02}`. The position code and printed SheepKeep identifier
+resolve to the same drawer record. Edit its contents or print a replacement sticker from that record
+to keep its inventory history.
 
 ## Offline registration, reprints and replacements
 

@@ -499,8 +499,8 @@ async function sourceOf(
       layout: b.layout,
       kindKey: b.kindKey,
       compartmentKindKey: b.compartmentKindKey,
-      compartmentName: null,
-      codePattern: null,
+      compartmentName: b.compartmentName ?? null,
+      codePattern: b.codePattern ?? null,
     };
   }
   const id = template.id.toLowerCase();

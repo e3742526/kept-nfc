@@ -34160,3 +34160,81 @@ msgstr "Longitud mínima de alimentación (mm)"
 #: src/components/labels/thermal/studio.tsx
 msgid "Reprint on selected stock"
 msgstr "Reimprimir en el soporte seleccionado"
+
+msgid "Adhesives"
+msgstr "Adhesivos"
+
+msgid "Automatic from category and contents"
+msgstr "Automático según la categoría y el contenido"
+
+msgid "Beside the QR"
+msgstr "Junto al código QR"
+
+msgid "Category icon"
+msgstr "Icono de categoría"
+
+msgid "Could not suggest a category icon. Check that server AI is available."
+msgstr "No se pudo sugerir un icono de categoría. Comprueba que la IA del servidor esté disponible."
+
+msgid "Drawer contents"
+msgstr "Contenido del cajón"
+
+msgid "Drill bits"
+msgstr "Brocas"
+
+msgid "Driver bits"
+msgstr "Puntas de destornillador"
+
+msgid "Hex bits"
+msgstr "Puntas hexagonales"
+
+msgid "Icon placement"
+msgstr "Posición del icono"
+
+msgid "Inside the QR (experimental)"
+msgstr "Dentro del código QR (experimental)"
+
+msgid "Label template"
+msgstr "Plantilla de etiqueta"
+
+msgid "Measuring"
+msgstr "Instrumentos de medición"
+
+msgid "Miscellaneous"
+msgstr "Varios"
+
+msgid "No category icon was suggested."
+msgstr "No se sugirió ningún icono de categoría."
+
+msgid "No icon"
+msgstr "Sin icono"
+
+msgid "Nuts and bolts"
+msgstr "Tuercas y pernos"
+
+msgid "Rotary discs"
+msgstr "Discos rotativos"
+
+msgid "Sends the photo to your configured server AI."
+msgstr "Envía la foto a la IA configurada en tu servidor."
+
+msgid "Small-parts cabinet"
+msgstr "Armario de piezas pequeñas"
+
+msgid "Small-parts drawer"
+msgstr "Cajón de piezas pequeñas"
+
+msgid "Standard inventory label"
+msgstr "Etiqueta de inventario estándar"
+
+msgid "Suggest icon from photo"
+msgstr "Sugerir un icono a partir de una foto"
+
+msgid "The category icon moved beside the QR because there is not enough room to embed it."
+msgstr "El icono de categoría se movió junto al código QR porque no cabe dentro."
+
+msgid "Use suggested icon: {0}"
+msgstr "Usar el icono sugerido: {0}"
+
+msgid "Washers"
+msgstr "Arandelas"
