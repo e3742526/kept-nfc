@@ -33625,3 +33625,59 @@ msgstr "Фототека"
 #: src/components/scan/session/session-screen.tsx
 msgid "Counts are off there"
 msgstr "Підрахунки там вимкнено"
+
+#: src/native/photo-details.tsx
+msgid "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+msgstr "ШІ зчитує модель, серійний номер і характеристики з предмета, його етикетки чи коробки. Перевірте пропозиції, перш ніж зберегти."
+
+#: src/native/photo-details.tsx
+msgid "Fill in from photos"
+msgstr "Заповнити з фото"
+
+#: src/native/photo-details.tsx
+msgid "Filled in. Check the fields, then save."
+msgstr "Заповнено. Перевірте поля, а потім збережіть."
+
+#: src/native/photo-details.tsx
+msgid "Not sure"
+msgstr "Не впевнено"
+
+#: src/native/photo-details.tsx
+msgid "Nothing new was found in these photos."
+msgstr "На цих фото нічого нового не знайдено."
+
+#: src/native/photo-details.tsx
+msgid "Photo kept with this item."
+msgstr "Фото збережено з цим предметом."
+
+#: src/native/photo-details.tsx
+msgid "Photos to read"
+msgstr "Фото для зчитування"
+
+#: src/native/photo-details.tsx
+msgid "Read selected photos"
+msgstr "Зчитати вибрані фото"
+
+#: src/native/photo-details.tsx
+msgid "Reading the photos…"
+msgstr "Зчитування фото…"
+
+#: src/native/photo-details.tsx
+msgid "Replaces: {current}"
+msgstr "Замінить: {current}"
+
+#: src/native/photo-details.tsx
+msgid "Specs"
+msgstr "Характеристики"
+
+#: src/native/photo-details.tsx
+msgid "Suggestions"
+msgstr "Пропозиції"
+
+#: src/native/photo-details.tsx
+msgid "Take a photo to read"
+msgstr "Зробити фото для зчитування"
+
+#: src/native/photo-details.tsx
+msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
+msgstr "{0, plural, one {Заповнити # поле} few {Заповнити # поля} many {Заповнити # полів} other {Заповнити # поля}}"

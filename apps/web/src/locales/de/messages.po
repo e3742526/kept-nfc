@@ -33625,3 +33625,59 @@ msgstr "Fotomediathek"
 #: src/components/scan/session/session-screen.tsx
 msgid "Counts are off there"
 msgstr "Zählungen sind dort aus"
+
+#: src/native/photo-details.tsx
+msgid "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+msgstr "Die KI liest Modell, Seriennummer und technische Daten vom Gegenstand, seinem Etikett oder seiner Verpackung. Prüfe die Vorschläge, bevor du speicherst."
+
+#: src/native/photo-details.tsx
+msgid "Fill in from photos"
+msgstr "Aus Fotos ausfüllen"
+
+#: src/native/photo-details.tsx
+msgid "Filled in. Check the fields, then save."
+msgstr "Ausgefüllt. Prüfe die Felder und speichere dann."
+
+#: src/native/photo-details.tsx
+msgid "Not sure"
+msgstr "Unsicher"
+
+#: src/native/photo-details.tsx
+msgid "Nothing new was found in these photos."
+msgstr "In diesen Fotos wurde nichts Neues gefunden."
+
+#: src/native/photo-details.tsx
+msgid "Photo kept with this item."
+msgstr "Foto bei diesem Gegenstand gespeichert."
+
+#: src/native/photo-details.tsx
+msgid "Photos to read"
+msgstr "Zu lesende Fotos"
+
+#: src/native/photo-details.tsx
+msgid "Read selected photos"
+msgstr "Ausgewählte Fotos lesen"
+
+#: src/native/photo-details.tsx
+msgid "Reading the photos…"
+msgstr "Fotos werden gelesen…"
+
+#: src/native/photo-details.tsx
+msgid "Replaces: {current}"
+msgstr "Ersetzt: {current}"
+
+#: src/native/photo-details.tsx
+msgid "Specs"
+msgstr "Technische Daten"
+
+#: src/native/photo-details.tsx
+msgid "Suggestions"
+msgstr "Vorschläge"
+
+#: src/native/photo-details.tsx
+msgid "Take a photo to read"
+msgstr "Foto zum Lesen aufnehmen"
+
+#: src/native/photo-details.tsx
+msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
+msgstr "{0, plural, one {# Feld ausfüllen} other {# Felder ausfüllen}}"

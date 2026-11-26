@@ -33625,3 +33625,59 @@ msgstr "مكتبة الصور"
 #: src/components/scan/session/session-screen.tsx
 msgid "Counts are off there"
 msgstr "العدّ متوقف هناك"
+
+#: src/native/photo-details.tsx
+msgid "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+msgstr "يقرأ الذكاء الاصطناعي الطراز والرقم التسلسلي والمواصفات من العنصر نفسه أو من ملصقه أو علبته. راجع ما يقترحه قبل الحفظ."
+
+#: src/native/photo-details.tsx
+msgid "Fill in from photos"
+msgstr "املأ من الصور"
+
+#: src/native/photo-details.tsx
+msgid "Filled in. Check the fields, then save."
+msgstr "تمّت التعبئة. راجع الحقول ثم احفظ."
+
+#: src/native/photo-details.tsx
+msgid "Not sure"
+msgstr "غير مؤكد"
+
+#: src/native/photo-details.tsx
+msgid "Nothing new was found in these photos."
+msgstr "لم نجد شيئًا جديدًا في هذه الصور."
+
+#: src/native/photo-details.tsx
+msgid "Photo kept with this item."
+msgstr "حُفظت الصورة مع هذا العنصر."
+
+#: src/native/photo-details.tsx
+msgid "Photos to read"
+msgstr "الصور المراد قراءتها"
+
+#: src/native/photo-details.tsx
+msgid "Read selected photos"
+msgstr "اقرأ الصور المحددة"
+
+#: src/native/photo-details.tsx
+msgid "Reading the photos…"
+msgstr "جارٍ قراءة الصور…"
+
+#: src/native/photo-details.tsx
+msgid "Replaces: {current}"
+msgstr "بدلًا من: {current}"
+
+#: src/native/photo-details.tsx
+msgid "Specs"
+msgstr "المواصفات"
+
+#: src/native/photo-details.tsx
+msgid "Suggestions"
+msgstr "الاقتراحات"
+
+#: src/native/photo-details.tsx
+msgid "Take a photo to read"
+msgstr "التقط صورة لقراءتها"
+
+#: src/native/photo-details.tsx
+msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
+msgstr "{0, plural, one {املأ حقلًا واحدًا} two {املأ حقلين} few {املأ # حقول} many {املأ # حقلًا} other {املأ # حقل}}"

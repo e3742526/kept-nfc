@@ -17,6 +17,7 @@ import {
   type ExtractionMode,
   RoomMerge,
   ServiceInvoiceExtraction,
+  ThingDetailsExtraction,
   ThingManyExtraction,
 } from '@kept/shared';
 import type { JSONSchema7 } from 'ai';
@@ -158,6 +159,20 @@ export function thingManyWire(): JSONSchema7 {
   if (!s) {
     s = simplify(
       z.toJSONSchema(ThingManyExtraction, { target: 'draft-07', io: 'output' }),
+    ) as JSONSchema7;
+    cache.set(id, s);
+  }
+  return s;
+}
+
+/** THING read for its details while a person edits it (photo-details.ts): one object with a
+ * barcode and specs too, sent under THING's name (`kept_thing`), as the ledger task is THING's. */
+export function thingDetailsWire(): JSONSchema7 {
+  const id = 'thing-details:simple';
+  let s = cache.get(id);
+  if (!s) {
+    s = simplify(
+      z.toJSONSchema(ThingDetailsExtraction, { target: 'draft-07', io: 'output' }),
     ) as JSONSchema7;
     cache.set(id, s);
   }

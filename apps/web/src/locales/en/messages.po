@@ -33625,3 +33625,59 @@ msgstr "Photo library"
 #: src/components/scan/session/session-screen.tsx
 msgid "Counts are off there"
 msgstr "Counts are off there"
+
+#: src/native/photo-details.tsx
+msgid "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+msgstr "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+
+#: src/native/photo-details.tsx
+msgid "Fill in from photos"
+msgstr "Fill in from photos"
+
+#: src/native/photo-details.tsx
+msgid "Filled in. Check the fields, then save."
+msgstr "Filled in. Check the fields, then save."
+
+#: src/native/photo-details.tsx
+msgid "Not sure"
+msgstr "Not sure"
+
+#: src/native/photo-details.tsx
+msgid "Nothing new was found in these photos."
+msgstr "Nothing new was found in these photos."
+
+#: src/native/photo-details.tsx
+msgid "Photo kept with this item."
+msgstr "Photo kept with this item."
+
+#: src/native/photo-details.tsx
+msgid "Photos to read"
+msgstr "Photos to read"
+
+#: src/native/photo-details.tsx
+msgid "Read selected photos"
+msgstr "Read selected photos"
+
+#: src/native/photo-details.tsx
+msgid "Reading the photos…"
+msgstr "Reading the photos…"
+
+#: src/native/photo-details.tsx
+msgid "Replaces: {current}"
+msgstr "Replaces: {current}"
+
+#: src/native/photo-details.tsx
+msgid "Specs"
+msgstr "Specs"
+
+#: src/native/photo-details.tsx
+msgid "Suggestions"
+msgstr "Suggestions"
+
+#: src/native/photo-details.tsx
+msgid "Take a photo to read"
+msgstr "Take a photo to read"
+
+#: src/native/photo-details.tsx
+msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
+msgstr "{0, plural, one {Fill in # field} other {Fill in # fields}}"

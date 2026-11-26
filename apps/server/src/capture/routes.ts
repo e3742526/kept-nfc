@@ -3,6 +3,7 @@ import { FILE_CLASSES } from '@kept/shared';
 import type { FastifyRequest } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { registerPhotoDetails } from '../extraction/photo-details.js';
 import { declaredLength } from '../files/upload.js';
 import type { KeptApp } from '../http/app.js';
 import { paginate, paginationQuery } from '../http/conventions.js';
@@ -86,6 +87,7 @@ export async function captureRoutes(app: KeptApp, deps: InventoryDeps): Promise<
   const { pools } = deps;
   registerCaptureUndo();
   registerPhotoProposals(app, deps);
+  registerPhotoDetails(app, deps);
   const need = (): FileStorage => {
     if (!deps.files) throw new AppError('internal', 503, 'File storage is not configured.');
     return deps.files;

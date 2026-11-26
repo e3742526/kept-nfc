@@ -33625,3 +33625,59 @@ msgstr "Thư viện ảnh"
 #: src/components/scan/session/session-screen.tsx
 msgid "Counts are off there"
 msgstr "Kiểm kê đang tắt ở đó"
+
+#: src/native/photo-details.tsx
+msgid "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+msgstr "AI đọc mẫu mã, số sê-ri và thông số từ món đồ, nhãn hoặc hộp của nó. Hãy kiểm tra gợi ý trước khi lưu."
+
+#: src/native/photo-details.tsx
+msgid "Fill in from photos"
+msgstr "Điền từ ảnh"
+
+#: src/native/photo-details.tsx
+msgid "Filled in. Check the fields, then save."
+msgstr "Đã điền. Kiểm tra các trường rồi lưu."
+
+#: src/native/photo-details.tsx
+msgid "Not sure"
+msgstr "Không chắc"
+
+#: src/native/photo-details.tsx
+msgid "Nothing new was found in these photos."
+msgstr "Không tìm thấy gì mới trong các ảnh này."
+
+#: src/native/photo-details.tsx
+msgid "Photo kept with this item."
+msgstr "Đã lưu ảnh vào món đồ này."
+
+#: src/native/photo-details.tsx
+msgid "Photos to read"
+msgstr "Ảnh cần đọc"
+
+#: src/native/photo-details.tsx
+msgid "Read selected photos"
+msgstr "Đọc ảnh đã chọn"
+
+#: src/native/photo-details.tsx
+msgid "Reading the photos…"
+msgstr "Đang đọc ảnh…"
+
+#: src/native/photo-details.tsx
+msgid "Replaces: {current}"
+msgstr "Thay cho: {current}"
+
+#: src/native/photo-details.tsx
+msgid "Specs"
+msgstr "Thông số"
+
+#: src/native/photo-details.tsx
+msgid "Suggestions"
+msgstr "Gợi ý"
+
+#: src/native/photo-details.tsx
+msgid "Take a photo to read"
+msgstr "Chụp ảnh để đọc"
+
+#: src/native/photo-details.tsx
+msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
+msgstr "{0, plural, other {Điền # trường}}"

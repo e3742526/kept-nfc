@@ -33,7 +33,9 @@ import {
   isAuthRefusal,
   isRestoreEpochMismatch,
   ReplayError,
+  saveOnPhone,
 } from './outbox';
+import { PhotoDetailsPanel } from './photo-details';
 import { PlaceKindSelect } from './place-kind-select';
 import { rememberDestination } from './recent-destinations';
 
@@ -43,9 +45,11 @@ export function EditRecord({
   thing,
   place,
   mode,
+  online = true,
   onClose,
   onChanged,
   onMoved,
+  onPhotoQueued,
   onAuthError,
 }: {
   connection: Connection;
@@ -53,9 +57,12 @@ export function EditRecord({
   thing?: ThingView;
   place?: PlaceView;
   mode: 'edit' | 'move' | 'correct' | 'actions';
+  online?: boolean;
   onClose: () => void;
   onChanged: () => void;
   onMoved: (destination: Destination) => void;
+  /** A photo was saved on the phone for this thing (it syncs like any capture). */
+  onPhotoQueued?: () => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
   const { t } = useLingui();
@@ -309,6 +316,31 @@ export function EditRecord({
         >
           {values ? (
             <>
+              {thing && online && (
+                <PhotoDetailsPanel
+                  connection={connection}
+                  cache={cache}
+                  thing={thing}
+                  values={values}
+                  disabled={busy}
+                  onApply={setValues}
+                  onPhotoTaken={async (photo) => {
+                    await saveOnPhone(
+                      connection,
+                      {
+                        locationId: thing.locationId,
+                        attachToThingId: thing.id,
+                        name: thing.name ?? '',
+                        skipServerSuggestions: true,
+                      },
+                      [{ file: photo, role: 'photo' }],
+                      adapters,
+                    );
+                    onPhotoQueued?.();
+                  }}
+                  onAuthError={onAuthError}
+                />
+              )}
               {(
                 [
                   ['name', t`Name`, 200],

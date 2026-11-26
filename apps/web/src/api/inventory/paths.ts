@@ -124,6 +124,8 @@ export const inventoryPaths = {
   attachments: `${V1}/attachments`,
   attachment: (id: string) => `${V1}/attachments/${seg(id)}`,
   thingAttachments: (id: string) => `${V1}/things/${seg(id)}/attachments`,
+  /** POST {attachmentIds?, jpegs?} → PhotoDetails: what the thing's photos say, for the edit form. */
+  thingPhotoDetails: (id: string) => `${V1}/things/${seg(id)}/photo-details`,
   purchaseAttachments: (id: string) => `${V1}/purchases/${seg(id)}/attachments`,
   locationAttachments: (id: string) => `${V1}/locations/${seg(id)}/attachments`,
 
@@ -259,6 +261,7 @@ export const METHODS: Record<keyof typeof inventoryPaths, readonly Method[]> = {
   attachments: ['POST'],
   attachment: ['PATCH', 'DELETE'],
   thingAttachments: ['GET'],
+  thingPhotoDetails: ['POST'],
   purchaseAttachments: ['GET'],
   locationAttachments: ['GET'],
   thingSecret: ['PUT', 'DELETE'],

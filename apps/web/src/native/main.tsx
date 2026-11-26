@@ -1777,6 +1777,7 @@ export function Inventory({
           onInventoryChanged={() => {
             void refresh();
           }}
+          onPhotoQueued={savedLocally}
           onLabel={(kind, box) => pushScreen({ kind, box })}
           onAuthError={onSignOut}
         />

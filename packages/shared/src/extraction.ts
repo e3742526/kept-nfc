@@ -76,6 +76,45 @@ export const ThingManyExtraction = z.object({
 });
 export type ThingManyExtraction = z.infer<typeof ThingManyExtraction>;
 
+/** At most this many of a thing's photos are read for its details in one go. */
+export const PHOTO_DETAILS_MAX_PHOTOS = 4;
+/** THING read for its details while a person edits it: what its photos (a nameplate, a label,
+ * the box it came in) say, for the person to review into the form. Nothing is applied. Sent under
+ * THING's name and ledger task, so a THING answer (the mock's) parses too. */
+export const ThingDetailsExtraction = z.object({
+  objects: z
+    .array(
+      ThingObject.omit({ bbox: true, aliases: true, tags: true, quantity: true }).extend({
+        /** The digits under a UPC or EAN barcode, when one is in view. */
+        barcode: conf(
+          z
+            .string()
+            .trim()
+            .regex(/^\d{8,14}$/),
+        ).optional(),
+        /** What the model is: its key specifications, read or known for that exact model. */
+        specs: conf(text(600)).optional(),
+      }),
+    )
+    .max(1),
+});
+export type ThingDetailsExtraction = z.output<typeof ThingDetailsExtraction>;
+
+const detail = z.object({ value: z.string(), confidence: z.number().min(0).max(1) });
+/** POST /api/v1/things/:id/photo-details: suggestions for the edit form, each with how sure the
+ * model was. `type` is one of the account's types (or a built-in) the model's hint matched. */
+export const PhotoDetails = z.object({
+  name: detail.optional(),
+  brand: detail.optional(),
+  model: detail.optional(),
+  serial: detail.optional(),
+  barcode: detail.optional(),
+  colour: detail.optional(),
+  specs: detail.optional(),
+  type: detail.extend({ id: z.uuid() }).optional(),
+});
+export type PhotoDetails = z.infer<typeof PhotoDetails>;
+
 /** Every object a person would keep track of in a room photo: what it is to the room. `storage`
  * is furniture that holds things (a shelf, a cabinet, a wardrobe, a chest of drawers), which
  * becomes a place in the room; `furniture` is any other (a sofa, a bed, a table). */

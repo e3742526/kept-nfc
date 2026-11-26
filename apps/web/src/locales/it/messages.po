@@ -33625,3 +33625,59 @@ msgstr "Libreria foto"
 #: src/components/scan/session/session-screen.tsx
 msgid "Counts are off there"
 msgstr "I conteggi sono disattivati lì"
+
+#: src/native/photo-details.tsx
+msgid "AI reads the model, serial number and specifications from the item, its label or its box. Check what it suggests before you save."
+msgstr "L’IA legge modello, numero di serie e specifiche dall’oggetto, dalla sua etichetta o dalla scatola. Controlla i suggerimenti prima di salvare."
+
+#: src/native/photo-details.tsx
+msgid "Fill in from photos"
+msgstr "Compila dalle foto"
+
+#: src/native/photo-details.tsx
+msgid "Filled in. Check the fields, then save."
+msgstr "Compilato. Controlla i campi, poi salva."
+
+#: src/native/photo-details.tsx
+msgid "Not sure"
+msgstr "Incerto"
+
+#: src/native/photo-details.tsx
+msgid "Nothing new was found in these photos."
+msgstr "Nessuna novità in queste foto."
+
+#: src/native/photo-details.tsx
+msgid "Photo kept with this item."
+msgstr "Foto salvata con questo oggetto."
+
+#: src/native/photo-details.tsx
+msgid "Photos to read"
+msgstr "Foto da leggere"
+
+#: src/native/photo-details.tsx
+msgid "Read selected photos"
+msgstr "Leggi le foto selezionate"
+
+#: src/native/photo-details.tsx
+msgid "Reading the photos…"
+msgstr "Lettura delle foto…"
+
+#: src/native/photo-details.tsx
+msgid "Replaces: {current}"
+msgstr "Sostituisce: {current}"
+
+#: src/native/photo-details.tsx
+msgid "Specs"
+msgstr "Specifiche"
+
+#: src/native/photo-details.tsx
+msgid "Suggestions"
+msgstr "Suggerimenti"
+
+#: src/native/photo-details.tsx
+msgid "Take a photo to read"
+msgstr "Scatta una foto da leggere"
+
+#: src/native/photo-details.tsx
+msgid "{0, plural, one {Fill in # field} other {Fill in # fields}}"
+msgstr "{0, plural, one {Compila # campo} other {Compila # campi}}"

@@ -2732,6 +2732,106 @@ describe('KeptPhone mobile workflows', () => {
     );
   });
 
+  it('fills the edit form from the AI reading of photos, and keeps a photo taken for it', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const label: AttachmentView = {
+      id: 'nameplate-photo',
+      role: 'photo',
+      sort: 0,
+      name: 'Nameplate',
+      url: null,
+      subject: { thingId: env.boxId },
+      rowVersion: 1,
+      createdBy: { displayName: 'Ibrahim' },
+      file: null,
+    } as unknown as AttachmentView;
+    const photoDetails = vi.fn(async () => ({
+      model: { value: 'DCF887', confidence: 0.95 },
+      serial: { value: 'SN-77', confidence: 0.4 },
+      specs: { value: '20 V, brushless, 1/4 in hex chuck', confidence: 0.6 },
+    }));
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'unsupported' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({ name: '' })),
+      photoDetails,
+    };
+    const patches: unknown[] = [];
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    env.adapters.transport.request = async <T,>(
+      conn: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      if (path.startsWith(inventoryPaths.thingAttachments(env.boxId))) {
+        const archive = new URL(path, origin).searchParams.has('archivedPhotos');
+        return { items: archive ? [] : [label], next_cursor: null } as T;
+      }
+      if (path === inventoryPaths.thing(env.boxId) && options?.method === 'PATCH')
+        patches.push(options.body);
+      return request<T>(conn, path, options);
+    };
+    const save = vi.spyOn(env.adapters.outbox, 'save');
+    const user = userEvent.setup();
+    const { container } = env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    expect(screen.getByRole('heading', { name: 'Fill in from photos' })).toBeInTheDocument();
+    // The thing's own photo is chosen to be read; it can be left out.
+    const nameplate = await screen.findByRole('button', { name: 'Nameplate' });
+    expect(nameplate).toHaveAttribute('aria-pressed', 'true');
+
+    // A photo taken now is kept with the item and read with the chosen one.
+    const picker = container.querySelector<HTMLInputElement>('input[capture="environment"]');
+    if (!picker) throw new Error('Expected a rear-camera input on the edit form');
+    const taken = new File(['photo'], 'nameplate.jpg', { type: 'image/jpeg' });
+    await user.upload(picker, taken);
+    expect(await screen.findByRole('button', { name: /Fill in 2 fields/ })).toBeEnabled();
+    expect(photoDetails).toHaveBeenCalledWith(expect.anything(), env.boxId, {
+      attachmentIds: ['nameplate-photo'],
+      photo: taken,
+    });
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(save.mock.calls[0]?.[1].payload ?? '{}')).toMatchObject({
+      attachToThingId: env.boxId,
+      skipServerSuggestions: true,
+    });
+
+    // An unsure serial is shown but not ticked; the model and the specs are.
+    const suggestions = within(screen.getByRole('list', { name: 'Suggestions' }));
+    expect(
+      suggestions.getByRole('button', { name: /Serial number.*SN-77.*Not sure/ }),
+    ).toHaveAttribute('aria-pressed', 'false');
+    expect(suggestions.getByRole('button', { name: /Model.*DCF887/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(screen.getByRole('button', { name: /Fill in 2 fields/ }));
+    expect(screen.getByRole('textbox', { name: 'Model' })).toHaveValue('DCF887');
+    expect(screen.getByRole('textbox', { name: 'Serial number' })).toHaveValue('');
+    expect(screen.getByText('Filled in. Check the fields, then save.')).toBeInTheDocument();
+
+    // Nothing is saved until the person saves the form.
+    expect(patches).toEqual([]);
+    await user.click(screen.getByRole('button', { name: /^Save$/ }));
+    await waitFor(() => expect(patches).toHaveLength(1));
+    expect(patches[0]).toMatchObject({
+      model: 'DCF887',
+      notes: expect.stringContaining('Specs: 20 V, brushless, 1/4 in hex chuck'),
+    });
+    expect(patches[0]).not.toHaveProperty('serial');
+  });
+
   it('edits a bin in place and shows the last known location and photo history', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({

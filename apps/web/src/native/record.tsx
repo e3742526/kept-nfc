@@ -258,6 +258,7 @@ export function RecordScreen({
   onLabel,
   onCache,
   onInventoryChanged,
+  onPhotoQueued,
   onAuthError,
 }: {
   connection: Connection;
@@ -275,6 +276,8 @@ export function RecordScreen({
   onLabel: (mode: 'find' | 'enroll', box: OpenBox) => void;
   onCache: (detail: RecordDetail) => void;
   onInventoryChanged: () => void;
+  /** A photo was saved on the phone for this record (the AI fill-in's camera photo). */
+  onPhotoQueued?: () => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
   const { t } = useLingui();
@@ -1096,7 +1099,9 @@ export function RecordScreen({
               thing={thing}
               place={place}
               mode={editor}
+              online={online}
               onClose={() => setEditor(undefined)}
+              onPhotoQueued={onPhotoQueued}
               onChanged={changed}
               onMoved={(destination) => {
                 changed();

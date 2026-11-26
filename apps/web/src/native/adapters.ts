@@ -1,5 +1,7 @@
+import { PhotoDetails } from '@kept/shared';
 import { createContext, createElement, type ReactNode, useContext } from 'react';
 import { capturePaths } from '@/api/capture/paths';
+import { inventoryPaths } from '@/api/inventory/paths';
 import type { FileView } from '@/api/inventory/types';
 import { fromFile } from '@/camera/image';
 import {
@@ -134,6 +136,12 @@ export type PlatformAdapters = {
   visualSearch?: VisualSearchAdapter;
   captureAI?: {
     serverProposals?: (connection: Connection, locationId: string, file: File) => Promise<unknown>;
+    /** What a thing's photos (and one just taken) say about it, for its edit form. */
+    photoDetails?: (
+      connection: Connection,
+      thingId: string,
+      input: { attachmentIds: string[]; photo?: File },
+    ) => Promise<PhotoDetails>;
     status(connection: Connection): Promise<CaptureAIStatus>;
     connect(connection: Connection): Promise<{ account: string }>;
     disconnect(connection: Connection): Promise<{ revoked: boolean }>;
@@ -177,6 +185,14 @@ export const capacitorAdapters: PlatformAdapters = {
         method: 'POST',
         body: { locationId, jpeg: await photoJpeg(file) },
       });
+    },
+    async photoDetails(connection, thingId, { attachmentIds, photo }) {
+      return PhotoDetails.parse(
+        await nativeRequest(connection, inventoryPaths.thingPhotoDetails(thingId), {
+          method: 'POST',
+          body: { attachmentIds, jpegs: photo ? [await photoJpeg(photo)] : [] },
+        }),
+      );
     },
     status: ({ id }) => native.captureAIStatus({ context: id }),
     connect: ({ id }) => native.connectCaptureChatGPT({ context: id }),
