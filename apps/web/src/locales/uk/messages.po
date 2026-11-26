@@ -34256,3 +34256,21 @@ msgstr "Цю мітку ще не призначено. Відскануйте �
 #: src/native/main.tsx
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Цей код відповідає кільком речам. Відскануйте його на вкладці «Сканувати», щоб вибрати одну."
+
+msgid "Item details"
+msgstr "Деталі предмета"
+
+msgid "Add an NFC tag?"
+msgstr "Додати NFC-мітку?"
+
+msgid "Your item gets a QR code when it syncs. You can print it later."
+msgstr "Предмет отримає QR-код під час синхронізації. Його можна надрукувати пізніше."
+
+msgid "Continue to labels"
+msgstr "Перейти до етикеток"
+
+msgid "Save item"
+msgstr "Зберегти предмет"
+
+msgid "Skip NFC and save"
+msgstr "Зберегти без NFC-мітки"

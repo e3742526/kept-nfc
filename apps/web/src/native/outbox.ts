@@ -661,9 +661,7 @@ export async function replayCapture(
     void rememberDestination(connection, adapters, destinationId);
 }
 
-/** Marks a claimed label's NFC tag verified (its readback passed while the item was added), so
- * its label shows the NFC mark. Repeating it changes nothing. Being offline, signed out or a server
- * fault retries the capture; a refusal leaves the item as made, without the mark. */
+/** Marks a claimed label's NFC tag verified after readback. Registration can be retried safely. */
 async function registerWrittenTag(
   connection: Connection,
   adapters: PlatformAdapters,
@@ -676,6 +674,12 @@ async function registerWrittenTag(
       body: { locationId, label: code, kind: 'nfc' },
     });
   } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      // Older servers can return 401 for a missing route because native context is checked
+      // before the 404. Keep the registration pending if this session is still valid.
+      await adapters.transport.request(connection, paths.me);
+      throw new ReplayError('compatibility_hold');
+    }
     if (
       !(error instanceof ApiError) ||
       error.status === 0 ||

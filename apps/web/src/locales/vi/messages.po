@@ -34256,3 +34256,21 @@ msgstr "Nhãn này chưa được gán. Quét nhãn từ thẻ Quét để sử 
 #: src/native/main.tsx
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Mã đó khớp với nhiều món đồ. Quét mã từ thẻ Quét để chọn một món."
+
+msgid "Item details"
+msgstr "Chi tiết món đồ"
+
+msgid "Add an NFC tag?"
+msgstr "Thêm thẻ NFC?"
+
+msgid "Your item gets a QR code when it syncs. You can print it later."
+msgstr "Món đồ sẽ có mã QR khi đồng bộ. Bạn có thể in mã sau."
+
+msgid "Continue to labels"
+msgstr "Tiếp tục đến phần nhãn"
+
+msgid "Save item"
+msgstr "Lưu món đồ"
+
+msgid "Skip NFC and save"
+msgstr "Bỏ qua NFC và lưu"

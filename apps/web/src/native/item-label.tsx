@@ -41,6 +41,7 @@ export type ItemLabel = {
   code: string;
   locationId: string;
   source: 'scanned' | 'nfc' | 'qr';
+  qrShared?: boolean;
 };
 
 // These native results are only emitted before the write starts. Session invalidation and
@@ -68,6 +69,7 @@ export function ItemLabelPicker({
   online,
   value,
   onChange,
+  onBusyChange,
   blankTag,
   disabled = false,
 }: {
@@ -79,6 +81,7 @@ export function ItemLabelPicker({
   online: boolean;
   value: ItemLabel | undefined;
   onChange: (label: ItemLabel | undefined) => void;
+  onBusyChange: (busy: boolean) => void;
   /** A blank NFC tag already read (on Scan): offered for writing straight away. */
   blankTag?: TagReading;
   disabled?: boolean;
@@ -88,6 +91,8 @@ export function ItemLabelPicker({
   const errorText = useErrorText();
   const nfcStatus = useNfcStatusText();
   const https = connection.origin.startsWith('https://');
+  const canWriteNfc = online && https;
+  const base = useLabelBase(connection);
   // A blank tag read on Scan is already inspected: its code is reserved when it is written.
   const offerBlank = !value && !!blankTag?.fingerprint && blankTag.writable !== false;
   const [open, setOpen] = useState(!!value || offerBlank);
@@ -100,7 +105,11 @@ export function ItemLabelPicker({
   const [existingOwner, setExistingOwner] = useState<string | null>(null);
   // The code reserved for a new label, kept so a cancelled or repeated attempt doesn't make
   // another blank. The form remounts this picker after each save, which starts afresh.
-  const reserved = useRef<ReservedLabel | undefined>(undefined);
+  const reserved = useRef<ReservedLabel | undefined>(
+    value?.source === 'qr'
+      ? { code: value.code, locationId: value.locationId, url: labelUrl(base, value.code) }
+      : undefined,
+  );
   // The Idempotency-Key of a reservation not yet answered: a retry after a lost answer gets the
   // same code rather than another blank. Per location, as the key's request names one.
   const reserving = useRef<{ key: string; locationId: string } | undefined>(undefined);
@@ -108,8 +117,8 @@ export function ItemLabelPicker({
   const inFlight = useRef(false);
   // Codes the form holds (written, or chosen for the item) and codes put in front of a person
   // (a QR label shared): neither may be offered to another item.
-  const inUse = useRef(new Set<string>());
-  const shared = useRef(new Set<string>());
+  const inUse = useRef(new Set(value ? [value.code] : []));
+  const shared = useRef(new Set(value?.qrShared ? [value.code] : []));
   const adaptersRef = useRef(adapters);
   adaptersRef.current = adapters;
   const connectionRef = useRef(connection);
@@ -125,6 +134,7 @@ export function ItemLabelPicker({
     live.current = true;
     return () => {
       live.current = false;
+      if (inFlight.current) onBusyChange(false);
       void adapters.nfc.cancelTag().catch(() => {});
       // A code reserved but never written, shown or chosen goes back on the shelf, so a
       // cancelled attempt does not leave an unclaimed blank behind for good.
@@ -138,12 +148,13 @@ export function ItemLabelPicker({
         );
       }
     };
-  }, [adapters]);
+  }, [adapters, onBusyChange]);
 
   async function run(operation: () => Promise<void>) {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
+    onBusyChange(true);
     setStatus('');
     try {
       await operation();
@@ -151,7 +162,10 @@ export function ItemLabelPicker({
       if (live.current) setStatus(errorText(error));
     } finally {
       inFlight.current = false;
-      if (live.current) setBusy(false);
+      if (live.current) {
+        setBusy(false);
+        onBusyChange(false);
+      }
     }
   }
 
@@ -244,18 +258,34 @@ export function ItemLabelPicker({
     // Release the camera before asking iOS to start its NFC reader.
     flushSync(() => setCamera(false));
     setInspection(undefined);
+    setExistingOwner(null);
     return run(async () => {
       const reading = await adapters.nfc.scanTag(connection, { mode: 'read', messages });
       if (!live.current) return;
-      if (reading.status !== 'read' || !reading.url) {
-        setStatus(
-          reading.status === 'blank'
-            ? t`This NFC tag is blank. Choose Write new NFC tag to give it a label.`
-            : nfcStatus(reading),
-        );
+      if (reading.status === 'blank' && canWriteNfc && reading.fingerprint && reading.writable) {
+        setInspection({ reading });
         return;
       }
-      take(await resolveLabel(connection, cache, reading.url, 'nfc', undefined, false, adapters));
+      if (reading.status !== 'read' || !reading.url) {
+        if (reading.status === 'blank' && reading.writable === false) {
+          setStatus(nfcStatus({ status: 'read_only' }));
+        } else if (reading.status === 'blank' && canWriteNfc) {
+          setStatus(t`This NFC tag is blank. Choose Write new NFC tag to give it a label.`);
+        } else {
+          setStatus(nfcStatus(reading));
+        }
+        return;
+      }
+      const result = await resolveLabel(
+        connection,
+        cache,
+        reading.url,
+        'nfc',
+        undefined,
+        false,
+        adapters,
+      );
+      if (live.current) take(result);
     });
   }
 
@@ -364,7 +394,12 @@ export function ItemLabelPicker({
     return run(async () => {
       const label = await reserve();
       if (!label || !live.current) return;
-      pick({ code: label.code, locationId, source: 'qr' });
+      pick({
+        code: label.code,
+        locationId,
+        source: 'qr',
+        qrShared: shared.current.has(label.code),
+      });
     });
   }
 
@@ -384,7 +419,6 @@ export function ItemLabelPicker({
     setStatus('');
   }
 
-  const base = useLabelBase(connection);
   const valueUrl = value ? labelUrl(base, value.code) : null;
   const locked = disabled || busy;
 
@@ -433,6 +467,7 @@ export function ItemLabelPicker({
                     isDisabled={locked}
                     onPress={() => {
                       shared.current.add(value.code);
+                      onChange({ ...value, qrShared: true });
                       void run(() =>
                         adapters.media.shareLabelPdf(connection, {
                           url: valueUrl,
@@ -460,12 +495,27 @@ export function ItemLabelPicker({
           </>
         ) : (
           <>
-            <p className="text-small text-ink-2">
-              <Trans>
-                Give a valuable item its own label, then scan the label to open the item.
-              </Trans>
-            </p>
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                size="small"
+                isDisabled={locked}
+                onPress={() => void scanNfc()}
+              >
+                <Nfc size={15} aria-hidden />
+                <Trans>Scan NFC tag</Trans>
+              </Button>
+              {canWriteNfc && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  isDisabled={locked}
+                  onPress={() => void inspectNewTag()}
+                >
+                  <Tag size={15} aria-hidden />
+                  <Trans>Write new NFC tag</Trans>
+                </Button>
+              )}
               <Button
                 variant="secondary"
                 size="small"
@@ -479,26 +529,6 @@ export function ItemLabelPicker({
                 <Camera size={15} aria-hidden />
                 {camera ? <Trans>Close camera</Trans> : <Trans>Scan QR label</Trans>}
               </Button>
-              <Button
-                variant="secondary"
-                size="small"
-                isDisabled={locked}
-                onPress={() => void scanNfc()}
-              >
-                <Nfc size={15} aria-hidden />
-                <Trans>Scan NFC tag</Trans>
-              </Button>
-              {online && https && (
-                <Button
-                  variant="secondary"
-                  size="small"
-                  isDisabled={locked}
-                  onPress={() => void inspectNewTag()}
-                >
-                  <Tag size={15} aria-hidden />
-                  <Trans>Write new NFC tag</Trans>
-                </Button>
-              )}
               {online && (
                 <Button
                   variant="secondary"
@@ -516,7 +546,7 @@ export function ItemLabelPicker({
                 <Trans>Connect to make a new label. You can still scan a blank label.</Trans>
               </p>
             )}
-            {offerBlank && !https && (
+            {!https && (
               <p className="text-small text-ink-2">
                 <Trans>Connect to your SheepKeep server over HTTPS to enroll NFC tags.</Trans>
               </p>
@@ -526,7 +556,7 @@ export function ItemLabelPicker({
                 <ScannerView detect={appDetect()} paused={busy} onRead={readCamera} />
               </div>
             )}
-            {inspection && (
+            {inspection && canWriteNfc && (
               <div className="grid gap-3 rounded-xl border border-line bg-sunken p-4">
                 {inspection.reading.occupied ? (
                   <p>

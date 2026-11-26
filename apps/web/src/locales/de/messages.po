@@ -34256,3 +34256,21 @@ msgstr "Dieses Etikett wurde noch nicht zugewiesen. Scanne es im Tab „Scannen�
 #: src/native/main.tsx
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Dieser Code passt zu mehreren Gegenständen. Scanne ihn im Tab „Scannen“, um einen auszuwählen."
+
+msgid "Item details"
+msgstr "Artikeldetails"
+
+msgid "Add an NFC tag?"
+msgstr "NFC-Tag hinzufügen?"
+
+msgid "Your item gets a QR code when it syncs. You can print it later."
+msgstr "Beim Synchronisieren erhält dein Artikel einen QR-Code. Du kannst ihn später drucken."
+
+msgid "Continue to labels"
+msgstr "Weiter zu den Etiketten"
+
+msgid "Save item"
+msgstr "Artikel speichern"
+
+msgid "Skip NFC and save"
+msgstr "Ohne NFC-Tag speichern"

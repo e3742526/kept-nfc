@@ -4,6 +4,7 @@ import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from '
 import {
   type ReactNode,
   type Ref,
+  useCallback,
   useEffect,
   useEffectEvent,
   useImperativeHandle,
@@ -39,6 +40,7 @@ import { type ItemLabel, ItemLabelPicker } from './item-label';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
+type AddStep = 'photos' | 'details' | 'label';
 
 /** Return the recorded path, with the location name when the screen has room for it. */
 function destinationLabel(cache: InventoryCache, destination: Destination, full = false): string {
@@ -71,6 +73,7 @@ export function CaptureForm({
   cache,
   initialName = '',
   initialPhoto,
+  skipPhotos = false,
   blankTag,
   suggested,
   pending = [],
@@ -93,7 +96,8 @@ export function CaptureForm({
   /** Description prefilled from a search that found nothing. */
   initialName?: string;
   initialPhoto?: File;
-  /** A blank NFC tag scanned on the way here: the label section offers to write it. */
+  skipPhotos?: boolean;
+  /** A blank NFC tag scanned on the way here: the label step offers to write it. */
   blankTag?: TagReading;
   /** Where the next item most likely goes (the box used last); the picker changes it. */
   suggested?: Destination;
@@ -120,11 +124,20 @@ export function CaptureForm({
     () => box ?? suggested ?? (cache && defaultDestination(cache)),
   );
   const [changingDestination, setChangingDestination] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   const locationPhoto = destination?.kind === 'location-photo';
   const photosOnly = destination?.kind === 'photos' || locationPhoto;
   const documentsOnly = destination?.kind === 'documents';
   const evidenceOnly = photosOnly || documentsOnly;
+  const [step, setStep] = useState<AddStep>(() =>
+    initialName || initialPhoto || blankTag || skipPhotos ? 'details' : 'photos',
+  );
+  const focusStepHeading = useCallback(
+    (heading: HTMLHeadingElement | null) => heading?.focus(),
+    [],
+  );
+  const [labelBusy, setLabelBusy] = useState(false);
+  const showDetails = !evidenceOnly && step === 'details';
+  const showLabels = !evidenceOnly && step === 'label';
   const [tags, setTags] = useState<string[]>([]);
   const [intent, setIntent] = useState<'record' | 'add'>('record');
   const [batchId] = useState(newId);
@@ -180,6 +193,11 @@ export function CaptureForm({
   function clearLabel() {
     setLabel(undefined);
     setLabelSession((n) => n + 1);
+  }
+
+  function goToStep(next: AddStep) {
+    setStatus('');
+    setStep(next);
   }
   const pendingById = new Map(pending.map((entry) => [entry.capture.id, entry]));
   const batchPendingCount = batchEntryIds.filter((id) => {
@@ -363,11 +381,9 @@ export function CaptureForm({
       setTags([]);
       setFiles([]);
       clearLabel();
+      setStep('photos');
       setStatus(t`Saved on device.`);
       onSave();
-      setTimeout(() =>
-        formRef.current?.querySelector<HTMLInputElement>('input[name=name]')?.focus(),
-      );
     } catch (error) {
       setStatus(
         error instanceof StorageFullError
@@ -387,13 +403,21 @@ export function CaptureForm({
         ? t`Add documents`
         : box && box.kind !== 'place'
           ? t`Adding to box`
-          : t`Capture inventory`;
+          : t`Add item`;
 
   return (
     <section className="grid gap-4">
       <ScreenHeader
         title={headerTitle}
         onBack={() => {
+          if (showLabels) {
+            goToStep('details');
+            return;
+          }
+          if (showDetails) {
+            goToStep('photos');
+            return;
+          }
           void canLeave().then((ok) => {
             if (ok) onClose();
           });
@@ -456,14 +480,23 @@ export function CaptureForm({
         </div>
       )}
       <form
-        ref={formRef}
         className="grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          void save();
+          if (showDetails && canSave) goToStep('label');
+          if ((evidenceOnly || showLabels) && !labelBusy) void save();
         }}
       >
-        {cache && !evidenceOnly && (
+        {!evidenceOnly && (
+          <h3 key={step} ref={focusStepHeading} tabIndex={-1} className="text-title font-semibold">
+            {step === 'photos'
+              ? t`Add photos`
+              : step === 'details'
+                ? t`Item details`
+                : t`Add an NFC tag?`}
+          </h3>
+        )}
+        {cache && showDetails && (
           <div className="grid gap-2">
             {destination && !changingDestination ? (
               <div className="kept-card kept-destination">
@@ -521,7 +554,7 @@ export function CaptureForm({
             )}
           </div>
         )}
-        {!evidenceOnly && (
+        {showDetails && (
           <TextField
             label={t`Description`}
             placeholder={t`Holiday decorations`}
@@ -531,58 +564,59 @@ export function CaptureForm({
             inputProps={{
               maxLength: 200,
               name: 'name',
-              autoFocus: !initialName,
-              enterKeyHint: 'done',
+              enterKeyHint: 'next',
             }}
           />
         )}
-        <div className="kept-media-bar">
-          {!documentsOnly && (
-            <>
-              <FileTrigger
-                acceptedFileTypes={['image/*']}
-                defaultCamera="environment"
-                onSelect={(list) => choose(list, 'photo')}
-              >
-                <Button
-                  variant="secondary"
-                  className="kept-media-btn"
-                  isDisabled={busy || (locationPhoto && files.length > 0)}
+        {!showLabels && (
+          <div className="kept-media-bar">
+            {!documentsOnly && (evidenceOnly || step === 'photos') && (
+              <>
+                <FileTrigger
+                  acceptedFileTypes={['image/*']}
+                  defaultCamera="environment"
+                  onSelect={(list) => choose(list, 'photo')}
                 >
-                  <Camera size={20} aria-hidden />
-                  <Trans>Take a photo</Trans>
+                  <Button
+                    variant="secondary"
+                    className="kept-media-btn"
+                    isDisabled={busy || (locationPhoto && files.length > 0)}
+                  >
+                    <Camera size={20} aria-hidden />
+                    <Trans>Take a photo</Trans>
+                  </Button>
+                </FileTrigger>
+                <FileTrigger
+                  acceptedFileTypes={['image/*']}
+                  allowsMultiple={!locationPhoto}
+                  onSelect={(list) => choose(list, 'photo')}
+                >
+                  <Button
+                    variant="secondary"
+                    className="kept-media-btn"
+                    isDisabled={busy || (locationPhoto && files.length > 0)}
+                  >
+                    <Images size={20} aria-hidden />
+                    {locationPhoto ? <Trans>Choose photo</Trans> : <Trans>Choose photos</Trans>}
+                  </Button>
+                </FileTrigger>
+              </>
+            )}
+            {!photosOnly && (evidenceOnly || showDetails) && (
+              <FileTrigger
+                acceptedFileTypes={['application/pdf', '.pdf']}
+                allowsMultiple
+                onSelect={(list) => choose(list, 'document')}
+              >
+                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                  <FileText size={20} aria-hidden />
+                  <Trans>Attach PDF</Trans>
                 </Button>
               </FileTrigger>
-              <FileTrigger
-                acceptedFileTypes={['image/*']}
-                allowsMultiple={!locationPhoto}
-                onSelect={(list) => choose(list, 'photo')}
-              >
-                <Button
-                  variant="secondary"
-                  className="kept-media-btn"
-                  isDisabled={busy || (locationPhoto && files.length > 0)}
-                >
-                  <Images size={20} aria-hidden />
-                  {locationPhoto ? <Trans>Choose photo</Trans> : <Trans>Choose photos</Trans>}
-                </Button>
-              </FileTrigger>
-            </>
-          )}
-          {!photosOnly && (
-            <FileTrigger
-              acceptedFileTypes={['application/pdf', '.pdf']}
-              allowsMultiple
-              onSelect={(list) => choose(list, 'document')}
-            >
-              <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
-                <FileText size={20} aria-hidden />
-                <Trans>Attach PDF</Trans>
-              </Button>
-            </FileTrigger>
-          )}
-        </div>
-        {files.length > 0 && (
+            )}
+          </div>
+        )}
+        {!showLabels && files.length > 0 && (
           <ul className="grid gap-2">
             {files.map(({ file, key, role, previewUrl }) => (
               <li
@@ -619,7 +653,7 @@ export function CaptureForm({
             ))}
           </ul>
         )}
-        {firstPhoto && (
+        {showDetails && firstPhoto && (
           <CaptureSuggestion
             key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
             connection={connection}
@@ -638,7 +672,7 @@ export function CaptureForm({
             disabled={busy || !photoPreferenceLoaded}
           />
         )}
-        {firstPhoto && onReview && (
+        {showDetails && firstPhoto && onReview && (
           <Button
             variant="secondary"
             isDisabled={busy || !destination}
@@ -647,7 +681,7 @@ export function CaptureForm({
             <Trans>Review multiple items</Trans>
           </Button>
         )}
-        {!evidenceOnly && (
+        {showDetails && (
           <Select
             label={t`Action`}
             selectedKey={intent}
@@ -661,7 +695,7 @@ export function CaptureForm({
             {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
           </Select>
         )}
-        {!evidenceOnly && account && (
+        {showDetails && account && (
           <CategoryPicker
             key={account}
             connection={connection}
@@ -674,7 +708,12 @@ export function CaptureForm({
             onChange={setTags}
           />
         )}
-        {!evidenceOnly && destination && captureLocation && captureLocation.role !== 'viewer' && (
+        {showLabels && (
+          <p className="text-small text-ink-2">
+            <Trans>Your item gets a QR code when it syncs. You can print it later.</Trans>
+          </p>
+        )}
+        {showLabels && destination && captureLocation && captureLocation.role !== 'viewer' && (
           <ItemLabelPicker
             key={`${labelSession}:${destination.locationId}`}
             connection={connection}
@@ -685,10 +724,11 @@ export function CaptureForm({
             value={claimCode ? label : undefined}
             blankTag={labelSession === 0 ? blankTag : undefined}
             onChange={setLabel}
+            onBusyChange={setLabelBusy}
             disabled={busy}
           />
         )}
-        {!evidenceOnly && (
+        {showDetails && (
           <details className="kept-details">
             <summary>
               <Trans>Details</Trans>
@@ -717,18 +757,30 @@ export function CaptureForm({
             </div>
           </details>
         )}
-        <Button type="submit" isPending={busy} isDisabled={!canSave}>
-          <Check size={18} aria-hidden />
-          {locationPhoto
-            ? t`Save location photo`
-            : photosOnly
-              ? t`Save photos`
-              : documentsOnly
-                ? t`Save documents`
-                : box && box.kind !== 'place'
-                  ? t`Save to box`
-                  : t`Save capture`}
-        </Button>
+        {!evidenceOnly && step === 'photos' && (
+          <Button onPress={() => goToStep('details')}>
+            {files.length ? <Trans>Continue</Trans> : <Trans>Add manually</Trans>}
+          </Button>
+        )}
+        {showDetails && (
+          <Button type="submit" isDisabled={!canSave || busy}>
+            <Trans>Continue to labels</Trans>
+          </Button>
+        )}
+        {(evidenceOnly || showLabels) && (
+          <Button type="submit" isPending={busy} isDisabled={!canSave || labelBusy}>
+            <Check size={18} aria-hidden />
+            {locationPhoto
+              ? t`Save location photo`
+              : photosOnly
+                ? t`Save photos`
+                : documentsOnly
+                  ? t`Save documents`
+                  : claimCode
+                    ? t`Save item`
+                    : t`Skip NFC and save`}
+          </Button>
+        )}
       </form>
       <p role="status" className="text-ink-2">
         {status}

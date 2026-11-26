@@ -34256,3 +34256,21 @@ msgstr "لم يُربط هذا الملصق بعد. امسحه من تبويب �
 #: src/native/main.tsx
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "يطابق هذا الرمز أكثر من عنصر. امسحه من تبويب «مسح» لاختيار واحد."
+
+msgid "Item details"
+msgstr "تفاصيل العنصر"
+
+msgid "Add an NFC tag?"
+msgstr "هل تريد إضافة وسم NFC؟"
+
+msgid "Your item gets a QR code when it syncs. You can print it later."
+msgstr "يحصل العنصر على رمز QR عند مزامنته. يمكنك طباعة الرمز لاحقًا."
+
+msgid "Continue to labels"
+msgstr "متابعة إلى الملصقات"
+
+msgid "Save item"
+msgstr "حفظ العنصر"
+
+msgid "Skip NFC and save"
+msgstr "التخطي والحفظ دون وسم NFC"

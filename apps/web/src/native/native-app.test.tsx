@@ -32,6 +32,7 @@ import {
   type TagReading,
 } from './bridge';
 import { KeptPhone } from './main';
+import { saveOnPhone } from './outbox';
 
 beforeAll(async () => {
   await activateLocale('en');
@@ -1028,6 +1029,21 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
   };
 }
 
+async function continueToItemDetails(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: /^(Add manually|Continue)$/ }));
+}
+
+async function saveNewItem(user: ReturnType<typeof userEvent.setup>) {
+  const next = screen.queryByRole('button', { name: 'Continue to labels' });
+  if (next) await user.click(next);
+  await user.click(screen.getByRole('button', { name: /^(Skip NFC and save|Save item)$/ }));
+}
+
+async function openItemLabelPicker(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
+  await user.click(screen.getByText('QR or NFC label'));
+}
+
 async function openSettings(user: ReturnType<typeof userEvent.setup>) {
   await user.click(
     within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
@@ -1116,6 +1132,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'USB cable');
     await user.click(screen.getByRole('button', { name: 'Change' }));
     await user.click(screen.getByRole('button', { name: 'Scan place label' }));
@@ -1136,7 +1153,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue('USB cable');
     await user.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.getByText('Home › Garage')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
     expect(syncCapture).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -1249,6 +1266,7 @@ describe('KeptPhone mobile workflows', () => {
       new File([new Uint8Array([1, 2, 3])], 'review.jpg', { type: 'image/jpeg' }),
       new File([new Uint8Array([4, 5, 6])], 'second.jpg', { type: 'image/jpeg' }),
     ]);
+    await continueToItemDetails(user);
     await user.click(await screen.findByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
     await user.click(screen.getByRole('button', { name: 'Suggest items' }));
@@ -1357,6 +1375,7 @@ describe('KeptPhone mobile workflows', () => {
     );
     if (!picker) throw new Error('Photo picker is missing');
     await user.upload(picker, new File(['photo'], 'manual.jpg', { type: 'image/jpeg' }));
+    await continueToItemDetails(user);
     for (let attempt = 0; attempt < 2; attempt++) {
       await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
       expect(await screen.findByText('Could not suggest items from this photo.')).toBeVisible();
@@ -1367,7 +1386,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.queryByDisplayValue('Late drill')).toBeNull();
     expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(false);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Manual tools');
-    await user.click(screen.getByRole('button', { name: /^Save (capture|to box)$/ }));
+    await saveNewItem(user);
     await waitFor(() => {
       const sync = request.mock.calls.find(([, path]) => path === capturePaths.syncOps);
       expect(sync?.[2]?.body).toMatchObject({
@@ -1415,7 +1434,6 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(
       within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
     );
-    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Holiday supplies');
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -1424,6 +1442,8 @@ describe('KeptPhone mobile workflows', () => {
       picker,
       new File([new Uint8Array([1, 2, 3])], 'review.jpg', { type: 'image/jpeg' }),
     );
+    await continueToItemDetails(user);
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Holiday supplies');
     await user.click(await screen.findByRole('button', { name: 'Suggest categories' }));
     expect(await screen.findByDisplayValue('Holiday supplies')).toBeVisible();
     expect(screen.getAllByRole('textbox', { name: 'Name' })).toHaveLength(1);
@@ -1673,6 +1693,7 @@ describe('KeptPhone mobile workflows', () => {
     );
     if (!picker) throw new Error('Photo picker is missing');
     await user.upload(picker, new File(['photo'], 'default.jpg', { type: 'image/jpeg' }));
+    await continueToItemDetails(user);
     const provider = await screen.findByRole('button', { name: /AI provider/ });
     expect(provider).toBeDisabled();
     await act(async () => finishReading());
@@ -1711,6 +1732,7 @@ describe('KeptPhone mobile workflows', () => {
     if (!picker) throw new Error('Expected a photo picker');
     const photo = new File(['image bytes'], 'cables.jpg', { type: 'image/jpeg' });
     await user.upload(picker, photo);
+    await continueToItemDetails(user);
     const description = screen.getByRole('textbox', { name: 'Description' });
     await user.type(description, 'My draft');
 
@@ -1735,7 +1757,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: 'Use this description' }));
     expect(description).toHaveValue('Assorted cables');
 
-    await user.click(screen.getByRole('button', { name: /^Save (capture|to box)$/ }));
+    await saveNewItem(user);
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(
         expect.anything(),
@@ -1871,10 +1893,10 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Scan' }));
     // The Add form opens with the tag ready to write; no code is reserved until it is written.
     expect(await screen.findByRole('textbox', { name: 'Description' })).toBeInTheDocument();
-    expect(await screen.findByText('This tag is blank and ready to write.')).toBeInTheDocument();
     expect(env.events.reservedLabelKeys).toHaveLength(0);
-
     await user.type(screen.getByLabelText('Description'), 'Tripod');
+    await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
+    expect(await screen.findByText('This tag is blank and ready to write.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Write and verify' }));
     expect(await screen.findByText(/NFC tag written and verified/)).toBeInTheDocument();
     expect(env.events.reservedLabelKeys).toHaveLength(1);
@@ -1884,7 +1906,7 @@ describe('KeptPhone mobile workflows', () => {
       fingerprint: 'fp-blank',
     });
 
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(
         expect.anything(),
@@ -1941,6 +1963,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await continueToItemDetails(user);
     await user.click(screen.getByRole('button', { name: 'Change' }));
     await user.click(screen.getByRole('button', { name: /Room or box/ }));
     await user.click(await screen.findByRole('option', { name: 'Attic' }));
@@ -1952,7 +1975,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.getByText('Home › Attic › Shelf 1 › Upper shelf')).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Winter gloves');
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: /Places$/ }));
@@ -2233,12 +2256,13 @@ describe('KeptPhone mobile workflows', () => {
     await user.upload(input, new File(['fixture photo'], 'shelf.jpg', { type: 'image/jpeg' }));
     await waitFor(async () => expect(await env.adapters.outbox.list(connection)).toHaveLength(3));
     await user.click(screen.getByRole('button', { name: 'Add here' }));
+    await continueToItemDetails(user);
     const captureName = screen.getByRole('textbox', { name: 'Description' });
     const captureForm = captureName.closest('form');
     if (!captureForm) throw new Error('Missing capture form');
     expect(within(captureForm).getByText(/ › Offline garage › Offline shelf$/)).toBeVisible();
     await user.type(captureName, 'USB cable');
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     await waitFor(async () => expect(await env.adapters.outbox.list(connection)).toHaveLength(4));
     const manifest = await env.adapters.outbox.list(connection);
     const parent = manifest[0]?.capture.id;
@@ -3149,6 +3173,68 @@ describe('KeptPhone mobile workflows', () => {
     expect(connect).toHaveBeenLastCalledWith(address);
   });
 
+  it.each([true, false])(
+    'checks whether the session is valid (%s) when NFC registration returns 401 after sign-in',
+    async (sessionValid) => {
+      const origin = 'https://kept.example.com';
+      const connection = {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      };
+      const env = createFakeEnvironment();
+      const locationId = env.rooms[0]?.locationId;
+      if (!locationId) throw new Error('Missing Home location');
+      const id = await saveOnPhone(
+        connection,
+        { locationId, name: 'Drill', claimCode: 'NFC234', claimNfcVerified: true },
+        [],
+        env.adapters,
+      );
+      const request = env.adapters.transport.request;
+      let supportsTagRegistration = false;
+      env.adapters.transport.request = async <T,>(
+        conn: Connection,
+        path: string,
+        options?: NativeRequestOptions,
+      ): Promise<T> => {
+        if (path !== capturePaths.labelTags) return request<T>(conn, path, options);
+        if (supportsTagRegistration) return { configured: true } as T;
+        if (!sessionValid) {
+          env.setMeHandler(() => {
+            throw new ApiError(401, 'unauthenticated', 'Session expired');
+          });
+        }
+        throw new ApiError(401, 'unauthenticated', 'Sign in required');
+      };
+      const user = userEvent.setup();
+      env.renderApp();
+      await user.type(await screen.findByLabelText('SheepKeep server address'), origin);
+      await user.click(screen.getByRole('button', { name: 'Sign in with Apple' }));
+
+      if (!sessionValid) {
+        expect(await screen.findByText(/Your session ended/)).toBeVisible();
+        expect(env.events.disconnected).toBe(1);
+        expect(await env.adapters.outbox.list(connection)).toMatchObject([{ capture: { id } }]);
+        return;
+      }
+
+      await waitFor(async () => {
+        expect(await env.adapters.outbox.list(connection)).toMatchObject([
+          { capture: { id }, failure: 'compatibility_hold' },
+        ]);
+      });
+      expect(env.events.disconnected).toBe(0);
+      expect(await screen.findByRole('button', { name: /Boxes$/ })).toBeVisible();
+
+      supportsTagRegistration = true;
+      await user.click(await screen.findByRole('button', { name: 'Retry sync' }));
+      await waitFor(async () => expect(await env.adapters.outbox.list(connection)).toEqual([]));
+      expect(env.completionsFor(connection.id)).toEqual({ [id]: 'synced' });
+    },
+  );
+
   it('previews ordinary pending originals from the outbox after relaunch', async () => {
     const connection: Connection = {
       id: 'https://kept.example.com|ibrahim|epoch-1',
@@ -3250,23 +3336,25 @@ describe('KeptPhone mobile workflows', () => {
     await screen.findByRole('button', { name: 'Add to this box' });
     await user.click(screen.getByRole('button', { name: 'Add to this box' }));
 
-    // Capture offline with photo + PDF.
+    // Start with a photo, then add details and a PDF while offline.
     env.setOnline(false);
+    const photo = new File(['jpegbytes'], 'ornaments.jpg', { type: 'image/jpeg' });
+    const photoInput = document.querySelector<HTMLInputElement>(
+      'input[accept="image/*"][multiple]',
+    );
+    if (!photoInput) throw new Error('Expected a photo input');
+    await user.upload(photoInput, photo);
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Holiday decorations');
     await user.type(screen.getByLabelText('Notes'), 'Glass baubles');
     await user.type(screen.getByLabelText('Quantity (optional)'), '2');
 
-    const photo = new File(['jpegbytes'], 'ornaments.jpg', { type: 'image/jpeg' });
     const pdf = new File(['%PDF-1.4'], 'packing-guide.pdf', { type: 'application/pdf' });
-    const fileInputs = document.querySelectorAll<HTMLInputElement>('input[type="file"]');
-    expect(fileInputs.length).toBe(3);
-    const photoInput = fileInputs.item(1);
-    const pdfInput = fileInputs.item(2);
-    if (!photoInput || !pdfInput) throw new Error('Expected photo and PDF file inputs');
-    await user.upload(photoInput, photo);
+    const pdfInput = document.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!pdfInput) throw new Error('Expected a PDF input');
     await user.upload(pdfInput, pdf);
 
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
     expect(screen.getByText('Entries in this batch: 1')).toBeInTheDocument();
 
@@ -3319,8 +3407,9 @@ describe('KeptPhone mobile workflows', () => {
     const tab = (name: string) =>
       within(screen.getByRole('navigation')).getByRole('button', { name });
     await user.click(tab('Add'));
+    await continueToItemDetails(user);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Cordless drill');
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
 
     await user.click(tab('Scan'));
@@ -3521,15 +3610,16 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
 
     env.setStorageFull(true);
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Tools');
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(
       await screen.findByText('Your iPhone storage is full. Free up space and try again.'),
     ).toBeInTheDocument();
 
     env.setStorageFull(false);
     env.setForceDrop('target_trashed');
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
@@ -3570,8 +3660,9 @@ describe('KeptPhone mobile workflows', () => {
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
     env.setOnline(false);
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Offline discard me');
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
     expect(await screen.findByText(/Saved on device: 1/)).toBeInTheDocument();
 
@@ -3749,8 +3840,9 @@ describe('KeptPhone mobile workflows', () => {
 
     // 1. Failed sync while form is open -> Needs attention: 1, never Synced or Saved on device.
     env.setForceDrop('target_trashed');
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Failed batch item');
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(await screen.findByText(/Needs attention: 1/)).toBeInTheDocument();
     expect(screen.queryByText(/Synced:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Saved on device:/)).not.toBeInTheDocument();
@@ -3759,13 +3851,13 @@ describe('KeptPhone mobile workflows', () => {
     // 2. Async queue disappearance without a `synced` completion never becomes Synced.
     env.setForceDrop(null);
     env.setOnline(false);
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Disappear offline item');
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(await screen.findByText(/Saved on device: 1/)).toBeInTheDocument();
 
     env.clearQueueWithoutCompletion(conn.id);
     env.setOnline(true);
-    await user.type(screen.getByLabelText('Description'), 'Verified item');
 
     // Delay attachment verification on the third entry to confirm Synced waits for verification.
     let resolveAttachments = () => {};
@@ -3785,7 +3877,9 @@ describe('KeptPhone mobile workflows', () => {
     const photoInput = fileInputs.item(1);
     if (!photoInput) throw new Error('Expected photo input');
     await user.upload(photoInput, photo);
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await continueToItemDetails(user);
+    await user.type(screen.getByLabelText('Description'), 'Verified item');
+    await saveNewItem(user);
 
     expect(screen.getByText('Entries in this batch: 3')).toBeInTheDocument();
     expect(screen.queryByText(/Synced:/)).not.toBeInTheDocument();
@@ -4010,11 +4104,12 @@ describe('KeptPhone mobile workflows', () => {
     const view = env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
-    await user.type(await screen.findByLabelText('Description'), 'Holiday decorations');
     const original = new File(['a photo'], 'holiday.jpg', { type: 'image/jpeg' });
     const fileInput = view.container.querySelector<HTMLInputElement>('input[type=file]');
     if (!fileInput) throw new Error('Expected a photograph input');
     await user.upload(fileInput, original);
+    await continueToItemDetails(user);
+    await user.type(screen.getByLabelText('Description'), 'Holiday decorations');
 
     const tabbar = screen.getByRole('navigation');
     await user.click(within(tabbar).getByRole('button', { name: 'Add' }));
@@ -4027,6 +4122,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByLabelText('Description')).toHaveValue('Holiday decorations');
     expect(screen.getByText(/holiday.jpg/)).toBeInTheDocument();
 
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
     dialog = await screen.findByRole('alertdialog', { name: 'Discard this draft?' });
     await user.click(within(dialog).getByRole('button', { name: 'Discard draft' }));
@@ -4099,6 +4195,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(manual);
     expect(await screen.findByLabelText('Description')).toHaveValue('');
     await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
 
     const picker = container.querySelector<HTMLInputElement>('input[capture="environment"]');
     if (!picker) throw new Error('Expected a rear-camera input on Home');
@@ -4115,6 +4212,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Review multiple items' }));
     await screen.findByRole('heading', { name: 'Photo review' });
     await user.click(screen.getByRole('button', { name: 'Back' }));
+    await continueToItemDetails(user);
     expect(await screen.findByLabelText('Description')).toHaveValue('');
     expect(screen.queryByText('camera.jpg')).not.toBeInTheDocument();
   });
@@ -4133,7 +4231,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(
       within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
     );
-    expect(await screen.findByLabelText('Description')).toBeInTheDocument();
+    await continueToItemDetails(user);
     const addBox = screen.getByRole('button', { name: 'Add box' });
     await waitFor(() => expect(addBox).toBeEnabled());
     await user.type(screen.getByLabelText('Description'), 'Keep this draft');
@@ -4148,7 +4246,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add box' })).toHaveAttribute('aria-pressed', 'true');
     await user.click(screen.getByRole('button', { name: 'Add item' }));
-    expect(await screen.findByLabelText('Description')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Add manually' })).toBeInTheDocument();
   });
 
   it('shows remaining places when the selected location is revoked', async () => {
@@ -4276,9 +4374,9 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(searchTab);
     expect(browseSearch).toHaveValue('ladder');
 
-    // The Capture tab opens the capture form with a back button.
+    // The Add tab opens the guided form with a back button.
     await user.click(within(tabbar).getByRole('button', { name: 'Add' }));
-    expect(await screen.findByLabelText('Description')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Add manually' })).toBeInTheDocument();
 
     // The More tab compartments settings, appearance, and secondary workflows.
     await user.click(within(tabbar).getByRole('button', { name: 'More' }));
@@ -4414,9 +4512,46 @@ describe('KeptPhone mobile workflows', () => {
     // The destination is a one-line summary; the full picker opens only on Change.
     expect(screen.getByRole('button', { name: 'Change' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Room or box/ })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+    await continueToItemDetails(user);
     expect(screen.getByLabelText('Description')).toHaveValue('');
+  });
+
+  it('guides a manual add without photos or NFC and makes its QR label available after sync', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    expect(screen.getByRole('button', { name: 'Take a photo' })).toBeVisible();
+    expect(screen.queryByLabelText('Description')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add manually' }));
+    expect(screen.getByRole('button', { name: 'Continue to labels' })).toBeDisabled();
+    await user.type(screen.getByLabelText('Description'), 'Spare charger');
+    await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
+    expect(screen.getByRole('heading', { name: 'Add an NFC tag?' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByLabelText('Description')).toHaveValue('Spare charger');
+    await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
+    await user.click(screen.getByRole('button', { name: 'Skip NFC and save' }));
+    expect(await screen.findByText('Synced: 1')).toBeVisible();
+    expect(scanTag).not.toHaveBeenCalled();
+    expect(env.events.reservedLabelKeys).toHaveLength(0);
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(await screen.findByRole('button', { name: 'Spare charger' }));
+    await user.click(await screen.findByRole('button', { name: 'QR and NFC label' }));
+    expect(await screen.findByRole('button', { name: 'Share QR label PDF' })).toBeVisible();
   });
 
   it('gives a new item a scanned blank label or a newly written NFC tag, claimed at sync', async () => {
@@ -4436,8 +4571,9 @@ describe('KeptPhone mobile workflows', () => {
     const boxes = await screen.findByRole('button', { name: '2 Boxes' });
     await waitFor(() => expect(boxes).toBeEnabled());
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Camera');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
 
     // A tag that already belongs to something is refused; a blank label of this location is taken.
     env.pushScan(
@@ -4451,7 +4587,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
     expect(await screen.findByText(/Scanned label\. It opens this item/)).toBeInTheDocument();
     expect(screen.getByText('BNK234')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(
         expect.anything(),
@@ -4471,33 +4607,34 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
     expect(screen.queryByText('BNK234')).not.toBeInTheDocument();
 
-    // A new NFC tag: a code is reserved, the tag inspected, then written and verified.
+    // Scanning a writable blank tag leads straight to writing without a second inspection.
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Lens');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     env.pushScan(
       {
-        status: 'inspected',
+        status: 'blank',
         fingerprint: 'fp-1',
         occupied: false,
         writable: true,
         capacity: 137,
-        required: 36,
       },
       { status: 'written' },
     );
-    await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
+    await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
     expect(await screen.findByText('This tag is blank and ready to write.')).toBeInTheDocument();
+    expect(env.events.reservedLabelKeys).toHaveLength(0);
     await user.click(screen.getByRole('button', { name: 'Write and verify' }));
     expect(await screen.findByText(/NFC tag written and verified/)).toBeInTheDocument();
     expect(
       scanTag.mock.calls.slice(-2).map(([, input]) => [input.mode, input.url, input.fingerprint]),
     ).toEqual([
-      ['inspect', `${origin}/l/RSV234`, undefined],
+      ['read', undefined, undefined],
       ['write', `${origin}/l/RSV234`, 'fp-1'],
     ]);
     expect(env.events.reservedLabelKeys).toHaveLength(1);
     expect(env.events.reservedLabelKeys[0]).toEqual(expect.any(String));
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     await waitFor(() =>
       expect(request).toHaveBeenCalledWith(
         expect.anything(),
@@ -4529,18 +4666,21 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Watch');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
     expect(await screen.findByText(/New QR label\. Share it to print/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Share QR label PDF' }));
     expect(env.events.sharedLabelPdfs).toEqual([{ url: `${origin}/l/RSV234`, name: 'Watch' }]);
-    // Removing it and asking again reuses the same reserved code.
+    // Returning from details and choosing the label again keeps the code already shared.
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
     await user.click(screen.getByRole('button', { name: 'Remove label' }));
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
     expect(await screen.findByText('RSV234')).toBeInTheDocument();
     expect(env.events.reservedLabelKeys).toHaveLength(1);
-    await user.click(screen.getByRole('button', { name: 'Save to box' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
 
     // An item that is not a box has its own label screen, opened from the item.
@@ -4567,19 +4707,25 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Ring');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
     expect(await screen.findByText(/New QR label\. Share it to print/)).toBeInTheDocument();
     expect(env.events.reservedLabelKeys).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
     await user.click(screen.getByRole('button', { name: 'Remove label' }));
 
     // Discarding the draft leaves the reserved code unused; the next form takes it back.
     await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Necklace');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
     expect(await screen.findByText('RSV234')).toBeInTheDocument();
     expect(env.events.reservedLabelKeys).toHaveLength(1);
@@ -4598,8 +4744,9 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Ring');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     env.pushScan(
       {
         status: 'inspected',
@@ -4614,11 +4761,14 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: 'Write and verify' }));
     await screen.findByText(/Writing was interrupted/);
     await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
 
     await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Ring');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     env.pushScan({ status: 'read', url: `${origin}/l/RSV234` });
     await user.click(screen.getByRole('button', { name: 'Scan NFC tag' }));
     await screen.findByText(/Scanned label\. It opens this item once the item syncs/);
@@ -4641,8 +4791,9 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await continueToItemDetails(user);
     await user.type(screen.getByLabelText('Description'), 'Ring');
-    await user.click(screen.getByText('QR or NFC label'));
+    await openItemLabelPicker(user);
     const inspected = {
       status: 'inspected',
       fingerprint: 'tag-contents',
@@ -4687,16 +4838,23 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
-    await user.click(screen.getByText('QR or NFC label'));
+    await continueToItemDetails(user);
+    await user.type(screen.getByLabelText('Description'), 'Ring');
+    await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
     await waitFor(() => expect(env.events.reservedLabelKeys).toHaveLength(1));
     await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
     await screen.findByRole('button', { name: 'Add to this box' });
     await act(async () => gate.resolve());
     expect(scan).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole('button', { name: 'Add to this box' }));
-    await user.click(screen.getByText('QR or NFC label'));
+    await continueToItemDetails(user);
+    await user.type(screen.getByLabelText('Description'), 'Ring');
+    await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
     expect(await screen.findByText('RSV234')).toBeInTheDocument();
     expect(env.events.reservedLabelKeys).toHaveLength(1);
@@ -4732,22 +4890,26 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
-    await user.type(screen.getByLabelText('Description'), 'Holiday supplies');
-    await user.click(screen.getByText('QR or NFC label'));
-    await user.click(screen.getByRole('button', { name: 'New QR label' }));
-    expect(await screen.findByText('RSV234')).toBeInTheDocument();
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
     if (!picker) throw new Error('Photo input is missing');
     await user.upload(picker, new File([new Uint8Array([1])], 'a.jpg', { type: 'image/jpeg' }));
+    await continueToItemDetails(user);
+    await user.type(screen.getByLabelText('Description'), 'Holiday supplies');
+    await openItemLabelPicker(user);
+    await user.click(screen.getByRole('button', { name: 'New QR label' }));
+    expect(await screen.findByText('RSV234')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
 
     // Declining keeps the draft, the photo and the label exactly as they were.
     await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
     await user.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(screen.queryAllByText('Photo review')).toHaveLength(0);
-    expect(screen.getByText('RSV234')).toBeInTheDocument();
     expect(screen.getByLabelText('Description')).toHaveValue('Holiday supplies');
+    await user.click(screen.getByRole('button', { name: 'Continue to labels' }));
+    expect(screen.getByText('RSV234')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
 
     // Confirming reviews both items without the label, which stays for the next item.
     await user.click(screen.getByRole('button', { name: 'Suggest items' }));
@@ -4769,9 +4931,10 @@ describe('KeptPhone mobile workflows', () => {
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Back' }));
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await continueToItemDetails(user);
     expect(await screen.findByText(/Winter Box/)).toBeInTheDocument();
     await user.type(screen.getByLabelText('Description'), 'Scarf');
-    await user.click(screen.getByRole('button', { name: 'Save capture' }));
+    await saveNewItem(user);
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
   });
 });

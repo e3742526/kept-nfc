@@ -34256,3 +34256,21 @@ msgstr "This label has not been assigned. Scan it from the Scan tab to use it."
 #: src/native/main.tsx
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "That code matches more than one item. Scan it from the Scan tab to choose one."
+
+msgid "Item details"
+msgstr "Item details"
+
+msgid "Add an NFC tag?"
+msgstr "Add an NFC tag?"
+
+msgid "Your item gets a QR code when it syncs. You can print it later."
+msgstr "Your item gets a QR code when it syncs. You can print it later."
+
+msgid "Continue to labels"
+msgstr "Continue to labels"
+
+msgid "Save item"
+msgstr "Save item"
+
+msgid "Skip NFC and save"
+msgstr "Skip NFC and save"
