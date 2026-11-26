@@ -344,7 +344,9 @@ export function thermalGeometry(
     };
     const base = intersect(inside, printable);
     const shifted = { ...base, x: base.x + dot(cal.offsetX), y: base.y + dot(cal.offsetY) };
-    const ink = intersect(intersect(shifted, cell), {
+    // Calibration can shift the design, but it cannot consume the cut clearance.
+    const usableCell = { x: x + pad, y: y + pad, w: cell.w - 2 * pad, h: cell.h - 2 * pad };
+    const ink = intersect(intersect(shifted, usableCell), {
       x: 0,
       y: 0,
       w: Math.min(dots.w, head.w),

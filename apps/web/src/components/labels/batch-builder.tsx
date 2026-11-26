@@ -177,7 +177,11 @@ export function BatchBuilder({
     },
     onSuccess: async ({ batch }) => {
       qc.setQueryData(captureKeys.labels.batch(batch.id), batch);
-      // Not the preview: it would post its dry run again for a builder that is closing.
+      // A return to the builder needs a fresh preview of the newly available reprint.
+      void qc.invalidateQueries({
+        queryKey: [...captureKeys.labels.all, 'preview'],
+        refetchType: 'none',
+      });
       void qc.invalidateQueries({
         queryKey: captureKeys.labels.all,
         predicate: (q) => q.queryKey[1] !== 'preview',

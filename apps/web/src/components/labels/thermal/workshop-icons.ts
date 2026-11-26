@@ -34,11 +34,17 @@ export function suggestWorkshopIcon(
   identifier: string,
   ...categoryAndContents: string[]
 ): WorkshopIcon {
-  const prefix = identifier.split('-')[0];
+  const prefix = identifier.split('-')[0]?.toUpperCase();
   const category = categoryAndContents[0]?.trim().toUpperCase();
+  const description = categoryAndContents
+    .join(' ')
+    .normalize('NFKD')
+    .replace(/\p{Mark}/gu, '')
+    .replace(/[\p{Pd}_]+/gu, ' ');
   return (
-    WORKSHOP_ICON_CODES.find((key) => key === prefix || key === category) ??
-    rules.find(([, matches]) => matches.test(categoryAndContents.join(' ')))?.[0] ??
+    WORKSHOP_ICON_CODES.find((key) => key === category) ??
+    WORKSHOP_ICON_CODES.find((key) => key === prefix) ??
+    rules.find(([, matches]) => matches.test(description))?.[0] ??
     'MSC'
   );
 }

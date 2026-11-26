@@ -55,8 +55,12 @@ export const Route = createFileRoute('/_print/labels/$batchId')({
 });
 
 function PrintLabelsPage() {
-  const { t } = useLingui();
   const { batchId } = Route.useParams();
+  return <PrintLabelBatch key={batchId} batchId={batchId} />;
+}
+
+function PrintLabelBatch({ batchId }: { batchId: string }) {
+  const { t } = useLingui();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const fmt = useFormat();
@@ -91,16 +95,17 @@ function PrintLabelsPage() {
   useEffect(() => {
     if (thermal || !search.print || !data || !encode || !ready || autoPrinted.current) return;
     autoPrinted.current = true;
-    void navigate({
-      to: '/labels/$batchId',
-      params: { batchId },
-      search: (prev) => ({ ...prev, print: undefined }),
-      replace: true,
-    });
+    const pathname = window.location.pathname;
     void (async () => {
+      await navigate({
+        to: '/labels/$batchId',
+        params: { batchId },
+        search: (prev) => ({ ...prev, print: undefined }),
+        replace: true,
+      });
       await document.fonts?.ready;
-      print();
-    })();
+      if (window.location.pathname === pathname) print();
+    })().catch(() => {});
   });
 
   // Where the share sheet takes PNGs, they're made ahead, so a press shares in its own turn.
@@ -248,6 +253,7 @@ function ThermalReprint({ batch, stock }: { batch: LabelBatch; stock: string }) 
       {me.data?.user.id && (
         <Suspense fallback={<LoadingRows />}>
           <ThermalStudio
+            key={me.data.user.id}
             owner={me.data.user.id}
             api={webPrintApi}
             source={source}

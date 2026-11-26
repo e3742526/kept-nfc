@@ -458,8 +458,10 @@ test('"Printed OK?" confirms the batch just printed, and printing the same unpri
   await expect(ask).toBeHidden();
   await expect(page).toHaveURL(new RegExp(`/labels/${id}$`));
 
+  // The dialog owns a separate history entry, removed asynchronously when it closes.
+  await page.waitForFunction(() => !window.history.state?.keptSheetId);
   // Not confirmed: "Label everything unprinted" there again offers the sheet already made.
-  await openBuilder(page, home, shelf, names.length);
+  await page.goBack();
   const offer = page.getByRole('region', {
     name: 'These labels are already on a sheet that isn’t confirmed printed',
   });
@@ -726,6 +728,93 @@ test('selects the small-parts drawer template and reprints the saved contents an
     await expect(job.getByRole('button', { name: 'Print', exact: true })).toBeEnabled();
     expect(await sticker.locator('text').allTextContents()).toEqual(lines);
     expect(await sticker.locator('path').last().getAttribute('d')).toBe(ink);
+
+    // Change the persisted status outside the live tab, so the output action itself must check.
+    await page.evaluate(async (identifier) => {
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('sheepkeep-thermal-printing');
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const write = database.transaction('jobs', 'readwrite');
+          write.oncomplete = () => resolve();
+          write.onabort = () => reject(write.error);
+          const jobs = write.objectStore('jobs');
+          const read = jobs.getAll();
+          read.onsuccess = () => {
+            const stored = read.result.find((job: { codes: string[] }) =>
+              job.codes.includes(identifier),
+            );
+            if (stored) jobs.put({ ...stored, registration: 'collision' });
+            else {
+              reject(new Error('Missing stored drawer job'));
+              write.abort();
+            }
+          };
+        });
+      } finally {
+        database.close();
+      }
+    }, lines[0] as string);
+    await job.getByRole('button', { name: 'Print', exact: true }).click();
+    await expect(job).toContainText('Series collision');
+    await expect(sticker).toHaveCount(0);
+    expect(await page.evaluate(() => (window as unknown as { __prints: number }).__prints)).toBe(0);
+  } finally {
+    await context.close();
+  }
+});
+
+test('recovers the drawer preview and returns to live contents after clearing a reprint override', async ({
+  browser,
+}) => {
+  const { context, page } = await person(browser);
+  try {
+    const home = await homeId(page);
+    const drawer = await send(page, `/api/v1/locations/${home}/places`, {
+      name: 'Drawer 8',
+      kindKey: 'drawer',
+      description: 'Hex bits',
+    });
+    let refused = false;
+    await page.route('**/api/v1/labels/batches', async (route) => {
+      const req = route.request();
+      if (!refused && req.method() === 'POST' && req.postDataJSON().dryRun) {
+        refused = true;
+        await route.fulfill({ status: 503, json: { error: 'unavailable' } });
+      } else await route.continue();
+    });
+    await page.goto(`/labels?loc=${home}&places=${drawer.id as string}&thermal=1`);
+    const prepare = page.getByRole('button', { name: 'Prepare labels', exact: true });
+    await expect(prepare).toBeDisabled();
+    await page.getByRole('button', { name: 'Try again', exact: true }).click({ timeout: 10_000 });
+    await expect(prepare).toBeEnabled();
+    await page.getByRole('button', { name: 'Label template' }).click();
+    await page.getByRole('option', { name: 'Small-parts drawer' }).click();
+    await page.getByRole('textbox', { name: 'Drawer contents' }).fill('Audit override');
+    await page.getByText('Save printer profile', { exact: true }).click();
+    const queue = page.getByLabel('System printer or queue name');
+    await queue.fill('Audit queue A');
+    const saved = page.waitForResponse(
+      (response) => response.url().endsWith('/api/v1/labels/batches') && response.status() === 201,
+    );
+    await prepare.click();
+    const { batch } = (await (await saved).json()) as { batch: { id: string } };
+    const job = page.getByRole('region', { name: 'Prepared print job' });
+    await expect(job).toContainText('Choose Audit queue A');
+    await queue.fill('Audit queue B');
+    await expect(job).toContainText('Choose Audit queue A');
+
+    await page.goto(`/labels/${batch.id}`);
+    const draft = page.getByRole('img', { name: 'Thermal label preview' }).first();
+    await expect(draft).toContainText(/Audit\s*override/);
+    await page.getByRole('textbox', { name: 'Drawer contents' }).fill('   ');
+    await expect(draft).toContainText(/Hex\s*bits/);
+    await expect(draft).not.toContainText(/Audit\s*override/);
+    await prepare.click();
+    await expect(job).toContainText(/Hex\s*bits/);
   } finally {
     await context.close();
   }

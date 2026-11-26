@@ -34238,3 +34238,9 @@ msgstr "Vorgeschlagenes Symbol verwenden: {0}"
 
 msgid "Washers"
 msgstr "Unterlegscheiben"
+
+msgid "Some optional text or icons do not fit. The QR and full identifier are preserved."
+msgstr "Für einige optionale Texte oder Symbole fehlt Platz. Der QR-Code und die vollständige Kennung bleiben erhalten."
+
+msgid "This stock uses the standard inventory label for this reprint."
+msgstr "Auf diesem Druckmaterial wird das Standard-Inventaretikett nachgedruckt."

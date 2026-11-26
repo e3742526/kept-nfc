@@ -167,7 +167,7 @@ function Builder({ source, thermal }: { source: BatchSource; thermal: boolean })
       {thermal && me.data?.user.id ? (
         <Suspense fallback={<LoadingRows />}>
           <ThermalStudio
-            key={JSON.stringify(source)}
+            key={JSON.stringify([me.data.user.id, source])}
             owner={me.data.user.id}
             source={source}
             api={webPrintApi}

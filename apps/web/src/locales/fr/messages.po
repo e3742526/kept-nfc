@@ -34238,3 +34238,9 @@ msgstr "Utiliser l’icône suggérée : {0}"
 
 msgid "Washers"
 msgstr "Rondelles"
+
+msgid "Some optional text or icons do not fit. The QR and full identifier are preserved."
+msgstr "Certains textes ou certaines icônes facultatives ne tiennent pas. Le code QR et l’identifiant complet sont conservés."
+
+msgid "This stock uses the standard inventory label for this reprint."
+msgstr "Sur ce support, la réimpression utilise l’étiquette d’inventaire standard."

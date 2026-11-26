@@ -274,10 +274,24 @@ export function labelsRoutes(state: MockState): MockRoute[] {
           }
           // A place with no code is given one, on a dry run too, as the server does.
           if (!pl.shortCode) pl.shortCode = allocateCode(codeTaken);
-          const position =
-            pl.kindKey === 'drawer'
-              ? pl.ownCodes?.find((code) => /-R[0-9]{2}-C[0-9]{2}$/.test(code))
-              : undefined;
+          const cabinet = inv().places.find(
+            (place) => place.id === pl.parentId && !place.deletedAt,
+          );
+          let position: string | undefined;
+          if (pl.kindKey === 'drawer' && pl.cell && cabinet?.layout) {
+            const codeEnd = (n: number) => String(n).padStart(2, '0');
+            const suffix = `-R${codeEnd(pl.cell.row)}-C${codeEnd(pl.cell.col)}`;
+            const positions = pl.ownCodes
+              ?.filter(
+                (code) =>
+                  /-R(0[1-9]|[1-9][0-9])-C(0[1-9]|[1-9][0-9])$/.test(code) &&
+                  cabinet.ownCodes?.includes(code.slice(0, -8)),
+              )
+              .sort();
+            position =
+              positions?.find((code) => code.endsWith(suffix)) ??
+              (positions?.length === 1 ? positions[0] : undefined);
+          }
           labels.push({
             code: pl.shortCode,
             url: urlOf(pl.shortCode),

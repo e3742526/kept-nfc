@@ -88,19 +88,28 @@ it('creates small-parts drawer positions independently of printable labels', asy
     drawerId,
     'Phillips bits',
   ]);
-  const draft = ok(
-    await call(t, '/api/v1/labels/batches', {
-      as: ibrahim,
-      body: {
-        locationId: home.id,
-        kind: 'places',
-        placeIds: [drawerId],
-        stock: 'thermal_50x20',
-        dryRun: true,
-      },
-    }),
-    200,
+  await own(
+    db,
+    `INSERT INTO public.legacy_codes (location_id, place_id, source, source_collection, code)
+                  VALUES ($1, $2, 'own', '', 'AAAA-R01-C02'),
+                         ($1, $2, 'own', '', 'CAB01-R00-C00')`,
+    [home.id, drawerId],
   );
+  const preview = async () =>
+    ok(
+      await call(t, '/api/v1/labels/batches', {
+        as: ibrahim,
+        body: {
+          locationId: home.id,
+          kind: 'places',
+          placeIds: [drawerId],
+          stock: 'thermal_50x20',
+          dryRun: true,
+        },
+      }),
+      200,
+    );
+  const draft = await preview();
   expect(draft.labels).toEqual([
     expect.objectContaining({
       targetId: drawerId,
@@ -109,6 +118,14 @@ it('creates small-parts drawer positions independently of printable labels', asy
       code: expect.stringMatching(/^[A-Z0-9]{6}$/),
     }),
   ]);
+  ok(
+    await call(t, `/api/v1/places/${cabinet.place.id}/turn`, {
+      as: ibrahim,
+      body: { direction: 'right', renumber: false },
+    }),
+    200,
+  );
+  expect((await preview()).labels).toEqual(draft.labels);
 });
 
 const auditIds = (res: LightMyRequestResponse) =>

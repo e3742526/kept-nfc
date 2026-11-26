@@ -143,12 +143,74 @@ describe('thermal vector pages', () => {
     );
   });
 
+  it('keeps the QR and full identifier when preferred type or icon size cannot fit', async () => {
+    const shortId = '2HX9RB';
+    const shortUrl = `https://labels.example.org/l/${shortId}`;
+    const doc = thermalDocument(
+      'thermal_50x20',
+      'single',
+      { ...profile, dpi: 300, scale: 75 },
+      { ...DEFAULT_THERMAL_OPTIONS, template: 'drawer', identifierPt: 72 },
+      [
+        {
+          identifier: shortId,
+          url: shortUrl,
+          name: 'Phillips bits',
+          nfc: 'verified',
+          uhf: true,
+          drawerPosition: 'CAB01-R01-C02',
+        },
+      ],
+      encode,
+    );
+    expect(doc.warnings?.omittedIcon).toBe(true);
+    expect(doc.pages[0]?.text[0]?.value).toBe(shortId);
+    expect((await rendered(doc, await thermalPdf(doc))).reads).toContainEqual(
+      expect.objectContaining({ text: shortUrl }),
+    );
+  });
+
+  it('reports standard-stock fallback and preserves the guarded QR on a drawer reprint', async () => {
+    const doc = thermalDocument(
+      'thermal_2x1in',
+      'single',
+      profile,
+      { ...DEFAULT_THERMAL_OPTIONS, template: 'drawer', payload: 'app' },
+      [label],
+      encode,
+    );
+    expect(doc.warnings?.standardTemplate).toBe(true);
+    const result = await rendered(doc, await thermalPdf(doc));
+    expect(result.text).toContain(identifier);
+    expect(result.reads).toContainEqual(
+      expect.objectContaining({ text: `${identifier}-010203040506` }),
+    );
+  });
+
   it('infers a workshop icon from a numbered prefix, category, or contents', () => {
     expect(suggestWorkshopIcon('HEX-A09Z-0001', 'Driver bits')).toBe('HEX');
     expect(suggestWorkshopIcon('XKXJQ4', 'Drill bits')).toBe('DRL');
     expect(suggestWorkshopIcon('XKXJQ4', '', 'Rotary cutoff wheels')).toBe('ROT');
     expect(suggestWorkshopIcon('XKXJQ4', '', 'Washers and bolts')).toBe('WSH');
     expect(suggestWorkshopIcon('XKXJQ4', '', 'Drawer 9')).toBe('MSC');
+    expect(suggestWorkshopIcon('TOL-A09Z-0001', 'HEX')).toBe('HEX');
+    expect(suggestWorkshopIcon('XKXJQ4', '', 'Drill‑bits')).toBe('DRL');
+  });
+
+  it('warns when the standard label font cannot render drawer contents', () => {
+    const doc = thermalDocument(
+      'thermal_50x20',
+      'single',
+      profile,
+      {
+        ...DEFAULT_THERMAL_OPTIONS,
+        template: 'drawer',
+      },
+      [{ ...label, drawerContents: '電気部品' }],
+      encode,
+    );
+    expect(doc.warnings?.omittedText).toBe(true);
+    expect(doc.pages[0]?.text[0]?.value).toBe(identifier);
   });
 
   it.each([

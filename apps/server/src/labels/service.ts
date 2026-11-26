@@ -243,9 +243,21 @@ const CELL_COLUMNS = `c.code::text AS code, ${aliasOfSql('c.code')} AS alias,
        t.id AS thing_id, p.id AS place_id,
        coalesce(t.name, p.name) AS name, t.barcode, t.model, tags.nfc, tags.uhf,
        ty.name AS category, CASE WHEN p.kind_key = 'drawer' THEN p.description END AS drawer_contents,
-       (SELECT min(lc.code) FROM public.legacy_codes lc
-         WHERE p.kind_key = 'drawer' AND lc.place_id = p.id AND lc.location_id = p.location_id
-           AND lc.source = 'own' AND lc.code ~ '-R[0-9]{2}-C[0-9]{2}$') AS drawer_position,
+       (SELECT coalesce(
+          min(lc.code) FILTER (
+            WHERE right(lc.code, 8) = concat('-R', lpad(p.cell->>'row', 2, '0'),
+                                             '-C', lpad(p.cell->>'col', 2, '0'))),
+          CASE WHEN count(*) = 1 THEN min(lc.code) END)
+          FROM public.legacy_codes lc
+         WHERE p.kind_key = 'drawer' AND p.cell IS NOT NULL AND cabinet.layout IS NOT NULL
+           AND lc.place_id = p.id AND lc.location_id = p.location_id
+           AND lc.source = 'own' AND lc.source_collection = ''
+           AND lc.code ~ '-R(0[1-9]|[1-9][0-9])-C(0[1-9]|[1-9][0-9])$'
+           AND EXISTS (
+             SELECT 1 FROM public.legacy_codes pc
+              WHERE pc.place_id = cabinet.id AND pc.location_id = cabinet.location_id
+                AND pc.source = 'own' AND pc.source_collection = ''
+                AND pc.code = left(lc.code, -8))) AS drawer_position,
        CASE WHEN t.id IS NOT NULL THEN t.place_path
             WHEN p.id IS NOT NULL THEN
               (SELECT string_agg(e->>'name', ' › ' ORDER BY x.n)
@@ -259,6 +271,7 @@ const CELL_JOINS = `
        LEFT JOIN public.things t ON t.id = s.thing_id AND t.deleted_at IS NULL
        LEFT JOIN public.types ty ON ty.id = t.type_id
        LEFT JOIN public.places p ON p.id = s.place_id AND p.deleted_at IS NULL
+       LEFT JOIN public.places cabinet ON cabinet.id = p.parent_id AND cabinet.deleted_at IS NULL
        LEFT JOIN LATERAL (
          SELECT bool_or(a.nfc_verified_at IS NOT NULL) AS nfc,
                 bool_or(a.uhf_epc IS NOT NULL) AS uhf

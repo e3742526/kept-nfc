@@ -1,4 +1,5 @@
 import {
+  canonicalJson,
   createDeviceLabelBatch,
   deviceLabelReference,
   type PrinterProfile,
@@ -47,6 +48,10 @@ class PrintStore extends Dexie {
       jobs: 'id, [owner+locationId], &[owner+prefix+series]',
       preferences: 'owner',
     });
+    // Leave this index non-unique so upgrading opens even if old profiles reserved the same code.
+    this.version(2).stores({
+      jobs: 'id, [owner+locationId], &[owner+prefix+series], [origin+prefix+series]',
+    });
   }
 }
 
@@ -59,11 +64,19 @@ export async function createPrintManifest(
   count: number,
 ): Promise<PrintManifest> {
   return store.transaction('rw', store.jobs, async () => {
-    const existing = await store.jobs
-      .where('[owner+prefix+series]')
-      .between([input.owner, input.prefix, Dexie.minKey], [input.owner, input.prefix, Dexie.maxKey])
-      .toArray();
-    const reserved = new Set(existing.map((row) => row.series));
+    const reserved = new Set<string>();
+    const readReserved = (index: string, scope: string) =>
+      store.jobs
+        .where(index)
+        .between([scope, input.prefix, Dexie.minKey], [scope, input.prefix, Dexie.maxKey])
+        .eachKey((key) => {
+          const series = Array.isArray(key) ? key[2] : undefined;
+          if (typeof series === 'string') reserved.add(series);
+        });
+    await Promise.all([
+      readReserved('[origin+prefix+series]', input.origin),
+      readReserved('[owner+prefix+series]', input.owner),
+    ]);
     const batch = createDeviceLabelBatch(input.prefix, count, (_prefix, series) =>
       reserved.has(series),
     );
@@ -105,17 +118,25 @@ export function manifestLabels(job: PrintManifest): ThermalContent[] {
   }));
 }
 
-export function batchLabels(batch: Pick<LabelBatch, 'labels' | 'thermal'>): ThermalContent[] {
-  return batch.labels.map((label) => ({
+export function batchLabels({
+  labels,
+  category,
+  contents,
+}: {
+  labels: readonly LabelBatch['labels'][number][];
+  category?: string | undefined;
+  contents?: string | undefined;
+}): ThermalContent[] {
+  return labels.map((label) => ({
     identifier: label.alias ?? label.code,
     url: label.url,
-    name: label.name ?? batch.thermal?.category,
-    writeIn: label.kind === 'blank' && label.alias?.startsWith('TMP-') && !batch.thermal?.category,
+    name: label.name || category,
+    writeIn: label.kind === 'blank' && label.alias?.startsWith('TMP-') && !category,
     location: label.path,
     barcode: label.barcode,
-    contents: batch.thermal?.contents || label.model,
-    category: label.category ?? batch.thermal?.category,
-    drawerContents: batch.thermal?.contents || label.drawerContents || label.name,
+    contents: contents || label.model,
+    category: label.category || category,
+    drawerContents: contents || label.drawerContents || label.name,
     drawerPosition: label.drawerPosition,
     nfc: label.nfc,
     uhf: label.uhf,
@@ -126,6 +147,11 @@ export function matchedRegistration(job: PrintManifest, batch: LabelBatch): bool
   const expected = manifestLabels(job);
   return (
     batch.id === job.id &&
+    batch.kind === 'blank' &&
+    batch.locationId === job.locationId &&
+    batch.stock === job.stock &&
+    batch.startCell === 1 &&
+    canonicalJson(batch.thermal) === canonicalJson(job.spec) &&
     batch.labels.length === expected.length &&
     batch.labels.every(
       (label, i) => label.alias === expected[i]?.identifier && label.url === expected[i]?.url,

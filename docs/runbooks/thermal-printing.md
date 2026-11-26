@@ -116,6 +116,9 @@ works on 50 × 20 mm, 2 × 2 in rolls, and 4 × 6 in rolls including the 2 × 2 
 layout. Put the contents in **Drawer contents** or enter them as the drawer place's
 description. The template prints that text prominently. The full label identifier, linked
 NFC/UHF marks, and drawer position appear below as space permits.
+An explicitly entered contents override is saved with a new batch. When reprinting, clear
+that override to use the inventory record's current description. Automatic icons follow
+the current contents and category, and a manually chosen icon is saved with the batch.
 
 The category icon is chosen from the label prefix, inventory category, and contents. Choose a
 specific icon or **No icon** to override it. On iPhone, **Suggest icon from photo** uses your
@@ -123,6 +126,8 @@ configured server AI. Review the recommendation before applying it. The separate
 default. **Inside the QR (experimental)** uses high error correction and a small inset.
 Dense codes fall back to a separate icon. Scan a test sticker before using embedded icons
 on a batch. [QR error correction](https://www.qrcode.com/en/about/error_correction.html)
+An icon can be omitted if calibration leaves too little space. Reprinting on a stock that
+doesn't support the drawer template uses the standard layout with the same identifier and QR payload.
 
 In **Add furniture**, choose **Small-parts cabinet** for six columns and four rows. Give the
 cabinet its own code, such as `CAB01`. SheepKeep creates drawer places with position codes

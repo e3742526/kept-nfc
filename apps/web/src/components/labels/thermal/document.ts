@@ -58,7 +58,13 @@ export const DEFAULT_THERMAL_OPTIONS: ThermalOptions = {
 
 type Text = { value: string; x: number; y: number; size: number; bold?: boolean; rotate?: 90 };
 export type DotPage = { ink: PrintRect[]; text: Text[] };
-type FitWarnings = { threeDotQr: boolean; omittedText: boolean; separateIcon?: boolean };
+type FitWarnings = {
+  threeDotQr: boolean;
+  omittedText: boolean;
+  separateIcon?: boolean;
+  omittedIcon?: boolean;
+  standardTemplate?: boolean;
+};
 export type ThermalDocument = Omit<ThermalGeometry, 'pages'> & {
   pages: DotPage[];
   warnings?: FitWarnings;
@@ -333,14 +339,24 @@ function drawDrawer(
   let module = moduleFor(matrix.length, minModule);
   let embedded = false;
   if (icon && options.iconPlacement === 'embedded') {
-    const stronger = encode(payload, { ecc: 'H', border: QUIET_ZONE, minVersion: 2 }).data;
-    const strongModule = moduleFor(stronger.length, Math.max(4, minModule));
-    // Versions 2–6 keep the centered seven-module patch clear of finder, format and alignment patterns.
-    if (stronger.length <= 41 + 2 * QUIET_ZONE && strongModule >= Math.max(4, minModule)) {
-      matrix = stronger;
-      module = strongModule;
-      embedded = true;
-    } else warnings.separateIcon = true;
+    try {
+      // Versions 2–6 keep the centered patch clear of finder, format and alignment patterns.
+      const stronger = encode(payload, {
+        ecc: 'H',
+        border: QUIET_ZONE,
+        minVersion: 2,
+        maxVersion: 6,
+      }).data;
+      const embeddedMinimum = Math.max(4, minModule);
+      const strongModule = moduleFor(stronger.length, embeddedMinimum);
+      if (strongModule >= embeddedMinimum && stronger.length <= 41 + 2 * QUIET_ZONE) {
+        matrix = stronger;
+        module = strongModule;
+        embedded = true;
+      }
+    } catch {
+      // The plain code above still uses the exact payload if it cannot fit in versions 2–6 at H.
+    }
   }
   if (module < minModule) throw new ThermalFitError('qr');
   warnings.threeDotQr ||= module === 3;
@@ -363,11 +379,6 @@ function drawDrawer(
 
   const x = qx + qrSize + gap;
   const w = box.x + box.w - x;
-  const idSize = Math.min(
-    pts(options.identifierPt || (compact ? 8 : 12)),
-    Math.floor(w / idEmWidth),
-  );
-  if (idSize < minIdSize || box.h < idSize + gap) throw new ThermalFitError('identifier');
   const small = pts(compact ? 6 : 8);
   const tagParts = [
     options.showNfc && label.nfc === 'verified' ? 'NFC' : '',
@@ -380,10 +391,22 @@ function drawDrawer(
   const footer = fits(metadata)
     ? [metadata]
     : [...(fits(tags) ? [tags] : tagParts), position].filter(fits).slice(0, 2);
-  const bottom = box.y + Math.min(box.h, Math.max(qrSize, dots(compact ? 17 : 34)));
+  const bottom = box.y + Math.min(box.h, Math.max(qrSize, dots(compact ? 17 : 34))) - 1;
   const footerAdvance = small + Math.floor(gap / 2);
+  while (footer.length && minIdSize + footer.length * footerAdvance + gap > bottom - box.y)
+    footer.pop();
   const idBaseline = bottom - footer.length * footerAdvance - (footer.length ? gap : 0);
-  if (idBaseline - idSize < box.y) throw new ThermalFitError('identifier');
+  const idSize = Math.min(
+    pts(options.identifierPt || (compact ? 8 : 12)),
+    Math.floor(w / idEmWidth),
+    idBaseline - box.y,
+  );
+  if (idSize < minIdSize) throw new ThermalFitError('identifier');
+  if (!footer.includes(metadata)) {
+    warnings.omittedText ||=
+      Boolean(position && !footer.includes(position)) ||
+      (!footer.includes(tags) && tagParts.some((tag) => !footer.includes(tag)));
+  }
   page.text.push({ value: id, x, y: idBaseline, size: idSize });
   footer.forEach((value, index) => {
     page.text.push({
@@ -394,14 +417,21 @@ function drawDrawer(
     });
   });
 
-  const iconSize = icon && !embedded ? dots(compact ? 5.5 : 8) : 0;
-  const iconBelowQr =
-    !compact && box.w < dots(65) && qy + qrSize + gap + iconSize <= bottom && qrSize >= iconSize;
-  const titleWidth = w - (iconSize && !iconBelowQr ? iconSize + gap : 0);
+  const preferredIconSize = icon && !embedded ? dots(compact ? 5.5 : 8) : 0;
   const maxTitleHeight = idBaseline - idSize - box.y - gap;
+  const iconBelowQr =
+    !compact &&
+    box.w < dots(65) &&
+    qy + qrSize + gap + preferredIconSize <= bottom &&
+    qrSize >= preferredIconSize;
+  const availableIconSize = iconBelowQr
+    ? preferredIconSize
+    : Math.min(preferredIconSize, maxTitleHeight, w);
+  const iconSize = availableIconSize >= Math.max(9, dots(3)) ? availableIconSize : 0;
+  if (preferredIconSize && !iconSize) warnings.omittedIcon = true;
+  else if (iconSize && options.iconPlacement === 'embedded') warnings.separateIcon = true;
+  const titleWidth = w - (iconSize && !iconBelowQr ? iconSize + gap : 0);
   if (icon && iconSize) {
-    if (!iconBelowQr && (maxTitleHeight < iconSize || w < iconSize))
-      throw new ThermalFitError('settings');
     workshopInk(page.ink, icon, {
       x: iconBelowQr ? qx + Math.floor((qrSize - iconSize) / 2) : x + w - iconSize,
       y: iconBelowQr ? qy + qrSize + gap : box.y,
@@ -409,11 +439,12 @@ function drawDrawer(
       h: iconSize,
     });
   }
-  const title = printableText(
+  const titleValue =
     (options.showContents && (label.drawerContents || label.contents)) ||
-      (options.showName && label.name) ||
-      '',
-  );
+    (options.showName && label.name) ||
+    '';
+  const title = printableText(titleValue);
+  warnings.omittedText ||= !!titleValue.trim() && !title;
   let titleBottom = box.y;
   if (title) {
     const minTitleSize = pts(compact ? 7 : 10);
@@ -602,8 +633,10 @@ export function thermalDocument(
   labels: readonly ThermalContent[],
   encode: Encode,
 ): ThermalDocument {
+  const warnings: FitWarnings = { threeDotQr: false, omittedText: false };
   if (options.template === 'drawer' && !supportsDrawerTemplate(stock)) {
     // A cross-stock reprint still uses the original payload and ID.
+    warnings.standardTemplate = true;
     options = { ...options, template: undefined };
   }
   if (
@@ -619,7 +652,6 @@ export function thermalDocument(
     throw new ThermalFitError('settings');
   const { pages, ...size } = thermalGeometry(stock, layout, profile, labels.length);
   let index = 0;
-  const warnings = { threeDotQr: false, omittedText: false };
   return {
     ...size,
     warnings,

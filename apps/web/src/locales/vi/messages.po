@@ -34238,3 +34238,9 @@ msgstr "Dùng biểu tượng được đề xuất: {0}"
 
 msgid "Washers"
 msgstr "Vòng đệm"
+
+msgid "Some optional text or icons do not fit. The QR and full identifier are preserved."
+msgstr "Một số nội dung hoặc biểu tượng tùy chọn không vừa. Mã QR và mã định danh đầy đủ vẫn được giữ lại."
+
+msgid "This stock uses the standard inventory label for this reprint."
+msgstr "Lần in lại trên khổ này sử dụng nhãn kiểm kê tiêu chuẩn."

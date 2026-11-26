@@ -34238,3 +34238,9 @@ msgstr "استخدم الأيقونة المقترحة: {0}"
 
 msgid "Washers"
 msgstr "حلقات معدنية"
+
+msgid "Some optional text or icons do not fit. The QR and full identifier are preserved."
+msgstr "لا تتسع المساحة لبعض النصوص أو الأيقونات الاختيارية. يظل رمز QR والمعرّف الكامل ظاهرين."
+
+msgid "This stock uses the standard inventory label for this reprint."
+msgstr "يُستخدم ملصق المخزون العادي عند إعادة الطباعة على هذا المقاس."

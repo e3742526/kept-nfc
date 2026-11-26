@@ -34238,3 +34238,9 @@ msgstr "Використати запропонований значок: {0}"
 
 msgid "Washers"
 msgstr "Шайби"
+
+msgid "Some optional text or icons do not fit. The QR and full identifier are preserved."
+msgstr "Для деяких необов’язкових написів або значків бракує місця. QR-код і повний ідентифікатор зберігаються."
+
+msgid "This stock uses the standard inventory label for this reprint."
+msgstr "На цьому носії повторно друкується стандартна етикетка інвентарю."

@@ -32,22 +32,26 @@ export function WorkshopPhoto({
   const { t } = useLingui();
   const names = useWorkshopIconNames();
   const input = useRef<HTMLInputElement>(null);
+  const generation = useRef(0);
   const [busy, setBusy] = useState(false);
   const [suggestion, setSuggestion] = useState<WorkshopIcon>();
   const [message, setMessage] = useState('');
 
   async function read(photo: File) {
+    const request = ++generation.current;
     setSuggestion(undefined);
     setMessage('');
     setBusy(true);
     try {
       const icon = await suggest(photo);
+      if (request !== generation.current) return;
       if (icon) setSuggestion(icon);
       else setMessage(t`No category icon was suggested.`);
     } catch {
-      setMessage(t`Could not suggest a category icon. Check that server AI is available.`);
+      if (request === generation.current)
+        setMessage(t`Could not suggest a category icon. Check that server AI is available.`);
     } finally {
-      setBusy(false);
+      if (request === generation.current) setBusy(false);
     }
   }
 
