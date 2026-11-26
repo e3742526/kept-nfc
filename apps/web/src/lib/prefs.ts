@@ -44,6 +44,26 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
+/**
+ * The interface languages this build offers: the language picker, a stored choice and the
+ * browser's language are limited to these; anything else shows English. English only unless the
+ * build says otherwise (`VITE_UI_LOCALES=en,de,…`). Every language in LOCALES keeps its catalogue,
+ * and the server, mail and a location's AI languages keep all of them, so turning a language back
+ * on is that build setting alone. The pre-paint script in index.html reads the same setting.
+ */
+export const UI_LOCALES: readonly Locale[] = (() => {
+  const offered = String(import.meta.env.VITE_UI_LOCALES ?? 'en')
+    .split(',')
+    .map((l) => l.trim())
+    .filter(isLocale);
+  return offered.length > 0 ? offered : ['en'];
+})();
+
+/** A language this build offers in its interface. */
+export function isUiLocale(value: unknown): value is Locale {
+  return isLocale(value) && UI_LOCALES.includes(value);
+}
+
 /** The launch language a BCP 47 tag belongs to (`ar-EG` → `ar`, `fr-CA` → `fr`), or null. */
 export function localeOfTag(tag: string): Locale | null {
   const language = tag.trim().toLowerCase().split(/[-_]/)[0];
@@ -173,16 +193,17 @@ export function storedThemePref(): ThemePref {
   return v === 'light' || v === 'dark' ? v : 'system';
 }
 
-/** The browser's language if SheepKeep has it, else English. */
+/** The browser's language if this build offers it, else English. */
 function browserLocale(): Locale {
   const nav = typeof navigator !== 'undefined' ? navigator.language : 'en';
-  return localeOfTag(nav ?? 'en') ?? 'en';
+  const locale = localeOfTag(nav ?? 'en');
+  return isUiLocale(locale) ? locale : 'en';
 }
 
-/** The stored language, else the browser's if SheepKeep has it, else English. */
+/** The stored language if this build offers it, else the browser's, else English. */
 export function initialLocale(): Locale {
   const v = read(LOCALE_KEY);
-  if (isLocale(v)) return v;
+  if (isUiLocale(v)) return v;
   return browserLocale();
 }
 

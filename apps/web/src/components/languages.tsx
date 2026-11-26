@@ -12,17 +12,17 @@ import DE from 'country-flag-icons/react/3x2/DE';
 import EG from 'country-flag-icons/react/3x2/EG';
 import ES from 'country-flag-icons/react/3x2/ES';
 import FR from 'country-flag-icons/react/3x2/FR';
-import GB from 'country-flag-icons/react/3x2/GB';
 import IT from 'country-flag-icons/react/3x2/IT';
 import UA from 'country-flag-icons/react/3x2/UA';
+import US from 'country-flag-icons/react/3x2/US';
 import VN from 'country-flag-icons/react/3x2/VN';
 import { useMemo, useState } from 'react';
 import type { Key } from 'react-aria-components';
-import { directionOf, LOCALES, type Locale, localeOfTag } from '@/lib/prefs';
+import { directionOf, LOCALES, type Locale, localeOfTag, UI_LOCALES } from '@/lib/prefs';
 import { cn } from '@/lib/utils';
 import { Combobox, ComboboxItem } from './ui/combobox';
 
-type Flag = typeof GB;
+type Flag = typeof US;
 
 /** `label` is the list's text value, for screen readers and the box: the name in itself. */
 export type Language = { id: Locale; name: string; label: string };
@@ -42,7 +42,7 @@ export const LANGUAGE_NAMES: Readonly<Record<Locale, string>> = {
 const FLAGS: Readonly<Record<Locale, Flag>> = {
   ar: EG,
   de: DE,
-  en: GB,
+  en: US,
   es: ES,
   fr: FR,
   it: IT,
@@ -50,11 +50,16 @@ const FLAGS: Readonly<Record<Locale, Flag>> = {
   vi: VN,
 };
 
-export const LANGUAGES: readonly Language[] = LOCALES.map((id) => ({
+const languageOf = (id: Locale): Language => ({
   id,
   name: LANGUAGE_NAMES[id],
   label: LANGUAGE_NAMES[id],
-}));
+});
+
+/** Every language SheepKeep has: a location's AI languages (D41) choose from these. */
+export const LANGUAGES: readonly Language[] = LOCALES.map(languageOf);
+/** The interface languages this build offers (prefs.ts UI_LOCALES). */
+export const UI_LANGUAGES: readonly Language[] = UI_LOCALES.map(languageOf);
 
 /** A 3:2 flag, decorative: the language's name always sits beside it. */
 export function LanguageFlag({ locale, className }: { locale: Locale; className?: string }) {
@@ -117,14 +122,16 @@ export function LanguageSelect({
   className?: string;
 }) {
   const filter = useLanguageFilter();
+  const [choosing, setChoosing] = useState<Locale | null>(null);
+  // One interface language (English only, by default): nothing to choose, so no picker.
+  if (UI_LANGUAGES.length < 2) return null;
   // The list closes when the selection changes, and a language can take a moment to load, or fail
   // to. Until then the box holds the choice; if the value doesn't follow, it goes back to the value.
-  const [choosing, setChoosing] = useState<Locale | null>(null);
   const shown = choosing ?? value;
   return (
     <Combobox<Language>
       {...(compact ? { 'aria-label': label } : { label })}
-      items={LANGUAGES}
+      items={UI_LANGUAGES}
       defaultFilter={filter}
       selectedKey={shown}
       onSelectionChange={(key) => {

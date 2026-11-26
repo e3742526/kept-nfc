@@ -2,7 +2,8 @@
  * #450: the language pickers search by own name, English name and the interface's name for a
  * language, and typing never changes the language until one is chosen.
  */
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import US from 'country-flag-icons/react/3x2/US';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LANGUAGES, LanguageSelect, LanguagesMultiSelect } from '@/components/languages';
@@ -399,5 +400,32 @@ describe('LanguagesMultiSelect', () => {
     await user.keyboard('fre');
     await user.click(screen.getByText('Elsewhere'));
     expect(box).toHaveValue('');
+  });
+});
+
+describe('English only (the default build)', () => {
+  it('shows no language picker, and English has the US flag', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_UI_LOCALES', '');
+    try {
+      const languages = await import('@/components/languages');
+      const { renderUI: renderFresh } = await import('@/test/render');
+      const { container } = await renderFresh(
+        <>
+          <languages.LanguageSelect label="Language" value="en" onChange={() => {}} />
+          <languages.LanguageName locale="en" />
+        </>,
+      );
+      expect(screen.queryByRole('combobox', { name: 'Language' })).toBeNull();
+      const { container: us } = render(<US />);
+      expect(container.querySelector('[data-flag="en"]')?.innerHTML).toBe(
+        us.querySelector('svg')?.innerHTML,
+      );
+      // A location's AI languages still choose from every language.
+      expect(languages.LANGUAGES).toHaveLength(8);
+      expect(languages.UI_LANGUAGES.map(({ id }) => id)).toEqual(['en']);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

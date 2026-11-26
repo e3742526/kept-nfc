@@ -202,25 +202,36 @@ describe('the place tree (#427)', () => {
 
 describe('the pre-paint script (index.html)', () => {
   // The inline script that reads the stored preferences (index.html also has zod's config).
-  const script =
+  const raw =
     [...indexHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)]
       .map((m) => m[1] ?? '')
       .find((body) => body.includes('kept.theme')) ?? '';
+  // As Vite writes it at build time: this run offers every language (vitest.config.ts).
+  const script = raw.replace('%VITE_UI_LOCALES%', String(import.meta.env.VITE_UI_LOCALES));
 
-  function prePaint(stored: Record<string, string>, language = 'en-GB') {
+  function prePaint(stored: Record<string, string>, language = 'en-GB', body = script) {
     localStorage.clear();
     for (const [k, v] of Object.entries(stored)) localStorage.setItem(k, v);
     vi.stubGlobal('navigator', { language });
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: q === '(min-width: 1024px)' }));
     const d = document.documentElement;
     for (const a of ['data-theme', 'data-width', 'lang', 'dir']) d.removeAttribute(a);
-    new Function(script)();
+    new Function(body)();
     return {
       width: d.getAttribute('data-width'),
       lang: d.getAttribute('lang'),
       dir: d.getAttribute('dir'),
     };
   }
+
+  it('shows English in a build that names no interface languages', () => {
+    // A build without VITE_UI_LOCALES leaves the placeholder: English only, whatever is stored.
+    expect(raw).toContain('%VITE_UI_LOCALES%');
+    expect(prePaint({ 'kept.locale': 'ar' }, 'de-DE', raw)).toMatchObject({
+      lang: 'en',
+      dir: 'ltr',
+    });
+  });
 
   it('applies the stored width and language before React loads', () => {
     expect(script).toContain('kept.width');

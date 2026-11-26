@@ -29,7 +29,9 @@ export default defineConfig({
   test: {
     name: '@kept/web',
     environment: 'jsdom',
-    env: { TZ: 'Africa/Cairo' },
+    // Every interface language on, so the multi-language paths stay tested; a build offers
+    // English only unless VITE_UI_LOCALES says otherwise (prefs.ts UI_LOCALES).
+    env: { TZ: 'Africa/Cairo', VITE_UI_LOCALES: 'ar,de,en,es,fr,it,uk,vi' },
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     // Screen tests render the whole app in jsdom and drive it with user-event: a few seconds each
