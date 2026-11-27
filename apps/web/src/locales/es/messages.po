@@ -34265,23 +34265,11 @@ msgstr "Esta etiqueta aún no ha sido asignada. Escanéala desde la pestaña Esc
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Ese código coincide con más de un artículo. Escanéalo desde la pestaña Escanear para elegir uno."
 
-msgid "Item details"
-msgstr "Detalles del artículo"
-
-msgid "Add an NFC tag?"
-msgstr "¿Añadir una etiqueta NFC?"
-
 msgid "Your item gets a QR code when it syncs. You can print it later."
 msgstr "El artículo recibe un código QR al sincronizarse. Puedes imprimirlo más tarde."
 
-msgid "Continue to labels"
-msgstr "Continuar a las etiquetas"
-
 msgid "Save item"
 msgstr "Guardar artículo"
-
-msgid "Skip NFC and save"
-msgstr "Guardar sin etiqueta NFC"
 
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Activa Bluetooth para usar la impresora de etiquetas."
@@ -34614,3 +34602,15 @@ msgstr "Usar otra etiqueta NFC"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "Tu cola de impresión está vacía."
+
+#: src/native/capture-form.tsx
+msgid "Action, category, quantity, notes and label"
+msgstr "Acción, categoría, cantidad, notas y etiqueta"
+
+#: src/native/capture-form.tsx
+msgid "Clipboard"
+msgstr "Portapapeles"
+
+#: src/native/capture-form.tsx
+msgid "Copy a photo first, then try again."
+msgstr "Copia primero una foto y vuelve a intentarlo."

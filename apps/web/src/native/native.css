@@ -463,7 +463,14 @@
 /* Media capture button strip (Camera / Photos / PDF). */
 .kept-media-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(6.25rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+/* Add item's quick starts (Scan UPC, Start with NFC): side by side when both fit. */
+.kept-scan-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 0.5rem;
 }
 

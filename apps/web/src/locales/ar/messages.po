@@ -34265,23 +34265,11 @@ msgstr "لم يُربط هذا الملصق بعد. امسحه من تبويب �
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "يطابق هذا الرمز أكثر من عنصر. امسحه من تبويب «مسح» لاختيار واحد."
 
-msgid "Item details"
-msgstr "تفاصيل العنصر"
-
-msgid "Add an NFC tag?"
-msgstr "هل تريد إضافة وسم NFC؟"
-
 msgid "Your item gets a QR code when it syncs. You can print it later."
 msgstr "يحصل العنصر على رمز QR عند مزامنته. يمكنك طباعة الرمز لاحقًا."
 
-msgid "Continue to labels"
-msgstr "متابعة إلى الملصقات"
-
 msgid "Save item"
 msgstr "حفظ العنصر"
-
-msgid "Skip NFC and save"
-msgstr "التخطي والحفظ دون وسم NFC"
 
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "شغّل Bluetooth لاستخدام طابعة الملصقات."
@@ -34614,3 +34602,15 @@ msgstr "استخدم علامة NFC أخرى"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "قائمة الطباعة فارغة."
+
+#: src/native/capture-form.tsx
+msgid "Action, category, quantity, notes and label"
+msgstr "الإجراء والفئة والكمية والملاحظات والملصق"
+
+#: src/native/capture-form.tsx
+msgid "Clipboard"
+msgstr "الحافظة"
+
+#: src/native/capture-form.tsx
+msgid "Copy a photo first, then try again."
+msgstr "انسخ صورةً أولاً، ثم حاول مجدداً."

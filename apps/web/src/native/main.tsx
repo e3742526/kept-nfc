@@ -136,7 +136,6 @@ type Screen =
       fromRecord?: boolean;
       name?: string;
       initialPhoto?: File;
-      skipPhotos?: boolean;
       /** A blank NFC tag from Scan, ready to be written as the new item's label. */
       blankTag?: TagReading;
       nfcDraft?: NfcCaptureDraft;
@@ -1651,7 +1650,7 @@ export function Inventory({
                 setUnplacedLocationFilter(null);
                 pushScreen({ kind: 'unplaced' });
               }}
-              onAddManually={() => pushScreen({ kind: 'capture', skipPhotos: true })}
+              onAddManually={() => pushScreen({ kind: 'capture' })}
               onAddWithCamera={(initialPhoto) => pushScreen({ kind: 'capture', initialPhoto })}
               onLabels={() => pushScreen({ kind: 'labelSheets' })}
               onReview={() => pushScreen({ kind: 'batches' })}
@@ -1882,7 +1881,6 @@ export function Inventory({
           initialName={screen.name}
           initialPhoto={screen.initialPhoto}
           initialNfcDraft={screen.nfcDraft}
-          skipPhotos={screen.skipPhotos}
           blankTag={screen.blankTag}
           suggested={suggestedDestination}
           pending={pending}

@@ -34265,23 +34265,11 @@ msgstr "Цю мітку ще не призначено. Відскануйте �
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Цей код відповідає кільком речам. Відскануйте його на вкладці «Сканувати», щоб вибрати одну."
 
-msgid "Item details"
-msgstr "Деталі предмета"
-
-msgid "Add an NFC tag?"
-msgstr "Додати NFC-мітку?"
-
 msgid "Your item gets a QR code when it syncs. You can print it later."
 msgstr "Предмет отримає QR-код під час синхронізації. Його можна надрукувати пізніше."
 
-msgid "Continue to labels"
-msgstr "Перейти до етикеток"
-
 msgid "Save item"
 msgstr "Зберегти предмет"
-
-msgid "Skip NFC and save"
-msgstr "Зберегти без NFC-мітки"
 
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Увімкніть Bluetooth, щоб скористатися принтером етикеток."
@@ -34614,3 +34602,15 @@ msgstr "Використати іншу мітку NFC"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "Черга друку порожня."
+
+#: src/native/capture-form.tsx
+msgid "Action, category, quantity, notes and label"
+msgstr "Дія, категорія, кількість, нотатки та етикетка"
+
+#: src/native/capture-form.tsx
+msgid "Clipboard"
+msgstr "Буфер обміну"
+
+#: src/native/capture-form.tsx
+msgid "Copy a photo first, then try again."
+msgstr "Спершу скопіюйте фото, а потім спробуйте ще раз."
