@@ -182,6 +182,7 @@ export function CaptureForm({
   );
   const [changingDestination, setChangingDestination] = useState(false);
   const [newBinName, setNewBinName] = useState<string>();
+  const [newBinTypeId, setNewBinTypeId] = useState('');
   const locationPhoto = destination?.kind === 'location-photo';
   const photosOnly = destination?.kind === 'photos' || locationPhoto;
   const documentsOnly = destination?.kind === 'documents';
@@ -403,7 +404,14 @@ export function CaptureForm({
     if (!online || !cache || !destination || !newBinName?.trim() || busy) return;
     setBusy(true);
     try {
-      const result = await createBox(connection, cache, destination, newBinName.trim(), adapters);
+      const result = await createBox(
+        connection,
+        cache,
+        destination,
+        newBinName.trim(),
+        adapters,
+        newBinTypeId || undefined,
+      );
       setDestination({
         id: result.id,
         locationId: result.locationId,
@@ -933,22 +941,6 @@ export function CaptureForm({
           if (canSave && !labelBusy) void save();
         }}
       >
-        {isItem && (
-          <div ref={descriptionRef}>
-            <TextField
-              label={t`Description`}
-              placeholder={t`Holiday decorations`}
-              value={name}
-              onChange={setName}
-              isDisabled={busy}
-              inputProps={{
-                maxLength: 200,
-                name: 'name',
-                enterKeyHint: 'done',
-              }}
-            />
-          </div>
-        )}
         {isItem && upc && <p>{t`UPC: ${upc}`}</p>}
         {isItem && nfcDraft && (
           <p role="status">
@@ -959,7 +951,7 @@ export function CaptureForm({
           <ItemLabelPicker
             key={destination.locationId}
             entry
-            leading={upcButton}
+            trailing={upcButton}
             connection={connection}
             cache={cache}
             locationId={destination.locationId}
@@ -1082,6 +1074,73 @@ export function CaptureForm({
             </>
           )}
         </div>
+        {isItem && !firstPhoto && (
+          <Button variant="secondary" isDisabled>
+            <Trans>AI assist</Trans>
+          </Button>
+        )}
+        {isItem && firstPhoto && (
+          <CaptureSuggestion
+            key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
+            connection={connection}
+            files={photos.map(({ file }) => file)}
+            locationId={destination?.locationId}
+            provider={provider}
+            onProviderChange={setProvider}
+            onSuggestions={(items) => setDetails({ photoKey, items })}
+            online={online}
+            disabled={busy || !photoPreferenceLoaded}
+          />
+        )}
+        {isItem && shownDetails && (
+          <DetailSuggestions
+            key={photoKey}
+            rows={
+              leadSuggestion(shownDetails)
+                ? detailRowsFor(
+                    leadSuggestion(shownDetails) as PhotoSuggestion,
+                    { name, quantity, note, tags },
+                    categoryOptions,
+                    online && !!captureLocation && captureLocation.role !== 'viewer',
+                  )
+                : []
+            }
+            others={Math.max(0, shownDetails.length - 1)}
+            disabled={busy}
+            onApply={(rows) => void applyDetails(rows)}
+            onDismiss={() => setDetails(undefined)}
+            onReviewItems={
+              destination && onReview && !nfcDraft && !upc && !typeId
+                ? () => void reviewPhoto(shownDetails)
+                : undefined
+            }
+          />
+        )}
+        {isItem && firstPhoto && onReview && !shownDetails && (
+          <Button
+            variant="secondary"
+            isDisabled={busy || !destination || !!nfcDraft || !!upc || !!typeId}
+            onPress={() => void reviewPhoto()}
+          >
+            <Trans>Review multiple items</Trans>
+          </Button>
+        )}
+        {isItem && (
+          <div ref={descriptionRef}>
+            <TextField
+              label={t`Description`}
+              placeholder={t`Holiday decorations`}
+              value={name}
+              onChange={setName}
+              isDisabled={busy}
+              inputProps={{
+                maxLength: 200,
+                name: 'name',
+                enterKeyHint: 'done',
+              }}
+            />
+          </div>
+        )}
         {nfcDraft?.originals
           .filter(({ id }) => !files.some(({ key }) => key === id))
           .map((original) => (
@@ -1133,52 +1192,6 @@ export function CaptureForm({
               </li>
             ))}
           </ul>
-        )}
-        {isItem && firstPhoto && (
-          <CaptureSuggestion
-            key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
-            connection={connection}
-            files={photos.map(({ file }) => file)}
-            locationId={destination?.locationId}
-            provider={provider}
-            onProviderChange={setProvider}
-            onSuggestions={(items) => setDetails({ photoKey, items })}
-            online={online}
-            disabled={busy || !photoPreferenceLoaded}
-          />
-        )}
-        {isItem && shownDetails && (
-          <DetailSuggestions
-            key={photoKey}
-            rows={
-              leadSuggestion(shownDetails)
-                ? detailRowsFor(
-                    leadSuggestion(shownDetails) as PhotoSuggestion,
-                    { name, quantity, note, tags },
-                    categoryOptions,
-                    online && !!captureLocation && captureLocation.role !== 'viewer',
-                  )
-                : []
-            }
-            others={Math.max(0, shownDetails.length - 1)}
-            disabled={busy}
-            onApply={(rows) => void applyDetails(rows)}
-            onDismiss={() => setDetails(undefined)}
-            onReviewItems={
-              destination && onReview && !nfcDraft && !upc && !typeId
-                ? () => void reviewPhoto(shownDetails)
-                : undefined
-            }
-          />
-        )}
-        {isItem && firstPhoto && onReview && !shownDetails && (
-          <Button
-            variant="secondary"
-            isDisabled={busy || !destination || !!nfcDraft || !!upc || !!typeId}
-            onPress={() => void reviewPhoto()}
-          >
-            <Trans>Review multiple items</Trans>
-          </Button>
         )}
         {cache && isItem && (
           <div className="grid gap-2">
@@ -1251,7 +1264,14 @@ export function CaptureForm({
                   </Button>
                 )}
                 {online && destination && newBinName === undefined && (
-                  <Button size="small" variant="secondary" onPress={() => setNewBinName('')}>
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    onPress={() => {
+                      setNewBinTypeId('');
+                      setNewBinName('');
+                    }}
+                  >
                     <Trans>New container</Trans>
                   </Button>
                 )}
@@ -1263,6 +1283,12 @@ export function CaptureForm({
                       onChange={setNewBinName}
                       inputProps={{ maxLength: 200 }}
                       isDisabled={busy}
+                    />
+                    <ContainerTypePicker
+                      cache={cache}
+                      value={newBinTypeId}
+                      onChange={setNewBinTypeId}
+                      disabled={busy}
                     />
                     <div className="flex gap-2">
                       <Button
@@ -1409,18 +1435,38 @@ export function CaptureForm({
             </div>
           </details>
         )}
-        <Button type="submit" isPending={busy} isDisabled={!canSave || labelBusy}>
-          <Check size={18} aria-hidden />
-          {locationPhoto
-            ? files.length > 1
-              ? t`Save photos`
-              : t`Save location photo`
-            : photosOnly
-              ? t`Save photos`
+        {isItem ? (
+          <div className="kept-capture-actions">
+            <FileTrigger
+              acceptedFileTypes={['image/*']}
+              defaultCamera="environment"
+              onSelect={(list) => choose(list, 'photo')}
+            >
+              <Button variant="secondary" isDisabled={busy || labelBusy}>
+                <Camera size={18} aria-hidden />
+                <Trans>Add Picture</Trans>
+              </Button>
+            </FileTrigger>
+            <Button
+              type="submit"
+              aria-label={t`Save item`}
+              isPending={busy}
+              isDisabled={!canSave || labelBusy}
+            >
+              <Check size={18} aria-hidden />
+              <Trans>Save</Trans>
+            </Button>
+          </div>
+        ) : (
+          <Button type="submit" isPending={busy} isDisabled={!canSave || labelBusy}>
+            <Check size={18} aria-hidden />
+            {locationPhoto && files.length <= 1
+              ? t`Save location photo`
               : documentsOnly
                 ? t`Save documents`
-                : t`Save item`}
-        </Button>
+                : t`Save photos`}
+          </Button>
+        )}
       </form>
       {batchEntryIds.length > 0 && (
         <div
@@ -1452,6 +1498,46 @@ export function CaptureForm({
   );
 }
 
+function ContainerTypePicker({
+  cache,
+  value,
+  onChange,
+  disabled,
+}: {
+  cache: InventoryCache;
+  value: string;
+  onChange: (value: string) => void;
+  disabled: boolean;
+}) {
+  const { t } = useLingui();
+  const typeName = useTypeName();
+  return (
+    <Select
+      label={t`Container type`}
+      selectedKey={value || 'default'}
+      isDisabled={disabled}
+      items={[
+        { id: 'default', name: t`Box / bin` },
+        ...cache.types
+          .filter(
+            (type) =>
+              type.isContainer &&
+              ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(
+                type.builtinKey ?? '',
+              ),
+          )
+          .map((type) => ({
+            id: type.id,
+            name: typeName({ ...type, name: type.name === type.builtinKey ? null : type.name }),
+          })),
+      ]}
+      onSelectionChange={(key) => onChange(key && key !== 'default' ? String(key) : '')}
+    >
+      {(item) => <SelectItem id={item.id}>{item.name}</SelectItem>}
+    </Select>
+  );
+}
+
 export function NewBoxForm({
   connection,
   cache,
@@ -1477,7 +1563,6 @@ export function NewBoxForm({
   headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
-  const typeName = useTypeName();
   const adapters = usePlatform();
   const [name, setName] = useState('');
   const [boxTypeId, setBoxTypeId] = useState('');
@@ -1594,27 +1679,12 @@ export function NewBoxForm({
           inputProps={{ maxLength: 200 }}
           isDisabled={busy || !!created}
         />
-        <Select
-          label={t`Container type`}
-          selectedKey={boxTypeId || 'default'}
-          isDisabled={busy || !!created}
-          items={[
-            { id: 'default', name: t`Box / bin` },
-            ...cache.types
-              .filter((type) =>
-                ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(
-                  type.builtinKey ?? '',
-                ),
-              )
-              .map((type) => ({
-                id: type.id,
-                name: typeName({ ...type, name: type.name === type.builtinKey ? null : type.name }),
-              })),
-          ]}
-          onSelectionChange={(key) => setBoxTypeId(key === 'default' ? '' : String(key))}
-        >
-          {(item) => <SelectItem id={item.id}>{item.name}</SelectItem>}
-        </Select>
+        <ContainerTypePicker
+          cache={cache}
+          value={boxTypeId}
+          onChange={setBoxTypeId}
+          disabled={busy || !!created}
+        />
         {!cache.types.some((type) => type.builtinKey === 'tote_27g') && (
           <p className="m-0 text-small text-ink-2">
             <Trans>Update this SheepKeep server to use this action.</Trans>

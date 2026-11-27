@@ -474,6 +474,32 @@
   gap: 0.5rem;
 }
 
+/* Item capture keeps its actions above the navigation and its content clear of both. */
+html:has(.kept-capture-actions) {
+  --kept-capture-tabbar-height: calc(3.5rem + 1px + max(0.5rem, env(safe-area-inset-bottom)));
+  --kept-capture-bottom-space: calc(var(--kept-capture-tabbar-height) + 5rem);
+  scroll-padding-block-end: var(--kept-capture-bottom-space);
+}
+
+.kept-phone:has(.kept-capture-actions) {
+  padding-block-end: var(--kept-capture-bottom-space);
+}
+
+.kept-capture-actions {
+  position: fixed;
+  inset-block-end: var(--kept-capture-tabbar-height);
+  inset-inline: 0;
+  z-index: 19;
+  max-inline-size: 42rem;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-block-start: 1px solid var(--line);
+  background: var(--surface);
+}
+
 .kept-media-btn {
   flex-direction: column;
   gap: 0.3125rem;
@@ -1160,4 +1186,26 @@
   border-radius: 0.875rem;
   background: var(--surface);
   border: 1px solid var(--line);
+}
+
+/* The raised Scan button fits inside the tab bar while capture actions sit above it. */
+.kept-phone:has(.kept-capture-actions) .kept-tabbar {
+  block-size: var(--kept-capture-tabbar-height);
+}
+
+.kept-phone:has(.kept-capture-actions) .kept-tabbar-scan {
+  margin-block-start: 0;
+  gap: 0.1875rem;
+}
+
+.kept-phone:has(.kept-capture-actions) .kept-tabbar-scan-icon {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: 0.375rem;
+  box-shadow: none;
+}
+
+.kept-phone:has(.kept-capture-actions) .kept-tabbar-scan-icon svg {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
 }

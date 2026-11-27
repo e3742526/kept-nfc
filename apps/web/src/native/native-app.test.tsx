@@ -5303,6 +5303,93 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByRole('button', { name: 'Share QR label PDF' })).toBeVisible();
   });
 
+  it('puts scan, photos and AI review first and saves a UPC item from the bottom actions', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = env.adapters.transport.request;
+    const transport = vi
+      .spyOn(env.adapters.transport, 'request')
+      .mockImplementation(async (connection, path, options) =>
+        path === capturePaths.scanResolve
+          ? { outcome: 'barcode', barcode: { code: '036000291452', lookupEnabled: false } }
+          : request(connection, path, options),
+      );
+    env.adapters.captureAI = {
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({
+        name: JSON.stringify({ items: [{ name: 'Packing tape', quantity: 2 }] }),
+      })),
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
+
+    const nfc = screen.getByRole('button', { name: 'Start with NFC' });
+    const upc = screen.getByRole('button', { name: 'Scan UPC' });
+    const camera = screen.getByRole('button', { name: 'Camera' });
+    const description = screen.getByRole('textbox', { name: 'Description' });
+    const precedes = (a: HTMLElement, b: HTMLElement) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(precedes(nfc, upc)).toBe(true);
+    expect(precedes(upc, camera)).toBe(true);
+
+    await user.click(upc);
+    await user.type(screen.getByLabelText('UPC digits'), '036000291452');
+    await user.click(screen.getByRole('button', { name: 'Check UPC' }));
+    expect(await screen.findByText('UPC: 036000291452')).toBeVisible();
+
+    const addPicture = screen.getByRole('button', { name: 'Add Picture' });
+    const actions = addPicture.closest('.kept-capture-actions');
+    if (!(actions instanceof HTMLElement)) throw new Error('Missing bottom capture actions');
+    const save = within(actions).getByRole('button', { name: 'Save item' });
+    expect(save).toBeDisabled();
+    const input = actions.querySelector<HTMLInputElement>('input[type=file][capture=environment]');
+    if (!input) throw new Error('Missing camera input for Add Picture');
+    await user.upload(input, new File(['photo'], 'tape.jpg', { type: 'image/jpeg' }));
+    await user.click(await screen.findByRole('button', { name: /AI provider/ }));
+    await user.click(screen.getByRole('option', { name: 'Apple Intelligence' }));
+    const ai = screen.getByRole('button', { name: 'AI assist' });
+    expect(precedes(camera, ai)).toBe(true);
+    expect(precedes(ai, description)).toBe(true);
+    await user.click(ai);
+    const accept = await screen.findByRole('button', { name: 'Accept all' });
+    expect(precedes(accept, description)).toBe(true);
+    expect(description).toHaveValue('');
+    await user.click(accept);
+    expect(description).toHaveValue('Packing tape');
+    expect(save).toBeEnabled();
+    await user.click(save);
+    expect(await screen.findByText('Synced: 1')).toBeVisible();
+    expect(transport).toHaveBeenCalledWith(
+      expect.anything(),
+      capturePaths.syncOps,
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ops: expect.arrayContaining([
+            expect.objectContaining({
+              payload: expect.objectContaining({
+                name: 'Packing tape',
+                barcode: '036000291452',
+                quantity: '2',
+              }),
+            }),
+          ]),
+        }),
+      }),
+    );
+  });
+
   it('attaches a copied photo from Clipboard and says so when there is none', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
@@ -6076,6 +6163,23 @@ describe('KeptPhone mobile workflows', () => {
     expect(
       (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent,
     ).toContain('Tools');
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    await user.click(screen.getByRole('button', { name: 'New container' }));
+    await user.type(screen.getByRole('textbox', { name: 'Container name' }), 'Hardware');
+    await user.click(screen.getByRole('button', { name: /Container type/ }));
+    await user.click(screen.getByRole('option', { name: 'Cabinet' }));
+    await user.click(screen.getByRole('button', { name: 'Create container' }));
+    expect(
+      (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent,
+    ).toContain('Hardware');
+    expect(spy).toHaveBeenCalledWith(
+      connection,
+      inventoryPaths.things,
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.objectContaining({ name: 'Hardware', typeId: 'type-cabinet' }),
+      }),
+    );
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(await screen.findByRole('heading', { name: 'Tools' })).toBeInTheDocument();
   });

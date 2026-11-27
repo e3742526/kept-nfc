@@ -77,7 +77,7 @@ export function ItemLabelPicker({
   beforeNfcWrite,
   nfcWriteAborted,
   recoverNfcDraft,
-  leading,
+  trailing,
   disabled = false,
 }: {
   connection: Connection;
@@ -97,7 +97,7 @@ export function ItemLabelPicker({
   nfcWriteAborted?: (code: string) => Promise<void>;
   recoverNfcDraft?: (url: string) => Promise<boolean>;
   /** Entry only: another quick start (Scan UPC) shown in the same row as Start with NFC. */
-  leading?: ReactNode;
+  trailing?: ReactNode;
   disabled?: boolean;
 }) {
   const { t } = useLingui();
@@ -538,7 +538,6 @@ export function ItemLabelPicker({
     return (
       <div className="grid gap-2">
         <div className="kept-scan-row">
-          {leading}
           <Button
             variant="secondary"
             isPending={busy}
@@ -548,6 +547,7 @@ export function ItemLabelPicker({
             <Nfc size={16} aria-hidden />
             <Trans>Start with NFC</Trans>
           </Button>
+          {trailing}
         </div>
         {inspectionActions}
         {status && <p role="status">{status}</p>}

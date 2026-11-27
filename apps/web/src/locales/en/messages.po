@@ -4122,6 +4122,10 @@ msgstr "Add one when you want totals in several currencies turned into one, like
 msgid "Add or remove"
 msgstr "Add or remove"
 
+#: src/native/capture-form.tsx
+msgid "Add Picture"
+msgstr "Add Picture"
+
 #: src/components/condition/report-screen.tsx
 #: src/native/record.tsx
 msgid "Add photos"
