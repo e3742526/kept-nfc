@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto';
 import type { SnapshotPage } from '@kept/shared';
 import { I18nProvider } from '@lingui/react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
@@ -1063,6 +1064,42 @@ async function openWinterBox(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('remembers the printer from Settings and uses it in thermal printing', async () => {
+    const origin = 'https://printer-settings.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const device = { id: 'AF2DC5CC-74C0-4422-82C6-318913F41441', name: 'B1 Pro Garage' };
+    const niimbot = vi.fn(() => ({
+      discover: vi.fn(async () => [device]),
+      identify: vi.fn(async () => ({ modelId: 4097 })),
+      print: vi.fn(),
+      cancel: vi.fn(),
+    }));
+    env.adapters.niimbot = niimbot;
+    const user = userEvent.setup();
+    env.renderApp();
+
+    await openSettings(user);
+    await user.click(screen.getByRole('button', { name: 'Printer settings' }));
+    expect(screen.getByRole('heading', { name: 'Printer settings' })).toBeVisible();
+    expect(niimbot).toHaveBeenCalledWith(connection);
+    await user.click(await screen.findByRole('button', { name: 'Find nearby printers' }));
+    await user.click(await screen.findByRole('button', { name: device.name }));
+    expect(await screen.findByText('Default printer')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Print label sheets' }));
+    await user.click(screen.getByRole('button', { name: 'Thermal printing' }));
+    const printer = await screen.findByRole('button', { name: /Printer profile$/ });
+    await waitFor(() => expect(printer).toHaveTextContent(device.name));
+  });
+
   it('enrolls a place label and scans it into an active capture without losing the draft', async () => {
     const origin = 'https://kept.example.com';
     const connection = {

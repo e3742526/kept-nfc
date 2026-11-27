@@ -64,8 +64,13 @@ it('verifies the selected model, then retries an interrupted offline job with th
     </I18nProvider>,
   );
   const user = userEvent.setup();
-  await user.click(screen.getByText('NIIMBOT B1 Pro Bluetooth'));
-  await user.click(screen.getByRole('button', { name: 'Find nearby printers' }));
+  const quantity = screen.getByRole('spinbutton', { name: 'Quantity' });
+  await user.clear(quantity);
+  await user.type(quantity, '2');
+  const settings = screen.getByRole('button', { name: 'Printer settings' });
+  await user.click(settings);
+  const setup = await screen.findByRole('dialog', { name: 'Printer settings' });
+  await user.click(within(setup).getByRole('button', { name: 'Find nearby printers' }));
   await user.click(await screen.findByRole('button', { name: device.name }));
   expect(
     await screen.findByText('This printer did not identify as a NIIMBOT B1 Pro.'),
@@ -79,6 +84,11 @@ it('verifies the selected model, then retries an interrupted offline job with th
     profileId: `niimbot:${device.id}`,
   });
 
+  await user.click(within(setup).getByRole('button', { name: 'Close' }));
+  await waitFor(() => expect(settings).toHaveFocus());
+  expect(quantity).toHaveValue(2);
+  await user.clear(quantity);
+  await user.type(quantity, '1');
   await user.click(screen.getByRole('button', { name: 'Prepare labels' }));
   const send = await screen.findByRole('button', { name: 'Print on B1 Pro' });
   await user.click(send);
@@ -103,4 +113,12 @@ it('verifies the selected model, then retries an interrupted offline job with th
   });
   expect(api.create).not.toHaveBeenCalled();
   expect(api.confirm).not.toHaveBeenCalled();
+
+  await user.click(settings);
+  const reopened = await screen.findByRole('dialog', { name: 'Printer settings' });
+  await user.click(within(reopened).getByRole('button', { name: 'Forget printer' }));
+  expect(await within(reopened).findByText('No remembered printers.')).toBeVisible();
+  await user.click(within(reopened).getByRole('button', { name: 'Close' }));
+  expect(screen.queryByRole('button', { name: 'Print on B1 Pro' })).not.toBeInTheDocument();
+  expect(await printStore.jobs.get(before?.id ?? '')).toMatchObject({ codes: before?.codes });
 }, 10_000);

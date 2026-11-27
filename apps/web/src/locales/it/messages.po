@@ -34275,9 +34275,6 @@ msgstr "Salva oggetto"
 msgid "Skip NFC and save"
 msgstr "Salva senza tag NFC"
 
-msgid "Use the system print dialog for AirPrint or export the PDF for a USB printer."
-msgstr "Usa la finestra di stampa di sistema per AirPrint oppure esporta il PDF per una stampante USB."
-
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Attiva il Bluetooth per usare la stampante di etichette."
 
@@ -34301,9 +34298,6 @@ msgstr "Impossibile comunicare con la stampante. Verifica che sia accesa e vicin
 
 msgid "NIIMBOT B1 Pro Bluetooth"
 msgstr "NIIMBOT B1 Pro via Bluetooth"
-
-msgid "Remembered printer"
-msgstr "Stampante memorizzata"
 
 msgid "Check printer status"
 msgstr "Controlla lo stato della stampante"
@@ -34394,3 +34388,27 @@ msgstr "Etichette segnalate come completate: {reported}"
 
 msgid "Partial print recorded. Reprint the missing pages using the page range."
 msgstr "Stampa parziale registrata. Seleziona l’intervallo di pagine mancanti per ristamparle."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Could not load printer settings."
+msgstr "Impossibile caricare le impostazioni della stampante."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Default printer"
+msgstr "Stampante predefinita"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Loading printer settings…"
+msgstr "Caricamento delle impostazioni della stampante…"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "No remembered printers."
+msgstr "Nessuna stampante salvata."
+
+#: src/components/labels/thermal/studio.tsx src/native/main.tsx
+msgid "Printer settings"
+msgstr "Impostazioni della stampante"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Use for thermal printing"
+msgstr "Usa per la stampa termica"

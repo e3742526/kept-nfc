@@ -34275,9 +34275,6 @@ msgstr "Зберегти предмет"
 msgid "Skip NFC and save"
 msgstr "Зберегти без NFC-мітки"
 
-msgid "Use the system print dialog for AirPrint or export the PDF for a USB printer."
-msgstr "Скористайтеся системним діалогом друку для AirPrint або експортуйте PDF для USB-принтера."
-
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Увімкніть Bluetooth, щоб скористатися принтером етикеток."
 
@@ -34301,9 +34298,6 @@ msgstr "Не вдалося зв’язатися з принтером. Пер�
 
 msgid "NIIMBOT B1 Pro Bluetooth"
 msgstr "NIIMBOT B1 Pro через Bluetooth"
-
-msgid "Remembered printer"
-msgstr "Збережений принтер"
 
 msgid "Check printer status"
 msgstr "Перевірити стан принтера"
@@ -34394,3 +34388,27 @@ msgstr "Етикеток, які принтер позначив як готов
 
 msgid "Partial print recorded. Reprint the missing pages using the page range."
 msgstr "Зареєстровано частковий друк. Виберіть діапазон відсутніх сторінок, щоб надрукувати їх повторно."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Could not load printer settings."
+msgstr "Не вдалося завантажити налаштування принтера."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Default printer"
+msgstr "Принтер за замовчуванням"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Loading printer settings…"
+msgstr "Завантаження налаштувань принтера…"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "No remembered printers."
+msgstr "Немає збережених принтерів."
+
+#: src/components/labels/thermal/studio.tsx src/native/main.tsx
+msgid "Printer settings"
+msgstr "Налаштування принтера"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Use for thermal printing"
+msgstr "Використовувати для термодруку"

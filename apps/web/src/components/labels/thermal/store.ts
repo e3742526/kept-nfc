@@ -38,7 +38,7 @@ export type PrintManifest = {
   confirmationSynced?: boolean;
 };
 
-type Preferences = {
+export type PrintPreferences = {
   owner: string;
   profiles: PrinterProfile[];
   profileId: string;
@@ -50,7 +50,7 @@ type PrintReceipt = { owner: string; key: string; state: PrintState };
 
 class PrintStore extends Dexie {
   declare jobs: Table<PrintManifest, string>;
-  declare preferences: Table<Preferences, string>;
+  declare preferences: Table<PrintPreferences, string>;
   declare receipts: Table<PrintReceipt, [string, string]>;
 
   constructor(options?: ConstructorParameters<typeof Dexie>[1]) {

@@ -34275,9 +34275,6 @@ msgstr "Lưu món đồ"
 msgid "Skip NFC and save"
 msgstr "Bỏ qua NFC và lưu"
 
-msgid "Use the system print dialog for AirPrint or export the PDF for a USB printer."
-msgstr "Dùng hộp thoại in của hệ thống cho AirPrint hoặc xuất PDF để in qua USB."
-
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Bật Bluetooth để sử dụng máy in nhãn."
 
@@ -34301,9 +34298,6 @@ msgstr "Không thể liên lạc với máy in. Hãy kiểm tra xem máy đã b�
 
 msgid "NIIMBOT B1 Pro Bluetooth"
 msgstr "NIIMBOT B1 Pro qua Bluetooth"
-
-msgid "Remembered printer"
-msgstr "Máy in đã lưu"
 
 msgid "Check printer status"
 msgstr "Kiểm tra trạng thái máy in"
@@ -34394,3 +34388,27 @@ msgstr "Số nhãn máy báo đã in xong: {reported}"
 
 msgid "Partial print recorded. Reprint the missing pages using the page range."
 msgstr "Đã ghi nhận in một phần. Chọn khoảng trang còn thiếu để in lại."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Could not load printer settings."
+msgstr "Không thể tải cài đặt máy in."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Default printer"
+msgstr "Máy in mặc định"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Loading printer settings…"
+msgstr "Đang tải cài đặt máy in…"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "No remembered printers."
+msgstr "Chưa lưu máy in nào."
+
+#: src/components/labels/thermal/studio.tsx src/native/main.tsx
+msgid "Printer settings"
+msgstr "Cài đặt máy in"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Use for thermal printing"
+msgstr "Dùng để in nhiệt"

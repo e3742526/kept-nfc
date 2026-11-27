@@ -50,6 +50,17 @@ stock**.
    pair when saved. The physical page size stays fixed. On a new roll or printer, check the first few
    consecutive labels to detect alignment drift before using a full batch.
 
+### NIIMBOT B1 Pro on iPhone
+
+In SheepKeep, open **More → Settings → Printer settings**, then tap **Find nearby printers**.
+Select your B1 Pro to verify the model and save it as the default for thermal printing.
+Use the same screen to check the printer’s status, switch to a saved B1 Pro, or forget it.
+
+In the thermal label editor, check **Printer profile** and choose the stock that matches the
+loaded roll. The **Printer settings** shortcut opens the same setup without closing your draft.
+Save changes to stock and calibration in **Save printer profile**. Choose **System print dialog**
+in the printer profile picker to use AirPrint for a job.
+
 ### macOS and the LOSRECAL reference printer
 
 The LOSRECAL ITPP128 used here identifies over USB as a 4BARCODE 4B-2054M. The community driver

@@ -21,6 +21,7 @@ import { isApiError } from '@/api/client';
 import { ErrorState, Notice, useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
+import { Dialog, DialogTrigger, Modal } from '@/components/ui/dialog';
 import { TextField } from '@/components/ui/text-field';
 import { sep } from '@/lib/format';
 import { useOnline } from '@/lib/online';
@@ -40,10 +41,8 @@ import {
   isNiimbotStock,
   NIIMBOT_COPY_LIMIT,
   NIIMBOT_PAGE_LIMIT,
-  type NiimbotDevice,
   type NiimbotOutput,
   niimbotJob,
-  niimbotProfile,
 } from './niimbot';
 import { isNiimbotError, NiimbotSettings, useNiimbotErrorText } from './niimbot-settings';
 import {
@@ -425,6 +424,13 @@ export function ThermalStudio({
     await printStore.transaction('rw', printStore.preferences, async () => {
       const prior = await printStore.preferences.get(owner);
       const list = prior?.profiles ?? [];
+      // Preparing a job with a different output should not replace the saved Bluetooth default.
+      if (
+        !saved &&
+        prior?.profileId !== profile.id &&
+        list.some((item) => item.id === prior?.profileId && item.adapter === 'niimbot-b1-pro')
+      )
+        return;
       const next = saved ? [...list.filter((item) => item.id !== saved.id), saved] : list;
       await printStore.preferences.put({
         owner,
@@ -448,28 +454,16 @@ export function ThermalStudio({
     setLayout(stocksMatch(next.stock, next.layout));
   }
 
-  async function selectNiimbot(device: NiimbotDevice) {
-    const id = `niimbot:${device.id}`;
-    const saved = profiles.find((item) => item.id === id);
-    const next = saved ? printerOnStock(saved, saved.stock) : niimbotProfile(device, stock);
-    await remember(next, next.stock);
-    setStock(next.stock);
-    setLayout('single');
-  }
-
-  async function forgetNiimbot(id: string) {
-    await printStore.transaction('rw', printStore.preferences, async () => {
-      const prior = await printStore.preferences.get(owner);
-      if (!prior) return;
-      const next = prior.profiles.filter((item) => item.id !== id);
-      await printStore.preferences.put({
-        ...prior,
-        profiles: next,
-        profileId: prior.profileId === id ? '' : prior.profileId,
-      });
-      setProfiles(next);
-    });
-    if (profile.id === id) restore('system');
+  function applyPrinterSettings(next: PrinterProfile[], selected?: PrinterProfile) {
+    setProfiles(next);
+    if (selected) {
+      const nextStock = isNiimbotStock(stock) ? stock : selected.stock;
+      setProfile(printerOnStock(selected, nextStock));
+      setStock(nextStock);
+      setLayout('single');
+    } else if (bluetoothId && !next.some((item) => item.id === profile.id)) {
+      setProfile(printerOnStock(defaultPrinterProfile(), stock));
+    }
   }
 
   async function prepare() {
@@ -698,16 +692,26 @@ export function ThermalStudio({
               <Trans>Preprinted inventory or batch reprint</Trans>
             </p>
           )}
-          {bluetooth && (
-            <NiimbotSettings
-              output={bluetooth}
-              profile={profile}
-              selectPrinter={selectNiimbot}
-              forget={forgetNiimbot}
-              disabled={busy}
-            />
-          )}
           <ThermalSettings
+            printerSettings={
+              bluetooth && (
+                <DialogTrigger>
+                  <Button variant="secondary" isDisabled={busy} className="justify-self-start">
+                    <Trans>Printer settings</Trans>
+                  </Button>
+                  <Modal>
+                    <Dialog title={<Trans>Printer settings</Trans>}>
+                      <NiimbotSettings
+                        owner={owner}
+                        output={bluetooth}
+                        stock={stock}
+                        onChange={applyPrinterSettings}
+                      />
+                    </Dialog>
+                  </Modal>
+                </DialogTrigger>
+              )
+            }
             stock={stock}
             setStock={(value) => {
               const printer = printerOnStock(profile, value);

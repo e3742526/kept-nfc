@@ -12,6 +12,7 @@ import {
   type WorkshopIcon,
 } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
+import type { ReactNode } from 'react';
 import { Checkbox } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -71,6 +72,7 @@ export function PrintNumber({
 }
 
 export function ThermalSettings({
+  printerSettings,
   stock,
   setStock,
   layout,
@@ -84,6 +86,7 @@ export function ThermalSettings({
   setOptions,
   suggestIcon,
 }: {
+  printerSettings?: ReactNode;
   stock: string;
   setStock: (stock: string) => void;
   layout: ThermalLayout;
@@ -145,15 +148,18 @@ export function ThermalSettings({
   return (
     <div className="grid gap-4">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Choices
-          label={t`Printer profile`}
-          value={profile.id || 'system'}
-          items={[
-            { id: 'system', name: t`System print dialog` },
-            ...profiles.map((item) => ({ id: item.id, name: item.name })),
-          ]}
-          change={selectProfile}
-        />
+        <div className="grid content-start gap-2">
+          <Choices
+            label={t`Printer profile`}
+            value={profile.id || 'system'}
+            items={[
+              { id: 'system', name: t`System print dialog` },
+              ...profiles.map((item) => ({ id: item.id, name: item.name })),
+            ]}
+            change={selectProfile}
+          />
+          {printerSettings}
+        </div>
         <Choices
           label={t`Physical stock`}
           value={stock}
@@ -434,17 +440,19 @@ export function ThermalSettings({
             </>
           )}
         </div>
-        <p className="text-small text-ink-2">
-          <Trans>
-            Use the system print dialog to select the queue and apply media, speed, and darkness
-            settings.
-          </Trans>
-        </p>
+        {!niimbot && (
+          <p className="text-small text-ink-2">
+            <Trans>
+              Use the system print dialog to select the queue and apply media, speed, and darkness
+              settings.
+            </Trans>
+          </p>
+        )}
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" isDisabled={!profile.name.trim()} onPress={saveProfile}>
             <Trans>Save profile and stock calibration</Trans>
           </Button>
-          {profile.id && (
+          {profile.id && !niimbot && (
             <Button
               variant="secondary"
               onPress={() => setProfile({ ...profile, id: '', name: '' })}
