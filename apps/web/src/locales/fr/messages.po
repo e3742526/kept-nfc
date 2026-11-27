@@ -33190,6 +33190,15 @@ msgstr "Cette étiquette est déjà sur {0}. Utilisez une étiquette vierge."
 msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
 msgstr "Cette étiquette NFC est vierge. Choisissez « Écrire une nouvelle étiquette NFC » pour lui donner une étiquette."
 
+#: src/native/label-panel.tsx
+msgid "This NFC tag is blank. Choose a room or place (not Unplaced) while connected, then scan it again to write it."
+msgstr "Cette étiquette NFC est vierge. Une fois connecté, choisissez une pièce ou un emplacement (pas « Sans emplacement »), puis scannez-la à nouveau pour l’écrire."
+
+#. placeholder {0}: isolate(tagPlace.name)
+#: src/native/label-panel.tsx
+msgid "This NFC tag is blank. Write it for {0}?"
+msgstr "Cette étiquette NFC est vierge. L’écrire pour {0} ?"
+
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "Écrire une nouvelle étiquette NFC"

@@ -18,6 +18,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { capturePaths } from '@/api/capture/paths';
+import { inventoryPaths } from '@/api/inventory/paths';
+import type { LabelResult } from '@/api/inventory/types';
 import { appDetect } from '@/camera/scanner';
 import { useErrorText } from '@/components/page';
 import type { Read } from '@/components/scan/resolve';
@@ -57,6 +59,9 @@ export type LabelBox = {
   isContainer?: boolean;
 };
 
+/** A place that can be given an NFC tag from the picker: never Unplaced, never read-only. */
+export type TagPlace = { id: string; name: string; locationId: string };
+
 export const FIND_TARGET_KEY = 'findTarget';
 
 type ScanMode = 'qr' | 'qr-result' | 'nfc';
@@ -74,6 +79,7 @@ export function LabelPanel({
   onClearFindTarget,
   onAuthError,
   onBlankTag,
+  tagPlace,
 }: {
   connection: Connection;
   cache: InventoryCache | undefined;
@@ -81,6 +87,11 @@ export function LabelPanel({
   box?: LabelBox;
   canEnroll?: boolean;
   placeOnly?: boolean;
+  /**
+   * Place picker only: the place a blank NFC tag scanned here is written for. Undefined means
+   * this picker does not write tags; null means it could, but nothing eligible is chosen yet.
+   */
+  tagPlace?: TagPlace | null;
   onOpen: ((target: Target) => void) | ((target: Target) => Promise<string | undefined>);
   onClose: () => void;
   onProgram?: () => void;
@@ -107,6 +118,8 @@ export function LabelPanel({
   const [nfcRegistrationPending, setNfcRegistrationPending] = useState(false);
   const [tagVersion, setTagVersion] = useState(0);
   const [matched, setMatched] = useState(false);
+  // A blank tag read by the place picker, waiting for a choice to write it to the chosen place.
+  const [blankForPlace, setBlankForPlace] = useState<TagReading>();
   // Identify listens for an NFC tag while the camera looks for a QR code; the first read wins.
   const [nfcListening, setNfcListening] = useState(false);
   // No NFC reader (iPad, Simulator): Scan offers the camera and the typed code only.
@@ -245,6 +258,7 @@ export function LabelPanel({
     setStatus('');
     setCandidates([]);
     setMatched(false);
+    setBlankForPlace(undefined);
     try {
       await operation();
     } catch (error) {
@@ -418,11 +432,61 @@ export function LabelPanel({
         if (!live.current || signal.aborted) return;
         if (result.status === 'read' && result.url)
           await read(result.url, 'nfc', undefined, signal);
+        else if (result.status === 'blank' && tagPlace !== undefined) offerBlankTag(result);
         else setStatus(nfcStatus(result));
       } catch (error) {
         if (!signal.aborted) throw error;
       } finally {
         identifyRead.current = null;
+      }
+    });
+  }
+
+  /** A blank tag in the place picker: offer it to the chosen place, or say why it cannot be. */
+  function offerBlankTag(reading: TagReading) {
+    if (reading.writable === false) {
+      setStatus(nfcStatus({ status: 'read_only' }));
+    } else if (!tagPlace || !reading.fingerprint) {
+      setStatus(
+        t`This NFC tag is blank. Choose a room or place (not Unplaced) while connected, then scan it again to write it.`,
+      );
+    } else {
+      setBlankForPlace(reading);
+    }
+  }
+
+  /** Give the place its label, write it to the blank tag, read it back, then pick the place. */
+  function writeBlankTag() {
+    const fingerprint = blankForPlace?.fingerprint;
+    const place = tagPlace;
+    if (!fingerprint || !place) return;
+    return run(async () => {
+      // Issuing is idempotent: a place that already has a label gets that code back.
+      const { code } = await adapters.transport.request<LabelResult>(
+        connection,
+        inventoryPaths.placeLabel(place.id),
+        { method: 'POST' },
+      );
+      const url = labelUrl(await loadLabelAddress(connection, adapters).catch(() => base), code);
+      if (!live.current) return;
+      const assigned = await checkAssignment(url, { id: place.id, kind: 'place' });
+      // The scanner may have been closed while the server answered: do not reopen the NFC sheet.
+      if (!assigned || !live.current) return;
+      const result = await adapters.nfc.scanTag(connection, {
+        mode: 'write',
+        url,
+        fingerprint,
+        messages,
+      });
+      if (!live.current) return;
+      if (result.status !== 'written') {
+        setStatus(nfcStatus(result));
+        return;
+      }
+      setStatus(t`SheepKeep tag verified.`);
+      await registerVerifiedTag(url, place.locationId);
+      if (live.current) {
+        await chooseTarget({ id: place.id, kind: 'place', locationId: place.locationId });
       }
     });
   }
@@ -544,30 +608,33 @@ export function LabelPanel({
     });
   }
 
-  async function checkAssignment(url: string) {
-    if (!box) return false;
+  async function checkAssignment(
+    url: string,
+    of: Pick<LabelBox, 'id' | 'kind' | 'isContainer'> | undefined = box,
+  ) {
+    if (!of) return false;
     const result = await resolveLabel(connection, cache, url, 'nfc', undefined, true, adapters);
-    if (isTarget(result, box.id, box.kind)) return true;
-    if (box.kind === 'place') {
+    if (isTarget(result, of.id, of.kind)) return true;
+    if (of.kind === 'place') {
       setStatus(
         t`The server could not confirm this place’s label. Reopen the place and try again.`,
       );
       return false;
     }
     setStatus(
-      box.isContainer === false
+      of.isContainer === false
         ? t`The server could not confirm this item’s label. Reopen the item and try again.`
         : t`The server could not confirm this box’s label. Reopen the box and try again.`,
     );
     return false;
   }
 
-  async function registerVerifiedTag(label: string) {
-    if (!box) return;
+  async function registerVerifiedTag(label: string, locationId = box?.locationId) {
+    if (!locationId) return;
     try {
       await adapters.transport.request(connection, capturePaths.labelTags, {
         method: 'POST',
-        body: { locationId: box.locationId, label, kind: 'nfc' },
+        body: { locationId, label, kind: 'nfc' },
       });
       if (live.current) {
         setNfcRegistrationPending(false);
@@ -1013,6 +1080,17 @@ export function LabelPanel({
             </li>
           ))}
         </ul>
+      )}
+      {blankForPlace && tagPlace && (
+        <div className="kept-card grid gap-3">
+          <p>
+            <Trans>This NFC tag is blank. Write it for {isolate(tagPlace.name)}?</Trans>
+          </p>
+          <Button isPending={busy} onPress={() => void writeBlankTag()}>
+            <Nfc size={16} aria-hidden />
+            <Trans>Write and verify</Trans>
+          </Button>
+        </div>
       )}
       {!matched && status && (
         <p role="status" className="rounded-xl bg-sunken p-3 text-ink-2">
