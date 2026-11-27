@@ -209,6 +209,7 @@ export function DestinationPicker({
   exclude,
   forParent,
   offerTagWrite,
+  showRecent = true,
   onAuthError,
 }: {
   cache: InventoryCache;
@@ -225,6 +226,8 @@ export function DestinationPicker({
   forParent?: boolean;
   /** Adding: a blank NFC tag scanned in Scan place label can be written for the chosen place. */
   offerTagWrite?: boolean;
+  /** False when the caller lists recent destinations itself (Add item's one-tap shortcuts). */
+  showRecent?: boolean;
   onAuthError?: ((reason: 'expired' | 'restored') => void) | undefined;
 }) {
   const { t } = useLingui();
@@ -430,7 +433,7 @@ export function DestinationPicker({
           </SelectItem>
         )}
       </Select>
-      {!branch && !forParent && recentRows.length > 0 && (
+      {showRecent && !branch && !forParent && recentRows.length > 0 && (
         <Select
           label={t`Recent destinations`}
           items={recentRows}

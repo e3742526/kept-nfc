@@ -34265,23 +34265,11 @@ msgstr "Nhãn này chưa được gán. Quét nhãn từ thẻ Quét để sử 
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Mã đó khớp với nhiều món đồ. Quét mã từ thẻ Quét để chọn một món."
 
-msgid "Item details"
-msgstr "Chi tiết món đồ"
-
-msgid "Add an NFC tag?"
-msgstr "Thêm thẻ NFC?"
-
 msgid "Your item gets a QR code when it syncs. You can print it later."
 msgstr "Món đồ sẽ có mã QR khi đồng bộ. Bạn có thể in mã sau."
 
-msgid "Continue to labels"
-msgstr "Tiếp tục đến phần nhãn"
-
 msgid "Save item"
 msgstr "Lưu món đồ"
-
-msgid "Skip NFC and save"
-msgstr "Bỏ qua NFC và lưu"
 
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Bật Bluetooth để sử dụng máy in nhãn."
@@ -34663,3 +34651,14 @@ msgstr "Mẫu nhãn"
 
 msgid "Use template"
 msgstr "Dùng mẫu"
+#: src/native/capture-form.tsx
+msgid "Action, category, quantity, notes and label"
+msgstr "Thao tác, danh mục, số lượng, ghi chú và nhãn"
+
+#: src/native/capture-form.tsx
+msgid "Clipboard"
+msgstr "Bộ nhớ tạm"
+
+#: src/native/capture-form.tsx
+msgid "Copy a photo first, then try again."
+msgstr "Hãy sao chép một ảnh trước rồi thử lại."
