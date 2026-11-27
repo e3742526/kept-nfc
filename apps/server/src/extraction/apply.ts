@@ -178,7 +178,7 @@ const BUILTIN_BY_NAME: ReadonlyMap<string, string> = (() => {
   const out = new Map<string, string>();
   for (const t of BUILTIN_TYPES) {
     if (t.isFieldGroup) continue;
-    const names = [t.key.replace(/_/g, ' '), t.names.en, t.names.ar];
+    const names = [t.key.replace(/_/g, ' '), ...Object.values(t.names)];
     for (const n of names) {
       for (const part of [n, ...n.split('/')]) {
         const key = normalize(part);

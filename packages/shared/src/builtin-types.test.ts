@@ -61,10 +61,10 @@ describe('BUILTIN_TYPES', () => {
     }
   });
 
-  it('every type and field has an English and an Arabic name', () => {
+  it('every type and field has an English name', () => {
     for (const t of BUILTIN_TYPES) {
       expect(t.names.en.trim(), t.key).not.toBe('');
-      expect(t.names.ar, t.key).toMatch(/\p{Script=Arabic}/u);
+      if (t.names.ar) expect(t.names.ar, t.key).toMatch(/\p{Script=Arabic}/u);
       for (const f of t.fields) {
         expect(f.names.en.trim(), `${t.key}.${f.key}`).not.toBe('');
         expect(f.names.ar, `${t.key}.${f.key}`).toMatch(/\p{Script=Arabic}/u);

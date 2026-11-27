@@ -1,12 +1,8 @@
-/**
- * Settings → Me → Display and a location's languages: the searchable language
- * list with flags and each language's own name, the theme with System first, digits only in
- * Arabic, the content width, the sign-in pages' picker, and French, German and Italian screens.
- */
+/** Device display preferences and a location's languages for inventory data. */
 import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { INV_IDS } from '@/api/inventory/mock/fixtures';
-import { IDS, signedOutScenario } from '@/api/mock/fixtures';
+import { IDS } from '@/api/mock/fixtures';
 import { paths } from '@/api/paths';
 import { findHeading, renderApp } from '@/test/app';
 import { expectLogicalOnly } from '@/test/render';
@@ -20,133 +16,6 @@ function expectNoVisibleNativeSelect() {
 }
 
 describe('Settings → Me → Display', () => {
-  it('picks the interface language from a searchable list of flags and own names', async () => {
-    const { user } = await renderApp('/settings');
-    await findHeading('Settings');
-    expect(screen.getByRole('heading', { name: 'Display' })).toBeInTheDocument();
-    const box = screen.getByRole('combobox', { name: 'Language' });
-    expect(box).toHaveValue('English');
-    expect(box).toHaveAttribute('lang', 'en');
-    await user.click(box);
-    const list = await screen.findByRole('listbox');
-    const options = within(list).getAllByRole('option');
-    expect(options.map((o) => o.textContent)).toEqual([
-      'العربية',
-      'Deutsch',
-      'English',
-      'Español',
-      'Français',
-      'Italiano',
-      'Українська',
-      'Tiếng Việt',
-    ]);
-    // A flag (SVG, never an emoji) beside every name, marked decorative.
-    for (const o of options) {
-      const flag = o.querySelector('svg[data-flag]');
-      expect(flag).not.toBeNull();
-      expect(flag).toHaveAttribute('aria-hidden', 'true');
-    }
-    expect(options[0]?.querySelector('[lang="ar"]')).toHaveAttribute('dir', 'rtl');
-    await user.click(within(list).getByRole('option', { name: 'Français' }));
-    await findHeading('Paramètres');
-    expect(localStorage.getItem('kept.locale')).toBe('fr');
-    expect(document.documentElement.lang).toBe('fr');
-    expect(document.documentElement.dir).toBe('ltr');
-    expectNoVisibleNativeSelect();
-    expectLogicalOnly();
-  });
-
-  it('switches to German and Italian, and back to Arabic right to left', async () => {
-    const { user } = await renderApp('/settings');
-    await findHeading('Settings');
-    await user.click(screen.getByRole('combobox', { name: 'Language' }));
-    await user.click(await screen.findByRole('option', { name: 'Deutsch' }));
-    await findHeading('Einstellungen');
-    await user.click(screen.getByRole('combobox', { name: 'Sprache' }));
-    await user.click(await screen.findByRole('option', { name: 'Italiano' }));
-    await findHeading('Impostazioni');
-    await user.click(screen.getByRole('combobox', { name: 'Lingua' }));
-    await user.click(await screen.findByRole('option', { name: 'العربية' }));
-    await findHeading('الإعدادات');
-    expect(document.documentElement.dir).toBe('rtl');
-  });
-
-  it('finds a language by typing, and the screen re-renders only once one is chosen', async () => {
-    const { user } = await renderApp('/settings');
-    await findHeading('Settings');
-    const box = screen.getByRole('combobox', { name: 'Language' });
-    await user.click(box);
-    await user.keyboard('allemand');
-    expect(screen.getByRole('option')).toHaveTextContent('No matches');
-    await user.clear(box);
-    await user.keyboard('german');
-    expect(screen.getByRole('option')).toHaveTextContent('Deutsch');
-    // Nothing has changed yet.
-    expect(localStorage.getItem('kept.locale')).not.toBe('de');
-    expect(document.documentElement.lang).toBe('en');
-    await user.keyboard('{ArrowDown}{Enter}');
-    await findHeading('Einstellungen');
-    expect(localStorage.getItem('kept.locale')).toBe('de');
-    // The interface's own words for a language now work too.
-    const german = screen.getByRole('combobox', { name: 'Sprache' });
-    expect(german).toHaveValue('Deutsch');
-    await user.click(german);
-    await user.keyboard('Französisch');
-    expect(screen.getByRole('option')).toHaveTextContent('Français');
-  });
-
-  it('changes the language from a quick tap on a phone, and the page is there to read', async () => {
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: query === '(pointer: coarse)',
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    }));
-    try {
-      const { user } = await renderApp('/settings');
-      await findHeading('Settings');
-      await user.pointer({
-        keys: '[TouchA]',
-        target: screen.getByRole('combobox', { name: 'Language' }),
-      });
-      await user.pointer({
-        keys: '[TouchA]',
-        target: await screen.findByRole('option', { name: 'العربية' }),
-      });
-      // By role: an open list hides the rest of the page from screen readers, and from this.
-      await findHeading('الإعدادات');
-      expect(document.documentElement.dir).toBe('rtl');
-      expect(localStorage.getItem('kept.locale')).toBe('ar');
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(screen.queryByRole('listbox')).toBeNull();
-      expect(screen.getByRole('heading', { name: 'الإعدادات' })).toBeInTheDocument();
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
-
-  it('keeps the interface language when the box is cleared and left', async () => {
-    const { user } = await renderApp('/settings', { locale: 'fr' });
-    await findHeading('Paramètres');
-    const box = screen.getByRole('combobox', { name: 'Langue' });
-    await user.click(box);
-    await user.clear(box);
-    await user.click(document.querySelector('h1') as HTMLElement);
-    expect(box).toHaveValue('Français');
-    expect(document.documentElement.lang).toBe('fr');
-    await findHeading('Paramètres');
-  });
-
-  it('shows the digits choice only when the interface is Arabic', async () => {
-    await renderApp('/settings', { locale: 'fr' });
-    await findHeading('Paramètres');
-    expect(screen.queryByRole('radio', { name: '0123' })).toBeNull();
-    cleanup();
-    await renderApp('/settings', { locale: 'ar' });
-    await findHeading('الإعدادات');
-    expect(screen.getByRole('radio', { name: '0123' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: '٠١٢٣' })).toBeInTheDocument();
-  });
-
   it('offers System, Light and Dark, with System the default', async () => {
     const { user } = await renderApp('/settings');
     await findHeading('Settings');
@@ -199,11 +68,11 @@ describe('Settings → Me → Display', () => {
     expect(screen.getByText('18 Jan 2025')).toBeInTheDocument();
   });
 
-  it('lets every date format show whole on a phone, in Vietnamese too', async () => {
-    await renderApp('/settings', { locale: 'vi' });
-    const format = await screen.findByRole('radiogroup', { name: 'Định dạng ngày' });
+  it('lets every date format show whole on a phone', async () => {
+    await renderApp('/settings');
+    const format = await screen.findByRole('radiogroup', { name: 'Date format' });
     // Four options take two columns on a phone, and no label is kept to one line, where a long
-    // one ("3 thg 11, 2026") would run past its cell and be cut off.
+    // one would run past its cell and be cut off.
     const radios = within(format).getAllByRole('radio');
     expect(radios).toHaveLength(4);
     const grid = format.querySelector('.auto-cols-fr') as HTMLElement;
@@ -211,12 +80,6 @@ describe('Settings → Me → Display', () => {
     expect(
       format.querySelector('.whitespace-nowrap, .truncate, .text-ellipsis, [class*="nowrap"]'),
     ).toBeNull();
-  });
-
-  it('offers the region only in English', async () => {
-    await renderApp('/settings', { locale: 'fr' });
-    await findHeading('Paramètres');
-    expect(screen.queryByRole('radiogroup', { name: 'Region' })).toBeNull();
   });
 
   it('sets the content width for this device, Centered by default', async () => {
@@ -269,20 +132,6 @@ describe('Settings → Me → Display', () => {
     const body = document.querySelector('[data-slot="page-body"]');
     expect(body).toContainElement(tabs);
     expect(body).toHaveClass('page-fill');
-  });
-});
-
-describe('the sign-in pages', () => {
-  it('pick the language from the same searchable list, in a small box', async () => {
-    const { user } = await renderApp('/signin', { state: signedOutScenario() });
-    await findHeading('Sign in to SheepKeep');
-    const box = await screen.findByRole('combobox', { name: 'Language' });
-    await user.click(box);
-    await user.keyboard('deutsch');
-    await user.click(await screen.findByRole('option', { name: 'Deutsch' }));
-    await waitFor(() => expect(document.documentElement.lang).toBe('de'));
-    expect(localStorage.getItem('kept.locale')).toBe('de');
-    expectNoVisibleNativeSelect();
   });
 });
 
@@ -363,20 +212,5 @@ describe('Location settings → General: languages', () => {
         languages: ['ar-EG', 'pt', 'it'],
       }),
     );
-  });
-});
-
-describe('French, German and Italian screens', () => {
-  it('read in the chosen language, with built-in names translated', async () => {
-    await renderApp('/', { locale: 'fr' });
-    await findHeading('Accueil');
-    cleanup();
-    await renderApp('/', { locale: 'de' });
-    await findHeading('Start');
-    cleanup();
-    await renderApp('/settings/account/types', { locale: 'it' });
-    // A built-in type's name comes from @kept/shared's table, not the English.
-    expect(await screen.findByText('Elettrodomestico', {}, { timeout: 5000 })).toBeInTheDocument();
-    expect(document.documentElement.lang).toBe('it');
   });
 });

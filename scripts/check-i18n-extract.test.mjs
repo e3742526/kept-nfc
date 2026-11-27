@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { emptyTranslations, newIds, parsePo } from './check-i18n-extract.mjs';
 
@@ -72,32 +72,11 @@ describe('newIds and emptyTranslations', () => {
   });
 });
 
-// Spanish sentences that once kept an English word.
-describe('the Spanish catalogue', () => {
-  const es = parsePo(
-    readFileSync(new URL('../apps/web/src/locales/es/messages.po', import.meta.url), 'utf8'),
+it('keeps English as the only committed app catalogue', () => {
+  const root = new URL('../apps/web/src/locales/', import.meta.url);
+  const languages = readdirSync(root).filter((locale) =>
+    existsSync(new URL(`${locale}/messages.po`, root)),
   );
-  it.each([
-    '{0, plural, one {# thing in {where}} other {# things in {where}}}',
-    '{count, plural, one {Made labels for # thing} other {Made labels for # things}}',
-    '{count, plural, one {Made labels for # place} other {Made labels for # places}}',
-    '{count, plural, one {Made # blank label} other {Made # blank labels}}',
-  ])('%s has no English left', (id) => {
-    expect(es.get(id)).toBeTruthy();
-    expect(es.get(id)).not.toMatch(/\b(in|for|Made|blank)\b/);
-  });
-});
-
-// The committed catalogues themselves: no live entry has an empty translation in any
-// non-English locale. An empty msgstr would show English in that language's UI.
-describe('the committed catalogues', () => {
-  for (const locale of ['ar', 'de', 'es', 'fr', 'it', 'uk', 'vi']) {
-    it(`${locale}: every msgstr is written`, () => {
-      const url = new URL(`../apps/web/src/locales/${locale}/messages.po`, import.meta.url);
-      const entries = parsePo(readFileSync(url, 'utf8'));
-      expect(entries.size).toBeGreaterThan(1000);
-      const empty = [...entries].filter(([, t]) => t === '').map(([k]) => k);
-      expect(empty).toEqual([]);
-    });
-  }
+  expect(languages).toEqual(['en']);
+  expect(parsePo(readFileSync(new URL('en/messages.po', root), 'utf8')).size).toBeGreaterThan(1000);
 });

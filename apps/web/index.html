@@ -36,9 +36,9 @@
       });
     </script>
     <!--
-      Before first paint: theme, language, direction, content width (D203), the sidebar's
+      Before first paint: theme, content width (D203), the sidebar's
       width (D198) and the place tree's width and fold (#427). Must stay inline and synchronous so
-      the first frame is already right (no light flash in dark mode, no LTR flash in Arabic, no
+      the first frame is already right (no light flash in dark mode, no
       sidebar jumping to the rail, no page widening after load, no tree changing its width).
       Keep the storage keys in step with src/lib/prefs.ts. localStorage can throw (private mode,
       blocked storage), so every read is inside try/catch and the fallback is the OS setting.
@@ -47,14 +47,12 @@
       (() => {
         const d = document.documentElement;
         let theme = null;
-        let locale = null;
         let sidebar = null;
         let width = null;
         let placeTree = null;
         let placeTreeWidth = null;
         try {
           theme = localStorage.getItem('kept.theme');
-          locale = localStorage.getItem('kept.locale');
           sidebar = localStorage.getItem('kept.sidebar');
           width = localStorage.getItem('kept.width');
           placeTree = localStorage.getItem('kept.placeTree');
@@ -66,14 +64,6 @@
             dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           } catch {}
           theme = dark ? 'dark' : 'light';
-        }
-        // The interface languages this build offers (prefs.ts UI_LOCALES: VITE_UI_LOCALES, English
-        // only when unset); the browser's language when it is one of them.
-        const offered = '%VITE_UI_LOCALES%';
-        const locales = /^[a-z]{2}(,[a-z]{2})*$/.test(offered) ? offered.split(',') : ['en'];
-        if (!locales.includes(locale)) {
-          const nav = (navigator.language || 'en').toLowerCase().split(/[-_]/)[0];
-          locale = locales.includes(nav) ? nav : 'en';
         }
         if (sidebar !== 'collapsed' && sidebar !== 'expanded') {
           // No stored choice: the rail below 1024 px (tablets), the full sidebar above.
@@ -95,8 +85,6 @@
           ? Math.min(512, Math.max(208, Number(placeTreeWidth)))
           : 240;
         d.style.setProperty('--place-tree-width', `${treePx}px`);
-        d.setAttribute('lang', locale);
-        d.setAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr');
       })();
     </script>
   </head>

@@ -340,6 +340,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                   name: 'cardboard_box',
                   isContainer: true,
                 },
+                { id: 'type-cabinet', builtinKey: 'cabinet', name: 'cabinet', isContainer: true },
               ],
             },
             changes: {
@@ -532,7 +533,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
               const meta = uploadedFiles.get(f.fileId);
               const hasPreview = f.role === 'photo' && meta?.mime === 'image/jpeg';
               return {
-                id: `att-${createdId}-${index}`,
+                id: `att-${op.payload.locationPhoto ? op.clientId : createdId}-${index}`,
                 role: op.payload.locationPhoto ? 'document' : f.role,
                 sort: index,
                 file: {
@@ -556,7 +557,11 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 rowVersion: 1,
               };
             });
-            if (op.payload.locationPhoto) locationPhotosByThing.set(createdId, attachments);
+            if (op.payload.locationPhoto)
+              locationPhotosByThing.set(
+                createdId,
+                [...attachments, ...(locationPhotosByThing.get(createdId) ?? [])].slice(0, 3),
+              );
             else attachmentsByThing.set(createdId, attachments);
             return {
               clientId: op.clientId,
@@ -1602,9 +1607,11 @@ describe('KeptPhone mobile workflows', () => {
         await user.type(screen.getByRole('textbox', { name: 'Description' }), description);
       await openAddDetails(user);
       await user.type(screen.getByRole('textbox', { name: 'Quantity (optional)' }), '4');
-      await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
+      await user.click(await screen.findByRole('button', { name: 'AI assist' }));
+      await user.click(await screen.findByRole('button', { name: 'Review item' }));
 
       await screen.findByRole('heading', { name: 'Photo review' });
+      expect(env.adapters.captureAI.serverProposals).toHaveBeenCalledTimes(1);
       await user.click(screen.getByText('Details', { selector: 'summary' }));
       expect(screen.getByRole('textbox', { name: 'Quantity (optional)' })).toHaveValue(
         expectedQuantity,
@@ -1701,9 +1708,12 @@ describe('KeptPhone mobile workflows', () => {
     await user.type(screen.getByRole('textbox', { name: 'Quantity (optional)' }), '4');
     await user.click(await screen.findByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
-    await user.click(screen.getByRole('button', { name: 'Suggest items' }));
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    expect(await screen.findByText('The photos may show 3 more items.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Review multiple items' }));
     const names = await screen.findAllByRole('textbox', { name: 'Name' });
     expect(names).toHaveLength(4);
+    expect(env.adapters.captureAI.suggest).toHaveBeenCalledTimes(2);
     const drill = names[0];
     if (!drill) throw new Error('Missing suggestion');
     const firstRow = drill.closest('.kept-card');
@@ -1814,13 +1824,13 @@ describe('KeptPhone mobile workflows', () => {
     if (!picker) throw new Error('Photo picker is missing');
     await user.upload(picker, new File(['photo'], 'manual.jpg', { type: 'image/jpeg' }));
     for (let attempt = 0; attempt < 2; attempt++) {
-      await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
-      expect(await screen.findByText('Could not suggest items from this photo.')).toBeVisible();
+      await user.click(await screen.findByRole('button', { name: 'AI assist' }));
+      expect(await screen.findByText('Could not analyze these photos.')).toBeVisible();
     }
-    await user.click(screen.getByRole('button', { name: 'Suggest items' }));
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
     await user.click(await screen.findByRole('button', { name: 'Cancel suggestions' }));
     await act(async () => resolveLate({ items: [{ name: 'Late drill' }] }));
-    expect(screen.queryByDisplayValue('Late drill')).toBeNull();
+    expect(screen.queryByText('Late drill')).not.toBeInTheDocument();
     expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(false);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Manual tools');
     await saveNewItem(user);
@@ -1900,7 +1910,8 @@ describe('KeptPhone mobile workflows', () => {
     );
     const description = screen.getByRole('textbox', { name: 'Description' });
     await user.type(description, 'Holiday supplies');
-    await user.click(await screen.findByRole('button', { name: 'Suggest details' }));
+    await user.click(await screen.findByRole('button', { name: 'AI assist' }));
+    expect(screen.queryByRole('button', { name: /^Suggest (details|items)$/ })).toBeNull();
 
     let list = await screen.findByRole('list', { name: 'Suggestions' });
     expect(within(list).getAllByRole('checkbox')).toHaveLength(5);
@@ -1926,7 +1937,7 @@ describe('KeptPhone mobile workflows', () => {
     );
 
     // Asked again, only what still differs is offered; Accept all takes every row.
-    await user.click(screen.getByRole('button', { name: 'Suggest details' }));
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
     list = await screen.findByRole('list', { name: 'Suggestions' });
     expect(within(list).getAllByRole('checkbox')).toHaveLength(3);
     await user.click(screen.getByRole('button', { name: 'Accept all' }));
@@ -2223,7 +2234,7 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(await screen.findByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
-    await user.click(screen.getByRole('button', { name: 'Suggest details' }));
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
     expect(ai.suggest).toHaveBeenLastCalledWith(expect.anything(), 'apple', photo, undefined, true);
     expect(description).toHaveValue('My draft');
     await user.click(await screen.findByRole('button', { name: 'Dismiss' }));
@@ -2231,7 +2242,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'ChatGPT plan' }));
     await user.click(screen.getByRole('button', { name: 'Continue with ChatGPT' }));
-    await user.click(await screen.findByRole('button', { name: 'Suggest details' }));
+    await user.click(await screen.findByRole('button', { name: 'AI assist' }));
     expect(ai.connect).toHaveBeenCalledTimes(1);
     expect(ai.suggest).toHaveBeenLastCalledWith(
       expect.anything(),
@@ -3065,7 +3076,83 @@ describe('KeptPhone mobile workflows', () => {
     ).toHaveStyle({ rotate: '90deg' });
   });
 
-  it('queues a location photo offline and shows it separately after sync', async () => {
+  it('changes a container cover by tapping the current picture', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const photos = ['Front of box', 'Open box'].map(
+      (name, index): AttachmentView => ({
+        id: `cover-${index}`,
+        role: 'photo',
+        sort: index,
+        name,
+        url: null,
+        subject: { thingId: env.boxId },
+        rowVersion: 2,
+        canManage: true,
+        createdBy: { displayName: 'Ibrahim' },
+        file: {
+          id: `file-${index}`,
+          mime: 'image/jpeg',
+          class: 'photo',
+          bytes: 50,
+          sha256: 'a'.repeat(64),
+          hasGps: false,
+          width: 8,
+          height: 4,
+          derivativeState: 'ready',
+          thumbUrl: `/f/cover-${index}.jpg`,
+          displayUrl: `/f/cover-${index}-display.jpg`,
+        },
+      }),
+    );
+    let cover = photos[0];
+    const original = env.adapters.transport.request;
+    const request = vi
+      .spyOn(env.adapters.transport, 'request')
+      .mockImplementation(
+        async <T,>(conn: Connection, path: string, options?: NativeRequestOptions) => {
+          if (path.startsWith(inventoryPaths.thingAttachments(env.boxId)))
+            return { items: photos, next_cursor: null } as T;
+          if (path === inventoryPaths.thing(env.boxId))
+            return {
+              ...(await original<ThingView>(conn, path, options)),
+              thumbnailAttachmentId: cover?.id,
+              thumbUrl: cover?.file?.thumbUrl,
+            } as T;
+          if (path === inventoryPaths.attachment('cover-1') && options?.method === 'PATCH') {
+            cover = photos[1];
+            return cover as T;
+          }
+          return original<T>(conn, path, options);
+        },
+      );
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Cover photo' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Change cover photo' });
+    expect(within(dialog).getByRole('button', { name: /Front of box/ })).toBeDisabled();
+    await user.click(within(dialog).getByRole('button', { name: 'Open box' }));
+    expect(request).toHaveBeenCalledWith(expect.anything(), inventoryPaths.attachment('cover-1'), {
+      method: 'PATCH',
+      ifMatch: 2,
+      body: { selectThumbnail: true },
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Cover photo' }).querySelector('img'),
+      ).toHaveAttribute('src', `${origin}/f/cover-1.jpg`),
+    );
+  });
+
+  it('queues multiple location photos offline and shows them separately after sync', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
       initialConnection: {
@@ -3085,14 +3172,18 @@ describe('KeptPhone mobile workflows', () => {
     env.setOnline(false);
     const picker = document.querySelectorAll<HTMLInputElement>('input[type="file"]')[1];
     if (!picker) throw new Error('Expected photo picker');
-    await user.upload(picker, new File(['location image'], 'shelf.jpg', { type: 'image/jpeg' }));
-    await user.click(screen.getByRole('button', { name: 'Save location photo' }));
+    await user.upload(picker, [
+      new File(['location image'], 'shelf.jpg', { type: 'image/jpeg' }),
+      new File(['other location image'], 'cabinet.jpg', { type: 'image/jpeg' }),
+    ]);
+    await user.click(screen.getByRole('button', { name: 'Save photos' }));
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
     expect(env.events.uploadedFiles).toHaveLength(0);
 
     env.setOnline(true);
     act(() => env.emitAppState(true));
-    expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
+    expect(await screen.findByText('Synced: 2')).toBeInTheDocument();
+    expect(env.events.uploadedFiles).toHaveLength(2);
     expect(request).toHaveBeenCalledWith(
       expect.anything(),
       capturePaths.syncOps,
@@ -3111,7 +3202,9 @@ describe('KeptPhone mobile workflows', () => {
     const heading = await screen.findByRole('heading', { name: 'Last logged location' });
     const location = heading.closest('section');
     if (!location) throw new Error('Expected a location photo section');
-    await user.click(await within(location).findByRole('button', { name: 'photo.jpg' }));
+    const photos = await within(location).findAllByRole('button', { name: 'photo.jpg' });
+    expect(photos).toHaveLength(2);
+    await user.click(photos[0] as HTMLElement);
     expect(env.events.openedRemote.at(-1)).toMatchObject({ thing: env.boxId, variant: 'display' });
     expect(screen.queryByRole('heading', { name: 'Photos' })).not.toBeInTheDocument();
   });
@@ -5208,6 +5301,39 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByText('Synced: 1')).toBeVisible();
   });
 
+  it.each([
+    ['interrupted', 'The NFC scan was interrupted. Try again.'],
+    ['timeout', 'The scan timed out. Try again.'],
+    ['unsupported', 'This tag does not support NDEF.'],
+    ['busy', 'Finish the current NFC scan and try again.'],
+    ['blank', 'This NFC tag is read-only. Try another tag.'],
+  ])(
+    'reports a tag-first %s result without reserving or writing a label',
+    async (status, message) => {
+      const origin = 'https://kept.example.com';
+      const env = createFakeEnvironment({
+        initialConnection: {
+          id: `${origin}|ibrahim|epoch-1`,
+          origin,
+          account: 'ibrahim',
+          epoch: 'epoch-1',
+        },
+      });
+      const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+      env.pushScan(
+        status === 'blank' ? { status, fingerprint: 'fp-1', writable: false } : { status },
+      );
+      const user = userEvent.setup();
+      env.renderApp();
+      await openAddFromHome(user);
+      await user.click(await screen.findByRole('button', { name: 'Start with NFC' }));
+      expect(await screen.findByText(message)).toBeVisible();
+      expect(screen.getByRole('button', { name: 'Start with NFC' })).toBeEnabled();
+      expect(scanTag.mock.calls.map(([, input]) => input.mode)).toEqual(['read']);
+      expect(env.events.reservedLabelKeys).toHaveLength(0);
+    },
+  );
+
   it('recovers a tag-first item after restarting before save', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
@@ -5672,14 +5798,16 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByText('RSV234')).toBeInTheDocument();
 
     // Declining keeps the draft, the photo and the label exactly as they were.
-    await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
+    await user.click(await screen.findByRole('button', { name: 'AI assist' }));
+    expect(await screen.findByText('The photos may show 1 more item.')).toBeVisible();
+    await user.click(await screen.findByRole('button', { name: 'Review multiple items' }));
     await user.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(screen.queryAllByText('Photo review')).toHaveLength(0);
     expect(screen.getByLabelText('Description')).toHaveValue('Holiday supplies');
     expect(screen.getByText('RSV234')).toBeInTheDocument();
 
     // Confirming reviews both items without the label, which stays for the next item.
-    await user.click(screen.getByRole('button', { name: 'Suggest items' }));
+    await user.click(screen.getByRole('button', { name: 'Review multiple items' }));
     await user.click(await screen.findByRole('button', { name: 'Review items' }));
     expect((await screen.findAllByText('Photo review')).length).toBeGreaterThan(0);
   });
@@ -5880,7 +6008,8 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'New container' }));
     await user.type(screen.getByRole('textbox', { name: 'Container name (optional)' }), 'Cables');
     await user.click(screen.getByRole('button', { name: /Container type/ }));
-    await user.click(screen.getByRole('option', { name: '27-gallon tote' }));
+    expect(screen.getByRole('option', { name: '27-gallon tote' })).toBeVisible();
+    await user.click(screen.getByRole('option', { name: 'Cabinet' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Contents (optional)' }),
       '3 x HDMI cable{Enter}Power strip',
@@ -5892,7 +6021,7 @@ describe('KeptPhone mobile workflows', () => {
         ([, path, options]) =>
           path === inventoryPaths.things &&
           options?.method === 'POST' &&
-          (options.body as { typeId?: string }).typeId === 'type-tote',
+          (options.body as { typeId?: string }).typeId === 'type-cabinet',
       ),
     ).toBe(true);
     expect(await screen.findByRole('heading', { name: 'Cables' })).toBeInTheDocument();

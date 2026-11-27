@@ -4,7 +4,7 @@
  * (`MapView`, apps/web/src/api/map/types.ts), with every room and thing arranged. The shipped
  * map's own code turns it into a plan (layout.ts `planOf`) and draws it.
  *
- * Names are in English and Arabic here, and in every other language in langs/, by the English
+ * Sample names are in English.
  * name; brands and model names stay as they are written. Dates are days from today, so what is
  * due stays due. Nothing here is anyone's real home.
  */
@@ -25,7 +25,7 @@ import type {
   MapThingView,
   MapView,
 } from '../../../../web/src/api/map/types';
-import { type Lang, MODEL_NAMES, type Pack, type Two } from './strings';
+import { type Lang, MODEL_NAMES, type Pack } from './strings';
 
 /** A built-in type's key (@kept/shared builtin-types.ts); sample.test.ts checks each is one. */
 type BuiltinTypeKey = string;
@@ -55,14 +55,14 @@ export type Sample = { view: MapView; facts: Map<string, Facts>; location: strin
 
 type TagKey = 'electronics' | 'warranty' | 'tools' | 'moving' | 'kids' | 'seasonal' | 'garden';
 /** The sample's tags: none violet, so none reads as the app's own colour. */
-const TAGS: Record<TagKey, { name: Two; colour: TagColourKey }> = {
-  electronics: { name: ['Electronics', 'إلكترونيات'], colour: 'cyan' },
-  warranty: { name: ['Under warranty', 'تحت الضمان'], colour: 'blue' },
-  tools: { name: ['Tools', 'عُدّة'], colour: 'orange' },
-  moving: { name: ['Moving', 'نقل'], colour: 'brown' },
-  kids: { name: ['Kids', 'أطفال'], colour: 'pink' },
-  seasonal: { name: ['Seasonal', 'موسمي'], colour: 'amber' },
-  garden: { name: ['Garden', 'حديقة'], colour: 'green' },
+const TAGS: Record<TagKey, { name: string; colour: TagColourKey }> = {
+  electronics: { name: 'Electronics', colour: 'cyan' },
+  warranty: { name: 'Under warranty', colour: 'blue' },
+  tools: { name: 'Tools', colour: 'orange' },
+  moving: { name: 'Moving', colour: 'brown' },
+  kids: { name: 'Kids', colour: 'pink' },
+  seasonal: { name: 'Seasonal', colour: 'amber' },
+  garden: { name: 'Garden', colour: 'green' },
 };
 
 /** A thing's type from its shape, where one is plain; anything else has no type. */
@@ -95,10 +95,10 @@ const TYPE_OF: Partial<Record<MapModelKey, BuiltinTypeKey>> = {
   table_lamp: 'furniture',
 };
 
-type Due = { title: Two; days: number };
-type Lent = { who: Two; days: number };
+type Due = { title: string; days: number };
+type Lent = { who: string; days: number };
 type Content = {
-  name: Two;
+  name: string;
   qty?: number;
   brand?: string;
   /** Keep at least this many: below it, the thing is low. */
@@ -109,11 +109,11 @@ type Content = {
   tags?: TagKey[];
 };
 type Extra = {
-  name?: Two;
+  name?: string;
   brand?: string;
   model?: string;
   serial?: string;
-  cond?: Two;
+  cond?: string;
   contents?: Content[];
   due?: Due;
   lent?: Lent;
@@ -127,8 +127,8 @@ type Extra = {
   places?: number;
 };
 
-const LIKE_NEW: Two = ['Like new', 'كالجديد'];
-const GOOD: Two = ['Good', 'جيدة'];
+const LIKE_NEW: string = 'Like new';
+const GOOD: string = 'Good';
 
 /** A stable short ID from a seed (the prototype's hash), in Kept's own alphabet. */
 function codeFor(seed: string): string {
@@ -165,25 +165,20 @@ const PLACES = new Set<MapModelKey>([
 /** Containers (things that hold things): drawn because they are there too. */
 const CONTAINERS = new Set<MapModelKey>(['box', 'cardboard', 'crate', 'basket']);
 
-const C = (name: Two, qty = 1, extra: Omit<Content, 'name' | 'qty'> = {}): Content => ({
+const C = (name: string, qty = 1, extra: Omit<Content, 'name' | 'qty'> = {}): Content => ({
   name,
   qty,
   ...extra,
 });
 
-/** `pack` is the language's file in langs/; English and Arabic need none. */
-export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): Sample {
-  const pick = (two: Two) => {
-    if (lang === 'ar') return two[1];
-    return lang === 'en' ? two[0] : (pack?.sample[two[0]] ?? two[0]);
-  };
-  const modelName = (model: MapModelKey) => (pack ? pack.models[model] : pick(MODEL_NAMES[model]));
+export function sampleHome(_lang: Lang, today: Date = new Date(), pack?: Pack): Sample {
+  const modelName = (model: MapModelKey) => (pack ? pack.models[model] : MODEL_NAMES[model]);
   const tagsOf = (keys: TagKey[] | undefined) =>
     keys?.length
       ? {
           tags: keys.map((k) => ({
             id: `tag-${k}`,
-            name: pick(TAGS[k].name),
+            name: TAGS[k].name,
             colour: TAG_COLOURS[TAGS[k].colour],
           })),
         }
@@ -194,16 +189,16 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   };
 
   const levels = [
-    { id: 'L0', name: pick(['Ground floor', 'أرضي']) },
-    { id: 'L1', name: pick(['First floor', 'الطابق 1']) },
-    { id: 'L2', name: pick(['Roof', 'سطح']) },
+    { id: 'L0', name: 'Ground floor' },
+    { id: 'L1', name: 'First floor' },
+    { id: 'L2', name: 'Roof' },
   ];
 
   const rooms: MapRoomView[] = [];
   const R = (
     id: string,
     levelId: string,
-    name: Two,
+    name: string,
     x: number,
     z: number,
     w: number,
@@ -213,26 +208,26 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   ) => {
     rooms.push({
       id,
-      name: pick(name),
+      name: name,
       shortCode: codeFor(`room:${id}`),
       levelId,
       kindKey: 'room',
       layout: { x: mToCm(x), z: mToCm(z), w: mToCm(w), d: mToCm(d), kind, surface },
     });
   };
-  R('r1', 'L0', ['Living room', 'غرفة المعيشة'], 0, 0, 6, 5);
-  R('r2', 'L0', ['Kitchen', 'المطبخ'], 7, 0, 5, 4, 'room', 'tile');
-  R('r3', 'L0', ['Office', 'المكتب'], 13, 0, 4, 4);
-  R('r4', 'L0', ['Garden', 'الحديقة'], 0, 6, 5, 5, 'garden');
-  R('r5', 'L0', ['Laundry', 'غرفة الغسيل'], 6, 6, 3, 3, 'room', 'tile');
-  R('r6', 'L0', ['Garage', 'المرآب'], 10, 5, 7, 6, 'room', 'concrete');
-  R('r7', 'L1', ['Bedroom', 'غرفة النوم'], 0, 0, 4, 5);
-  R('r8', 'L1', ['Balcony', 'الشرفة'], 0, 5, 4, 2, 'balcony');
-  R('r9', 'L1', ['Landing', 'بسطة الدرج'], 4, 0, 2, 4);
-  R('r10', 'L1', ['Guest room', 'غرفة الضيوف'], 6, 0, 5, 4);
-  R('r11', 'L1', ['Storage room', 'غرفة التخزين'], 12, 0, 4, 4, 'room', 'concrete');
-  R('r12', 'L2', ['Roof terrace', 'تراس السطح'], 0, 0, 9, 7, 'terrace');
-  R('r13', 'L2', ['Roof room', 'غرفة السطح'], 10, 0, 3, 3, 'room', 'concrete');
+  R('r1', 'L0', 'Living room', 0, 0, 6, 5);
+  R('r2', 'L0', 'Kitchen', 7, 0, 5, 4, 'room', 'tile');
+  R('r3', 'L0', 'Office', 13, 0, 4, 4);
+  R('r4', 'L0', 'Garden', 0, 6, 5, 5, 'garden');
+  R('r5', 'L0', 'Laundry', 6, 6, 3, 3, 'room', 'tile');
+  R('r6', 'L0', 'Garage', 10, 5, 7, 6, 'room', 'concrete');
+  R('r7', 'L1', 'Bedroom', 0, 0, 4, 5);
+  R('r8', 'L1', 'Balcony', 0, 5, 4, 2, 'balcony');
+  R('r9', 'L1', 'Landing', 4, 0, 2, 4);
+  R('r10', 'L1', 'Guest room', 6, 0, 5, 4);
+  R('r11', 'L1', 'Storage room', 12, 0, 4, 4, 'room', 'concrete');
+  R('r12', 'L2', 'Roof terrace', 0, 0, 9, 7, 'terrace');
+  R('r13', 'L2', 'Roof room', 10, 0, 3, 3, 'room', 'concrete');
 
   const nodes: MapNodeView[] = [];
   const things: MapThingView[] = [];
@@ -244,7 +239,7 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
     attention.push({
       subjectId,
       kind: 'due',
-      title: pick(d.title),
+      title: d.title,
       sourceType: 'schedule',
       state: d.days < 0 ? 'overdue' : 'due',
       dueOn: dayOf(d.days),
@@ -260,7 +255,7 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
       sourceType: null,
       state: null,
       dueOn: dayOf(l.days),
-      person: pick(l.who),
+      person: l.who,
       quantity: null,
       min: null,
     });
@@ -276,10 +271,10 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
     hostId: string | null = null,
   ): Node => {
     const id = `n${++n}`;
-    const name = extra.name ? pick(extra.name) : modelName(model);
+    const name = extra.name ? extra.name : modelName(model);
     const place = PLACES.has(model);
     const container = CONTAINERS.has(model);
-    const shortCode = codeFor(`${roomId}:${extra.name?.[0] ?? model}:${model}:${x}:${z}`);
+    const shortCode = codeFor(`${roomId}:${extra.name ?? model}:${model}:${x}:${z}`);
     nodes.push({
       id,
       subject: place ? 'place' : 'thing',
@@ -322,7 +317,7 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
       ...(extra.brand ? { brand: extra.brand } : {}),
       ...(extra.model ? { model: extra.model } : {}),
       ...(extra.serial ? { serial: extra.serial } : {}),
-      ...(extra.cond ? { condition: pick(extra.cond) } : {}),
+      ...(extra.cond ? { condition: extra.cond } : {}),
     });
     if (extra.due) due(id, extra.due);
     if (extra.lent) lent(id, extra.lent);
@@ -331,8 +326,8 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
       const qty = c.qty ?? 1;
       things.push({
         id: cid,
-        name: pick(c.name),
-        shortCode: codeFor(`${shortCode}:${i}:${c.name[0]}`),
+        name: c.name,
+        shortCode: codeFor(`${shortCode}:${i}:${c.name}`),
         quantity: qty,
         parentId: id,
         typeKey: null,
@@ -371,28 +366,28 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   const stand = add('r1', 'tv_stand', 1.6, 0.15, 0, {
     brand: 'Home Centre',
     contents: [
-      C(['PS5 controller', 'يد تحكم PS5'], 2, {
+      C('PS5 controller', 2, {
         brand: 'Sony',
         type: 'console',
         tags: ['electronics'],
       }),
-      C(['HDMI cable 2 m', 'كابل HDMI ‏2 م'], 3, { type: 'cable' }),
-      C(['Apple TV remote', 'ريموت Apple TV'], 1, { brand: 'Apple' }),
-      C(['Soundbar remote', 'ريموت مكبر الصوت']),
-      C(['Blu-ray: Dune', 'بلو راي: Dune']),
-      C(['AA batteries', 'بطاريات AA'], 4, { min: 6, type: 'batteries' }),
+      C('HDMI cable 2 m', 3, { type: 'cable' }),
+      C('Apple TV remote', 1, { brand: 'Apple' }),
+      C('Soundbar remote'),
+      C('Blu-ray: Dune'),
+      C('AA batteries', 4, { min: 6, type: 'batteries' }),
     ],
   });
   // #138: the TV on the wall behind the stand (the −z wall, 10 cm thick), at eye level, its
   // middle over the stand's.
   add('r1', 'wall_tv', stand.x + 1.22 - 1.23 / 2, 0.1, 0, {
-    name: ['Samsung TV', 'تلفاز Samsung'],
+    name: 'Samsung TV',
     brand: 'Samsung',
     model: 'QA55Q60C, 55″',
     serial: 'Q60C-0X55-7731',
     cond: LIKE_NEW,
     tags: ['electronics', 'warranty'],
-    due: { title: ['Register the warranty', 'تسجيل الضمان'], days: 13 },
+    due: { title: 'Register the warranty', days: 13 },
     height: 1.2,
   });
   add('r1', 'sofa', 1.9, 3.7, 180, {
@@ -406,84 +401,84 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
     model: 'Lisabo',
     photo: 'coffee_table',
   });
-  on(table, 'succulent', 0.15, 0.2, { name: ['Haworthia', 'هاوورثيا'] });
+  on(table, 'succulent', 0.15, 0.2, { name: 'Haworthia' });
   add('r1', 'armchair', 0.2, 2.0, 270, { brand: 'Kave Home', photo: 'armchair' });
   // #138: a floating shelf on the −x wall over the armchair, a small cactus on it.
   const wallShelf = add('r1', 'wall_shelf', 0.1, 2.0, 270, {
-    name: ['Floating shelf', 'رف عائم'],
+    name: 'Floating shelf',
     height: 1.5,
   });
-  on(wallShelf, 'succulent', 0.02, 0.32, { name: ['Small cactus', 'صبار صغير'] }, 270);
+  on(wallShelf, 'succulent', 0.02, 0.32, { name: 'Small cactus' }, 270);
   add('r1', 'bookshelf', 4.5, 0.15, 0, {
     brand: 'IKEA',
     model: 'Billy',
     contents: [
-      C(['The Pragmatic Programmer', 'The Pragmatic Programmer']),
-      C(['Atomic Habits', 'العادات الذرية']),
-      C(['Dune', 'كثيب']),
-      C(['Children of Dune', 'أطفال الكثيب']),
-      C(['Sapiens', 'العاقل']),
-      C(['Thinking, Fast and Slow', 'التفكير السريع والبطيء']),
-      C(['Cairo Trilogy', 'الثلاثية'], 3, { brand: 'Naguib Mahfouz' }),
-      C(['Photo album 2019', 'ألبوم صور 2019']),
-      C(['Photo album 2022', 'ألبوم صور 2022']),
-      C(['National Geographic', 'ناشيونال جيوغرافيك'], 12),
+      C('The Pragmatic Programmer'),
+      C('Atomic Habits'),
+      C('Dune'),
+      C('Children of Dune'),
+      C('Sapiens'),
+      C('Thinking, Fast and Slow'),
+      C('Cairo Trilogy', 3, { brand: 'Naguib Mahfouz' }),
+      C('Photo album 2019'),
+      C('Photo album 2022'),
+      C('National Geographic', 12),
     ],
   });
   add('r1', 'tall_plant', 0.2, 0.2, 0, {
     photo: 'tall_plant',
     tags: ['garden'],
-    due: { title: ['Water the plant', 'سقي النبتة'], days: 1 },
+    due: { title: 'Water the plant', days: 1 },
   });
   add('r1', 'lamp', 5.4, 4.4, 0, { brand: 'IKEA', model: 'Hektar' });
   add('r1', 'box', 0.3, 4.4, 0, {
-    name: ['Games box', 'صندوق الألعاب'],
+    name: 'Games box',
     printed: true,
     tags: ['kids'],
     contents: [
-      C(['Catan', 'كاتان'], 1, { lent: { who: ['Bruce', 'بروس'], days: 5 }, tags: ['kids'] }),
-      C(['Monopoly', 'مونوبولي']),
-      C(['Uno', 'أونو']),
-      C(['Chess set', 'طقم شطرنج']),
-      C(['Jenga', 'جينغا']),
-      C(['Playing cards', 'ورق لعب'], 2),
+      C('Catan', 1, { lent: { who: 'Bruce', days: 5 }, tags: ['kids'] }),
+      C('Monopoly'),
+      C('Uno'),
+      C('Chess set'),
+      C('Jenga'),
+      C('Playing cards', 2),
     ],
   });
-  add('r1', 'stairs', 4.9, 1.0, 0, { name: ['Stairs up', 'الدرج للأعلى'] });
+  add('r1', 'stairs', 4.9, 1.0, 0, { name: 'Stairs up' });
 
   // ---- Kitchen -------------------------------------------------------------------------------
   const counter = add('r2', 'counter', 0.15, 0.12, 0, {
-    name: ['Counter by the window', 'السطح عند النافذة'],
+    name: 'Counter by the window',
     contents: [
-      C(['Knife set', 'طقم سكاكين'], 1, { brand: 'Zwilling' }),
-      C(['Cutting board', 'لوح تقطيع'], 3),
-      C(['Blender', 'خلاط'], 1, { brand: 'Moulinex' }),
-      C(['Toaster', 'محمصة خبز'], 1, { brand: 'Philips' }),
-      C(['Electric kettle', 'غلاية كهربائية'], 1, { brand: 'Tefal' }),
-      C(['Spice jars', 'برطمانات بهارات'], 12),
+      C('Knife set', 1, { brand: 'Zwilling' }),
+      C('Cutting board', 3),
+      C('Blender', 1, { brand: 'Moulinex' }),
+      C('Toaster', 1, { brand: 'Philips' }),
+      C('Electric kettle', 1, { brand: 'Tefal' }),
+      C('Spice jars', 12),
     ],
   });
   add('r2', 'sink', 2.0, 0.12, 0, {
     contents: [
-      C(['Dish soap', 'سائل جلي'], 1, { min: 2 }),
-      C(['Sponges', 'إسفنج'], 6),
-      C(['Bin bags (rolls)', 'أكياس قمامة (لفّات)'], 2),
-      C(['Kitchen spray', 'بخاخ تنظيف المطبخ'], 2),
+      C('Dish soap', 1, { min: 2 }),
+      C('Sponges', 6),
+      C('Bin bags (rolls)', 2),
+      C('Kitchen spray', 2),
     ],
   });
   on(counter, 'coffee_machine', 0.3, 0.1, {
-    name: ['Espresso machine', 'آلة إسبريسو'],
+    name: 'Espresso machine',
     brand: "De'Longhi",
     model: 'Dedica EC685',
     serial: 'EC685-2403-118',
-    due: { title: ['Descale', 'إزالة الترسبات'], days: 6 },
+    due: { title: 'Descale', days: 6 },
   });
   on(counter, 'microwave', 1.05, 0.15, { brand: 'Sharp', model: 'R-20A' });
   add('r2', 'fridge', 4.1, 0.12, 0, {
     brand: 'LG',
     model: 'GN-B392PLGB',
     serial: 'LG392-118-0457',
-    due: { title: ['Change the water filter', 'تغيير فلتر الماء'], days: 19 },
+    due: { title: 'Change the water filter', days: 19 },
   });
   add('r2', 'dining', 1.8, 2.2, 0, { brand: 'Home Centre' });
   for (const [x, z, r] of [
@@ -495,15 +490,15 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
     add('r2', 'dining_chair', x, z, r, { brand: 'Home Centre' });
   }
   add('r2', 'wardrobe', 0.15, 1.5, 270, {
-    name: ['Pantry', 'خزانة المؤن'],
+    name: 'Pantry',
     contents: [
-      C(['Rice 5 kg', 'أرز 5 كغ'], 2),
-      C(['Pasta', 'مكرونة'], 6),
-      C(['Olive oil 1 L', 'زيت زيتون 1 لتر'], 2),
-      C(['Coffee beans 1 kg', 'بن 1 كغ'], 1, { min: 2 }),
-      C(['Lentils', 'عدس'], 3),
-      C(['Sugar 1 kg', 'سكر 1 كغ'], 2),
-      C(['Tea boxes', 'علب شاي'], 3),
+      C('Rice 5 kg', 2),
+      C('Pasta', 6),
+      C('Olive oil 1 L', 2),
+      C('Coffee beans 1 kg', 1, { min: 2 }),
+      C('Lentils', 3),
+      C('Sugar 1 kg', 2),
+      C('Tea boxes', 3),
     ],
   });
 
@@ -512,15 +507,15 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
     brand: 'Flexispot',
     model: 'E7',
     contents: [
-      C(['Notebooks', 'دفاتر'], 4),
-      C(['Pens', 'أقلام'], 12),
-      C(['Stapler', 'دبّاسة']),
-      C(['USB-C charger 65 W', 'شاحن USB-C ‏65 واط'], 2, { brand: 'Anker', type: 'charger' }),
-      C(['Passport folder', 'ملف جوازات السفر']),
+      C('Notebooks', 4),
+      C('Pens', 12),
+      C('Stapler'),
+      C('USB-C charger 65 W', 2, { brand: 'Anker', type: 'charger' }),
+      C('Passport folder'),
     ],
   });
   const monitor = on(desk, 'monitor', 0.4, 0.08, {
-    name: ['Dell monitor', 'شاشة Dell'],
+    name: 'Dell monitor',
     brand: 'Dell',
     model: 'U2723QE, 27″',
     serial: 'CN-0U27-23QE',
@@ -528,13 +523,13 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   });
   // #137: a webcam clipped to the monitor's top edge, on its line (3 cm in front of its middle).
   on(monitor, 'webcam', 0.26, 0.11, {
-    name: ['HD webcam', 'كاميرا ويب HD'],
+    name: 'HD webcam',
   });
   on(desk, 'earbuds', 0.15, 0.45, {
-    name: ['Wireless earbuds', 'سماعات أذن لاسلكية'],
+    name: 'Wireless earbuds',
   });
   on(desk, 'laptop', 1.0, 0.35, {
-    name: ['MacBook Air', 'MacBook Air'],
+    name: 'MacBook Air',
     brand: 'Apple',
     model: 'M3, 15″',
     serial: 'FVFG2M3LQ6L4',
@@ -545,42 +540,42 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   add('r3', 'chair', 1.75, 1.0, 0, { brand: 'Herman Miller', model: 'Sayl' });
   add('r3', 'cabinet', 0.15, 0.15, 0, {
     contents: [
-      C(['Car papers', 'أوراق السيارة']),
-      C(['Apartment lease', 'عقد إيجار الشقة'], 1, {
-        due: { title: ['Renew the lease', 'تجديد عقد الإيجار'], days: 15 },
+      C('Car papers'),
+      C('Apartment lease', 1, {
+        due: { title: 'Renew the lease', days: 15 },
       }),
-      C(['Tax return 2025', 'الإقرار الضريبي 2025']),
-      C(['Warranty cards', 'بطاقات ضمان'], 14),
-      C(['Bank statements', 'كشوف حساب بنكية']),
+      C('Tax return 2025'),
+      C('Warranty cards', 14),
+      C('Bank statements'),
     ],
   });
   add('r3', 'cube_shelf', 0.15, 1.2, 270, {
     contents: [
-      C(['Printer paper (reams)', 'ورق طابعة (رزم)'], 3),
-      C(['Ink cartridges', 'خراطيش حبر'], 1, { min: 2 }),
-      C(['Label tape', 'شريط ملصقات'], 3, { brand: 'Brother' }),
-      C(['External drive 2 TB', 'قرص خارجي 2 تيرابايت'], 1, { brand: 'Samsung' }),
+      C('Printer paper (reams)', 3),
+      C('Ink cartridges', 1, { min: 2 }),
+      C('Label tape', 3, { brand: 'Brother' }),
+      C('External drive 2 TB', 1, { brand: 'Samsung' }),
     ],
   });
   add('r3', 'box', 3.2, 3.45, 0, {
-    name: ['Cable box', 'صندوق الكابلات'],
+    name: 'Cable box',
     printed: true,
     tags: ['electronics'],
     contents: [
-      C(['HDMI cable', 'كابل HDMI'], 4),
-      C(['USB-C cable', 'كابل USB-C'], 6),
-      C(['Ethernet cable', 'كابل إيثرنت'], 3),
-      C(['Travel adapter', 'محوّل سفر'], 2, { lent: { who: ['Louis', 'لويس'], days: 10 } }),
+      C('HDMI cable', 4),
+      C('USB-C cable', 6),
+      C('Ethernet cable', 3),
+      C('Travel adapter', 2, { lent: { who: 'Louis', days: 10 } }),
     ],
   });
 
   // ---- Garden --------------------------------------------------------------------------------
   add('r4', 'planter_long', 0.3, 0.2, 0, {
-    name: ['Herb planter', 'حوض الأعشاب'],
-    due: { title: ['Water the basil', 'سقي الريحان'], days: 0 },
+    name: 'Herb planter',
+    due: { title: 'Water the basil', days: 0 },
   });
-  add('r4', 'planter', 2.1, 0.2, 0, { name: ['Tomato planter', 'حوض الطماطم'] });
-  add('r4', 'plant', 4.0, 3.9, 0, { name: ['Olive tree', 'شجرة زيتون'] });
+  add('r4', 'planter', 2.1, 0.2, 0, { name: 'Tomato planter' });
+  add('r4', 'plant', 4.0, 3.9, 0, { name: 'Olive tree' });
   add('r4', 'monobloc', 2.4, 2.4, 0);
   add('r4', 'watering_can', 4.2, 0.3, 0);
 
@@ -588,44 +583,41 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   add('r5', 'washer', 0.2, 0.15, 0, {
     brand: 'Samsung',
     model: 'WW90T, 9 kg',
-    due: { title: ['Clean the filter', 'تنظيف الفلتر'], days: 4 },
+    due: { title: 'Clean the filter', days: 4 },
   });
   add('r5', 'metal_shelf', 1.0, 0.15, 0, {
-    name: ['Laundry shelf', 'رف الغسيل'],
+    name: 'Laundry shelf',
     contents: [
-      C(['Detergent', 'مسحوق غسيل'], 1, { min: 2 }),
-      C(['Softener', 'منعّم أقمشة'], 2),
-      C(['Stain remover', 'مزيل بقع']),
-      C(['Laundry bag', 'كيس غسيل'], 3),
+      C('Detergent', 1, { min: 2 }),
+      C('Softener', 2),
+      C('Stain remover'),
+      C('Laundry bag', 3),
     ],
   });
   add('r5', 'basket', 1.8, 0.2, 0, {
-    name: ['Peg basket', 'سلة المشابك'],
-    contents: [C(['Clothes pegs', 'مشابك غسيل'], 40)],
+    name: 'Peg basket',
+    contents: [C('Clothes pegs', 40)],
   });
   add('r5', 'box', 2.1, 2.3, 0, {
-    name: ['Iron and board', 'المكواة وطاولتها'],
-    contents: [
-      C(['Steam iron', 'مكواة بخار'], 1, { brand: 'Philips' }),
-      C(['Ironing board', 'طاولة كيّ']),
-    ],
+    name: 'Iron and board',
+    contents: [C('Steam iron', 1, { brand: 'Philips' }), C('Ironing board')],
   });
 
   // ---- Garage --------------------------------------------------------------------------------
   add('r6', 'car', 0.6, 0.9, 0, {
-    name: ['Toyota Corolla', 'تويوتا كورولا'],
+    name: 'Toyota Corolla',
     brand: 'Toyota',
     model: 'Corolla 1.6, 2019',
-    due: { title: ['60,000 km service', 'صيانة 60,000 كم'], days: 14 },
+    due: { title: '60,000 km service', days: 14 },
   });
   add('r6', 'bike', 3.0, 1.4, 0, { brand: 'Trinx', model: 'M136, 27.5″' });
   const bench = add('r6', 'workbench', 4.6, 0.3, 0, {
     contents: [
-      C(['Screw assortment', 'تشكيلة براغي']),
-      C(['Wood glue', 'غراء خشب']),
-      C(['Sandpaper pack', 'عبوة ورق صنفرة']),
-      C(['Measuring tape', 'شريط قياس'], 2, { brand: 'Stanley' }),
-      C(['Safety glasses', 'نظارات واقية']),
+      C('Screw assortment'),
+      C('Wood glue'),
+      C('Sandpaper pack'),
+      C('Measuring tape', 2, { brand: 'Stanley' }),
+      C('Safety glasses'),
     ],
   });
   // #138: the tool wall over the bench, its bottom a metre up; the drill hangs on its hooks, in
@@ -633,231 +625,212 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   const board = add('r6', 'tool_wall', 4.9, 0.1, 0, {
     height: 1.3,
     contents: [
-      C(['Claw hammer', 'مطرقة']),
-      C(['Screwdriver set', 'طقم مفكات'], 1, { brand: 'Wera' }),
-      C(['Adjustable wrench', 'مفتاح إنجليزي']),
-      C(['Hand saw', 'منشار يدوي']),
-      C(['Pliers', 'كمّاشة'], 2),
-      C(['Spirit level', 'ميزان ماء']),
-      C(['Allen keys set', 'طقم مفاتيح ألن']),
+      C('Claw hammer'),
+      C('Screwdriver set', 1, { brand: 'Wera' }),
+      C('Adjustable wrench'),
+      C('Hand saw'),
+      C('Pliers', 2),
+      C('Spirit level'),
+      C('Allen keys set'),
     ],
   });
   on(board, 'drill', 0.21, 0.03, {
-    name: ['Bosch drill', 'مثقاب Bosch'],
+    name: 'Bosch drill',
     brand: 'Bosch',
     model: 'GSR 12V-15',
     printed: true,
     photo: 'drill',
     tags: ['tools'],
-    lent: { who: ['Bruce', 'بروس'], days: 2 },
+    lent: { who: 'Bruce', days: 2 },
   });
   add('r6', 'tool_cart', 5.5, 2.0, 0, {
     contents: [
-      C(['Socket set', 'طقم لقم'], 1, { brand: 'Bosch' }),
-      C(['Tyre gauge', 'مقياس ضغط الإطارات']),
-      C(['Jump leads', 'كابلات اشتراك']),
-      C(['Car wax', 'شمع السيارة'], 1, { min: 2 }),
-      C(['Microfibre cloths', 'مناشف مايكروفايبر'], 6),
+      C('Socket set', 1, { brand: 'Bosch' }),
+      C('Tyre gauge'),
+      C('Jump leads'),
+      C('Car wax', 1, { min: 2 }),
+      C('Microfibre cloths', 6),
     ],
   });
   add('r6', 'metal_shelf', 5.6, 5.4, 180, {
-    name: ['Garage shelf', 'رف المرآب'],
+    name: 'Garage shelf',
     contents: [
-      C(['Engine oil 4 L', 'زيت محرك 4 لتر'], 1, { min: 2 }),
-      C(['Coolant', 'سائل تبريد']),
-      C(['Spare bulbs', 'لمبات احتياطية'], 4),
-      C(['Bike pump', 'منفاخ دراجة']),
+      C('Engine oil 4 L', 1, { min: 2 }),
+      C('Coolant'),
+      C('Spare bulbs', 4),
+      C('Bike pump'),
     ],
   });
   add('r6', 'crate', 4.9, 5.45, 0, {
-    name: ['Camping crate', 'صندوق التخييم'],
+    name: 'Camping crate',
     printed: true,
     tags: ['seasonal'],
     contents: [
-      C(['Tent', 'خيمة'], 1, { brand: 'Coleman', tags: ['seasonal'] }),
-      C(['Sleeping bag', 'كيس نوم'], 2),
-      C(['Camping stove', 'موقد تخييم']),
-      C(['Head torch', 'كشاف رأس'], 2),
+      C('Tent', 1, { brand: 'Coleman', tags: ['seasonal'] }),
+      C('Sleeping bag', 2),
+      C('Camping stove'),
+      C('Head torch', 2),
     ],
   });
   add('r6', 'box', 2.6, 5.4, 0, {
-    name: ['Paint box', 'صندوق الدهان'],
+    name: 'Paint box',
     contents: [
-      C(['Wall paint, white', 'دهان حوائط أبيض'], 1, { min: 2 }),
-      C(['Brushes', 'فُرش'], 4),
-      C(['Roller', 'رولة دهان']),
-      C(['Masking tape', 'شريط لاصق ورقي'], 3),
+      C('Wall paint, white', 1, { min: 2 }),
+      C('Brushes', 4),
+      C('Roller'),
+      C('Masking tape', 3),
     ],
   });
   add('r6', 'box', 3.3, 5.4, 0, {
-    name: ['Holiday box', 'صندوق الزينة'],
+    name: 'Holiday box',
     printed: true,
     tags: ['seasonal'],
-    contents: [
-      C(['String lights', 'أضواء زينة'], 3),
-      C(['Lanterns', 'فوانيس'], 4),
-      C(['Banners', 'لافتات'], 2),
-    ],
+    contents: [C('String lights', 3), C('Lanterns', 4), C('Banners', 2)],
   });
 
   // ---- First floor · Bedroom -----------------------------------------------------------------
   add('r7', 'bed', 1.15, 0.15, 0, { brand: 'IKEA', model: 'Malm, 160 cm' });
   const bedside = add('r7', 'bedside', 0.55, 0.15, 0, {
     contents: [
-      C(['Kindle', 'Kindle'], 1, { brand: 'Amazon' }),
-      C(['Reading glasses', 'نظارة قراءة']),
-      C(['Phone charger', 'شاحن هاتف']),
-      C(['Hand cream', 'كريم يدين']),
+      C('Kindle', 1, { brand: 'Amazon' }),
+      C('Reading glasses'),
+      C('Phone charger'),
+      C('Hand cream'),
     ],
   });
   on(bedside, 'table_lamp', 0.12, 0.07);
   add('r7', 'bedside', 2.9, 0.15, 0, {
-    contents: [C(['Notebook', 'دفتر']), C(['Earplugs', 'سدادات أذن'], 6)],
+    contents: [C('Notebook'), C('Earplugs', 6)],
   });
   add('r7', 'wardrobe', 2.3, 4.3, 180, {
     brand: 'IKEA',
     model: 'Pax',
     places: 3,
     contents: [
-      C(['Winter jacket', 'جاكيت شتوي'], 3, { tags: ['seasonal'] }),
-      C(['Suit', 'بدلة'], 2),
-      C(['Bed linen set', 'طقم مفارش سرير'], 4),
-      C(['Shoes (pairs)', 'أحذية (أزواج)'], 8),
-      C(['Small suitcase', 'حقيبة سفر صغيرة'], 1, { brand: 'Samsonite' }),
+      C('Winter jacket', 3, { tags: ['seasonal'] }),
+      C('Suit', 2),
+      C('Bed linen set', 4),
+      C('Shoes (pairs)', 8),
+      C('Small suitcase', 1, { brand: 'Samsonite' }),
     ],
   });
   add('r7', 'drawers', 0.12, 2.6, 270, {
     contents: [
-      C(['T-shirts', 'تيشيرتات'], 14),
-      C(['Socks (pairs)', 'جوارب (أزواج)'], 20),
-      C(['Gym kit', 'ملابس رياضة'], 3),
-      C(['Watch box', 'علبة ساعات'], 1, { brand: 'Casio' }),
+      C('T-shirts', 14),
+      C('Socks (pairs)', 20),
+      C('Gym kit', 3),
+      C('Watch box', 1, { brand: 'Casio' }),
     ],
   });
   add('r7', 'basket', 0.8, 4.5, 0, {
-    name: ['Laundry basket', 'سلة الغسيل'],
-    contents: [C(['Towels', 'مناشف'], 3)],
+    name: 'Laundry basket',
+    contents: [C('Towels', 3)],
   });
-  add('r7', 'plant', 3.1, 2.4, 0, { name: ['Snake plant', 'نبتة الثعبان'] });
+  add('r7', 'plant', 3.1, 2.4, 0, { name: 'Snake plant' });
 
   // ---- Balcony -------------------------------------------------------------------------------
   add('r8', 'monobloc', 0.4, 0.4, 0);
   add('r8', 'monobloc', 1.2, 0.4, 0);
   add('r8', 'planter', 2.9, 1.4, 0, {
-    name: ['Jasmine planter', 'حوض الياسمين'],
-    due: { title: ['Feed the jasmine', 'تسميد الياسمين'], days: 10 },
+    name: 'Jasmine planter',
+    due: { title: 'Feed the jasmine', days: 10 },
   });
 
   // ---- Landing -------------------------------------------------------------------------------
-  add('r9', 'stairwell', 0.9, 1.0, 0, { name: ['Stairs', 'الدرج'] });
+  add('r9', 'stairwell', 0.9, 1.0, 0, { name: 'Stairs' });
 
   // ---- Guest room ----------------------------------------------------------------------------
   add('r10', 'bed', 1.6, 0.15, 0, {
-    name: ['Guest bed', 'سرير الضيوف'],
+    name: 'Guest bed',
     brand: 'IKEA',
     model: 'Malm, 160 cm',
   });
   add('r10', 'bedside', 1.0, 0.15, 0, {
-    contents: [
-      C(['Spare keys', 'مفاتيح احتياطية'], 2),
-      C(['Guest wifi card', 'بطاقة واي فاي للضيوف']),
-    ],
+    contents: [C('Spare keys', 2), C('Guest wifi card')],
   });
   add('r10', 'wardrobe', 3.4, 3.3, 180, {
-    name: ['Guest wardrobe', 'خزانة الضيوف'],
-    contents: [
-      C(['Spare duvet', 'لحاف احتياطي']),
-      C(['Winter blanket', 'بطانية شتوية'], 2),
-      C(['Pillows', 'وسائد'], 4),
-    ],
+    name: 'Guest wardrobe',
+    contents: [C('Spare duvet'), C('Winter blanket', 2), C('Pillows', 4)],
   });
   add('r10', 'armchair', 0.2, 2.8, 0, { brand: 'Kave Home' });
 
   // ---- Storage room --------------------------------------------------------------------------
   add('r11', 'metal_shelf', 0.15, 0.15, 0, {
-    name: ['Shelf A', 'الرف أ'],
+    name: 'Shelf A',
     printed: true,
     places: 4,
     contents: [
-      C(['Light bulbs E27', 'لمبات E27'], 6),
-      C(['Batteries AA', 'بطاريات AA'], 8, { min: 12, type: 'batteries' }),
-      C(['Extension lead', 'وصلة كهرباء'], 3),
-      C(['First-aid kit', 'حقيبة إسعافات أولية'], 1, { type: 'first_aid_kit' }),
+      C('Light bulbs E27', 6),
+      C('Batteries AA', 8, { min: 12, type: 'batteries' }),
+      C('Extension lead', 3),
+      C('First-aid kit', 1, { type: 'first_aid_kit' }),
     ],
   });
   add('r11', 'metal_shelf', 0.85, 0.15, 0, {
-    name: ['Shelf B', 'الرف ب'],
+    name: 'Shelf B',
     printed: true,
     places: 4,
     contents: [
-      C(['Toilet paper (packs)', 'مناديل حمّام (عبوات)'], 2, { min: 3 }),
-      C(['Kitchen roll', 'مناديل مطبخ'], 4),
-      C(['Cleaning spray', 'بخاخ تنظيف'], 3),
+      C('Toilet paper (packs)', 2, { min: 3 }),
+      C('Kitchen roll', 4),
+      C('Cleaning spray', 3),
     ],
   });
   add('r11', 'metal_shelf', 1.55, 0.15, 0, {
-    name: ['Shelf C', 'الرف ج'],
+    name: 'Shelf C',
     printed: true,
     places: 4,
     contents: [
-      C(['Suitcase, large', 'حقيبة سفر كبيرة'], 1, { brand: 'Samsonite' }),
-      C(['Travel pillow', 'وسادة سفر'], 2),
-      C(['Luggage scale', 'ميزان حقائب']),
+      C('Suitcase, large', 1, { brand: 'Samsonite' }),
+      C('Travel pillow', 2),
+      C('Luggage scale'),
     ],
   });
   const moving = add('r11', 'cardboard', 0.4, 2.6, 0, {
-    name: ['Moving box 1', 'صندوق النقل 1'],
+    name: 'Moving box 1',
     printed: true,
     tags: ['moving'],
-    contents: [
-      C(['Old phones', 'هواتف قديمة'], 3),
-      C(['Chargers', 'شواحن'], 7),
-      C(['Manuals', 'كتيبات تعليمات'], 11),
-    ],
+    contents: [C('Old phones', 3), C('Chargers', 7), C('Manuals', 11)],
   });
   on(moving, 'cardboard', 0, 0, {
-    name: ['Moving box 2', 'صندوق النقل 2'],
+    name: 'Moving box 2',
     printed: true,
     tags: ['moving'],
-    contents: [C(['Winter scarves', 'أوشحة شتوية'], 5), C(['Gloves (pairs)', 'قفازات (أزواج)'], 3)],
+    contents: [C('Winter scarves', 5), C('Gloves (pairs)', 3)],
   });
   add('r11', 'cardboard', 1.0, 2.6, 0, {
-    name: ['Moving box 3', 'صندوق النقل 3'],
+    name: 'Moving box 3',
     printed: true,
     tags: ['moving', 'kids'],
-    contents: [C(['Baby clothes', 'ملابس أطفال'], 18), C(['Toys', 'ألعاب'], 9)],
+    contents: [C('Baby clothes', 18), C('Toys', 9)],
   });
   add('r11', 'crate', 2.6, 0.2, 0, {
-    name: ['Tools crate', 'صندوق العدة'],
+    name: 'Tools crate',
     printed: true,
     tags: ['tools'],
-    contents: [
-      C(['Spare tiles', 'بلاط احتياطي'], 12),
-      C(['Grout', 'روبة']),
-      C(['Silicone gun', 'مسدس سيليكون']),
-    ],
+    contents: [C('Spare tiles', 12), C('Grout'), C('Silicone gun')],
   });
 
   // ---- Roof ----------------------------------------------------------------------------------
   add('r12', 'water_tank', 0.3, 0.3, 0, {
-    name: ['Water tank 1', 'خزان المياه 1'],
+    name: 'Water tank 1',
     model: '1,000 L',
-    due: { title: ['Clean the tank', 'تنظيف الخزان'], days: 17 },
+    due: { title: 'Clean the tank', days: 17 },
   });
   add('r12', 'water_tank', 1.6, 0.3, 0, {
-    name: ['Water tank 2', 'خزان المياه 2'],
+    name: 'Water tank 2',
     model: '1,000 L',
   });
   add('r12', 'ac_unit', 3.2, 0.15, 0, {
-    name: ['AC unit, living room', 'وحدة تكييف غرفة المعيشة'],
+    name: 'AC unit, living room',
     photo: 'ac_unit',
     tags: ['warranty'],
     brand: 'Carrier',
     model: 'Optimax 2.25 HP',
-    due: { title: ['Clean the filters', 'تنظيف الفلاتر'], days: 15 },
+    due: { title: 'Clean the filters', days: 15 },
   });
   add('r12', 'ac_unit', 5.3, 0.15, 0, {
-    name: ['AC unit, bedroom', 'وحدة تكييف غرفة النوم'],
+    name: 'AC unit, bedroom',
     brand: 'Sharp',
     model: 'AH-A12 1.5 HP',
   });
@@ -865,29 +838,29 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
   add('r12', 'outdoor_set', 4.0, 3.8, 0);
   add('r12', 'monobloc', 3.3, 5.2, 0);
   add('r12', 'monobloc', 6.1, 5.2, 0);
-  add('r12', 'planter_long', 0.3, 6.3, 0, { name: ['Mint planter', 'حوض النعناع'] });
-  add('r12', 'tall_plant', 8.2, 6.2, 0, { name: ['Bougainvillea', 'جهنمية'] });
+  add('r12', 'planter_long', 0.3, 6.3, 0, { name: 'Mint planter' });
+  add('r12', 'tall_plant', 8.2, 6.2, 0, { name: 'Bougainvillea' });
   add('r12', 'watering_can', 2.0, 6.4, 0);
   add('r13', 'metal_shelf', 0.15, 0.15, 0, {
-    name: ['Roof shelf', 'رف السطح'],
+    name: 'Roof shelf',
     contents: [
-      C(['Spare tap washers', 'جلب حنفيات احتياطية'], 10),
-      C(['PVC pipe glue', 'غراء مواسير PVC']),
-      C(['Tank float valve', 'عوّامة الخزان']),
-      C(['Rope 20 m', 'حبل 20 م']),
+      C('Spare tap washers', 10),
+      C('PVC pipe glue'),
+      C('Tank float valve'),
+      C('Rope 20 m'),
     ],
   });
   add('r13', 'crate', 1.0, 0.2, 0, {
-    name: ['Plant crate', 'صندوق الزراعة'],
+    name: 'Plant crate',
     contents: [
-      C(['Potting soil 20 L', 'تربة زراعة 20 لتر'], 1, { min: 2 }),
-      C(['Plant food', 'سماد نباتات']),
-      C(['Secateurs', 'مقص تقليم'], 1, { brand: 'Fiskars' }),
+      C('Potting soil 20 L', 1, { min: 2 }),
+      C('Plant food'),
+      C('Secateurs', 1, { brand: 'Fiskars' }),
     ],
   });
   add('r13', 'cardboard', 1.0, 1.6, 0, {
-    name: ['Old fans box', 'صندوق المراوح القديمة'],
-    contents: [C(['Desk fan', 'مروحة مكتب'], 2), C(['Fan remote', 'ريموت المروحة'])],
+    name: 'Old fans box',
+    contents: [C('Desk fan', 2), C('Fan remote')],
   });
 
   return {
@@ -903,6 +876,6 @@ export function sampleHome(lang: Lang, today: Date = new Date(), pack?: Pack): S
       attention,
     },
     facts,
-    location: pick(['Sample home', 'منزل تجريبي']),
+    location: 'Sample home',
   };
 }

@@ -1,31 +1,25 @@
-/**
- * #474: the language a page starts in is shown, never stored. Only a language the person picks is
- * kept, so a browser that changes its language, or one Kept learns later, is followed.
- */
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { chosenLocale, LOCALE_KEY, setLocale } from '@/lib/prefs';
-import { startLocale } from './i18n';
+import { afterEach, expect, it, vi } from 'vitest';
+import { chosenLocale, initialLocale, LOCALE_KEY, localeToSend } from '@/lib/prefs';
+import { i18n, startLocale } from './i18n';
 
 afterEach(() => {
   vi.unstubAllGlobals();
   localStorage.clear();
 });
 
-describe('the language a page starts in (#474)', () => {
-  it('follows the browser, and stores nothing', async () => {
-    vi.stubGlobal('navigator', { language: 'de-DE' });
-    expect(await startLocale()).toBe('de');
-    expect(localStorage.getItem(LOCALE_KEY)).toBeNull();
-    expect(chosenLocale()).toBeNull();
-    vi.stubGlobal('navigator', { language: 'es-ES' });
-    expect(await startLocale()).toBe('es');
-  });
+it('starts in English and leaves the locale unset for a new device', async () => {
+  vi.stubGlobal('navigator', { language: 'de-DE' });
+  expect(await startLocale()).toBe('en');
+  expect(localStorage.getItem(LOCALE_KEY)).toBeNull();
+});
 
-  it('keeps a language the person picked', async () => {
-    vi.stubGlobal('navigator', { language: 'es-ES' });
-    setLocale('fr');
-    expect(localStorage.getItem(LOCALE_KEY)).toBe('fr');
-    expect(await startLocale()).toBe('fr');
-    expect(chosenLocale()).toBe('fr');
-  });
+it('starts in English without sending a legacy interface preference to the account', async () => {
+  localStorage.setItem(LOCALE_KEY, 'ar');
+  expect(initialLocale()).toBe('en');
+  expect(await startLocale()).toBe('en');
+  expect(i18n.locale).toBe('en');
+  expect(document.documentElement.lang).toBe('en');
+  expect(document.documentElement.dir).toBe('ltr');
+  expect(chosenLocale()).toBeNull();
+  expect(localeToSend('en')).toBeNull();
 });

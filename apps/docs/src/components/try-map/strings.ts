@@ -1,10 +1,4 @@
-/**
- * The demo's words (D241): the shipped map's own strings and their translations from
- * apps/web/src/locales/<lang>/messages.po, so the demo reads like the app. A few the app has no
- * use for (the sample note, Reset) are the demo's own. English and Arabic are here, beside each
- * other; every other language is one file in langs/, which only that language's readers download
- * (PACKS below). A language with no file, or a file with a word missing, is a type error.
- */
+/** English interface copy for the documentation map demo. */
 import {
   formatRoomSide,
   type MapModelKey,
@@ -15,138 +9,135 @@ import {
 } from '@kept/shared';
 
 export type Lang = 'ar' | 'de' | 'en' | 'es' | 'fr' | 'it' | 'uk' | 'vi';
-/** The languages with a file in langs/. */
 export type OtherLang = Exclude<Lang, 'en' | 'ar'>;
-/** English, then Arabic. */
-export type Two = readonly [string, string];
 
-export const MODEL_NAMES: Record<MapModelKey, Two> = {
-  sofa: ['Sofa', 'أريكة'],
-  armchair: ['Armchair', 'كرسي بذراعين'],
-  coffee_table: ['Coffee table', 'طاولة قهوة'],
-  tv_stand: ['TV stand', 'حامل تلفاز'],
-  cube_shelf: ['Cube shelf', 'رف مكعبات'],
-  tall_plant: ['Tall plant', 'نبتة طويلة'],
-  plant: ['Plant', 'نبتة'],
-  succulent: ['Succulent', 'نبتة عصارية'],
-  dining_chair: ['Dining chair', 'كرسي سفرة'],
-  drawers: ['Chest of drawers', 'خزانة أدراج'],
-  bedside: ['Bedside table', 'طاولة جانب السرير'],
-  metal_shelf: ['Metal shelf', 'رف معدني'],
-  tool_cart: ['Tool cart', 'عربة أدوات'],
-  drill: ['Drill', 'مثقاب'],
-  cardboard: ['Moving box', 'صندوق نقل'],
-  crate: ['Crate', 'صندوق بلاستيكي'],
-  basket: ['Basket', 'سلة'],
-  outdoor_set: ['Bistro set', 'طقم طاولة وكراسي'],
-  monobloc: ['Plastic chair', 'كرسي بلاستيكي'],
-  planter: ['Planter', 'حوض زرع'],
-  planter_long: ['Long planter', 'حوض زرع طويل'],
-  ac_unit: ['AC outdoor unit', 'وحدة مكيف خارجية'],
-  watering_can: ['Watering can', 'مرشة ري'],
-  tv: ['TV', 'تلفاز'],
-  bookshelf: ['Bookshelf', 'مكتبة كتب'],
-  cube_grid: ['Cube storage', 'وحدة تخزين مكعبات'],
-  bookcase: ['Tall bookcase', 'مكتبة طويلة'],
-  shelving_unit: ['Shelving unit', 'وحدة رفوف'],
-  lamp: ['Floor lamp', 'مصباح أرضي'],
-  counter: ['Kitchen counter', 'سطح مطبخ'],
-  sink: ['Sink counter', 'سطح بحوض'],
-  fridge: ['Fridge', 'ثلاجة'],
-  coffee_machine: ['Coffee machine', 'آلة قهوة'],
-  microwave: ['Microwave', 'ميكروويف'],
-  dining: ['Dining table', 'طاولة سفرة'],
-  bed: ['Bed', 'سرير'],
-  wardrobe: ['Wardrobe', 'خزانة ملابس'],
-  table_lamp: ['Table lamp', 'مصباح طاولة'],
-  desk: ['Desk', 'مكتب'],
-  monitor: ['Monitor', 'شاشة'],
-  laptop: ['Laptop', 'حاسوب محمول'],
-  monitor_arm: ['Monitor arm', 'ذراع شاشة'],
-  dual_monitor_arm: ['Dual monitor arm', 'ذراع لشاشتين'],
-  pc_tower: ['Desktop PC', 'كمبيوتر مكتبي'],
-  keyboard: ['Keyboard', 'لوحة مفاتيح'],
-  mouse: ['Mouse', 'فأرة'],
-  webcam: ['Webcam', 'كاميرا ويب'],
-  camera: ['Camera', 'كاميرا'],
-  speaker: ['Desk speaker', 'سماعة مكتبية'],
-  portable_speaker: ['Portable speaker', 'سماعة محمولة'],
-  floor_speaker: ['Tall speaker', 'سماعة أرضية'],
-  boombox: ['Boombox', 'سماعة حفلات'],
-  smart_speaker: ['Smart speaker', 'سماعة ذكية'],
-  soundbar: ['Soundbar', 'ساوند بار'],
-  headphones: ['Headphones', 'سماعات رأس'],
-  headset: ['Headset', 'سماعة بميكروفون'],
-  earbuds: ['Earbuds', 'سماعات أذن'],
-  router: ['Router', 'راوتر'],
-  printer: ['Printer', 'طابعة'],
-  console: ['Game console', 'جهاز ألعاب'],
-  controller: ['Game controller', 'يد تحكم'],
-  phone: ['Phone', 'هاتف'],
-  tablet: ['Tablet', 'جهاز لوحي'],
-  power_strip: ['Power strip', 'مشترك كهرباء'],
-  external_drive: ['External drive', 'هارد خارجي'],
-  mini_pc: ['Mini PC', 'كمبيوتر صغير'],
-  nas: ['NAS', 'جهاز تخزين شبكي (NAS)'],
-  sbc: ['Raspberry Pi or SBC', 'راسبيري باي أو حاسوب لوحة واحدة'],
-  network_switch: ['Network switch', 'سويتش شبكة'],
-  patch_panel: ['Patch panel', 'لوحة توصيل الشبكة'],
-  ups: ['UPS', 'مزود طاقة احتياطي (UPS)'],
-  device: ['Small device', 'جهاز صغير'],
-  chair: ['Desk chair', 'كرسي مكتب'],
-  cabinet: ['Filing cabinet', 'خزانة ملفات'],
-  rack_24u: ['Server rack 24U', 'خزانة سيرفر ٢٤ وحدة'],
-  rack_42u: ['Server rack 42U', 'خزانة سيرفر ٤٢ وحدة'],
-  box: ['Storage box', 'صندوق تخزين'],
-  washer: ['Washing machine', 'غسالة'],
-  water_purifier: ['Water purifier', 'جهاز تنقية مياه'],
-  workbench: ['Workbench', 'طاولة عمل'],
-  tool_wall: ['Tool wall', 'جدار الأدوات'],
-  wall_tv: ['Wall TV', 'تلفزيون حائط'],
-  wall_shelf: ['Wall shelf', 'رف حائط'],
-  wall_cabinet: ['Wall cabinet', 'خزانة حائط'],
-  rack_wall_6u: ['Wall rack 6U', 'خزانة شبكة حائط ٦ وحدات'],
-  rack_wall_12u: ['Wall rack 12U', 'خزانة شبكة حائط ١٢ وحدة'],
-  picture: ['Picture or mirror', 'لوحة أو مرآة'],
-  clock: ['Wall clock', 'ساعة حائط'],
-  hooks: ['Hooks', 'علّاقات'],
-  car: ['Car', 'سيارة'],
-  bike: ['Bike', 'دراجة'],
-  water_tank: ['Water tank', 'خزان مياه'],
-  dish: ['Satellite dish', 'طبق استقبال'],
-  stairs: ['Stairs', 'درج'],
-  stairwell: ['Stairwell', 'بئر الدرج'],
-  zone: ['Area', 'منطقة'],
-  item: ['Small thing', 'شيء صغير'],
+export const MODEL_NAMES: Record<MapModelKey, string> = {
+  sofa: 'Sofa',
+  armchair: 'Armchair',
+  coffee_table: 'Coffee table',
+  tv_stand: 'TV stand',
+  cube_shelf: 'Cube shelf',
+  tall_plant: 'Tall plant',
+  plant: 'Plant',
+  succulent: 'Succulent',
+  dining_chair: 'Dining chair',
+  drawers: 'Chest of drawers',
+  bedside: 'Bedside table',
+  metal_shelf: 'Metal shelf',
+  tool_cart: 'Tool cart',
+  drill: 'Drill',
+  cardboard: 'Moving box',
+  crate: 'Crate',
+  basket: 'Basket',
+  outdoor_set: 'Bistro set',
+  monobloc: 'Plastic chair',
+  planter: 'Planter',
+  planter_long: 'Long planter',
+  ac_unit: 'AC outdoor unit',
+  watering_can: 'Watering can',
+  tv: 'TV',
+  bookshelf: 'Bookshelf',
+  cube_grid: 'Cube storage',
+  bookcase: 'Tall bookcase',
+  shelving_unit: 'Shelving unit',
+  lamp: 'Floor lamp',
+  counter: 'Kitchen counter',
+  sink: 'Sink counter',
+  fridge: 'Fridge',
+  coffee_machine: 'Coffee machine',
+  microwave: 'Microwave',
+  dining: 'Dining table',
+  bed: 'Bed',
+  wardrobe: 'Wardrobe',
+  table_lamp: 'Table lamp',
+  desk: 'Desk',
+  monitor: 'Monitor',
+  laptop: 'Laptop',
+  monitor_arm: 'Monitor arm',
+  dual_monitor_arm: 'Dual monitor arm',
+  pc_tower: 'Desktop PC',
+  keyboard: 'Keyboard',
+  mouse: 'Mouse',
+  webcam: 'Webcam',
+  camera: 'Camera',
+  speaker: 'Desk speaker',
+  portable_speaker: 'Portable speaker',
+  floor_speaker: 'Tall speaker',
+  boombox: 'Boombox',
+  smart_speaker: 'Smart speaker',
+  soundbar: 'Soundbar',
+  headphones: 'Headphones',
+  headset: 'Headset',
+  earbuds: 'Earbuds',
+  router: 'Router',
+  printer: 'Printer',
+  console: 'Game console',
+  controller: 'Game controller',
+  phone: 'Phone',
+  tablet: 'Tablet',
+  power_strip: 'Power strip',
+  external_drive: 'External drive',
+  mini_pc: 'Mini PC',
+  nas: 'NAS',
+  sbc: 'Raspberry Pi or SBC',
+  network_switch: 'Network switch',
+  patch_panel: 'Patch panel',
+  ups: 'UPS',
+  device: 'Small device',
+  chair: 'Desk chair',
+  cabinet: 'Filing cabinet',
+  rack_24u: 'Server rack 24U',
+  rack_42u: 'Server rack 42U',
+  box: 'Storage box',
+  washer: 'Washing machine',
+  water_purifier: 'Water purifier',
+  workbench: 'Workbench',
+  tool_wall: 'Tool wall',
+  wall_tv: 'Wall TV',
+  wall_shelf: 'Wall shelf',
+  wall_cabinet: 'Wall cabinet',
+  rack_wall_6u: 'Wall rack 6U',
+  rack_wall_12u: 'Wall rack 12U',
+  picture: 'Picture or mirror',
+  clock: 'Wall clock',
+  hooks: 'Hooks',
+  car: 'Car',
+  bike: 'Bike',
+  water_tank: 'Water tank',
+  dish: 'Satellite dish',
+  stairs: 'Stairs',
+  stairwell: 'Stairwell',
+  zone: 'Area',
+  item: 'Small thing',
 };
 
 /** The shape picker's groups (D249). */
-export const GROUP_NAMES: Record<ShapeGroup, Two> = {
-  furniture: ['Furniture', 'أثاث'],
-  storage: ['Storage', 'تخزين'],
-  wall: ['On the wall', 'على الحائط'],
-  electronics: ['Electronics', 'إلكترونيات'],
-  kitchen: ['Kitchen and laundry', 'المطبخ والغسيل'],
-  tools: ['Tools', 'العدة'],
-  outdoor: ['Plants and outdoor', 'نباتات وخارج المنزل'],
-  vehicles: ['Vehicles', 'السيارات'],
-  building: ['Stairs and areas', 'سلالم ومناطق'],
-  other: ['Other', 'أخرى'],
+export const GROUP_NAMES: Record<ShapeGroup, string> = {
+  furniture: 'Furniture',
+  storage: 'Storage',
+  wall: 'On the wall',
+  electronics: 'Electronics',
+  kitchen: 'Kitchen and laundry',
+  tools: 'Tools',
+  outdoor: 'Plants and outdoor',
+  vehicles: 'Vehicles',
+  building: 'Stairs and areas',
+  other: 'Other',
 };
 
-export const ROOM_KIND_NAMES: Record<MapRoomKind, Two> = {
-  room: ['Room', 'غرفة'],
-  balcony: ['Balcony', 'شرفة'],
-  terrace: ['Terrace', 'تراس'],
-  garden: ['Garden', 'حديقة'],
+export const ROOM_KIND_NAMES: Record<MapRoomKind, string> = {
+  room: 'Room',
+  balcony: 'Balcony',
+  terrace: 'Terrace',
+  garden: 'Garden',
 };
 
-export const SURFACE_NAMES: Record<MapSurface, Two> = {
-  wood: ['Wood', 'خشب'],
-  tile: ['Tiles', 'بلاط'],
-  concrete: ['Concrete', 'خرسانة'],
-  deck: ['Deck', 'ألواح خشبية'],
-  grass: ['Grass', 'عشب'],
+export const SURFACE_NAMES: Record<MapSurface, string> = {
+  wood: 'Wood',
+  tile: 'Tiles',
+  concrete: 'Concrete',
+  deck: 'Deck',
+  grass: 'Grass',
 };
 
 export type Words = {
@@ -320,13 +311,7 @@ export type Words = {
 };
 
 /** Arabic plural forms (zero, one, two, few, many, other), as the app's catalogue writes them. */
-function arPlural(n: number, f: string, forms: [string, string, string, string, string, string]) {
-  const rule = new Intl.PluralRules('ar').select(n);
-  const i = ['zero', 'one', 'two', 'few', 'many', 'other'].indexOf(rule);
-  return (forms[i < 0 ? 5 : i] ?? '').replace('#', f);
-}
-
-export const WORDS: Record<'en' | 'ar', Words> = {
+export const WORDS: Record<'en', Words> = {
   en: {
     sample: 'A sample home, in your browser. Nothing you change is saved or sent anywhere.',
     reset: 'Reset',
@@ -515,236 +500,6 @@ export const WORDS: Record<'en' | 'ar', Words> = {
       findThing: 'Find a thing to add',
     },
   },
-  ar: {
-    sample: 'منزل تجريبي في متصفحك. لا يُحفظ أي شيء تغيّره ولا يُرسل إلى أي مكان.',
-    reset: 'إعادة تعيين',
-    install: 'ثبّت Kept',
-    mapOf: (name) => `خريطة ${name}`,
-    where: 'مكانك على الخريطة',
-    view: 'العرض',
-    threeD: 'ثلاثي الأبعاد',
-    plan: 'مخطط',
-    arrange: 'ترتيب',
-    done: 'تم',
-    pins: 'الدبابيس',
-    pin: {
-      low: { long: 'مخزون منخفض', short: 'منخفض' },
-      lent: { long: 'مُعار', short: 'مُعار' },
-      due: { long: 'يحين قريبًا', short: 'مستحق' },
-    },
-    arrangeTool: 'أداة الترتيب',
-    move: 'نقل',
-    drawRoom: 'ارسم غرفة',
-    addFloor: 'أضف طابقًا',
-    cancel: 'إلغاء',
-    hints: {
-      move: 'اسحب أي شيء لنقله. ضع الأشياء الصغيرة على سطح أو مكتب أو رف أو صندوق، وأشياء الحائط تُعلَّق على أقرب حائط. لنقل غرفة، اضغط مطولًا على أرضيتها ثم اسحب. اسحب زاويتها الكهرمانية لتغيير حجمها.',
-      room: 'اسحب على أرض فارغة لرسم غرفة جديدة في هذا الطابق.',
-      overlap: 'لا يمكن أن تتداخل الغرف. ارسم على أرض فارغة.',
-      blocked: 'لا يمكن أن تتداخل الغرف.',
-    },
-    movedRoom: {
-      ArrowUp: (room) => `نُقل «${room}» إلى الأعلى.`,
-      ArrowDown: (room) => `نُقل «${room}» إلى الأسفل.`,
-      ArrowLeft: (room) => `نُقل «${room}» إلى اليسار.`,
-      ArrowRight: (room) => `نُقل «${room}» إلى اليمين.`,
-    },
-    floor: 'الطابق',
-    allFloors: 'كل الطوابق',
-    all: 'الكل',
-    zoomIn: 'تكبير',
-    zoomOut: 'تصغير',
-    turnLeft: 'تدوير لليسار',
-    turnRight: 'تدوير لليمين',
-    home: 'اعرض الطابق كاملًا',
-    detailed: 'نماذج مفصّلة',
-    glError: 'لا يستطيع هذا المتصفح رسم الخريطة.',
-    placesHere: 'الأماكن في هذا الطابق',
-    noFloor: 'ليست على طابق',
-    roomN: (n) => `غرفة ${n}`,
-    floorN: (n) => `الطابق ${n}`,
-    engine: {
-      onIt: (name) => `عليه: ${name}`,
-      more: (n) => `+${n} أخرى`,
-      inside: (n) => `${n} بداخله`,
-      openFloor: 'انقر للفتح',
-      changeFloor: 'انقر لتغيير الطابق',
-    },
-    close: 'إغلاق',
-    open: 'افتح',
-    whatsHere: (n) => `ما هنا، ${n}`,
-    insideN: (n) => `بداخله، ${n}`,
-    details: 'التفاصيل',
-    less: 'أقل',
-    turn: 'تدوير',
-    height: {
-      label: 'الارتفاع',
-      lower: 'أخفض',
-      higher: 'أعلى',
-      help: 'من الأرض إلى منتصفه',
-      value: (n) => `${n} م`,
-      onWall: (n) => `على الحائط، على ارتفاع ${n} م`,
-    },
-    takeOff: 'إزالة من الخريطة',
-    upTo: (name) => `صعودًا إلى ${name}`,
-    downTo: (name) => `نزولًا إلى ${name}`,
-    size: (w, d) => `${w} × ${d} م`,
-    things: (n, f) =>
-      arPlural(n, f, ['لا أشياء', 'شيء واحد', 'شيئان', '# أشياء', '# شيئًا', '# شيء']),
-    thingsInside: (n, f) =>
-      arPlural(n, f, [
-        'لا أشياء بداخله',
-        'شيء واحد بداخله',
-        'شيئان بداخله',
-        '# أشياء بداخله',
-        '# شيئًا بداخله',
-        '# شيء بداخله',
-      ]),
-    onHost: (name) => `على ${name}`,
-    within: {
-      low: (n) => `${n} على وشك النفاد بداخله`,
-      lent: (n) => `${n} مُعار من داخله`,
-      due: (n) => `${n} مستحق بداخله`,
-    },
-    low: (remaining, min) => `بقي ${remaining}، والحد الأدنى ${min}`,
-    lentTo: (who) => `مُعار إلى ${who}`,
-    lentBack: (who, back) => `مُعار إلى ${who}، يعود بحلول ${back}`,
-    someone: 'شخص ما',
-    dueOn: (what, when) => `${what}: مستحق في ${when}`,
-    overdue: (what, when) => `${what}: متأخر منذ ${when}`,
-    dueWord: 'مستحق',
-    facts: {
-      type: 'النوع',
-      quantity: 'الكمية',
-      brand: 'العلامة التجارية',
-      model: 'الطراز',
-      serial: 'الرقم التسلسلي',
-      condition: 'الحالة',
-      tags: 'الوسوم',
-    },
-    noType: 'بلا نوع',
-    qrLabel: (code) => `ملصق QR لـ ${code}`,
-    placesIn: (n, f) =>
-      arPlural(n, f, [
-        'لا أماكن فيه',
-        'مكان واحد فيه',
-        'مكانان فيه',
-        '# أماكن فيه',
-        '# مكانًا فيه',
-        '# مكان فيه',
-      ]),
-    openPlace: 'فتح المكان',
-    openThing: 'افتح الشيء',
-    photograph: 'صوّر هذه الغرفة',
-    countRoom: 'عُدّ هذه الغرفة',
-    list: {
-      title: (name) => `ما في ${name}`,
-      rooms: (n, f) =>
-        arPlural(n, f, ['لا غرف', 'غرفة واحدة', 'غرفتان', '# غرف', '# غرفة', '# غرفة']),
-      floors: (n, f) =>
-        arPlural(n, f, ['لا طوابق', 'طابق واحد', 'طابقان', '# طوابق', '# طابقًا', '# طابق']),
-      sum: { low: 'على وشك النفاد', lent: 'مُعار', due: 'مستحق' },
-      find: 'ابحث عن شيء أو معرّف قصير',
-      findLabel: 'ابحث عن شيء',
-      show: 'العرض',
-      byRoom: 'حسب الغرفة',
-      attention: 'يحتاج انتباهًا',
-      nothingHere: 'لا شيء هنا.',
-      nothingYet: 'لا شيء هنا بعد.',
-      more: (f) => `عرض ${f} أخرى`,
-      fewer: 'عرض أقل',
-    },
-    confirm: {
-      title: 'التخلّي عن هذه التغييرات؟',
-      body: 'تعود الخريطة كما كانت.',
-      throwAway: 'تخلَّ عنها',
-    },
-    arranged: 'رُتّبت الخريطة',
-    undo: 'تراجع',
-    undone: 'تم التراجع',
-    shapesMore: ['ينقصك شكل؟ ', 'ساهم بإضافته', '، أو تصفّح ', 'مكتبة الأشكال', '.'],
-    noPhoto: 'لا صورة بعد',
-    labelThing: 'ملصق هذا الشيء',
-    labelPlace: 'ملصق هذا المكان',
-    onIt: 'عليه',
-    findInside: (name) => `ابحث داخل ${name}`,
-    findInsideLabel: 'ابحث بالداخل',
-    nothingMatches: 'لا شيء يطابق.',
-    nothingYet: 'لا شيء فيه بعد.',
-    kind: 'النوع',
-    surface: 'الأرضية',
-    shape: 'الشكل',
-    shapeLine: (shape, from) =>
-      from === 'type'
-        ? `الشكل: ${shape}، من نوعه`
-        : from === 'name'
-          ? `الشكل: ${shape}، من اسمه`
-          : from === 'guess'
-            ? `الشكل: ${shape}، تخمين`
-            : `الشكل: ${shape}`,
-    change: 'تغيير',
-    pickShape: 'اختر شكلًا',
-    shapeFor: (name) => `شكل ${name}`,
-    findShape: 'ابحث عن شكل',
-    findShapeHint: 'ابحث عن شكل: تلفاز، رف، صندوق…',
-    shapes: 'الأشكال',
-    suggested: 'مقترح',
-    noShape: (q) =>
-      `لا يوجد شكل يطابق «${q}». جرّب «شيء صغير» أو «جهاز صغير»، وأعطه اسمًا يقول ما هو.`,
-    putOnMap: 'ضع على الخريطة',
-    findThingIn: (name) => `ابحث عن شيء في ${name}`,
-    findThingLabel: 'ابحث عن شيء لوضعه على الخريطة',
-    everythingOnMap: 'كل ما هنا على الخريطة.',
-    put: {
-      putOn: 'ضع على…',
-      addOn: 'أضف عليه',
-      putTitle: (name) => `ضع ${name} على…`,
-      addTitle: (name) => `أضف على ${name}`,
-      onNow: (name) => `على ${name}`,
-      takeOff: 'أنزله',
-      list: 'ما يمكنه حمله',
-      shapeOn: (shape, on) => `${shape}، على ${on}`,
-      nothing: (room) => `لا شيء في ${room} يمكنه حمله. ضع مكتبًا أو رفًا أو شاشة على الخريطة أولًا.`,
-      nothingElse: (room) => `لا شيء آخر في ${room} يمكنه حمله.`,
-      toAdd: 'أشياء توضع عليه',
-      full: (n, f) =>
-        arPlural(n, f, [
-          'ممتلئ: لا يحمل شاشات.',
-          'ممتلئ: يحمل شاشة واحدة.',
-          'ممتلئ: يحمل شاشتين.',
-          'ممتلئ: يحمل # شاشات.',
-          'ممتلئ: يحمل # شاشة.',
-          'ممتلئ: يحمل # شاشة.',
-        ]),
-      left: (n, f) =>
-        arPlural(n, f, [
-          'لا مكان لمزيد.',
-          'مكان لواحدة أخرى.',
-          'مكان لاثنتين أخريين.',
-          'مكان لـ# أخرى.',
-          'مكان لـ# أخرى.',
-          'مكان لـ# أخرى.',
-        ]),
-      noMonitor: (room) => `لا توجد شاشة متاحة في ${room}.`,
-      allOn: (room) => `كل شيء صغير في ${room} موضوع على شيء بالفعل.`,
-      onMap: 'على الخريطة',
-      notOnMap: 'ليست على الخريطة بعد',
-      putN: (n, f) =>
-        arPlural(n, f, [
-          'ضع # عليه',
-          'ضع واحدًا عليه',
-          'ضع اثنين عليه',
-          'ضع # عليه',
-          'ضع # عليه',
-          'ضع # عليه',
-        ]),
-      pick: 'اختر ما يوضع عليه',
-      onItNow: (names) => `عليه الآن: ${names}`,
-      findPlace: 'ابحث عن مكان تضعه عليه',
-      findIn: (room) => `ابحث في ${room}`,
-      findThing: 'ابحث عن شيء لإضافته',
-    },
-  },
 };
 
 /** Everything the demo says in one language. */
@@ -758,38 +513,19 @@ export type Pack = {
   sample: Readonly<Record<string, string>>;
 };
 
-const PACKS: Record<OtherLang, () => Promise<{ default: Pack }>> = {
-  de: () => import('./langs/de'),
-  es: () => import('./langs/es'),
-  fr: () => import('./langs/fr'),
-  it: () => import('./langs/it'),
-  uk: () => import('./langs/uk'),
-  vi: () => import('./langs/vi'),
-};
-
-function column<K extends string>(names: Record<K, Two>, i: 0 | 1): Record<K, string> {
-  return Object.fromEntries(Object.entries<Two>(names).map(([k, two]) => [k, two[i]])) as Record<
-    K,
-    string
-  >;
-}
-
-/** English or Arabic, from this file. */
-export function basePack(lang: 'en' | 'ar'): Pack {
-  const i = lang === 'ar' ? 1 : 0;
+export function basePack(_lang: 'en' | 'ar'): Pack {
   return {
-    words: WORDS[lang],
-    models: column(MODEL_NAMES, i),
-    groups: column(GROUP_NAMES, i),
-    kinds: column(ROOM_KIND_NAMES, i),
-    surfaces: column(SURFACE_NAMES, i),
+    words: WORDS.en,
+    models: MODEL_NAMES,
+    groups: GROUP_NAMES,
+    kinds: ROOM_KIND_NAMES,
+    surfaces: SURFACE_NAMES,
     sample: {},
   };
 }
 
-/** A language's words, fetched only for a reader of that language. */
-export async function loadPack(lang: Lang): Promise<Pack> {
-  return lang === 'en' || lang === 'ar' ? basePack(lang) : (await PACKS[lang]()).default;
+export async function loadPack(_lang: Lang): Promise<Pack> {
+  return basePack('en');
 }
 
 /** Numbers and dates as the app writes them (apps/web/src/lib/format.ts): Eastern digits in Arabic. */

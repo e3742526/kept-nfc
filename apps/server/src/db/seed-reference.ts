@@ -108,7 +108,7 @@ export async function seedTypes(client: pg.ClientBase): Promise<void> {
     key: t.key,
     parent: t.parent ?? null,
     groups: [...(t.groups ?? [])],
-    search_names: `${t.names.en} ${t.names.ar}`,
+    search_names: Object.values(t.names).join(' '),
     icon: t.icon,
     capabilities: [...t.capabilities],
     // undefined: inherit (SQL NULL); null: cancel an inherited meter (JSON null).

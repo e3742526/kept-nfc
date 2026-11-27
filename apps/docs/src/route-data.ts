@@ -45,69 +45,25 @@
  * this waits for it and then names the group in the page's language (src/sidebar-labels.mjs).
  */
 import { defineRouteMiddleware } from '@astrojs/starlight/route-data';
-import arabic400 from '@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2?url';
 import { shapeLibrary } from './components/shapes/library';
 import { groupName, integrationGroups } from './data/integrations';
 import { langOf } from './i18n';
-import { locales } from './locales.mjs';
-import { sidebarLabels } from './sidebar-labels.mjs';
 
 const CARD = { width: 1200, height: 630 };
 
-/** The API reference's group, as astro.config.mjs names it for starlight-openapi. */
-const API_GROUP = 'API reference';
-
-const CARDS: Record<string, { file: string; alt: string }> = {
-  en: {
-    file: 'social-card.png',
-    alt: "SheepKeep, an inventory of everything you own and where it is: the app's home screen on a desktop and a phone",
-  },
-  ar: {
-    file: 'social-card.png',
-    alt: 'SheepKeep، جرد لكل ما تملكه وأين هو: موقع «بيت العائلة» في التطبيق على حاسوب وهاتف',
-  },
+const card = {
+  file: 'social-card.png',
+  alt: "SheepKeep, an inventory of everything you own and where it is: the app's home screen on a desktop and a phone",
 };
 
 const LICENSE = 'https://www.gnu.org/licenses/agpl-3.0.html';
 const REPOSITORY = 'https://github.com/e3742526/kept-nfc';
 const ORGANIZATION = 'https://github.com/e3742526';
 
-/**
- * The pages each language has of its own, by locale code, as paths under /<locale>/ ('' is the
- * landing page).
- */
-const OWN_PAGES: Record<string, Set<string>> = {};
-for (const file of Object.keys(import.meta.glob('./content/docs/*/**/*.{md,mdx}'))) {
-  const match = /^\.\/content\/docs\/([^/]+)\/(.+)$/.exec(file);
-  const locale = match?.[1];
-  if (!match || !locale || !(locale in locales)) continue;
-  const page = (match[2] as string).replace(/(^|\/)index\.mdx?$|\.mdx?$/, '');
-  const pages = OWN_PAGES[locale] ?? new Set<string>();
-  pages.add(page);
-  OWN_PAGES[locale] = pages;
-}
-
-const OG_LOCALES: Record<string, string> = {
-  ar: 'ar_AR',
-  de: 'de_DE',
-  en: 'en_US',
-  es: 'es_ES',
-  fr: 'fr_FR',
-  it: 'it_IT',
-  uk: 'uk_UA',
-  vi: 'vi_VN',
-};
-
 export const onRequest = defineRouteMiddleware(async (context, next) => {
   await next();
   const route = context.locals.starlightRoute;
   const { head } = route;
-  const apiLabel = (sidebarLabels[API_GROUP] as Record<string, string>)[route.lang];
-  if (apiLabel) {
-    route.sidebar = route.sidebar.map((entry) =>
-      entry.type === 'group' && entry.label === API_GROUP ? { ...entry, label: apiLabel } : entry,
-    );
-  }
   const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
   /** Sets a <meta>'s content, replacing Starlight's own tag when there is one. */
@@ -117,44 +73,12 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
     else head.push({ tag: 'meta', attrs: { [key]: value, content }, content: '' });
   };
 
-  meta('property', 'og:locale', OG_LOCALES[route.lang] ?? route.lang);
+  meta('property', 'og:locale', 'en_US');
 
   // The page's path with no base and no locale ('install/compose', '' for a landing page).
   let path = context.url.pathname;
   if (base && path.startsWith(`${base}/`)) path = path.slice(base.length);
   path = path.replace(/^\/+|\/+$/g, '');
-  if (route.locale) path = path.replace(new RegExp(`^${route.locale}(/|$)`), '');
-  const url = (prefix: string) =>
-    context.site ? new URL(`${base}/${prefix}${path}${path ? '/' : ''}`, context.site).href : null;
-  const english = url('');
-
-  if (english) {
-    const alternates = [{ lang: 'en', href: english }];
-    for (const [locale, { lang }] of Object.entries(locales)) {
-      if (locale !== 'root' && OWN_PAGES[locale]?.has(path)) {
-        alternates.push({ lang, href: url(`${locale}/`) as string });
-      }
-    }
-    alternates.push({ lang: 'x-default', href: english });
-    for (let i = head.length - 1; i >= 0; i--) {
-      if (head[i].tag === 'link' && head[i].attrs?.rel === 'alternate' && head[i].attrs?.hreflang) {
-        head.splice(i, 1);
-      }
-    }
-    head.push(
-      ...alternates.map(({ lang, href }) => ({
-        tag: 'link' as const,
-        attrs: { rel: 'alternate', hreflang: lang, href },
-        content: '',
-      })),
-    );
-    if (route.isFallback) {
-      const canonical = head.find((t) => t.tag === 'link' && t.attrs?.rel === 'canonical');
-      if (canonical) canonical.attrs = { ...canonical.attrs, href: english };
-      meta('property', 'og:url', english);
-    }
-  }
-
   if (route.id === '404') meta('name', 'robots', 'noindex');
 
   if (path === 'api' || path.startsWith('api/')) {
@@ -177,15 +101,7 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
       meta('property', 'og:title', 'HTTP API reference');
     }
   }
-  if (route.lang === 'ar') {
-    head.push({
-      tag: 'link',
-      attrs: { rel: 'preload', href: arabic400, as: 'font', type: 'font/woff2', crossorigin: '' },
-      content: '',
-    });
-  }
-  const card = CARDS[route.lang] ?? CARDS.en;
-  const cardUrl = context.site && card ? new URL(`${base}/${card.file}`, context.site).href : null;
+  const cardUrl = context.site ? new URL(`${base}/${card.file}`, context.site).href : null;
 
   if (route.toc && path === 'integrations') {
     const lang = langOf(route.lang);
@@ -256,7 +172,7 @@ export const onRequest = defineRouteMiddleware(async (context, next) => {
     });
   }
 
-  if (!cardUrl || !card) return;
+  if (!cardUrl) return;
   const image = cardUrl;
   meta('property', 'og:image', image);
   meta('property', 'og:image:type', 'image/png');

@@ -24,27 +24,14 @@ import {
 import { offMapIn } from '../../../../web/src/map/list';
 import { PHOTOS } from './photos';
 import { sampleHome } from './sample';
-import { formatter, type Lang, loadPack, MODEL_NAMES, type OtherLang } from './strings';
+import { formatter, type Lang, loadPack, MODEL_NAMES } from './strings';
 
 const TODAY = new Date(2026, 9, 15);
 
 describe('the Try the map sample home', () => {
   const en = sampleHome('en', TODAY);
-  const ar = sampleHome('ar', TODAY);
 
-  it('is the same home in English and Arabic, with every name translated', () => {
-    const shape = (s: typeof en) => ({
-      rooms: s.view.rooms.map((r) => [r.id, r.levelId, r.layout]),
-      nodes: s.view.nodes.map((n) => [n.id, n.subject, n.parentId, n.layout]),
-      things: s.view.things.map((t) => [t.id, t.parentId, t.quantity, t.shortCode]),
-      attention: s.view.attention.map((a) => [a.subjectId, a.kind, a.dueOn]),
-    });
-    expect(shape(ar)).toEqual(shape(en));
-    const names = (s: typeof en) => [
-      ...s.view.levels.map((l) => l.name),
-      ...s.view.rooms.map((r) => r.name),
-    ];
-    for (const [a, b] of names(en).map((n, i) => [n, names(ar)[i]])) expect(b).not.toBe(a);
+  it('has three levels and thirteen rooms', () => {
     expect(en.view.levels).toHaveLength(3);
     expect(en.view.rooms).toHaveLength(13);
   });
@@ -99,8 +86,6 @@ describe('the Try the map sample home', () => {
       expect(it.on).toBe(n?.layout?.hostId ?? null);
       expect(Math.round(it.x * 100)).toBe(n?.layout?.x);
     }
-    const arPlan = planOf(ar.view, { noFloor: 'ليست على طابق', location: ar.location });
-    expect(arPlan.levels.map((l) => l.short)).toEqual(['أ', '1', 'س']);
   });
 
   it('has a webcam on the monitor’s edge that Put on… and Take off work with (#137)', () => {
@@ -210,46 +195,13 @@ describe('the Try the map sample home', () => {
     }
     const photos = facts.flatMap((f) => (f.photo ? [f.photo] : []));
     expect(new Set(photos)).toEqual(new Set(Object.keys(PHOTOS)));
-    // The same in Arabic, by name.
-    const arTags = [...ar.facts.values()].flatMap((f) => f.tags ?? []);
-    expect(arTags.map((t) => t.colour)).toEqual(tags.map((t) => t.colour));
-    expect(arTags.map((t) => t.name)).not.toEqual(tags.map((t) => t.name));
   });
 });
 
-describe('the sample home in the other languages', () => {
-  const OTHERS: OtherLang[] = ['de', 'es', 'fr', 'it', 'uk', 'vi'];
-  const en = sampleHome('en', TODAY);
-  const shape = (s: typeof en) => ({
-    rooms: s.view.rooms.map((r) => [r.id, r.levelId, r.layout]),
-    nodes: s.view.nodes.map((n) => [n.id, n.subject, n.parentId, n.layout, n.shortCode]),
-    things: s.view.things.map((t) => [t.id, t.parentId, t.quantity, t.shortCode]),
-    attention: s.view.attention.map((a) => [a.subjectId, a.kind, a.dueOn]),
-  });
-
-  it.each(OTHERS)('%s is the same home, and has every name the home asks for', async (lang) => {
-    const pack = await loadPack(lang);
-    const asked = new Set<string>();
-    const sample = new Proxy(pack.sample, {
-      get: (names, name: string) => {
-        asked.add(name);
-        return names[name];
-      },
-    });
-    const home = sampleHome(lang, TODAY, { ...pack, sample });
-    expect(shape(home)).toEqual(shape(en));
-    expect(asked.size).toBeGreaterThan(200);
-    expect([...asked].filter((name) => !(name in pack.sample))).toEqual([]);
-    // Nothing else in the file: a name the sample dropped goes too.
-    expect(Object.keys(pack.sample).filter((name) => !asked.has(name))).toEqual([]);
-  });
-
-  it.each(OTHERS)('%s keeps its floor buttons apart', async (lang) => {
-    const plan = planOf(sampleHome(lang, TODAY, await loadPack(lang)).view, {
-      noFloor: '',
-      location: '',
-    });
-    expect(new Set(plan.levels.map((l) => l.short)).size).toBe(3);
+describe('the sample home language', () => {
+  it('loads the same English map and names under a former locale', async () => {
+    const pack = await loadPack('fr');
+    expect(sampleHome('fr', TODAY, pack)).toEqual(sampleHome('en', TODAY));
   });
 
   it('writes numbers the way each language does', () => {

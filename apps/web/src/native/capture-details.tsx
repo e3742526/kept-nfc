@@ -178,19 +178,17 @@ export function DetailSuggestions({
         </ul>
       )}
       {others > 0 && (
-        <div className="grid gap-2">
-          <p className="m-0 text-small text-ink-2">
-            {plural(others, {
-              one: 'The photos may show # more item.',
-              other: 'The photos may show # more items.',
-            })}
-          </p>
-          {onReviewItems && (
-            <Button variant="secondary" isDisabled={disabled} onPress={onReviewItems}>
-              <Trans>Review multiple items</Trans>
-            </Button>
-          )}
-        </div>
+        <p className="m-0 text-small text-ink-2">
+          {plural(others, {
+            one: 'The photos may show # more item.',
+            other: 'The photos may show # more items.',
+          })}
+        </p>
+      )}
+      {onReviewItems && (
+        <Button variant="secondary" isDisabled={disabled} onPress={onReviewItems}>
+          {others > 0 ? <Trans>Review multiple items</Trans> : <Trans>Review item</Trans>}
+        </Button>
       )}
       <div className="flex flex-wrap gap-2">
         {rows.length > 0 && (

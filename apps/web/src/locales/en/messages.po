@@ -32804,12 +32804,6 @@ msgstr "No matching items"
 msgid "Inside a matching bin"
 msgstr "Inside a matching bin"
 
-msgid "Could not suggest items from this photo."
-msgstr "Could not suggest items from this photo."
-
-msgid "Suggest items"
-msgstr "Suggest items"
-
 msgid "Photo review"
 msgstr "Photo review"
 
@@ -32823,6 +32817,10 @@ msgstr "Photo search is temporarily unavailable."
 
 msgid "Review multiple items"
 msgstr "Review multiple items"
+
+#: src/native/capture-details.tsx
+msgid "Review item"
+msgstr "Review item"
 
 msgid "Search categories"
 msgstr "Search categories"
@@ -34439,8 +34437,8 @@ msgid "Adds to notes"
 msgstr "Adds to notes"
 
 #: src/native/capture-ai.tsx
-msgid "Could not suggest details from these photos."
-msgstr "Could not suggest details from these photos."
+msgid "Could not analyze these photos."
+msgstr "Could not analyze these photos."
 
 #: src/native/capture-details.tsx
 msgid "Nothing new to suggest."
@@ -34451,8 +34449,8 @@ msgid "Some categories could not be added. Check your connection and try again."
 msgstr "Some categories could not be added. Check your connection and try again."
 
 #: src/native/capture-ai.tsx
-msgid "Suggest details"
-msgstr "Suggest details"
+msgid "AI assist"
+msgstr "AI assist"
 
 #: src/native/capture-details.tsx
 msgid "Suggested details"
@@ -34745,3 +34743,15 @@ msgstr "Add container"
 #: src/native/record.tsx
 msgid "Add to this container"
 msgstr "Add to this container"
+
+#: src/native/capture-form.tsx
+msgid "Add location photos"
+msgstr "Add location photos"
+
+#: src/native/capture-form.tsx
+msgid "Choose up to three location photos, each no larger than 25 MB."
+msgstr "Choose up to three location photos, each no larger than 25 MB."
+
+#: src/native/record.tsx
+msgid "Change cover photo"
+msgstr "Change cover photo"

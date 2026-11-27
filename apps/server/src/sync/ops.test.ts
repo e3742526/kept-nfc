@@ -92,10 +92,11 @@ afterAll(async () => {
 
 describe('POST /api/v1/sync/ops', () => {
   it('logs only the latest three location photos by capture time, independently of the gallery', async () => {
-    const { id } = await createThing(t, ibrahim, home, {
-      name: 'Storage bin with location photos',
-      typeId: await builtinType(db, 'box_bin'),
+    const { id, isContainer } = await createThing(t, ibrahim, home, {
+      name: 'Storage cabinet with location photos',
+      typeId: await builtinType(db, 'cabinet'),
     });
+    expect(isContainer).toBe(true);
     const before = await thingOf(id);
     const files = await Promise.all(
       Array.from({ length: 5 }, async (_, index) =>

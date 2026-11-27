@@ -87,6 +87,7 @@ import { UpcCapture } from './upc-capture';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
 type FileRole = SelectedOriginal['role'] | ((file: File) => SelectedOriginal['role']);
+const LOCATION_PHOTO_LIMIT = 3;
 
 /** Files take PDFs and images alike: each file's type says which it is. */
 const roleOfFile = (file: File): SelectedOriginal['role'] =>
@@ -557,11 +558,12 @@ export function CaptureForm({
     const items = Array.from(source);
     if (
       items.some((file) => file.size === 0 || file.size > mobileFileLimit) ||
-      (nfcDraft?.originals.length ?? files.length) + items.length > (locationPhoto ? 1 : 20)
+      (nfcDraft?.originals.length ?? files.length) + items.length >
+        (locationPhoto ? LOCATION_PHOTO_LIMIT : 20)
     ) {
       setStatus(
         locationPhoto
-          ? t`Choose one photo no larger than 25 MB.`
+          ? t`Choose up to three location photos, each no larger than 25 MB.`
           : t`Choose up to 20 files, each no larger than 25 MB.`,
       );
       return;
@@ -741,11 +743,51 @@ export function CaptureForm({
     }
   }
 
+  async function saveLocationPhotos(target: Destination) {
+    const saved: string[] = [];
+    try {
+      // The server records each picture as its own timestamped location entry.
+      for (const photo of files) {
+        saved.push(
+          await saveOnPhone(
+            connection,
+            {
+              locationId: target.locationId,
+              attachToThingId: target.id,
+              locationPhoto: true,
+              name: target.name,
+              batchId,
+            },
+            [photo],
+            adapters,
+          ),
+        );
+      }
+    } finally {
+      // If staging fails, keep just the unsaved photos on the form for a retry.
+      if (saved.length) {
+        const queued = files.slice(0, saved.length);
+        for (const photo of queued) revokePreviewUrl(photo.previewUrl);
+        previewUrlsRef.current = previewUrlsRef.current.filter(
+          (url) => !queued.some(({ previewUrl }) => previewUrl === url),
+        );
+        setFiles(files.slice(saved.length));
+        setBatchEntryIds((ids) => [...ids, ...saved]);
+        onSave();
+      }
+    }
+    setStatus(t`Saved on device.`);
+  }
+
   async function save() {
     if (busy || !canSave || !destination) return;
     setBusy(true);
     setStatus('');
     try {
+      if (locationPhoto) {
+        await saveLocationPhotos(destination);
+        return;
+      }
       const savedId = await saveOnPhone(
         connection,
         {
@@ -758,7 +800,6 @@ export function CaptureForm({
           ...(cache?.pendingPlaceIds?.includes(destination.id)
             ? { dependsOnPlace: destination.id }
             : {}),
-          ...(locationPhoto ? { locationPhoto: true } : {}),
           name: evidenceOnly ? destination.name : name.trim(),
           ...(!evidenceOnly ? { captureIntent: intent, tags } : {}),
           ...(firstPhoto ? { skipServerSuggestions: true } : {}),
@@ -807,7 +848,7 @@ export function CaptureForm({
   }
 
   const headerTitle = locationPhoto
-    ? t`Add location photo`
+    ? t`Add location photos`
     : photosOnly
       ? t`Record photos`
       : documentsOnly
@@ -1018,7 +1059,7 @@ export function CaptureForm({
                 <Button
                   variant="secondary"
                   className="kept-media-btn"
-                  isDisabled={busy || (locationPhoto && files.length > 0)}
+                  isDisabled={busy || (locationPhoto && files.length >= LOCATION_PHOTO_LIMIT)}
                 >
                   <Camera size={20} aria-hidden />
                   <Trans>Take a photo</Trans>
@@ -1026,16 +1067,16 @@ export function CaptureForm({
               </FileTrigger>
               <FileTrigger
                 acceptedFileTypes={['image/*']}
-                allowsMultiple={!locationPhoto}
+                allowsMultiple
                 onSelect={(list) => choose(list, 'photo')}
               >
                 <Button
                   variant="secondary"
                   className="kept-media-btn"
-                  isDisabled={busy || (locationPhoto && files.length > 0)}
+                  isDisabled={busy || (locationPhoto && files.length >= LOCATION_PHOTO_LIMIT)}
                 >
                   <Images size={20} aria-hidden />
-                  {locationPhoto ? <Trans>Choose photo</Trans> : <Trans>Choose photos</Trans>}
+                  <Trans>Choose photos</Trans>
                 </Button>
               </FileTrigger>
             </>
@@ -1101,10 +1142,7 @@ export function CaptureForm({
             locationId={destination?.locationId}
             provider={provider}
             onProviderChange={setProvider}
-            onDetails={(items) => setDetails({ photoKey, items })}
-            onProposals={
-              destination && onReview && !nfcDraft && !upc && !typeId ? reviewPhoto : undefined
-            }
+            onSuggestions={(items) => setDetails({ photoKey, items })}
             online={online}
             disabled={busy || !photoPreferenceLoaded}
           />
@@ -1374,7 +1412,9 @@ export function CaptureForm({
         <Button type="submit" isPending={busy} isDisabled={!canSave || labelBusy}>
           <Check size={18} aria-hidden />
           {locationPhoto
-            ? t`Save location photo`
+            ? files.length > 1
+              ? t`Save photos`
+              : t`Save location photo`
             : photosOnly
               ? t`Save photos`
               : documentsOnly
@@ -1562,7 +1602,9 @@ export function NewBoxForm({
             { id: 'default', name: t`Box / bin` },
             ...cache.types
               .filter((type) =>
-                ['tote_27g', 'shoe_box_bin', 'cardboard_box'].includes(type.builtinKey ?? ''),
+                ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(
+                  type.builtinKey ?? '',
+                ),
               )
               .map((type) => ({
                 id: type.id,

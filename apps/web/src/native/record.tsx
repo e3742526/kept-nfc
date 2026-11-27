@@ -25,6 +25,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { FileTrigger } from 'react-aria-components';
 import { capturePaths } from '@/api/capture/paths';
 import type {
   BoxCheckBody,
@@ -46,6 +47,7 @@ import type {
   TrashBody,
   UpdateAttachmentBody,
 } from '@/api/inventory/types';
+import { capForUpload } from '@/camera/image';
 import { QueueLabelButton } from '@/components/labels/print-queue';
 import { useErrorText } from '@/components/page';
 import { PhotoImage } from '@/components/photo-image';
@@ -76,7 +78,13 @@ import {
 } from './inventory';
 import type { LabelBox } from './label-panel';
 import type { Target } from './labels';
-import { draftFields, isAuthRefusal, isRestoreEpochMismatch, type PendingCapture } from './outbox';
+import {
+  draftFields,
+  isAuthRefusal,
+  isRestoreEpochMismatch,
+  type PendingCapture,
+  stageOriginal,
+} from './outbox';
 import { PlaceActions } from './place-actions';
 import { forgetPlacePhotos, useOfflinePlacePhotos } from './place-photo-cache';
 import { NativePlacePhotos } from './place-photos';
@@ -301,6 +309,7 @@ export function RecordScreen({
   const [placeAction, setPlaceAction] = useState<'add' | 'move' | 'trash'>();
   const [editingFiles, setEditingFiles] = useState(false);
   const [photoDialog, setPhotoDialog] = useState<AttachmentView>();
+  const [choosingCover, setChoosingCover] = useState(false);
   const [photoNotice, setPhotoNotice] = useState('');
   const [archivedPhotos, setArchivedPhotos] = useState<Page<AttachmentView>>();
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -711,6 +720,65 @@ export function RecordScreen({
     });
   }
 
+  const coverChoices = (remoteAttachments ?? thing?.photos ?? []).filter(
+    (photo) => photo.canManage && photo.role === 'photo' && !photo.photoArchivedAt && photo.file,
+  );
+
+  async function setContainerCover(photo: AttachmentView) {
+    await adapters.transport.request<AttachmentView>(
+      connection,
+      inventoryPaths.attachment(photo.id),
+      { method: 'PATCH', ifMatch: photo.rowVersion, body: { selectThumbnail: true } },
+    );
+    setChoosingCover(false);
+    changed();
+  }
+
+  function uploadContainerCover(list: FileList | null) {
+    const file = list?.[0];
+    if (!file || !thing || !box || !canEdit || !online) return;
+    return update(async () => {
+      const key = newId();
+      const capped = await capForUpload(file);
+      try {
+        await stageOriginal(connection, adapters, key, key, capped);
+        const uploaded = await adapters.transport.uploadOriginal(connection, {
+          id: key,
+          file: key,
+          location: thing.locationId,
+          stagedPhotoMime: capped.type,
+        });
+        const existing = coverChoices.find((photo) => photo.file?.id === uploaded.id);
+        const photo =
+          existing ??
+          (await adapters.transport.request<AttachmentView>(
+            connection,
+            inventoryPaths.attachments,
+            {
+              method: 'POST',
+              idempotencyKey: key,
+              body: {
+                id: key,
+                locationId: thing.locationId,
+                subject: { thingId: thing.id },
+                role: 'photo',
+                fileId: uploaded.id,
+              },
+            },
+          ));
+        try {
+          await setContainerCover(photo);
+        } catch (error) {
+          // This photo may already be attached. Reload it so it can be chosen on retry.
+          if (!existing) changed();
+          throw error;
+        }
+      } finally {
+        await adapters.outbox.abort(connection, key).catch(() => {});
+      }
+    });
+  }
+
   async function openRemoteFile(
     attachment: Pick<AttachmentView, 'id' | 'file'>,
     variant: 'display' | 'original',
@@ -758,6 +826,7 @@ export function RecordScreen({
   const coverPhoto =
     remoteAttachments?.find(({ id }) => id === thing?.thumbnailAttachmentId) ??
     thing?.photos?.find(({ id }) => id === thing.thumbnailAttachmentId);
+  const canChangeCover = Boolean(box && canEdit);
   const photoDialogSrc = previewUrl(
     photoDialog?.file?.displayUrl ?? photoDialog?.file?.thumbUrl,
     connection.origin,
@@ -789,14 +858,15 @@ export function RecordScreen({
         <>
           <header className="kept-card">
             {cover &&
-              (coverPhoto ? (
+              (canChangeCover || coverPhoto ? (
                 <Button
                   variant="ghost"
                   aria-label={t`Cover photo`}
                   className="w-full border-0 p-0"
                   onPress={() => {
                     setStatus('');
-                    setPhotoDialog(coverPhoto);
+                    if (canChangeCover) setChoosingCover(true);
+                    else setPhotoDialog(coverPhoto);
                   }}
                 >
                   <PhotoImage
@@ -1786,6 +1856,56 @@ export function RecordScreen({
                 onAuthError={onAuthError}
               />
             )}
+          {choosingCover && (
+            <Modal isOpen onOpenChange={(open) => !open && setChoosingCover(false)}>
+              <Dialog title={t`Change cover photo`}>
+                <div className="flex flex-wrap gap-2">
+                  <FileTrigger
+                    acceptedFileTypes={['image/*']}
+                    defaultCamera="environment"
+                    onSelect={uploadContainerCover}
+                  >
+                    <Button variant="secondary" isDisabled={changing}>
+                      <Camera size={16} aria-hidden />
+                      <Trans>Take photo</Trans>
+                    </Button>
+                  </FileTrigger>
+                  <FileTrigger acceptedFileTypes={['image/*']} onSelect={uploadContainerCover}>
+                    <Button variant="secondary" isDisabled={changing}>
+                      <Image size={16} aria-hidden />
+                      <Trans>Choose photo</Trans>
+                    </Button>
+                  </FileTrigger>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {coverChoices.map((photo) => {
+                    const current = photo.id === thing?.thumbnailAttachmentId;
+                    const src = previewUrl(photo.file?.thumbUrl, connection.origin);
+                    return (
+                      <Button
+                        key={photo.id}
+                        variant="secondary"
+                        className="grid min-w-0 gap-2 p-2"
+                        isDisabled={changing || current}
+                        onPress={() => void update(() => setContainerCover(photo))}
+                      >
+                        {src && (
+                          <PhotoImage
+                            src={src}
+                            rotation={photo.photoRotation}
+                            className="aspect-video w-full rounded-lg"
+                          />
+                        )}
+                        <bdi className="break-all">{photo.name ?? t`Photograph`}</bdi>
+                        {current && <Trans>Current thumbnail</Trans>}
+                      </Button>
+                    );
+                  })}
+                </div>
+                {status && <p role="status">{status}</p>}
+              </Dialog>
+            </Modal>
+          )}
           {photoDialog && (
             <Modal
               isOpen
@@ -1879,7 +1999,7 @@ export function RecordScreen({
               {photoNotice}
             </p>
           )}
-          {status && !photoDialog && (
+          {status && !photoDialog && !choosingCover && (
             <p className="rounded-xl bg-sunken p-3 text-ink-2" role="status">
               {status}
             </p>

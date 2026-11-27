@@ -3,23 +3,10 @@ title: Languages and right-to-left
 description: How strings are translated with Lingui, what the catalogue checks enforce, and the rules that keep Arabic correct.
 ---
 
-Kept ships in Arabic, English, French, German, Italian (D204), Spanish, Ukrainian and
-Vietnamese.
-Arabic is right-to-left, so every screen has to mirror without per-screen overrides. The web app
-uses [Lingui](https://lingui.dev/) with PO catalogues (D96); the server has its own small typed
-tables for mail and reports.
-
-## Lingui in the web app
-
-`apps/web/lingui.config.ts` sets the source locale `en`, the locales `ar`, `de`, `en`, `es`, `fr`, `it`,
-`uk`, `vi`, and one catalogue per locale at `apps/web/src/locales/<locale>/messages.po`, extracted from
-`src` (tests and `routeTree.gen.ts` excluded). Catalogues have no line numbers, so they don't
-churn on every edit.
-
-`apps/web/src/i18n/i18n.ts` loads the catalogue of the language in use on demand: each `.po` is
-compiled by `@lingui/vite-plugin` into its own chunk under `assets/locales/`, cached by the
-service worker on first use. `activateLocale` also passes the digit choice into Lingui, so a
-plural's `#` shows ٣ or 3 as the reader chose.
+The iPhone and browser apps and this site ship in English. The apps use
+[Lingui](https://lingui.dev/) with the English catalogue in `apps/web/src/locales/en/messages.po`.
+The server maintains separate wording for mail and reports. Display user-entered text with its
+own direction, even in an English interface.
 
 In components, write strings with the macros:
 
@@ -35,38 +22,20 @@ t`Needs a connection`;
 ## Adding a string
 
 1. Write it with `` t`…` `` or `<Trans>`.
-2. Add its entry to **every** catalogue, with a written `msgstr` in each language but English.
-   `pnpm --filter @kept/web i18n:extract` runs `lingui extract --clean`, which rewrites every
-   catalogue and drops obsolete entries. When several changes are in flight on the catalogues, the
-   house practice is to **append** the new entries by hand instead of running a `--clean`
-   re-extract, and to commit catalogue changes on their own.
+2. Add its entry to the English catalogue. Add new entries by hand for a small change.
 3. Run the checks below.
-
-A plural in Arabic carries every form, as the existing entries do:
-
-```text title="apps/web/src/locales/ar/messages.po"
-msgid "{0, plural, =0 {no fields} one {# field} other {# fields}}"
-msgstr "{0, plural, =0 {بلا حقول} zero {بلا حقول} one {حقل واحد} two {حقلان} few {# حقول} many {# حقلًا} other {# حقل}}"
-```
 
 ## What the checks enforce
 
 | Check | Runs in | Fails when |
 |---|---|---|
-| `scripts/check-i18n.mjs` | `pnpm lint` | A message in the source is missing from any catalogue; a non-English translation is empty; a launch locale is missing from the config; a translation's shape differs from its source (different placeholders, numbered tags, or number of plural/select arguments) |
-| `scripts/check-i18n-extract.mjs` | ci-local's `catalogues` step | The real `lingui extract` CLI, run into a scratch copy under `.tmp/`, adds an id the committed catalogues don't hold, or a committed non-English catalogue has an empty translation |
+| `scripts/check-i18n.mjs` | `pnpm lint` | A message is missing from the English catalogue or its placeholders differ from the source |
+| `scripts/check-i18n-extract.mjs` | ci-local's `catalogues` step | The real `lingui extract` CLI, run into a scratch copy under `.tmp/`, adds a message the committed catalogue doesn't hold |
 | `scripts/check-logical-css.mjs` | `pnpm lint` | A physical side in CSS, a style object or a Tailwind class (below) |
 
 A message missing from a catalogue matters: the macro strips the source text in a production
 build, so a missing message renders as its hashed id, not as English. Neither script checks
 obsolete entries or moved `#:` references.
-
-:::note[Arabic house style]
-Arabic is written natively, not translated word for word, with every plural form and Eastern
-Arabic digits where the reader chose them. The scripts check that each Arabic message exists, is
-not empty and keeps its source's shape; whether it reads well, and carries the full set of plural
-forms, is checked in review.
-:::
 
 ## Digits, numbers and dates
 
@@ -118,7 +87,7 @@ in code outside a message.
 **Empty fields.** User text fields use `dir="auto"`. While a placeholder shows, the field takes the
 page's direction (a rule in `index.css`), so an Arabic placeholder isn't laid out left-to-right.
 
-Check every screen in Arabic at 375 px and 1280 px, in light and dark. See [UI kit](/developers/ui-kit/).
+Check bidirectional user text at 375 px and 1280 px, in light and dark. See [UI kit](/developers/ui-kit/).
 
 ## Server-side text
 

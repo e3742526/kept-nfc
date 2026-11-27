@@ -668,7 +668,7 @@ export function Browse({
           const boxType = cache.types.find(
             (type) =>
               type.id === row.typeId &&
-              ['tote_27g', 'shoe_box_bin', 'cardboard_box'].includes(type.builtinKey ?? ''),
+              ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(type.builtinKey ?? ''),
           );
           return (
             <li key={row.id} className="grid min-w-0 gap-1">

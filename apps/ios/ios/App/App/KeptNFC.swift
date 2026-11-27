@@ -143,16 +143,16 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
         processing = true
         session.connect(to: tag) { [weak self] error in
             DispatchQueue.main.async {
-                guard let self, self.result != nil else { return }
-                if error != nil {
-                    self.handleTagReadFailure(in: session)
+                guard let self, self.session === session, self.result != nil else { return }
+                if let error {
+                    self.handleTagReadFailure(error, step: "connect", in: session)
                     return
                 }
                 tag.queryNDEFStatus { [weak self] status, capacity, error in
                     DispatchQueue.main.async {
-                        guard let self, self.result != nil else { return }
-                        if error != nil {
-                            self.handleTagReadFailure(in: session)
+                        guard let self, self.session === session, self.result != nil else { return }
+                        if let error {
+                            self.handleTagReadFailure(error, step: "query NDEF status", in: session)
                             return
                         }
                         guard status != .notSupported else {
@@ -166,10 +166,9 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
                         }
                         tag.readNDEF { [weak self] message, error in
                             DispatchQueue.main.async {
-                                guard let self, self.result != nil else { return }
-                                let code = (error as? NFCReaderError)?.code
-                                guard error == nil || code == .ndefReaderSessionErrorZeroLengthMessage else {
-                                    self.handleTagReadFailure(in: session)
+                                guard let self, self.session === session, self.result != nil else { return }
+                                if let error, (error as? NFCReaderError)?.code != .ndefReaderSessionErrorZeroLengthMessage {
+                                    self.handleTagReadFailure(error, step: "read NDEF", in: session)
                                     return
                                 }
                                 self.read(tag, in: session, message: message, writable: status == .readWrite, capacity: capacity)
@@ -194,17 +193,25 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
         event(["status": "unsupported"])
     }
 
-    private func handleTagReadFailure(in session: NFCNDEFReaderSession) {
-        if case .find = mode {
+    private func handleTagReadFailure(_ error: Error, step: String, in session: NFCNDEFReaderSession) {
+        let code = (error as? NFCReaderError)?.code
+        Self.log.notice("NFC \(step, privacy: .public) failed with error code \((error as NSError).code, privacy: .public).")
+        switch (mode, code) {
+        case (.find, _),
+             (.read, .readerTransceiveErrorRetryExceeded),
+             (.read, .readerTransceiveErrorTagConnectionLost),
+             (.read, .readerTransceiveErrorTagNotConnected):
+            // Moving the phone can drop contact before the first read finishes. Poll again
+            // within the same session so the person can reposition while the sheet is open.
             session.alertMessage = messages["retry"] ?? "Hold steady against the tag and try again."
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
                 guard let self, self.session === session, self.result != nil else { return }
                 self.processing = false
                 session.restartPolling()
             }
-            return
+        default:
+            finish("interrupted")
         }
-        finish("interrupted")
     }
 
     private func read(

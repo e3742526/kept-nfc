@@ -1,9 +1,6 @@
 // Kept's documentation site (D102, D199): Starlight, built to static files in dist/.
 //
-// The locales are in src/locales.mjs: English at the root and complete; every other language has
-// its own copy of the user, admin and install pages, Arabic right to left. What stays in English
-// (the reference, developer and maintainer pages) falls back under Starlight's own "not translated
-// yet" notice.
+// Documentation is served in English. Former translated URLs redirect to the English page.
 //
 // The API reference is generated at build time from Kept's own OpenAPI document
 // (scripts/openapi.ts, no database needed), into the git-ignored openapi/kept.json. The
@@ -42,7 +39,7 @@
 // exist in their language. A locale's page that has no file of its own is the English text, so it
 // stays out of it and its canonical link names the English page
 // (src/route-data.ts, which keeps the hreflang alternates to the same pages). The 404 page is out.
-import { existsSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { satteri } from '@astrojs/markdown-satteri';
 import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
@@ -51,41 +48,26 @@ import { defineMdastPlugin } from 'satteri';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightOpenAPI, { openAPISidebarGroups } from 'starlight-openapi';
 import { locales } from './src/locales.mjs';
-import { sidebarLabels } from './src/sidebar-labels.mjs';
 
 const site = process.env.KEPT_DOCS_SITE || undefined;
 const base = process.env.KEPT_DOCS_BASE || '/';
 const prefix = base.replace(/\/+$/, '');
 
-/**
- * The pages each language has of its own, as paths under its folder ('' is the landing page),
- * by locale code. English is the root folder, so every page of its own is in the sitemap.
- */
-const ownPages = Object.fromEntries(
-  Object.keys(locales)
-    .filter((code) => code !== 'root')
-    .map((code) => {
-      const folder = new URL(`./src/content/docs/${code}/`, import.meta.url);
-      const files = existsSync(folder) ? readdirSync(folder, { recursive: true }) : [];
-      return [
-        code,
-        new Set(
-          files
-            .filter((file) => /\.mdx?$/.test(file))
-            .map((file) => file.replaceAll('\\', '/').replace(/(^|\/)index\.mdx?$|\.mdx?$/, '')),
-        ),
-      ];
-    }),
+const formerLocales = ['ar', 'de', 'es', 'fr', 'it', 'uk', 'vi'];
+const docsRoot = new URL('./src/content/docs/', import.meta.url);
+const englishPaths = readdirSync(docsRoot, { recursive: true })
+  .filter((file) => /\.mdx?$/.test(file))
+  .map((file) => `/${file.replaceAll('\\', '/').replace(/(^|\/)index\.mdx?$|\.mdx?$/, '')}`)
+  .map((path) => (path.endsWith('/') ? path : `${path}/`));
+const redirects = Object.fromEntries(
+  formerLocales.flatMap((locale) => englishPaths.map((path) => [`/${locale}${path}`, path])),
 );
 
-/** Whether a built page belongs in the sitemap: its own language's text, and not the 404 page. */
 function inSitemap(page) {
   let path = new URL(page).pathname;
   if (prefix && path.startsWith(`${prefix}/`)) path = path.slice(prefix.length);
-  const [first = '', ...rest] = path.replace(/^\/+|\/+$/g, '').split('/');
-  if (first === '404') return false;
-  if (Object.hasOwn(ownPages, first)) return ownPages[first].has(rest.join('/'));
-  return true;
+  const [first = ''] = path.replace(/^\/+|\/+$/g, '').split('/');
+  return first !== '404' && !formerLocales.includes(first);
 }
 
 // Pages link to each other as `/install/compose/`. Astro doesn't add the base path to Markdown
@@ -101,12 +83,7 @@ const baseLinks = defineMdastPlugin({
   },
 });
 
-/** A sidebar group with its label in every language (src/sidebar-labels.mjs). */
-const group = (label, items, extra = {}) => {
-  const translations = sidebarLabels[label];
-  if (!translations) throw new Error(`no sidebar labels for the group "${label}"`);
-  return { label, translations, items, ...extra };
-};
+const group = (label, items, extra = {}) => ({ label, items, ...extra });
 /** A page in the sidebar, under its own title. */
 const page = (slug) => slug;
 /** A group filled from a directory, in each page's `sidebar.order`. */
@@ -216,6 +193,7 @@ const sidebar = [
 export default defineConfig({
   site,
   base,
+  redirects,
   markdown: { processor: satteri({ mdastPlugins: prefix ? [baseLinks] : [] }) },
   // Try the map (D241, src/components/try-map/) bundles the app's own map, which imports
   // @kept/shared; that reads process.env.KEPT_VERSION for the server, and a browser has no
@@ -242,7 +220,6 @@ export default defineConfig({
       components: {
         SiteTitle: './src/components/SiteTitle.astro',
         Hero: './src/components/Hero.astro',
-        LanguageSelect: './src/components/language/LanguageSelect.astro',
         Search: './src/components/Search.astro',
         Footer: './src/components/Footer.astro',
       },
@@ -268,7 +245,7 @@ export default defineConfig({
         },
       ],
       plugins: [
-        // fr/de/it are fallback pages by design, so links into them must not fail. The API
+        // The API
         // reference is injected routes the validator can't see, so links to it aren't checked
         // (findings 2 and 3). Under a base path, a root-relative link without the base
         // can only be a landing page's hero action (frontmatter, which baseLinks can't reach;

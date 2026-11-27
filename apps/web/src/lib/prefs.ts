@@ -44,20 +44,8 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
 }
 
-/**
- * The interface languages this build offers: the language picker, a stored choice and the
- * browser's language are limited to these; anything else shows English. English only unless the
- * build says otherwise (`VITE_UI_LOCALES=en,de,…`). Every language in LOCALES keeps its catalogue,
- * and the server, mail and a location's AI languages keep all of them, so turning a language back
- * on is that build setting alone. The pre-paint script in index.html reads the same setting.
- */
-export const UI_LOCALES: readonly Locale[] = (() => {
-  const offered = String(import.meta.env.VITE_UI_LOCALES ?? 'en')
-    .split(',')
-    .map((l) => l.trim())
-    .filter(isLocale);
-  return offered.length > 0 ? offered : ['en'];
-})();
+/** Interface language. Locale values for stored data, reports and server settings are separate. */
+export const UI_LOCALES: readonly Locale[] = ['en'];
 
 /** A language this build offers in its interface. */
 export function isUiLocale(value: unknown): value is Locale {
@@ -341,7 +329,7 @@ export function showLocale(locale: Locale): void {
 /** The language picked on this device, or null where it follows the browser. */
 export function chosenLocale(): Locale | null {
   const v = read(LOCALE_KEY);
-  return isLocale(v) ? v : null;
+  return isUiLocale(v) ? v : null;
 }
 
 /**

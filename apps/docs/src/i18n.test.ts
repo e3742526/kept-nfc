@@ -5,19 +5,19 @@ import { locales } from './locales.mjs';
 describe('the site languages', () => {
   it('are the ones in locales.mjs, in alphabetical order', () => {
     expect(LANGS).toEqual(Object.values(locales).map((l) => l.lang));
-    expect(LANGS).toEqual([...LANGS].sort());
+    expect(LANGS).toEqual(['en']);
   });
 
   it('read a page language, and treat an unknown one as English', () => {
-    expect(langOf('uk')).toBe('uk');
-    expect(langOf('es')).toBe('es');
+    expect(langOf('uk')).toBe('en');
+    expect(langOf('es')).toBe('en');
     expect(langOf('xx')).toBe('en');
     expect(langOf(undefined)).toBe('en');
   });
 
   it('fall back to English for a language with no words', () => {
-    const words = { en: 'Docs', fr: 'Docs fr' };
-    expect(pick(words, 'fr')).toBe('Docs fr');
+    const words = { en: 'Docs' };
+    expect(pick(words, 'fr')).toBe('Docs');
     expect(pick(words, 'vi')).toBe('Docs');
   });
 

@@ -163,13 +163,8 @@ Each of these has a check that fails; the PR template repeats them.
   `alert` or `prompt`.
 - **Phones.** Every screen works at 375 px wide and at 1280, and nothing is cut short with "…" on a
   phone.
-- **Every catalogue.** Every user-facing string goes through Lingui and into each catalogue in
-  `apps/web/src/locales`; `pnpm lint` and ci-local's `catalogues` step fail on a missing or empty
-  one. Arabic
-  follows the house style: written natively (not translated word for word), every plural form,
-  Eastern Arabic digits where the reader chose them. Separators come from `fmt.sep`
-  (`apps/web/src/lib/format.ts`, "، " in Arabic), names inside sentences are bidi-isolated
-  (`<bdi>`, or `lib/bidi.ts` in toasts and titles).
+- **English catalogue.** Every user-facing string goes through Lingui and into
+  `apps/web/src/locales/en/messages.po`. `pnpm lint` and ci-local’s `catalogues` step check coverage.
 - **Row-level security on every table.** A new table needs its RLS policies, its scope, and fixture
   rows in the leak test (`apps/server/test/leak.test.ts` and its `leak-*.ts` fixtures), which
   finds every table from the catalogue and fails until all three exist.

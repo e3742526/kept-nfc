@@ -544,7 +544,7 @@ const FIELD_NAMES: ReadonlyMap<string, { en: string; ar: string }> = (() => {
 export function builtinTypeName(key: string, locale: BuiltinNameLocale): string | undefined {
   const names = builtinType(key)?.names;
   if (!names) return undefined;
-  if (locale === 'en' || locale === 'ar') return names[locale];
+  if (locale === 'en' || locale === 'ar') return names[locale] ?? names.en;
   return BUILTIN_TYPE_NAMES_MORE[key]?.[locale] ?? names.en;
 }
 

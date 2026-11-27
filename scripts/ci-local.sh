@@ -581,7 +581,7 @@ step_e2e() {
   fi
   pnpm --filter '@kept/server...' build
   # The browser suite exercises every interface language. Keep production builds opt-in.
-  VITE_UI_LOCALES=ar,de,en,es,fr,it,uk,vi pnpm --filter @kept/web build
+  pnpm --filter @kept/web build
   if uses_installed_chrome; then
     echo "e2e: using the installed Google Chrome"
   else
@@ -636,7 +636,7 @@ step_e2e() {
 step_e2e-update() {
   pnpm --filter '@kept/server...' build
   # The browser suite exercises every interface language. Keep production builds opt-in.
-  VITE_UI_LOCALES=ar,de,en,es,fr,it,uk,vi pnpm --filter @kept/web build
+  pnpm --filter @kept/web build
   if uses_installed_chrome; then
     echo "e2e: using the installed Google Chrome"
   else

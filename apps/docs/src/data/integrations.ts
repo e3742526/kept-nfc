@@ -1,26 +1,6 @@
-/**
- * What feeds into Kept, and what Kept feeds. English and Arabic are written out beside each entry;
- * the other languages are in integrations-words.ts, and a language without words shows English
- * (`groupName`, `wordsOf`). The one source for both places that show it:
- *
- * - the landing page's wall (components/landing/Integrations.astro): each entry's `name` as a chip,
- *   grouped, linking to its entry on the integrations page;
- * - the integrations page (`/integrations/`, components/landing/IntegrationList.astro): a heading
- *   per group (the page's table of contents, src/route-data.ts), and per entry its `title` as a
- *   heading (the words a search would use: "Homebox import"), its `body`, and a link to the page
- *   that sets it up. The entry's `id` is its heading's anchor, so the wall can link to it.
- *
- * Only what exists. Each entry names the code that implements it (`code`, paths from the
- * repository root), checked when it was added and again on 2026-10-15; an entry whose code is gone
- * must go too. `href` is the docs page a person reads to set it up, without the locale: a page in
- * another language gets its locale in front (`/ar`, `/fr`; a page not yet translated falls back to
- * English there).
- *
- * No third-party logos: a neutral icon from the site's set (icons.ts) and the name in text.
- */
+/** The integrations shown on the documentation site. */
 import type { IconName } from '../components/landing/icons';
 import type { Lang } from '../i18n';
-import { groupNames, itemRows } from './integrations-words';
 
 export interface Words {
   /** Short, for the landing page's chip. */
@@ -37,13 +17,11 @@ export interface Integration {
   href: string;
   code: string[];
   en: Words;
-  ar: Words;
 }
 
 export interface IntegrationGroup {
   id: string;
   en: string;
-  ar: string;
   items: Integration[];
 }
 
@@ -51,7 +29,7 @@ export const integrationGroups: IntegrationGroup[] = [
   {
     id: 'bring-in',
     en: 'Bring things in',
-    ar: 'أدخِل ما لديك',
+
     items: [
       {
         id: 'csv',
@@ -62,11 +40,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'CSV',
           title: 'Spreadsheet (CSV) import',
           body: 'One thing per row. Map the columns, check, then import.',
-        },
-        ar: {
-          name: 'CSV',
-          title: 'استيراد جدول بيانات (CSV)',
-          body: 'شيء في كل صف. طابِق الأعمدة، وافحص، ثم استورد.',
         },
       },
       {
@@ -79,11 +52,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Homebox import',
           body: 'Its export ZIP, files included. Old Homebox labels still scan.',
         },
-        ar: {
-          name: 'Homebox',
-          title: 'الاستيراد من Homebox',
-          body: 'ملف التصدير ZIP بملفاته. وملصقات Homebox القديمة تُمسح كما هي.',
-        },
       },
       {
         id: 'lubelogger',
@@ -94,11 +62,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'LubeLogger',
           title: 'LubeLogger import',
           body: "A vehicle's fuel, service and odometer history. One CSV at a time.",
-        },
-        ar: {
-          name: 'LubeLogger',
-          title: 'الاستيراد من LubeLogger',
-          body: 'سجل الوقود والصيانة والعدّاد لسيارة. ملف CSV في كل مرة.',
         },
       },
       {
@@ -111,11 +74,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Import from another Kept',
           body: 'A location exported from one Kept, imported into another.',
         },
-        ar: {
-          name: 'نسخة Kept أخرى',
-          title: 'الاستيراد من نسخة Kept أخرى',
-          body: 'موقع مُصدَّر من Kept يُستورد في آخر.',
-        },
       },
       {
         id: 'barcodes',
@@ -126,11 +84,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Barcodes',
           title: 'Product barcode lookup',
           body: 'Named from Open Food Facts, Open Products Facts or Open Beauty Facts. Off until an admin turns it on.',
-        },
-        ar: {
-          name: 'الباركود',
-          title: 'البحث بباركود المنتج',
-          body: 'يُسمّى المنتج من Open Food Facts أو Open Products Facts أو Open Beauty Facts. مُعطّل حتى يفعّله المدير.',
         },
       },
       {
@@ -143,11 +96,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Camera capture',
           body: 'One photo per thing, straight into a room or box. Name it later.',
         },
-        ar: {
-          name: 'الكاميرا',
-          title: 'الالتقاط بالكاميرا',
-          body: 'صورة لكل شيء، مباشرةً إلى غرفة أو صندوق. والتسمية لاحقًا.',
-        },
       },
       {
         id: 'email-in',
@@ -158,11 +106,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Email-in',
           title: 'Email-in (IMAP)',
           body: 'A mailbox folder you already have. Receipts that arrive become drafts.',
-        },
-        ar: {
-          name: 'البريد الوارد',
-          title: 'البريد الوارد (IMAP)',
-          body: 'مجلد في بريد لديك. الإيصالات التي تصل تصبح مسودات.',
         },
       },
       {
@@ -175,11 +118,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Paperless-ngx documents',
           body: 'Link a thing to its receipts and manuals in Paperless. Copy one in when you want it kept.',
         },
-        ar: {
-          name: 'Paperless-ngx',
-          title: 'مستندات Paperless-ngx',
-          body: 'اربط الشيء بإيصالاته وأدلته في Paperless. وانسخ أحدها إلى Kept حين تريد الاحتفاظ به.',
-        },
       },
       {
         id: 'reading',
@@ -191,18 +129,13 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Receipts and labels, read by AI',
           body: 'With AI on: the purchase, the brand, model and serial. You accept them.',
         },
-        ar: {
-          name: 'قراءة الإيصالات',
-          title: 'قراءة الإيصالات والملصقات بالذكاء الاصطناعي',
-          body: 'مع الذكاء الاصطناعي: الشراء والعلامة والطراز والرقم التسلسلي. وأنت تقبلها.',
-        },
       },
     ],
   },
   {
     id: 'get-told',
     en: 'Get told',
-    ar: 'التنبيهات',
+
     items: [
       {
         id: 'email',
@@ -213,11 +146,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Email',
           title: 'Email notifications (SMTP)',
           body: 'Reminders and a daily digest. Over your own SMTP server.',
-        },
-        ar: {
-          name: 'البريد الإلكتروني',
-          title: 'التنبيهات بالبريد الإلكتروني (SMTP)',
-          body: 'التذكيرات وملخص يومي. عبر خادم SMTP خاص بك.',
         },
       },
       {
@@ -230,10 +158,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Web push notifications',
           body: 'On the phone and the desktop. No keys to set up.',
         },
-        ar: {
-          name: 'إشعارات الويب',
-          body: 'على الهاتف والحاسوب. بلا مفاتيح تُعدّها.',
-        },
       },
       {
         id: 'ntfy',
@@ -244,11 +168,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'ntfy',
           title: 'ntfy notifications',
           body: 'ntfy.sh or your own server, on a topic you choose.',
-        },
-        ar: {
-          name: 'ntfy',
-          title: 'التنبيهات عبر ntfy',
-          body: 'ntfy.sh أو خادمك أنت، على موضوع تختاره.',
         },
       },
       {
@@ -261,7 +180,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Telegram notifications',
           body: 'Your own bot, to your chat.',
         },
-        ar: { name: 'Telegram', title: 'التنبيهات عبر Telegram', body: 'بوتك أنت، إلى محادثتك.' },
       },
       {
         id: 'apprise',
@@ -272,11 +190,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Apprise',
           title: 'Apprise: Discord, Slack, Matrix, Signal',
           body: 'Discord, Slack, Matrix, Signal and more. Through an Apprise server you run.',
-        },
-        ar: {
-          name: 'Apprise',
-          title: 'Apprise: Discord وSlack وMatrix وSignal',
-          body: 'Discord وSlack وMatrix وSignal وغيرها. عبر خادم Apprise تشغّله.',
         },
       },
       {
@@ -289,18 +202,13 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Calendar feed (iCal)',
           body: "A private iCal link. What's due, what runs out.",
         },
-        ar: {
-          name: 'رابط التقويم',
-          title: 'رابط التقويم (iCal)',
-          body: 'رابط iCal خاص. ما يحين موعده، وما ينتهي.',
-        },
       },
     ],
   },
   {
     id: 'sign-in',
     en: 'Sign in',
-    ar: 'تسجيل الدخول',
+
     items: [
       {
         id: 'passkeys',
@@ -308,7 +216,6 @@ export const integrationGroups: IntegrationGroup[] = [
         href: '/admin/security-model/#signing-in',
         code: ['apps/server/src/auth/auth.ts'],
         en: { name: 'Passkeys', body: 'The phone or laptop you already unlock.' },
-        ar: { name: 'مفاتيح المرور', body: 'الهاتف أو الحاسوب الذي تفتحه أصلًا.' },
       },
       {
         id: 'two-factor',
@@ -319,10 +226,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Two-factor',
           title: 'Two-factor authentication',
           body: 'An authenticator app or a passkey. A location can require it.',
-        },
-        ar: {
-          name: 'التحقق بخطوتين',
-          body: 'تطبيق مصادقة أو مفتاح مرور. ويمكن لموقع أن يشترطه.',
         },
       },
       {
@@ -335,11 +238,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'OIDC single sign-on',
           body: 'Your own identity provider. New people still need an invite or an allowed domain.',
         },
-        ar: {
-          name: 'OIDC',
-          title: 'الدخول الموحّد عبر OIDC',
-          body: 'مزوّد الهوية الخاص بك. ويدخل الجدد بدعوة أو بنطاق مسموح.',
-        },
       },
       {
         id: 'google',
@@ -351,18 +249,13 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Sign in with Google',
           body: 'For invited people and accounts that linked it. Never open sign-up.',
         },
-        ar: {
-          name: 'Google',
-          title: 'الدخول بحساب Google',
-          body: 'للمدعوّين وللحسابات التي ربطته. بلا تسجيل مفتوح.',
-        },
       },
     ],
   },
   {
     id: 'ai',
     en: 'AI and automation',
-    ar: 'الذكاء الاصطناعي والأتمتة',
+
     items: [
       {
         id: 'providers',
@@ -373,11 +266,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'AI providers',
           title: 'AI providers: OpenAI, Anthropic, Google, Groq, OpenRouter',
           body: 'Or any OpenAI-compatible server. Your key, or none.',
-        },
-        ar: {
-          name: 'مزوّدو الذكاء الاصطناعي',
-          title: 'مزوّدو الذكاء الاصطناعي: OpenAI وAnthropic وGoogle وGroq وOpenRouter',
-          body: 'أو أي خادم متوافق مع OpenAI. مفتاحك أنت، أو لا شيء.',
         },
       },
       {
@@ -390,11 +278,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Ollama (local AI)',
           body: 'A local model on your own machine. The ollama profile in compose.full.yaml.',
         },
-        ar: {
-          name: 'Ollama',
-          title: 'Ollama (ذكاء اصطناعي محلي)',
-          body: 'نموذج محلي على جهازك. ملف التعريف ollama في compose.full.yaml.',
-        },
       },
       {
         id: 'assistant',
@@ -406,11 +289,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'AI assistant',
           body: 'Ask where something is. Answers cite the things; changes wait for you.',
         },
-        ar: {
-          name: 'المساعد',
-          title: 'مساعد الذكاء الاصطناعي',
-          body: 'اسأل أين شيء ما. الأجوبة تذكر الأشياء، والتغييرات تنتظرك.',
-        },
       },
       {
         id: 'mcp',
@@ -420,10 +298,6 @@ export const integrationGroups: IntegrationGroup[] = [
         en: {
           name: 'MCP server',
           body: 'Claude and other AI apps. A personal token or OAuth, limited to the locations you pick.',
-        },
-        ar: {
-          name: 'خادم MCP',
-          body: 'Claude وتطبيقات الذكاء الاصطناعي الأخرى. برمز شخصي أو OAuth، في المواقع التي تختارها فقط.',
         },
       },
       {
@@ -436,11 +310,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'HTTP API (OpenAPI)',
           body: 'Documented with OpenAPI. For your own scripts.',
         },
-        ar: {
-          name: 'واجهة HTTP',
-          title: 'واجهة HTTP (OpenAPI)',
-          body: 'موثّقة بـ OpenAPI. لسكربتاتك.',
-        },
       },
       {
         id: 'home-assistant-app',
@@ -450,10 +319,6 @@ export const integrationGroups: IntegrationGroup[] = [
         en: {
           name: 'Home Assistant app',
           body: "Installs from Home Assistant's app store. In the sidebar, in Home Assistant's backups.",
-        },
-        ar: {
-          name: 'تطبيق Home Assistant',
-          body: 'يُثبَّت من متجر تطبيقات Home Assistant. في الشريط الجانبي، وضمن نسخ Home Assistant الاحتياطية.',
         },
       },
       {
@@ -467,10 +332,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Home Assistant integration',
           body: "Overdue, due and expiring per location, each vehicle's next service. Odometer readings sent back.",
         },
-        ar: {
-          name: 'Home Assistant',
-          body: 'المتأخر والمستحق وما ينتهي قريبًا لكل موقع، وموعد الصيانة التالية لكل مركبة. وقراءات العدّاد تُرسَل إلى Kept.',
-        },
       },
       {
         id: 'dashboards',
@@ -482,11 +343,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Dashboards: Homepage, Glance, Homarr',
           body: 'What needs you, as a widget. One call, a read-only token.',
         },
-        ar: {
-          name: 'لوحات المعلومات',
-          title: 'لوحات المعلومات: Homepage وGlance وHomarr',
-          body: 'ما يحتاج إليك، في أداة على اللوحة. طلب واحد، برمز للقراءة فقط.',
-        },
       },
       {
         id: 'webhooks',
@@ -497,17 +353,13 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Webhooks',
           body: 'Signed POSTs to your own scripts. Reminders, and changes in a location.',
         },
-        ar: {
-          name: 'خطافات الويب',
-          body: 'طلبات POST موقّعة إلى سكربتاتك. التذكيرات، والتغييرات في موقع.',
-        },
       },
     ],
   },
   {
     id: 'share-print',
     en: 'Share and print',
-    ar: 'المشاركة والطباعة',
+
     items: [
       {
         id: 'labels',
@@ -523,11 +375,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Labels and QR codes',
           body: 'A4 sheets, Letter (Avery 5160 layout), label-printer rolls, label-maker tape.',
         },
-        ar: {
-          name: 'ملصقات QR',
-          title: 'الملصقات ورموز QR',
-          body: 'أوراق A4 وLetter (بتخطيط Avery 5160) ولفّات طابعات الملصقات وشريط طابعات الملصقات.',
-        },
       },
       {
         id: 'share-links',
@@ -538,11 +385,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Share links',
           title: 'Read-only share links',
           body: 'A box, a room or a search. For someone without an account.',
-        },
-        ar: {
-          name: 'روابط المشاركة',
-          title: 'روابط مشاركة للقراءة فقط',
-          body: 'صندوق أو غرفة أو بحث. لمن لا حساب له.',
         },
       },
       {
@@ -555,11 +397,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Inventory and insurance reports (PDF)',
           body: 'Emailed when ready. The inventory weekly or monthly too.',
         },
-        ar: {
-          name: 'تقارير PDF',
-          title: 'تقارير الجرد والتأمين (PDF)',
-          body: 'بالبريد حين تجهز. والجرد كل أسبوع أو شهر أيضًا.',
-        },
       },
       {
         id: 'claim-pack',
@@ -570,11 +407,6 @@ export const integrationGroups: IntegrationGroup[] = [
           name: 'Claim pack',
           title: 'Insurance claim pack',
           body: 'One ZIP for the insurer: the report, receipts, photos, serials.',
-        },
-        ar: {
-          name: 'حزمة المطالبة',
-          title: 'حزمة مطالبة التأمين',
-          body: 'ملف ZIP واحد لشركة التأمين: التقرير والإيصالات والصور والأرقام التسلسلية.',
         },
       },
       {
@@ -587,11 +419,6 @@ export const integrationGroups: IntegrationGroup[] = [
           title: 'Export a location',
           body: 'A whole location as a ZIP. With a copy you can read without Kept.',
         },
-        ar: {
-          name: 'التصدير',
-          title: 'تصدير موقع',
-          body: 'موقع كامل في ملف ZIP. مع نسخة تقرؤها من دون Kept.',
-        },
       },
     ],
   },
@@ -600,17 +427,10 @@ export const integrationGroups: IntegrationGroup[] = [
 /** Every entry, in the groups' order. */
 export const integrations: Integration[] = integrationGroups.flatMap((group) => group.items);
 
-/** A group's name in a language. */
-export function groupName(group: IntegrationGroup, lang: Lang): string {
-  if (lang === 'en' || lang === 'ar') return group[lang];
-  return groupNames[group.id]?.[lang] ?? group.en;
+export function groupName(group: IntegrationGroup, _lang: Lang): string {
+  return group.en;
 }
 
-/** An entry's words in a language. */
-export function wordsOf(item: Integration, lang: Lang): Words {
-  if (lang === 'en' || lang === 'ar') return item[lang];
-  const row = itemRows[item.id]?.[lang];
-  if (!row) return item.en;
-  const [name, title, body] = row;
-  return title ? { name, title, body } : { name, body };
+export function wordsOf(item: Integration, _lang: Lang): Words {
+  return item.en;
 }

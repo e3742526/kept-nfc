@@ -2,35 +2,23 @@
  * Lingui (D96): ICU messages, PO catalogues in src/locales/<locale>/messages.po, compiled on
  * import by @lingui/vite-plugin. `pnpm --filter @kept/web i18n:extract` refreshes the catalogues.
  */
-import { i18n, type Messages } from '@lingui/core';
+import { i18n } from '@lingui/core';
 import { localiseSeparators } from '@/lib/format';
 import {
   type Digits,
   formatLocale,
-  initialLocale,
   type Locale,
   settleStoredLocale,
   showLocale,
   storedDigits,
 } from '@/lib/prefs';
 
-const loaders: Record<Locale, () => Promise<{ messages: Messages }>> = {
-  ar: () => import('../locales/ar/messages.po'),
-  de: () => import('../locales/de/messages.po'),
-  en: () => import('../locales/en/messages.po'),
-  es: () => import('../locales/es/messages.po'),
-  fr: () => import('../locales/fr/messages.po'),
-  it: () => import('../locales/it/messages.po'),
-  uk: () => import('../locales/uk/messages.po'),
-  vi: () => import('../locales/vi/messages.po'),
-};
-
 /**
  * `locales` carries the digit choice (D143) into Lingui's own number, date and plural `#`
  * formatting, so `plural(n, …)` in Arabic shows ٣ or 3 as the person chose.
  */
 export async function activateLocale(locale: Locale, digits: Digits = 'eastern'): Promise<void> {
-  const { messages } = await loaders[locale]();
+  const { messages } = await import('../locales/en/messages.po');
   i18n.loadAndActivate({
     locale,
     locales: [formatLocale(locale, digits)],
@@ -38,25 +26,14 @@ export async function activateLocale(locale: Locale, digits: Digits = 'eastern')
   });
 }
 
-/**
- * The language a page starts in: the one picked on this device, else the browser's, shown and not
- * stored (#474): only a language the person picks is kept. Offline, a catalogue never loaded online
- * isn't cached (sw.ts): English, then no catalogue, so the shell still renders. The page is marked
- * with the language that loaded (its `lang` and direction), not the one asked for: an Arabic page
- * whose catalogue didn't come shows English, and must read left to right as English.
- */
+/** English is the interface language, including when an older device stored another choice. */
 export async function startLocale(): Promise<Locale> {
   settleStoredLocale();
-  const locale = initialLocale();
-  let active: Locale = locale;
-  try {
-    await activateLocale(locale, storedDigits());
-  } catch {
-    active = 'en';
-    await activateLocale('en').catch(() => i18n.loadAndActivate({ locale: 'en', messages: {} }));
-  }
-  showLocale(active);
-  return active;
+  await activateLocale('en', storedDigits()).catch(() =>
+    i18n.loadAndActivate({ locale: 'en', messages: {} }),
+  );
+  showLocale('en');
+  return 'en';
 }
 
 export { i18n };

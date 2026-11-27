@@ -366,13 +366,21 @@ export function ItemLabelPicker({
     return run(async () => {
       const reading = await adapters.nfc.scanTag(connection, { mode: 'read', messages });
       if (!live.current) return;
+      if (
+        reading.status !== 'blank' &&
+        reading.status !== 'read' &&
+        reading.status !== 'malformed'
+      ) {
+        setStatus(nfcStatus(reading));
+        return;
+      }
       if (reading.url && (await recoverNfcDraft?.(reading.url))) return;
       if (!canWriteNfc) {
         setStatus(t`Connect to make a new label. You can still scan a blank label.`);
         return;
       }
       if (!reading.fingerprint || !reading.writable) {
-        setStatus(reading.status === 'cancelled' ? nfcStatus(reading) : t`Use another NFC tag`);
+        setStatus(nfcStatus({ status: reading.writable === false ? 'read_only' : 'interrupted' }));
         return;
       }
       if (reading.status === 'blank') {

@@ -76,14 +76,14 @@ dependency.
 location, two synthetic photos, and a description typed before analysis:
 `Playtest kit`, quantity `3`.
 
-1. Attach both photos and choose **Suggest details**. Check that each
+1. Attach both photos and choose **AI assist**. Check that each
    suggested description, quantity, note and category has its own row and
    shows what it replaces.
 2. Tick only the note and one category that does not exist yet, then choose
-   **Use 2 selected**. Check that **Review multiple items** stays hidden while
-   suggestions are shown. Save the item.
+   **Use 2 selected**. Check that **Review item** is offered for one suggestion and
+   **Review multiple items** for several. Save the item.
 3. Start another item with the same photos and choose **Accept all**. Before
-   saving, disconnect the fixture and repeat **Suggest details** on a third
+   saving, disconnect the fixture and repeat **AI assist** on a third
    item.
 4. Reconnect and check the categories in Browse.
 

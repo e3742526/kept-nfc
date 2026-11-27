@@ -11,12 +11,12 @@
 
 import type { Capability, FieldKind } from './inventory.js';
 
-export type Names = { readonly en: string; readonly ar: string };
+export type Names = { readonly en: string; readonly ar?: string };
 
 export type FieldDef = {
   readonly key: string;
   readonly kind: FieldKind;
-  readonly names: Names;
+  readonly names: Required<Names>;
   /** The unit shown next to a number (never converted: D113). */
   readonly unit?: string;
   /** The choices of a select or multi_select. */
@@ -247,6 +247,14 @@ export const BUILTIN_TYPES: readonly BuiltinType[] = Object.freeze([
     icon: 'lucide:package',
     capabilities: [],
     names: { en: 'Cardboard box', ar: 'صندوق كرتون' },
+    fields: [],
+  },
+  {
+    key: 'cabinet',
+    parent: 'box_bin',
+    icon: 'lucide:archive',
+    capabilities: [],
+    names: { en: 'Cabinet' },
     fields: [],
   },
   {

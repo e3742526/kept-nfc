@@ -7,7 +7,6 @@ import indexHtml from '../../index.html?raw';
 import {
   clampPlaceTreeWidth,
   formatLocale,
-  initialLocale,
   isLocale,
   LOCALES,
   localeOfTag,
@@ -86,18 +85,6 @@ describe('languages', () => {
     // Only Spanish follows the browser's region; English has its own choice.
     vi.stubGlobal('navigator', { language: 'fr-CA' });
     expect(formatLocale('fr', 'western')).toBe('fr');
-  });
-
-  it('starts in the stored language, else the browser’s when it is one of them', () => {
-    vi.stubGlobal('navigator', { language: 'it-IT' });
-    expect(initialLocale()).toBe('it');
-    vi.stubGlobal('navigator', { language: 'pt-BR' });
-    expect(initialLocale()).toBe('en');
-    localStorage.setItem('kept.locale', 'de');
-    expect(initialLocale()).toBe('de');
-    localStorage.setItem('kept.locale', 'xx');
-    vi.stubGlobal('navigator', { language: 'fr' });
-    expect(initialLocale()).toBe('fr');
   });
 });
 
@@ -206,8 +193,7 @@ describe('the pre-paint script (index.html)', () => {
     [...indexHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)]
       .map((m) => m[1] ?? '')
       .find((body) => body.includes('kept.theme')) ?? '';
-  // As Vite writes it at build time: this run offers every language (vitest.config.ts).
-  const script = raw.replace('%VITE_UI_LOCALES%', String(import.meta.env.VITE_UI_LOCALES));
+  const script = raw;
 
   function prePaint(stored: Record<string, string>, language = 'en-GB', body = script) {
     localStorage.clear();
@@ -224,44 +210,11 @@ describe('the pre-paint script (index.html)', () => {
     };
   }
 
-  it('shows English in a build that names no interface languages', () => {
-    // A build without VITE_UI_LOCALES leaves the placeholder: English only, whatever is stored.
-    expect(raw).toContain('%VITE_UI_LOCALES%');
-    expect(prePaint({ 'kept.locale': 'ar' }, 'de-DE', raw)).toMatchObject({
-      lang: 'en',
-      dir: 'ltr',
-    });
-  });
-
-  it('applies the stored width and language before React loads', () => {
-    expect(script).toContain('kept.width');
-    expect(prePaint({ 'kept.width': 'full', 'kept.locale': 'de' })).toEqual({
-      width: 'full',
-      lang: 'de',
-      dir: 'ltr',
-    });
-    expect(prePaint({ 'kept.locale': 'ar' })).toEqual({
-      width: 'centered',
-      lang: 'ar',
-      dir: 'rtl',
-    });
-  });
-
-  it('falls back to the browser language when it is one of the five, else English', () => {
-    expect(prePaint({}, 'fr-CA').lang).toBe('fr');
-    expect(prePaint({}, 'it').lang).toBe('it');
-    expect(prePaint({}, 'pt-BR').lang).toBe('en');
+  it('starts in English and applies the stored width before React loads', () => {
+    expect(indexHtml).toContain('<html lang="en" dir="ltr">');
+    expect(script).not.toContain('kept.locale');
+    expect(prePaint({ 'kept.width': 'full', 'kept.locale': 'de' }).width).toBe('full');
     expect(prePaint({ 'kept.width': 'wide' }).width).toBe('centered');
-  });
-
-  it('knows Ukrainian, left to right, whether stored or the browser’s', () => {
-    expect(prePaint({ 'kept.locale': 'uk' })).toMatchObject({ lang: 'uk', dir: 'ltr' });
-    expect(prePaint({}, 'uk-UA')).toMatchObject({ lang: 'uk', dir: 'ltr' });
-  });
-
-  it('knows Spanish, left to right, whether stored or the browser’s', () => {
-    expect(prePaint({ 'kept.locale': 'es' })).toMatchObject({ lang: 'es', dir: 'ltr' });
-    expect(prePaint({}, 'es-MX')).toMatchObject({ lang: 'es', dir: 'ltr' });
   });
 
   it('makes the same place tree choices as prefs.ts, before React loads', () => {
