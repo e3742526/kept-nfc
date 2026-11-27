@@ -1,0 +1,14 @@
+# What scripts/visual-retrieval/serve.py imports. Keep these pins equal to its MODEL_VERSIONS.
+# requirements.lock adds every dependency with its hashes, for both Linux architectures. After
+# changing a pin, regenerate it:
+#
+#   uv pip compile docker/visual-encoder/requirements.in --universal --python-version 3.12 \
+#     --generate-hashes --index-url https://download.pytorch.org/whl/cpu \
+#     --extra-index-url https://pypi.org/simple --index-strategy unsafe-best-match \
+#     --no-emit-index-url -o docker/visual-encoder/requirements.lock
+#
+# PyTorch's CPU index serves torch and torchvision without the CUDA libraries.
+open-clip-torch==3.2.0
+torch==2.8.0
+torchvision==0.23.0
+pillow==13.0.0

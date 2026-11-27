@@ -159,13 +159,85 @@ export function openClipEncoder(url: URL | string): VisualProvider {
   };
 }
 
+export type VisualEncoderSetting =
+  | { state: 'off' }
+  | { state: 'invalid' }
+  | { state: 'on'; provider: VisualProvider };
+
+/** What KEPT_VISUAL_ENCODER_URL turns on: nothing when unset, nothing (and a startup warning)
+ * when it isn't a loopback origin the provider accepts. */
+export function visualEncoderSetting(
+  value = process.env.KEPT_VISUAL_ENCODER_URL,
+): VisualEncoderSetting {
+  if (!value) return { state: 'off' };
+  try {
+    return { state: 'on', provider: openClipEncoder(value) };
+  } catch {
+    return { state: 'invalid' };
+  }
+}
+
 /** Activation is explicit. A configuration error leaves ordinary Kept search available. */
 export function localVisualProvider(): VisualProvider | null {
-  const origin = process.env.KEPT_VISUAL_ENCODER_URL;
-  if (!origin) return null;
-  try {
-    return openClipEncoder(origin);
-  } catch {
-    return null;
+  const setting = visualEncoderSetting();
+  return setting.state === 'on' ? setting.provider : null;
+}
+
+type VisualLog = {
+  info(obj: object, msg: string): void;
+  warn(obj: object, msg: string): void;
+};
+
+/**
+ * Says at startup whether visual search is on. A rejected KEPT_VISUAL_ENCODER_URL would
+ * otherwise switch it off silently. With a valid one, waits in the background for the encoder,
+ * which loads its model after Kept starts (compose.yaml's `visual` profile), and warns once if it
+ * never answers. Never blocks or fails the start.
+ */
+export function reportVisualEncoder(
+  log: VisualLog,
+  opts: {
+    value?: string | undefined;
+    /** How long to wait for the encoder before warning (default 3 minutes). */
+    waitMs?: number;
+    pollMs?: number;
+    signal?: AbortSignal;
+  } = {},
+): Promise<void> {
+  const value = 'value' in opts ? opts.value : process.env.KEPT_VISUAL_ENCODER_URL;
+  const setting = visualEncoderSetting(value);
+  if (setting.state === 'off') return Promise.resolve();
+  if (setting.state === 'invalid') {
+    log.warn(
+      { setting: 'KEPT_VISUAL_ENCODER_URL' },
+      'visual search is off: KEPT_VISUAL_ENCODER_URL must be http://127.0.0.1:<port> (not localhost, a path or another host)',
+    );
+    return Promise.resolve();
   }
+  const { provider } = setting;
+  const waitMs = opts.waitMs ?? 180_000;
+  const pollMs = opts.pollMs ?? 5_000;
+  const deadline = Date.now() + waitMs;
+  return (async () => {
+    while (!opts.signal?.aborted) {
+      if (await provider.isReady?.()) {
+        log.info({ generation: provider.generation }, 'visual search on: the encoder is ready');
+        return;
+      }
+      if (Date.now() >= deadline) break;
+      await new Promise<void>((done) => {
+        const timer = setTimeout(done, pollMs);
+        timer.unref();
+        opts.signal?.addEventListener('abort', () => {
+          clearTimeout(timer);
+          done();
+        });
+      });
+    }
+    if (opts.signal?.aborted) return;
+    log.warn(
+      { generation: provider.generation, waitedMs: waitMs },
+      'visual search: the encoder at KEPT_VISUAL_ENCODER_URL is not answering; photos are not indexed and visual queries fail until it does',
+    );
+  })();
 }

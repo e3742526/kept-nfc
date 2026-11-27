@@ -46,6 +46,7 @@ import { createFileStorage } from './storage/create.js';
 import { syncCursorKey } from './sync/cursor.js';
 import { revokeTokensOnClaim } from './tokens/service.js';
 import { tokenHashKey } from './tokens/verify.js';
+import { reportVisualEncoder } from './visual-search/provider.js';
 import { setWebhookFanout } from './webhooks/fanout.js';
 
 // The server process (D81): one image, `KEPT_ROLE` = web · worker · all.
@@ -118,10 +119,12 @@ export async function startKept(env: Env, opts: StartOptions = {}): Promise<Runn
   const mail = createMailer(env, { localeOf: profileLocaleLookup(pools.system), logger });
 
   let stopHeartbeat: (() => void) | null = null;
+  const visualReport = new AbortController();
   const stop = async () => {
     // Stop taking requests and let in-flight ones finish, then let running jobs finish, then
     // close the pools both were using.
     stopHeartbeat?.();
+    visualReport.abort();
     await app?.close();
     setWebhookFanout(null);
     await boss?.stop({ graceful: true, timeout: 30_000 });
@@ -381,6 +384,12 @@ export async function startKept(env: Env, opts: StartOptions = {}): Promise<Runn
     throw err;
   }
   logger.info({ role: env.KEPT_ROLE, address }, 'kept started');
+  // Visual search is opt-in (KEPT_VISUAL_ENCODER_URL): say whether it is on, and whether its
+  // encoder answers, without holding up the start.
+  void reportVisualEncoder(logger, {
+    value: env.KEPT_VISUAL_ENCODER_URL,
+    signal: visualReport.signal,
+  });
   return { app, boss, pools, address, stop };
 }
 

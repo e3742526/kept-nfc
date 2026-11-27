@@ -4,8 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   localVisualProvider,
   openClipEncoder,
+  reportVisualEncoder,
   VISUAL_DIMENSIONS,
   VISUAL_GENERATION,
+  visualEncoderSetting,
 } from './provider.js';
 
 const profile = { generation: VISUAL_GENERATION, dimensions: VISUAL_DIMENSIONS };
@@ -123,5 +125,87 @@ describe('local visual encoder transport', () => {
     await expect(encoder.encodeText('two')).rejects.toThrow('unavailable');
     await expect(encoder.encodeText('three')).rejects.toThrow('unavailable');
     expect(calls).toBe(6);
+  });
+});
+
+describe('visual encoder startup report', () => {
+  function recorder() {
+    const lines: { level: 'info' | 'warn'; msg: string }[] = [];
+    return {
+      lines,
+      log: {
+        info: (_obj: object, msg: string) => lines.push({ level: 'info', msg }),
+        warn: (_obj: object, msg: string) => lines.push({ level: 'warn', msg }),
+      },
+    };
+  }
+
+  it('tells an unset, a rejected and a usable setting apart', () => {
+    expect(visualEncoderSetting(undefined)).toEqual({ state: 'off' });
+    expect(visualEncoderSetting('')).toEqual({ state: 'off' });
+    for (const rejected of [
+      'http://localhost:8798',
+      'https://127.0.0.1:8798',
+      'http://127.0.0.1:8798/v1',
+      'http://[::1]:8798',
+      'not a url',
+    ]) {
+      expect(visualEncoderSetting(rejected)).toEqual({ state: 'invalid' });
+    }
+    expect(visualEncoderSetting('http://127.0.0.1:8798')).toMatchObject({
+      state: 'on',
+      provider: profile,
+    });
+  });
+
+  it('says nothing when visual search is unset', async () => {
+    const { lines, log } = recorder();
+    await reportVisualEncoder(log, { value: undefined });
+    expect(lines).toEqual([]);
+  });
+
+  it('warns that a rejected address leaves visual search off, without contacting anything', async () => {
+    const { lines, log } = recorder();
+    await reportVisualEncoder(log, { value: 'http://localhost:8798' });
+    expect(lines).toEqual([
+      { level: 'warn', msg: expect.stringContaining('visual search is off') },
+    ]);
+  });
+
+  it('waits for an encoder that starts after Kept, then says visual search is on', async () => {
+    let answering = false;
+    const endpoint = await listen((_req, res) => {
+      if (!answering) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end('{"error":"unavailable"}');
+        answering = true;
+        return;
+      }
+      sendJson(res, profile);
+    });
+    const { lines, log } = recorder();
+    await reportVisualEncoder(log, { value: endpoint, waitMs: 5_000, pollMs: 10 });
+    expect(lines).toEqual([{ level: 'info', msg: 'visual search on: the encoder is ready' }]);
+  });
+
+  it('warns once when the encoder never answers, and stays quiet once Kept stops', async () => {
+    const endpoint = await listen((_req, res) => sendJson(res, { ...profile, dimensions: 768 }));
+    const { lines, log } = recorder();
+    await reportVisualEncoder(log, { value: endpoint, waitMs: 50, pollMs: 10 });
+    expect(lines).toEqual([
+      { level: 'warn', msg: expect.stringContaining('is not answering') },
+    ]);
+
+    const stopped = recorder();
+    const controller = new AbortController();
+    const report = reportVisualEncoder(stopped.log, {
+      value: endpoint,
+      waitMs: 60_000,
+      pollMs: 10,
+      signal: controller.signal,
+    });
+    controller.abort();
+    await report;
+    expect(stopped.lines).toEqual([]);
   });
 });
