@@ -138,7 +138,9 @@ it('verifies the selected model, then retries an interrupted offline job with th
     ),
   );
 
-  await user.click(screen.getByRole('button', { name: 'Prepare calibration print' }));
+  const calibration = screen.getByRole('button', { name: 'Prepare calibration print' });
+  await waitFor(() => expect(calibration).toBeEnabled());
+  await user.click(calibration);
   await waitFor(() => expect(first).not.toBeInTheDocument());
   expect(last).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Print on B1 Pro' })).toBeEnabled();

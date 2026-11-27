@@ -460,6 +460,50 @@ exports[`placeLabels per stock > thermal_30_48x20_32: the first page, cell by ce
 }
 `;
 
+exports[`placeLabels per stock > thermal_30x20: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 30mm 20mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
+exports[`placeLabels per stock > thermal_40x20: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 40mm 20mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
 exports[`placeLabels per stock > thermal_40x30: the first page, cell by cell 1`] = `
 {
   "cells": 1,
@@ -522,6 +566,28 @@ exports[`placeLabels per stock > thermal_50x30: the first page, cell by cell 1`]
     "y": 0,
   },
   "page": "@page { size: 50mm 30mm; margin: 0; }",
+  "second": undefined,
+}
+`;
+
+exports[`placeLabels per stock > thermal_50x50: the first page, cell by cell 1`] = `
+{
+  "cells": 1,
+  "first": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "last": {
+    "cell": 0,
+    "col": 0,
+    "row": 0,
+    "x": 0,
+    "y": 0,
+  },
+  "page": "@page { size: 50mm 50mm; margin: 0; }",
   "second": undefined,
 }
 `;
