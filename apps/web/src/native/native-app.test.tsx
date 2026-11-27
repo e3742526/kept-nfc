@@ -4512,6 +4512,78 @@ describe('KeptPhone mobile workflows', () => {
     expectLogicalOnly();
   });
 
+  it.each(['online', 'offline'] as const)(
+    'finds Matilda Jane on Home and in Items using a search phrase while %s',
+    async (network) => {
+      const origin = 'https://kept.example.com';
+      const connection = {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      };
+      const env = createFakeEnvironment({ initialConnection: connection });
+      const item = env.serverThings.get(env.boxId);
+      if (!item) throw new Error('Expected an inventory fixture');
+      item.name = 'Matilda Jane';
+      const baseRequest = env.adapters.transport.request;
+      const searchAttempts: string[] = [];
+      const request = vi
+        .spyOn(env.adapters.transport, 'request')
+        .mockImplementation(
+          async <T,>(
+            conn: Connection,
+            path: string,
+            options?: NativeRequestOptions,
+          ): Promise<T> => {
+            const url = new URL(path, origin);
+            const isBrowse = url.pathname === inventoryPaths.things;
+            if (network === 'online' && (isBrowse || url.pathname === inventoryPaths.search)) {
+              const q = url.searchParams.get('q') ?? '';
+              searchAttempts.push(q);
+              const items = q === 'matilda Jane' ? [item] : [];
+              const page = { items, next_cursor: null, total: items.length };
+              return (
+                isBrowse ? page : { things: page, places: [], documents: { items: [] } }
+              ) as T;
+            }
+            if (path === assistantPaths.models || path === assistantPaths.threads)
+              return { items: [], next_cursor: null } as T;
+            return baseRequest<T>(conn, path, options);
+          },
+        );
+      const user = userEvent.setup();
+      env.renderApp();
+      const tile = await screen.findByRole('button', { name: '2 Items' });
+      await waitFor(() => expect(tile).toBeEnabled());
+      if (network === 'offline') env.setOnline(false);
+
+      const phrase = 'find matilda Jane';
+      await user.type(screen.getByRole('searchbox', { name: 'Search inventory' }), phrase);
+      expect(await screen.findByText('Matilda Jane')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Open in Browse' }));
+      const itemsSearch = screen.getByRole('textbox', { name: 'Search' });
+      expect(itemsSearch).toHaveValue(phrase);
+      expect(await screen.findByRole('button', { name: /Matilda Jane/ })).toBeInTheDocument();
+      await user.clear(itemsSearch);
+      await user.type(itemsSearch, phrase);
+      await user.keyboard('{Enter}');
+      expect(itemsSearch).not.toHaveFocus();
+      expect(await screen.findByRole('button', { name: /Matilda Jane/ })).toBeInTheDocument();
+      expect(screen.getByText('Matches 1')).toBeInTheDocument();
+      if (network === 'online') {
+        expect(searchAttempts.filter((q) => q === 'matilda Jane')).toHaveLength(3);
+        expect(searchAttempts).not.toContain(phrase);
+        await user.click(screen.getByRole('button', { name: 'Ask the assistant' }));
+        expect(await screen.findByRole('textbox', { name: 'Ask the assistant' })).toHaveValue(
+          phrase,
+        );
+        expect(request.mock.calls.some(([, , options]) => options?.method === 'POST')).toBe(false);
+      }
+    },
+  );
+
   it('opens photo search from Browse and keeps its result when returning from the matching bin', async () => {
     const connection = {
       id: 'https://kept.example.com|ibrahim|epoch-1',

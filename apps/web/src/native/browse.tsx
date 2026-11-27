@@ -14,7 +14,13 @@ import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import { CategoryEditor } from './category-editor';
-import { type InventoryCache, inventoryPath, localInventorySearch, previewUrl } from './inventory';
+import {
+  type InventoryCache,
+  inventoryPath,
+  inventorySearchTerm,
+  localInventorySearch,
+  previewUrl,
+} from './inventory';
 import type { Target } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
 import { PhotoSearchActions, type VisualSearchIntent } from './visual-search';
@@ -80,8 +86,9 @@ function matchTags(ids: string[], selected: string[], all: boolean) {
 }
 
 export function cachedBrowse(cache: InventoryCache, f: BrowseFilters) {
-  const textMatches = f.q.trim()
-    ? new Set(localInventorySearch(cache, f.q, Infinity).map(({ id }) => id))
+  const search = inventorySearchTerm(f.q);
+  const textMatches = search
+    ? new Set(localInventorySearch(cache, search, Infinity).map(({ id }) => id))
     : null;
   return cache.things
     .filter((thing) => {
@@ -225,7 +232,7 @@ export function Browse({
   const query = qs({
     count: 1,
     limit: 40,
-    q: f.q.trim(),
+    q: inventorySearchTerm(f.q),
     roomId: f.rooms,
     binId: f.bins,
     tagId: f.tags,
@@ -348,7 +355,18 @@ export function Browse({
           label={t`Search`}
           value={f.q}
           onChange={(q) => update({ q })}
-          inputProps={{ maxLength: 200, enterKeyHint: 'search' }}
+          inputProps={{
+            maxLength: 200,
+            enterKeyHint: 'search',
+            autoCapitalize: 'none',
+            autoCorrect: 'off',
+            onKeyDown: (event) => {
+              if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                event.currentTarget.blur();
+              }
+            },
+          }}
         />
         <Button
           variant="secondary"
