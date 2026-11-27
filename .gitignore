@@ -100,3 +100,6 @@ tmp/
 /docs/evals/
 /docs/perf/
 /docs/release/
+
+# Python bytecode (scripts/visual-retrieval).
+__pycache__/

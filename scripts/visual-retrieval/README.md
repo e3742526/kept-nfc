@@ -92,7 +92,46 @@ deletion in cross-household retrieval tests before serving any private image res
 [OpenCLIP model and inference](https://github.com/mlfoundations/open_clip),
 [pinned weights](https://huggingface.co/laion/CLIP-ViT-B-32-laion2B-s34B-b79K/tree/1a25a446712ba5ee05982a381eed697ef9b435cf).
 
+## Run the encoder image beside Kept
+
+Visual search is experimental and off unless `KEPT_VISUAL_ENCODER_URL` is set. The encoder
+image ([docker/visual-encoder/Dockerfile](../../docker/visual-encoder/Dockerfile)) holds
+`serve.py`, CPU-only PyTorch from a hashed lock and the checkpoint below, verified against its
+SHA-256 when the image is built. It needs no network at run time, runs as uid 10001 on a
+read-only root filesystem and writes only to `/tmp`. The image is about 1.5 GB. The process
+uses 600 MiB to 1.5 GiB of memory. No public image is published, so build it from a checkout:
+
+```sh
+docker build -f docker/visual-encoder/Dockerfile -t sheepkeep-visual-encoder:local .
+```
+
+The encoder answers only on `127.0.0.1`, so it must share the network namespace of every Kept
+process that indexes or searches (the server, or the web and worker processes).
+
+- **Compose:** set `KEPT_VISUAL_ENCODER_URL=http://127.0.0.1:8798` in `.env`, then run
+  `docker compose --profile visual up -d`. The `visual-encoder` service joins the `kept`
+  container's network namespace and publishes nothing. Set `KEPT_VISUAL_ENCODER_IMAGE` to use an
+  image from your own registry.
+- **Helm:** push the image to your registry and set `visualEncoder.enabled=true` with
+  `visualEncoder.image.repository` and a tag or digest. The chart runs the encoder as a native
+  sidecar in each Kept pod, starts Kept's container once the encoder answers, and sets
+  `KEPT_VISUAL_ENCODER_URL` itself.
+
+Kept logs `visual search on: the encoder is ready` once the encoder answers. It logs a warning
+when `KEPT_VISUAL_ENCODER_URL` is not an `http://127.0.0.1:<port>` origin, which leaves visual
+search off, or when the encoder hasn't answered three minutes after the start. Photos
+attached before the encoder was running are indexed by the reindex route in the
+[NFC runbook](../../docs/runbooks/nfc-mvp.md#search-stored-photographs).
+
+[encoder-contract.test.ts](../../apps/server/src/visual-search/encoder-contract.test.ts) checks
+the provider against `serve.py`'s HTTP server. On every pull request it uses a stand-in model
+([contract_server.py](contract_server.py)), which needs only Python 3. The
+[visual-encoder workflow](../../.github/workflows/visual-encoder.yml) builds the image and runs
+the same test against the real model, with `KEPT_VISUAL_CONTRACT_URL=http://127.0.0.1:8798`.
+
 ## Opt-in local encoder
+
+To run the encoder without a container, for the experiments on this page:
 
 Use the Python 3.12 environment and local checkpoint from the setup above. Start the sidecar as
 a separate process in the same network namespace as the Kept server and worker. It listens on
