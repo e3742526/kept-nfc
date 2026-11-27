@@ -84,6 +84,7 @@ import { FIND_TARGET_KEY, type LabelBox, LabelPanel } from './label-panel';
 import { LabelSheets } from './label-sheets';
 import { loadLabelAddress, resolveLabel, type Target } from './labels';
 import { LocationSettings } from './location-settings';
+import { destinationForNfcDraft, findNfcDraft, type NfcCaptureDraft } from './nfc-capture-draft';
 import {
   canRetarget,
   discardCapture,
@@ -138,6 +139,7 @@ type Screen =
       skipPhotos?: boolean;
       /** A blank NFC tag from Scan, ready to be written as the new item's label. */
       blankTag?: TagReading;
+      nfcDraft?: NfcCaptureDraft;
     }
   | { kind: 'identify' }
   | { kind: 'nfcTarget' }
@@ -833,6 +835,8 @@ export function Inventory({
       switch (reason) {
         case 'waiting_for_place':
           return t`Waiting to sync`;
+        case 'upc_already_exists':
+          return t`An item already has this UPC. Your capture is still saved on this iPhone.`;
         case 'target_trashed':
         case 'target_missing':
           return fields.boxId && !fields.review
@@ -973,6 +977,17 @@ export function Inventory({
     };
   }, [adapters, connection, display, refresh]);
 
+  const recoverNfcScreen = useCallback(
+    async (url: string): Promise<Screen | undefined> => {
+      const nfcDraft = await findNfcDraft(connection, adapters, url);
+      const inventory = cacheRef.current;
+      if (!nfcDraft || !inventory) return;
+      const destination = destinationForNfcDraft(inventory, nfcDraft);
+      if (destination) return { kind: 'capture', destination, nfcDraft };
+    },
+    [connection, adapters],
+  );
+
   useEffect(() => {
     let current = true;
     // The label address first (labels.ts), so a link or tag under it is this server's.
@@ -980,6 +995,13 @@ export function Inventory({
     const readLink = async () => {
       const linkUrl = await adapters.lifecycle.takeLink(connection);
       if (!linkUrl) return;
+      const draftScreen = await recoverNfcScreen(linkUrl);
+      if (draftScreen && current) {
+        if (!canLeaveCapture.current || (await canLeaveCapture.current())) {
+          if (current) setScreen(draftScreen);
+        }
+        return;
+      }
       await loadLabelAddress(connection, adapters).catch(() => {});
       const resolved = await resolveLabel(
         connection,
@@ -1021,7 +1043,7 @@ export function Inventory({
       current = false;
       void listen.then((remove) => remove()).catch(() => {});
     };
-  }, [adapters, connection, t]);
+  }, [adapters, connection, recoverNfcScreen, t]);
 
   useEffect(() => {
     let current = true;
@@ -1289,6 +1311,30 @@ export function Inventory({
                   )}
                   {entry.failure && (
                     <p className="text-danger">{failureText(entry.failure, fields)}</p>
+                  )}
+                  {entry.failure === 'upc_already_exists' && fields.note && <p>{fields.note}</p>}
+                  {entry.failure === 'upc_already_exists' && fields.barcode && (
+                    <Button
+                      size="small"
+                      variant="secondary"
+                      isDisabled={!online || working}
+                      onPress={() => {
+                        const code = fields.barcode;
+                        if (!code) return;
+                        void resolveLabel(connection, cache, code, 'qr', undefined, false, adapters)
+                          .then((result) => {
+                            if (result.status === 'resolved')
+                              pushScreen({ kind: 'record', target: result.target });
+                            else
+                              setStatus(
+                                t`That code matches more than one item. Scan it from the Scan tab to choose one.`,
+                              );
+                          })
+                          .catch(() => setStatus(t`Could not search SheepKeep. Try again.`));
+                      }}
+                    >
+                      <Trans>Open existing item</Trans>
+                    </Button>
                   )}
                   {entry.capture.files.length > 0 && (
                     <div className="flex flex-wrap gap-2">
@@ -1827,6 +1873,7 @@ export function Inventory({
       )}
       {screen.kind === 'capture' && (
         <CaptureForm
+          key={screen.nfcDraft?.id ?? 'capture'}
           headerExtra={addTabs}
           connection={connection}
           box={screen.destination}
@@ -1834,6 +1881,7 @@ export function Inventory({
           location={screen.location}
           initialName={screen.name}
           initialPhoto={screen.initialPhoto}
+          initialNfcDraft={screen.nfcDraft}
           skipPhotos={screen.skipPhotos}
           blankTag={screen.blankTag}
           suggested={suggestedDestination}
@@ -1848,6 +1896,7 @@ export function Inventory({
           onSave={savedLocally}
           onAdded={rememberAdded}
           onReview={(id) => pushScreen({ kind: 'photoReview', id })}
+          onOpen={open}
           onAuthError={onSignOut}
         />
       )}
@@ -1880,6 +1929,12 @@ export function Inventory({
           onBlankTag={
             canWrite ? (blankTag) => pushScreen({ kind: 'capture', blankTag }) : undefined
           }
+          onNfcDraft={async (url, signal) => {
+            const draft = await recoverNfcScreen(url);
+            if (!draft || signal?.aborted) return false;
+            pushScreen(draft);
+            return true;
+          }}
           onAuthError={onSignOut}
         />
       )}

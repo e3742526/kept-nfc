@@ -20,7 +20,9 @@ import {
   TextArea,
 } from 'react-aria-components';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { CreateRegistryResult, Page, Tag } from '@/api/inventory/types';
+import type { CreateRegistryResult, Page, Tag, TypeDetail } from '@/api/inventory/types';
+import { QueueLabelButton } from '@/components/labels/print-queue';
+import { useTypeName } from '@/components/things/names';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { inputClass } from '@/components/ui/field';
@@ -45,6 +47,7 @@ import {
   leadSuggestion,
 } from './capture-details';
 import { CategoryPicker, equivalentCategory } from './category-picker';
+import { CustomFieldEditor, nativeCustomPatch } from './custom-fields';
 import {
   type Destination,
   DestinationPicker,
@@ -54,8 +57,22 @@ import {
 } from './destination';
 import { createBox, type InventoryCache, inventoryPath } from './inventory';
 import { type ItemLabel, ItemLabelPicker } from './item-label';
-import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
+import {
+  destinationForNfcDraft,
+  findNfcDraft,
+  type NfcCaptureDraft,
+  updateNfcDraft,
+} from './nfc-capture-draft';
+import {
+  mobileFileLimit,
+  type PendingCapture,
+  type SelectedOriginal,
+  saveOnPhone,
+  stageOriginal,
+} from './outbox';
+import { useNativePrintQueue } from './print-queue';
 import { readRecentDestinations } from './recent-destinations';
+import { UpcCapture } from './upc-capture';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
 type AddStep = 'photos' | 'details' | 'label';
@@ -91,6 +108,7 @@ export function CaptureForm({
   cache,
   initialName = '',
   initialPhoto,
+  initialNfcDraft,
   skipPhotos = false,
   blankTag,
   suggested,
@@ -105,6 +123,7 @@ export function CaptureForm({
   onSave,
   onAdded,
   onReview,
+  onOpen,
   onAuthError,
   headerExtra,
 }: {
@@ -115,6 +134,7 @@ export function CaptureForm({
   /** Description prefilled from a search that found nothing. */
   initialName?: string;
   initialPhoto?: File;
+  initialNfcDraft?: NfcCaptureDraft;
   skipPhotos?: boolean;
   /** A blank NFC tag scanned on the way here: the label step offers to write it. */
   blankTag?: TagReading;
@@ -133,24 +153,27 @@ export function CaptureForm({
   /** An item was saved into this place or box (not photos or documents for a record). */
   onAdded?: (destination: Destination) => void;
   onReview?: (id: string) => void;
+  onOpen?: (target: import('./labels').Target) => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
   /** Shown right under the header (the Add tab's Item | Box switch). */
   headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
+  const printQueue = useNativePrintQueue(connection);
   const confirm = useConfirm();
   const formatBytes = useBytes();
   const [destination, setDestination] = useState(
     () => box ?? suggested ?? (cache && defaultDestination(cache)),
   );
   const [changingDestination, setChangingDestination] = useState(false);
+  const [newBinName, setNewBinName] = useState<string>();
   const locationPhoto = destination?.kind === 'location-photo';
   const photosOnly = destination?.kind === 'photos' || locationPhoto;
   const documentsOnly = destination?.kind === 'documents';
   const evidenceOnly = photosOnly || documentsOnly;
   const [step, setStep] = useState<AddStep>(() =>
-    initialName || initialPhoto || blankTag || skipPhotos ? 'details' : 'photos',
+    initialName || initialPhoto || initialNfcDraft || blankTag || skipPhotos ? 'details' : 'photos',
   );
   const focusStepHeading = useCallback(
     (heading: HTMLHeadingElement | null) => heading?.focus(),
@@ -159,14 +182,30 @@ export function CaptureForm({
   const [labelBusy, setLabelBusy] = useState(false);
   const showDetails = !evidenceOnly && step === 'details';
   const showLabels = !evidenceOnly && step === 'label';
-  const [tags, setTags] = useState<string[]>([]);
-  const [intent, setIntent] = useState<'record' | 'add'>('record');
+  const [tags, setTags] = useState<string[]>(initialNfcDraft?.tags ?? []);
+  const [intent, setIntent] = useState<'record' | 'add'>(initialNfcDraft?.intent ?? 'record');
   const [batchId] = useState(newId);
-  const [name, setName] = useState(initialName);
-  const [note, setNote] = useState('');
-  const [quantity, setQuantity] = useState('');
+  const [name, setName] = useState(initialNfcDraft?.name ?? initialName);
+  const [upc, setUpc] = useState<string>();
+  const [typeId, setTypeId] = useState(initialNfcDraft?.typeId);
+  const [typeDetail, setTypeDetail] = useState<TypeDetail>();
+  const [customDraft, setCustomDraft] = useState(initialNfcDraft?.customDraft ?? {});
+  const typeName = useTypeName();
+  const [scanningUpc, setScanningUpc] = useState(false);
+  const [note, setNote] = useState(initialNfcDraft?.note ?? '');
+  const [quantity, setQuantity] = useState(initialNfcDraft?.quantity ?? '');
   const [files, setFiles] = useState<ChosenFile[]>([]);
-  const [label, setLabel] = useState<ItemLabel>();
+  const [label, setLabel] = useState<ItemLabel | undefined>(() =>
+    initialNfcDraft
+      ? {
+          code: initialNfcDraft.code,
+          locationId: initialNfcDraft.locationId,
+          source: 'nfc',
+        }
+      : undefined,
+  );
+  const [nfcDraft, setNfcDraft] = useState(initialNfcDraft);
+  const preparedNfc = useRef<NfcCaptureDraft | undefined>(undefined);
   // Bumped after each save, so the next item starts with a fresh label picker.
   const [labelSession, setLabelSession] = useState(0);
   // A blank NFC tag scanned on the way here: the details step leads to the label step to write it.
@@ -176,10 +215,82 @@ export function CaptureForm({
   const photos = evidenceOnly ? [] : files.filter((item) => item.role === 'photo');
   const firstPhoto = photos[0];
   const captureLocation = cache?.locations.find(({ id }) => id === destination?.locationId);
+  const nfcEntry =
+    !evidenceOnly &&
+    step === 'photos' &&
+    !!captureLocation &&
+    captureLocation.role !== 'viewer' &&
+    !label;
   const account = captureLocation?.ownerAccountId;
+
   const [batchEntryIds, setBatchEntryIds] = useState<string[]>([]);
+  const [lastSavedItem, setLastSavedItem] = useState<{ id: string; locationId: string }>();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const customRecord = {
+    fields: typeDetail?.id === typeId ? (typeDetail?.fields ?? []) : [],
+    custom: {},
+    moneyHidden: true as const,
+  };
+  const { custom, invalid: invalidCustom } = nativeCustomPatch(customRecord, customDraft);
+  const customWaiting = Object.keys(customDraft).length > 0 && typeDetail?.id !== typeId;
+  useEffect(() => {
+    if (!typeId) return;
+    let active = true;
+    const setting = `addTypeFields:${typeId}`;
+    void (async () => {
+      if (online) {
+        try {
+          const detail = await adapters.transport.request<TypeDetail>(
+            connection,
+            inventoryPaths.type(typeId),
+          );
+          if (active) setTypeDetail(detail);
+          await adapters.outbox
+            .setValue(connection, setting, JSON.stringify(detail))
+            .catch(() => {});
+          return;
+        } catch {
+          // A cached definition can still prepare this draft. The server validates it on save.
+        }
+      }
+      const saved = await adapters.outbox.getValue(connection, setting);
+      if (active && saved) setTypeDetail(JSON.parse(saved) as TypeDetail);
+    })().catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [adapters, connection, online, typeId]);
+  useEffect(() => {
+    if (!nfcDraft || label?.code !== nfcDraft.code || !destination || busy) return;
+    void updateNfcDraft(connection, adapters, nfcDraft.id, {
+      ...nfcDraft,
+      verified: true,
+      destinationId: destination.id,
+      name,
+      note,
+      quantity,
+      tags,
+      intent,
+      typeId,
+      customDraft,
+    }).catch(() => setStatus(t`SheepKeep could not update the NFC draft on this iPhone.`));
+  }, [
+    adapters,
+    busy,
+    connection,
+    customDraft,
+    destination,
+    intent,
+    label,
+    name,
+    nfcDraft,
+    note,
+    quantity,
+    t,
+    tags,
+    typeId,
+  ]);
   const previewUrlsRef = useRef<string[]>([]);
   // The AI's reading of these photos, itemized by field; it goes stale when the photos change.
   const photoKey = photos.map(({ key }) => key).join(',');
@@ -210,8 +321,10 @@ export function CaptureForm({
       : [];
 
   async function canLeave() {
-    if (busy) return false;
-    if (!name && !note && !quantity && !files.length && !tags.length && !label) return true;
+    if (busy || labelBusy) return false;
+    if (nfcDraft) return true;
+    if (!name && !note && !quantity && !files.length && !tags.length && !label && !upc && !typeId)
+      return true;
     return confirm({
       title: t`Discard this draft?`,
       confirmLabel: t`Discard draft`,
@@ -232,7 +345,10 @@ export function CaptureForm({
     quantity !== '' && (!AMOUNT_STRING.test(quantity) || Number(quantity) <= 0);
 
   const canSave =
-    destination && (evidenceOnly ? files.length > 0 : !!name.trim() && !quantityInvalid);
+    destination &&
+    (evidenceOnly
+      ? files.length > 0
+      : !!name.trim() && !quantityInvalid && !invalidCustom.length && !customWaiting);
   // A label is claimed only in the location it was made for.
   const claimCode =
     !evidenceOnly && label && label.locationId === destination?.locationId ? label.code : undefined;
@@ -251,10 +367,100 @@ export function CaptureForm({
   }
 
   function changeDestination(next: Destination | undefined) {
+    if (nfcDraft && label?.code === nfcDraft.code && next?.locationId !== nfcDraft.locationId) {
+      setStatus(t`Finish this NFC draft in the inventory location where the tag was written.`);
+      return;
+    }
     const owner = cache?.locations.find(({ id }) => id === next?.locationId)?.ownerAccountId;
-    if (account !== owner) setTags([]);
+    if (account !== owner) {
+      setTags([]);
+      setTypeId(undefined);
+      setCustomDraft({});
+    }
     if (label && label.locationId !== next?.locationId) setLabel(undefined);
     setDestination(next);
+  }
+
+  async function createDestinationBin() {
+    if (!online || !cache || !destination || !newBinName?.trim() || busy) return;
+    setBusy(true);
+    try {
+      const result = await createBox(connection, cache, destination, newBinName.trim(), adapters);
+      setDestination({
+        id: result.id,
+        locationId: result.locationId,
+        name: result.name ?? newBinName.trim(),
+        kind: 'box',
+      });
+      setNewBinName(undefined);
+      setChangingDestination(false);
+      onSave();
+    } catch {
+      setStatus(t`Could not create the box. Check your connection and selected location.`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function prepareNfc(label: ItemLabel, url: string) {
+    if (!destination) throw new Error('Missing capture destination');
+    const id = newId();
+    const originals = await stageNfcFiles(id, files);
+    const next: NfcCaptureDraft = {
+      id,
+      code: label.code,
+      url,
+      locationId: label.locationId,
+      destinationId: destination.id,
+      verified: false,
+      name,
+      note,
+      quantity,
+      tags,
+      intent,
+      typeId,
+      customDraft,
+      originals,
+    };
+    await updateNfcDraft(connection, adapters, next.id, next);
+    preparedNfc.current = next;
+  }
+
+  async function abortNfc(code: string) {
+    if (preparedNfc.current?.code !== code) return;
+    await updateNfcDraft(connection, adapters, preparedNfc.current.id);
+    await adapters.outbox.abort(connection, preparedNfc.current.id).catch(() => {});
+    preparedNfc.current = undefined;
+  }
+
+  function acceptNfc(label: ItemLabel | undefined) {
+    setLabel(label);
+    if (label && preparedNfc.current?.code === label.code) {
+      setNfcDraft(preparedNfc.current);
+      preparedNfc.current = undefined;
+    }
+    if (label && nfcEntry) goToStep('details');
+  }
+
+  async function recoverNfc(url: string) {
+    const saved = await findNfcDraft(connection, adapters, url);
+    if (!saved || !cache) return false;
+    const target = destinationForNfcDraft(cache, saved);
+    if (!target) return false;
+    if (saved.originals.length + files.length > 20) return false;
+    const originals = [...saved.originals, ...(await stageNfcFiles(saved.id, files))];
+    setDestination(target);
+    setName(saved.name);
+    setNote(saved.note);
+    setQuantity(saved.quantity);
+    setTags(saved.tags);
+    setIntent(saved.intent);
+    setTypeId(saved.typeId);
+    setCustomDraft(saved.customDraft ?? {});
+    setNfcDraft({ ...saved, originals });
+    setLabel({ code: saved.code, locationId: saved.locationId, source: 'nfc' });
+    goToStep('details');
+    return true;
   }
 
   /** A category the AI named: an existing one by name, else created (online only). */
@@ -339,7 +545,7 @@ export function CaptureForm({
     const items = Array.from(source);
     if (
       items.some((file) => file.size === 0 || file.size > mobileFileLimit) ||
-      files.length + items.length > (locationPhoto ? 1 : 20)
+      (nfcDraft?.originals.length ?? files.length) + items.length > (locationPhoto ? 1 : 20)
     ) {
       setStatus(
         locationPhoto
@@ -356,10 +562,41 @@ export function CaptureForm({
     });
   }
 
-  function choose(source: FileList | null, role: SelectedOriginal['role']) {
-    if (!source) return;
+  async function stageNfcFiles(id: string, chosen: ChosenFile[]) {
+    const originals: NfcCaptureDraft['originals'] = [];
+    for (const { key, file, role } of chosen) {
+      await stageOriginal(connection, adapters, id, key, file);
+      originals.push({
+        id: key,
+        name: file.name.slice(0, 120),
+        mime: file.type || 'application/octet-stream',
+        role,
+        bytes: file.size,
+      });
+    }
+    return originals;
+  }
+
+  async function choose(source: FileList | null, role: SelectedOriginal['role']) {
+    if (!source || busy || labelBusy) return;
     const next = prepareFiles(source, role);
-    if (next) setFiles((current) => [...current, ...next]);
+    if (!next) return;
+    if (!nfcDraft) {
+      setFiles((current) => [...current, ...next]);
+      return;
+    }
+    setBusy(true);
+    try {
+      const originals = [...nfcDraft.originals, ...(await stageNfcFiles(nfcDraft.id, next))];
+      const updated = { ...nfcDraft, originals, name, note, quantity, tags, intent };
+      await updateNfcDraft(connection, adapters, nfcDraft.id, updated);
+      setNfcDraft(updated);
+      setFiles((current) => [...current, ...next]);
+    } catch {
+      setStatus(t`SheepKeep could not update the NFC draft on this iPhone.`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   const attachInitialPhoto = useEffectEvent((photo: File) => {
@@ -371,6 +608,9 @@ export function CaptureForm({
   }, [initialPhoto]);
 
   function removeFile(key: string) {
+    if (nfcDraft) {
+      setNfcDraft({ ...nfcDraft, originals: nfcDraft.originals.filter(({ id }) => id !== key) });
+    }
     setFiles((current) => {
       const target = current.find((item) => item.key === key);
       if (target?.previewUrl) {
@@ -382,7 +622,17 @@ export function CaptureForm({
   }
 
   async function reviewPhoto(items: PhotoSuggestion[] = []) {
-    if (busy || !firstPhoto || !destination || evidenceOnly || !onReview) return;
+    if (
+      busy ||
+      !firstPhoto ||
+      !destination ||
+      evidenceOnly ||
+      !onReview ||
+      nfcDraft ||
+      upc ||
+      typeId
+    )
+      return;
     // A label belongs to one item. A review of several items can't know which, so it is never
     // guessed: the label stays on this form, for the next item saved, once that is confirmed.
     if (
@@ -481,20 +731,32 @@ export function CaptureForm({
           ...(firstPhoto ? { skipServerSuggestions: true } : {}),
           ...(note.trim() ? { note: note.trim() } : {}),
           ...(quantity ? { quantity } : {}),
+          ...(upc ? { barcode: upc } : {}),
+          ...(typeId ? { typeId } : {}),
+          ...(Object.keys(custom).length ? { custom } : {}),
           ...(claimCode ? { claimCode, ...nfcVerified } : {}),
           batchId,
         },
-        files,
+        nfcDraft ? [] : files,
         adapters,
+        nfcDraft ? { id: nfcDraft.id, originals: nfcDraft.originals } : undefined,
       );
       for (const item of files) revokePreviewUrl(item.previewUrl);
       previewUrlsRef.current = [];
       setBatchEntryIds((ids) => [...ids, savedId]);
+      if (!evidenceOnly) setLastSavedItem({ id: savedId, locationId: destination.locationId });
       setName('');
       setNote('');
       setQuantity('');
+      setUpc(undefined);
+      setTypeId(undefined);
+      setCustomDraft({});
       // Action and categories stay for the next item: a bin is usually filled with similar things.
       setFiles([]);
+      if (nfcDraft && claimCode === nfcDraft.code) {
+        void updateNfcDraft(connection, adapters, nfcDraft.id).catch(() => {});
+        setNfcDraft(undefined);
+      }
       clearLabel();
       setStep('photos');
       setStatus(t`Saved on device.`);
@@ -550,6 +812,17 @@ export function CaptureForm({
         }
       />
       {headerExtra}
+      {online && lastSavedItem && completions[lastSavedItem.id] === 'synced' && (
+        <QueueLabelButton
+          key={lastSavedItem.id}
+          request={printQueue}
+          target={{
+            kind: 'thing',
+            recordId: lastSavedItem.id,
+            locationId: lastSavedItem.locationId,
+          }}
+        />
+      )}
       {box && (evidenceOnly || !cache) && (
         <header className="kept-card">
           <div className="flex items-start gap-3">
@@ -663,6 +936,38 @@ export function CaptureForm({
                     <Trans>Done</Trans>
                   </Button>
                 )}
+                {online && destination && newBinName === undefined && (
+                  <Button size="small" variant="secondary" onPress={() => setNewBinName('')}>
+                    <Trans>New bin</Trans>
+                  </Button>
+                )}
+                {newBinName !== undefined && (
+                  <div className="grid gap-2">
+                    <TextField
+                      label={t`Box name`}
+                      value={newBinName}
+                      onChange={setNewBinName}
+                      inputProps={{ maxLength: 200 }}
+                      isDisabled={busy}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        isPending={busy}
+                        isDisabled={!newBinName.trim()}
+                        onPress={() => void createDestinationBin()}
+                      >
+                        <Trans>Create box</Trans>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        isDisabled={busy}
+                        onPress={() => setNewBinName(undefined)}
+                      >
+                        <Trans>Cancel</Trans>
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {!changingDestination && recentDestinations.length > 0 && (
@@ -699,6 +1004,28 @@ export function CaptureForm({
             }}
           />
         )}
+        {showDetails && upc && <p>{t`UPC: ${upc}`}</p>}
+        {showDetails && nfcDraft && (
+          <p role="status">
+            <Trans>SheepKeep tag verified.</Trans> <bdi>{nfcDraft.code}</bdi>
+          </p>
+        )}
+        {!showLabels &&
+          nfcDraft?.originals
+            .filter(({ id }) => !files.some(({ key }) => key === id))
+            .map((original) => (
+              <div key={original.id} className="flex items-center gap-2">
+                <bdi>{original.name}</bdi>
+                <Button
+                  size="small"
+                  variant="ghost"
+                  isDisabled={busy}
+                  onPress={() => removeFile(original.id)}
+                >
+                  <Trans>Remove</Trans>
+                </Button>
+              </div>
+            ))}
         {!showLabels && (
           <div className="kept-media-bar">
             {!documentsOnly && (evidenceOnly || step === 'photos') && (
@@ -793,7 +1120,9 @@ export function CaptureForm({
             provider={provider}
             onProviderChange={setProvider}
             onDetails={(items) => setDetails({ photoKey, items })}
-            onProposals={destination && onReview ? reviewPhoto : undefined}
+            onProposals={
+              destination && onReview && !nfcDraft && !upc && !typeId ? reviewPhoto : undefined
+            }
             online={online}
             disabled={busy || !photoPreferenceLoaded}
           />
@@ -816,14 +1145,16 @@ export function CaptureForm({
             onApply={(rows) => void applyDetails(rows)}
             onDismiss={() => setDetails(undefined)}
             onReviewItems={
-              destination && onReview ? () => void reviewPhoto(shownDetails) : undefined
+              destination && onReview && !nfcDraft && !upc && !typeId
+                ? () => void reviewPhoto(shownDetails)
+                : undefined
             }
           />
         )}
         {showDetails && firstPhoto && onReview && (
           <Button
             variant="secondary"
-            isDisabled={busy || !destination}
+            isDisabled={busy || !destination || !!nfcDraft || !!upc || !!typeId}
             onPress={() => void reviewPhoto()}
           >
             <Trans>Review multiple items</Trans>
@@ -882,6 +1213,44 @@ export function CaptureForm({
               <Trans>Details</Trans>
             </summary>
             <div className="grid gap-4 pt-3">
+              {!!cache?.types.length && (
+                <Select
+                  label={t`Type`}
+                  items={[
+                    { id: 'none', name: t`None` },
+                    ...cache.types
+                      .filter((entry) => !entry.isContainer)
+                      .map((entry) => ({ id: entry.id, name: typeName(entry) })),
+                  ]}
+                  selectedKey={typeId ?? 'none'}
+                  isDisabled={busy}
+                  onSelectionChange={(key) => {
+                    const next = key && key !== 'none' ? String(key) : undefined;
+                    if (next === typeId) return;
+                    setTypeId(next);
+                    setCustomDraft({});
+                  }}
+                >
+                  {({ id, name }) => <SelectItem id={id}>{name}</SelectItem>}
+                </Select>
+              )}
+              <CustomFieldEditor
+                thing={customRecord}
+                drafts={customDraft}
+                onChange={(key, value) =>
+                  setCustomDraft((current) => ({ ...current, [key]: value }))
+                }
+              />
+              {!!invalidCustom.length && (
+                <p role="alert">
+                  <Trans>Check the custom fields before saving.</Trans>
+                </p>
+              )}
+              {customWaiting && (
+                <p role="status">
+                  <Trans>Connect to load the custom fields for this type.</Trans>
+                </p>
+              )}
               <TextField
                 label={t`Quantity (optional)`}
                 value={quantity}
@@ -910,13 +1279,61 @@ export function CaptureForm({
             {files.length ? <Trans>Continue</Trans> : <Trans>Add manually</Trans>}
           </Button>
         )}
+        {nfcEntry && destination && (
+          <ItemLabelPicker
+            key={destination.locationId}
+            entry
+            connection={connection}
+            cache={cache}
+            locationId={destination.locationId}
+            itemName={name}
+            online={online}
+            value={undefined}
+            onChange={acceptNfc}
+            onBusyChange={setLabelBusy}
+            beforeNfcWrite={prepareNfc}
+            nfcWriteAborted={abortNfc}
+            recoverNfcDraft={recoverNfc}
+            disabled={busy}
+          />
+        )}
+        {!evidenceOnly &&
+          step === 'photos' &&
+          !label &&
+          onOpen &&
+          (scanningUpc ? (
+            <UpcCapture
+              connection={connection}
+              cache={cache}
+              online={online}
+              onClose={() => setScanningUpc(false)}
+              onOpen={(target) => {
+                setScanningUpc(false);
+                onOpen(target);
+              }}
+              onNew={(code, suggestedName) => {
+                setScanningUpc(false);
+                setUpc(code);
+                if (suggestedName && !name) setName(suggestedName);
+                goToStep('details');
+              }}
+            />
+          ) : (
+            <Button
+              variant="secondary"
+              isDisabled={busy || labelBusy || !!upc}
+              onPress={() => setScanningUpc(true)}
+            >
+              <Trans>Scan UPC</Trans>
+            </Button>
+          ))}
         {showDetails && !blankTagWaiting && (
           <Button type="submit" isPending={busy} isDisabled={!canSave}>
             <Check size={18} aria-hidden />
             <Trans>Save item</Trans>
           </Button>
         )}
-        {showDetails && (
+        {showDetails && !nfcDraft && (
           <Button
             type={blankTagWaiting ? 'submit' : 'button'}
             variant={blankTagWaiting ? 'primary' : 'secondary'}

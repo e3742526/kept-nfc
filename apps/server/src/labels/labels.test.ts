@@ -599,6 +599,40 @@ describe('POST /api/v1/labels/batches/:id/printed', () => {
   });
 });
 
+describe('personal print queue', () => {
+  // catalogue: POST /api/v1/labels/queue
+  it('shares the prepared batch across sessions for one user and keeps it until print confirmation', async () => {
+    const thing = await createThing(t, ibrahim, home, { name: 'Queue clamp' });
+    const url = '/api/v1/labels/queue';
+    const target = { recordId: thing.id, locationId: home.id, kind: 'thing' };
+    const enqueue = { action: 'add', ...target };
+    const prepare = {
+      action: 'prepare',
+      locationId: home.id,
+      kind: 'thing',
+      stock: 'letter_writable_12',
+    };
+    expect(ok(await call(t, url, { as: ibrahim, body: enqueue })).items).toMatchObject([target]);
+    expect(ok(await call(t, url, { as: louis })).items).toEqual([]);
+    expect((await call(t, url, { as: talia, body: enqueue })).statusCode).toBe(403);
+    const prepared = ok(await call(t, url, { as: ibrahim, body: prepare }));
+    const { batchId } = prepared as unknown as { batchId: string };
+    expect(batchId).toEqual(expect.any(String));
+    expect(ok(await call(t, url, { as: ibrahim, body: prepare })).batchId).toBe(batchId);
+    expect(ok(await call(t, url, { as: ibrahim })).items).toMatchObject([{ ...target, batchId }]);
+    expect(await auditActions(home.id, 'labels.queue_add')).toEqual(
+      expect.arrayContaining([expect.objectContaining({ entity_id: thing.id })]),
+    );
+    ok(await printed(ibrahim, batchId));
+    expect(ok(await call(t, url, { as: ibrahim })).items).toEqual([]);
+    ok(await call(t, url, { as: ibrahim, body: enqueue }));
+    ok(await call(t, url, { as: ibrahim, body: { action: 'remove', ...target } }));
+    expect(await auditActions(home.id, 'labels.queue_remove')).toEqual(
+      expect.arrayContaining([expect.objectContaining({ entity_id: thing.id })]),
+    );
+  });
+});
+
 describe('POST /api/v1/codes/:code/claim', () => {
   // catalogue: POST /api/v1/codes/:code/claim
   it('claims a blank once; a second claim is 409 label_claimed with the name', async () => {

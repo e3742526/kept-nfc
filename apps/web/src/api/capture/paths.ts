@@ -51,6 +51,7 @@ export const capturePaths = {
 
   // ----- labels -----------
   labelBatches: `${V1}/labels/batches`,
+  labelQueue: `${V1}/labels/queue`,
   labelBatch: (id: string) => `${V1}/labels/batches/${seg(id)}`,
   labelBatchPrinted: (id: string) => `${V1}/labels/batches/${seg(id)}/printed`,
   labelBatchDismiss: (id: string) => `${V1}/labels/batches/${seg(id)}/dismiss`,
@@ -142,6 +143,7 @@ export const CAPTURE_METHODS: Record<keyof typeof capturePaths, readonly Method[
   inboxRoomDiscard: ['POST'],
   inboxRoomRetry: ['POST'],
   labelBatches: ['GET', 'POST'],
+  labelQueue: ['GET', 'POST'],
   labelBatch: ['GET'],
   labelBatchPrinted: ['POST'],
   labelBatchDismiss: ['POST'],

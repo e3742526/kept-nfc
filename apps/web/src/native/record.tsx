@@ -45,6 +45,7 @@ import type {
   TrashBody,
   UpdateAttachmentBody,
 } from '@/api/inventory/types';
+import { QueueLabelButton } from '@/components/labels/print-queue';
 import { useErrorText } from '@/components/page';
 import { PhotoImage } from '@/components/photo-image';
 import { usePlaceKindName } from '@/components/places/labels';
@@ -78,6 +79,7 @@ import { draftFields, isAuthRefusal, isRestoreEpochMismatch, type PendingCapture
 import { PlaceActions } from './place-actions';
 import { forgetPlacePhotos, useOfflinePlacePhotos } from './place-photo-cache';
 import { NativePlacePhotos } from './place-photos';
+import { useNativePrintQueue } from './print-queue';
 import { RecordHistory } from './record-history';
 import { PlaceCreateForm } from './rooms';
 
@@ -284,6 +286,7 @@ export function RecordScreen({
   const adapters = usePlatform();
   const errorText = useErrorText();
   const confirm = useConfirm();
+  const printQueue = useNativePrintQueue(connection);
   const [detail, setDetail] = useState<Awaited<ReturnType<typeof loadDetail>>>();
   const placeKindName = usePlaceKindName();
   const [place, setPlace] = useState<PlaceView>();
@@ -1027,6 +1030,12 @@ export function RecordScreen({
                 <QrCode size={16} aria-hidden />
                 {canEdit ? <Trans>QR and NFC label</Trans> : <Trans>View QR label</Trans>}
               </Button>
+            )}
+            {online && canEdit && !pendingPlace && (thing || place) && !place?.isUnplaced && (
+              <QueueLabelButton
+                request={printQueue}
+                target={{ kind: target.kind, recordId: target.id, locationId: target.locationId }}
+              />
             )}
             {online && canEdit && thing && (
               <>

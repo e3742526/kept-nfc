@@ -10,6 +10,7 @@
  */
 import { Trans, useLingui } from '@lingui/react/macro';
 import { lazy, Suspense } from 'react';
+import { QueueLabelButton } from '@/components/labels/print-queue';
 import { LoadingRows, Notice, Section } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { CopyButton } from '@/components/ui/copy-button';
@@ -49,6 +50,11 @@ function LabelBody() {
         </Trans>
       </p>
       <CopyButton text={thing.shortCode} label={t`Copy the code`} size="small" />
+      {can('labels.use') && (
+        <QueueLabelButton
+          target={{ kind: 'thing', locationId: thing.locationId, recordId: thing.id }}
+        />
+      )}
     </div>
   );
 }

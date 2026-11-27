@@ -142,6 +142,8 @@ export const AUDIT_ACTIONS = [
   'label_batch.create',
   'label_batch.dismiss',
   'labels.printed',
+  'labels.queue_add',
+  'labels.queue_remove',
   'loan.create',
   'loan.delete',
   'loan.lost',

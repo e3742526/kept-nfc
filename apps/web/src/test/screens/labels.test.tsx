@@ -46,6 +46,9 @@ describe('the labels screen', () => {
   it('offers each location its unprinted labels and a blank sheet, and lists recent batches', async () => {
     await renderApp('/labels');
     expect(await findHeading('Labels')).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Print queue' }),
+    ).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Home' })).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /Blank sheet \(24\)/ }).length).toBeGreaterThan(0);
     expect(

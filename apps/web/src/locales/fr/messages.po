@@ -34493,3 +34493,124 @@ msgstr "Enregistrer le contenu"
 #: src/native/capture-form.tsx
 msgid "The box was created, but its contents could not be saved on this iPhone. Try again."
 msgstr "La boîte a été créée, mais son contenu n’a pas pu être enregistré sur cet iPhone. Réessayez."
+
+#: src/components/history/labels.ts
+msgid "Added to print queue"
+msgstr "Ajouté à la file d’impression"
+
+#: src/components/labels/print-queue.tsx
+msgid "Added to print queue."
+msgstr "Ajouté à la file d’impression."
+
+#: src/native/main.tsx
+msgid "An item already has this UPC. Your capture is still saved on this iPhone."
+msgstr "Un objet utilise déjà ce code UPC. Votre saisie reste enregistrée sur cet iPhone."
+
+#: src/native/capture-form.tsx
+msgid "Box name"
+msgstr "Nom de la boîte"
+
+#: src/native/upc-capture.tsx
+msgid "Check UPC"
+msgstr "Vérifier le code UPC"
+
+#: src/native/capture-form.tsx
+msgid "Check the custom fields before saving."
+msgstr "Vérifiez les champs personnalisés avant d’enregistrer."
+
+#: src/native/capture-form.tsx
+msgid "Connect to load the custom fields for this type."
+msgstr "Connectez-vous pour charger les champs personnalisés de ce type."
+
+#: src/native/upc-capture.tsx
+msgid "Could not check this UPC. Try again."
+msgstr "Impossible de vérifier ce code UPC. Réessayez."
+
+#: src/native/capture-form.tsx
+msgid "Finish this NFC draft in the inventory location where the tag was written."
+msgstr "Terminez ce brouillon NFC dans le lieu d’inventaire où le tag a été écrit."
+
+#: src/components/labels/print-queue.tsx
+msgid "Inventory location"
+msgstr "Lieu d’inventaire"
+
+#: src/native/capture-form.tsx
+msgid "New bin"
+msgstr "Nouveau bac"
+
+#: src/native/main.tsx
+msgid "Open existing item"
+msgstr "Ouvrir l’objet existant"
+
+#: src/components/labels/print-queue.tsx
+msgid "Open print batch"
+msgstr "Ouvrir le lot d’impression"
+
+#: src/native/item-label.tsx
+msgid "Overwrite NFC tag?"
+msgstr "Écraser le tag NFC ?"
+
+#: src/components/labels/print-queue.tsx
+msgid "Print queue"
+msgstr "File d’impression"
+
+#: src/components/labels/print-queue.tsx
+msgid "Queue label"
+msgstr "Ajouter l’étiquette à la file"
+
+#: src/components/labels/print-queue.tsx
+msgid "Record unavailable"
+msgstr "Fiche indisponible"
+
+#: src/components/history/labels.ts
+msgid "Removed from print queue"
+msgstr "Retiré de la file d’impression"
+
+#: src/native/capture-form.tsx
+msgid "Scan UPC"
+msgstr "Scanner un code UPC"
+
+#: src/native/upc-capture.tsx
+msgid "Scan a product UPC or enter the digits printed under it."
+msgstr "Scannez le code UPC d’un produit ou saisissez les chiffres imprimés en dessous."
+
+#: src/native/item-label.tsx
+msgid "Scan the tag again to check whether it was written."
+msgstr "Scannez de nouveau le tag pour vérifier si l’écriture a réussi."
+
+#: src/native/upc-capture.tsx
+msgid "Several existing items have this UPC. Choose the one to open."
+msgstr "Plusieurs objets ont ce code UPC. Choisissez celui à ouvrir."
+
+#: src/native/capture-form.tsx
+msgid "SheepKeep could not update the NFC draft on this iPhone."
+msgstr "SheepKeep n’a pas pu mettre à jour le brouillon NFC sur cet iPhone."
+
+#: src/native/item-label.tsx
+msgid "Start with NFC"
+msgstr "Commencer avec NFC"
+
+#: src/native/item-label.tsx
+msgid "This replaces the information on the tag. You can use another tag instead."
+msgstr "Les informations du tag seront remplacées. Vous pouvez utiliser un autre tag."
+
+#: src/native/upc-capture.tsx
+msgid "UPC digits"
+msgstr "Chiffres du code UPC"
+
+#: src/native/capture-form.tsx
+msgid "UPC: {upc}"
+msgstr "Code UPC : {upc}"
+
+#: src/components/labels/print-queue.tsx
+#: src/native/upc-capture.tsx
+msgid "Unnamed item"
+msgstr "Objet sans nom"
+
+#: src/native/item-label.tsx
+msgid "Use another NFC tag"
+msgstr "Utiliser un autre tag NFC"
+
+#: src/components/labels/print-queue.tsx
+msgid "Your print queue is empty."
+msgstr "Votre file d’impression est vide."

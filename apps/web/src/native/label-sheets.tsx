@@ -6,6 +6,7 @@ import { capturePaths } from '@/api/capture/paths';
 import type { CreateLabelBatchBody, CreateLabelBatchResult, LabelBatch } from '@/api/capture/types';
 import { qs } from '@/api/inventory/paths';
 import type { Page } from '@/api/inventory/types';
+import { PrintQueue } from '@/components/labels/print-queue';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
@@ -17,6 +18,7 @@ import { LocationPicker, writableLocations } from './destination';
 import type { InventoryCache } from './inventory';
 import { approvedLabel, labelBase, labelOrigins, labelUrl, loadLabelAddress } from './labels';
 import { isAuthRefusal, isRestoreEpochMismatch } from './outbox';
+import { useNativePrintQueue } from './print-queue';
 import { NativeThermalPrint } from './thermal-print';
 
 const counts = [8, 12, 24];
@@ -34,6 +36,7 @@ export function LabelSheets({
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
+  const queue = useNativePrintQueue(connection);
   const errorText = useErrorText();
   const [location, setLocation] = useState(writableLocations(cache)[0]?.id ?? null);
   const [count, setCount] = useState(12);
@@ -137,6 +140,27 @@ export function LabelSheets({
         title={<Trans>Print label sheets</Trans>}
         onBack={onClose}
         icon={<Tags size={18} aria-hidden />}
+      />
+      <PrintQueue
+        heading="h3"
+        request={queue}
+        locationName={(id) => cache.locations.find((entry) => entry.id === id)?.name}
+        openBatch={async (id) => {
+          const batch = await adapters.transport.request<LabelBatch>(
+            connection,
+            capturePaths.labelBatch(id),
+          );
+          if (usesThermalLabelEditor(batch.stock, Boolean(batch.thermal))) {
+            setLocation(batch.locationId);
+            setReprint(batch);
+            setThermal(true);
+          } else await share(batch);
+        }}
+        confirmPrinted={(id) =>
+          adapters.transport.request(connection, capturePaths.labelBatchPrinted(id), {
+            method: 'POST',
+          })
+        }
       />
       <div className="kept-card">
         <LocationPicker

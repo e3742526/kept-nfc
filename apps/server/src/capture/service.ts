@@ -28,6 +28,7 @@ import { applyTemplate } from '../templates/service.js';
 import { type Ctx, insertThing, requireRole, targetOf, writableThing } from '../things/service.js';
 import { rowsOf, type ThingRow } from '../things/view.js';
 import { enqueueVisualIndex } from '../visual-search/job.js';
+import { checkCaptureUpc } from './upc.js';
 
 // The capture service (D17, D18, D19, D34, D36, D117, D140, D175).
 // The one implementation behind `POST /api/v1/captures` and the sync
@@ -533,6 +534,9 @@ export async function capture(
   }
 
   // 5. A new thing (createThing's path: short ID now, D112; the default meter; created_by).
+  if (input.mode === 'thing' && input.barcode) {
+    await checkCaptureUpc(client, locationId, input.barcode);
+  }
   // Quick add: a template shared with this location is the base, and what was sent wins;
   // a capture with no name takes the template's (templates/service.ts applyTemplate).
   const sent = {
@@ -540,6 +544,7 @@ export async function capture(
     ...(input.typeId ? { typeId: input.typeId.toLowerCase() } : {}),
     ...(input.quantity ? { quantity: Number(input.quantity) } : {}),
     ...(input.note ? { notes: input.note } : {}),
+    ...(input.custom ? { custom: input.custom } : {}),
   };
   const fields = input.templateId
     ? await applyTemplate(client, input.templateId, locationId, sent)

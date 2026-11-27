@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url';
 import {
   CreateThingPayload,
+  NATIVE_ADD_ITEM_PAYLOAD_VERSION,
   NATIVE_CAPTURE_PAYLOAD_VERSION,
   NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
@@ -260,6 +261,50 @@ it('negotiates place creation and replays a described parent before its child or
     { outcome: 'dropped', reason: 'target_trashed' },
   ]);
   expect(await own(db, 'SELECT id FROM public.places WHERE id = $1', [heldId])).toEqual([]);
+});
+
+it('syncs Add item custom fields and holds an equivalent UPC from another capture', async () => {
+  const headers = { ...(await nativeSession()), origin: t.publicUrl };
+  const typeId = await builtinType(db, 'power_tool');
+  const input = (barcode: string) =>
+    captureOp(
+      home.id,
+      { placeId: home.unplacedId },
+      {
+        name: 'Fixture drill',
+        typeId,
+        custom: { battery_platform: 'Fixture 18V' },
+        barcode,
+        captureIntent: 'record',
+        reviewSuggestions: true,
+      },
+      { payloadVersion: NATIVE_ADD_ITEM_PAYLOAD_VERSION },
+    );
+  const first = input('042100005264');
+  const second = input('04252614');
+  const send = (item: ReturnType<typeof input>) =>
+    t.app.inject({
+      method: 'POST',
+      url: syncUrl,
+      headers,
+      remoteAddress: freshIp(),
+      payload: { clientVersion: CLIENT_VERSION, ops: [item] },
+    });
+  const saved = await send(first);
+  expect(saved.statusCode, saved.body).toBe(200);
+  expect(saved.json().results[0]).toMatchObject({ outcome: 'applied' });
+  const duplicate = await send(second);
+  expect(duplicate.statusCode, duplicate.body).toBe(200);
+  expect(duplicate.json().results[0]).toMatchObject({
+    outcome: 'needs_review',
+    reason: 'upc_already_exists',
+  });
+  const view = await t.app.inject({
+    method: 'GET',
+    url: `/api/v1/things/${first.payload.id}`,
+    headers,
+  });
+  expect(view.json()).toMatchObject({ custom: { battery_platform: 'Fixture 18V' } });
 });
 
 it('replays versioned recording intent once and keeps the device capture time in history', async () => {

@@ -9,6 +9,7 @@ import { useErrorText } from '@/components/page';
 import type { Read } from '@/components/scan/resolve';
 import { ScannerView } from '@/components/scan/scanner-view';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
 import { QrCode } from '@/components/ui/qr-code';
 import { isolate } from '@/lib/bidi';
 import { usePlatform } from './adapters';
@@ -17,6 +18,7 @@ import type { InventoryCache } from './inventory';
 import {
   approvedLabel,
   describeTargetFromCache,
+  inspectTagOwner,
   knownLabelOrigins,
   labelUrl,
   loadLabelAddress,
@@ -71,6 +73,10 @@ export function ItemLabelPicker({
   onChange,
   onBusyChange,
   blankTag,
+  entry,
+  beforeNfcWrite,
+  nfcWriteAborted,
+  recoverNfcDraft,
   disabled = false,
 }: {
   connection: Connection;
@@ -84,12 +90,18 @@ export function ItemLabelPicker({
   onBusyChange: (busy: boolean) => void;
   /** A blank NFC tag already read (on Scan): offered for writing straight away. */
   blankTag?: TagReading;
+  /** A tag-first entry shares the same inspector and writer as the label step. */
+  entry?: boolean;
+  beforeNfcWrite?: (label: ItemLabel, url: string) => Promise<void>;
+  nfcWriteAborted?: (code: string) => Promise<void>;
+  recoverNfcDraft?: (url: string) => Promise<boolean>;
   disabled?: boolean;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
   const errorText = useErrorText();
   const nfcStatus = useNfcStatusText();
+  const confirm = useConfirm();
   const https = connection.origin.startsWith('https://');
   const canWriteNfc = online && https;
   const base = useLabelBase(connection);
@@ -303,6 +315,7 @@ export function ItemLabelPicker({
         setStatus(nfcStatus(reading));
         return;
       }
+      if (reading.url && (await recoverNfcDraft?.(reading.url))) return;
       if (reading.url === url) {
         pick({ code: codeOf(url), locationId, source: 'nfc' });
         setStatus(t`SheepKeep tag verified.`);
@@ -333,59 +346,123 @@ export function ItemLabelPicker({
         }
       }
       if (!reading.writable) {
-        setStatus(nfcStatus({ status: 'read_only' }));
+        setStatus(entry ? t`Use another NFC tag` : nfcStatus({ status: 'read_only' }));
         return;
       }
       if ((reading.required ?? 1) > (reading.capacity ?? 0)) {
-        setStatus(nfcStatus({ status: 'too_small' }));
+        setStatus(entry ? t`Use another NFC tag` : nfcStatus({ status: 'too_small' }));
         return;
       }
       setInspection({ reading, url });
     });
   }
 
+  function inspectEntryTag() {
+    setInspection(undefined);
+    setExistingOwner(null);
+    return run(async () => {
+      const reading = await adapters.nfc.scanTag(connection, { mode: 'read', messages });
+      if (!live.current) return;
+      if (reading.url && (await recoverNfcDraft?.(reading.url))) return;
+      if (!canWriteNfc) {
+        setStatus(t`Connect to make a new label. You can still scan a blank label.`);
+        return;
+      }
+      if (!reading.fingerprint || !reading.writable) {
+        setStatus(reading.status === 'cancelled' ? nfcStatus(reading) : t`Use another NFC tag`);
+        return;
+      }
+      if (reading.status === 'blank') {
+        await programTag({ reading });
+        return;
+      }
+      if (reading.url) {
+        const existing = await resolveLabel(
+          connection,
+          cache,
+          reading.url,
+          'nfc',
+          undefined,
+          false,
+          adapters,
+        );
+        if (existing.status === 'unassigned' && existing.claim?.locationId === locationId) {
+          take(existing);
+          return;
+        }
+        setExistingOwner(await inspectTagOwner(connection, cache, reading.url, adapters));
+      }
+      if (live.current) setInspection({ reading: { ...reading, occupied: true } });
+    });
+  }
+
   function writeNewTag() {
     const pending = inspection;
-    if (!pending?.reading.fingerprint) return;
+    if (!pending) return;
     return run(async () => {
-      // A blank tag from Scan has no code yet: reserve it now, as Write new NFC tag does.
-      const url = pending.url ?? (await reserve())?.url;
-      if (!url || !live.current) return;
-      const held = reserved.current;
-      // Keep potentially written codes out of both the shelf and a retry on a different tag.
-      reserved.current = undefined;
-      setInspection(undefined);
-      setExistingOwner(null);
-      // A code no tag can hold yet stays this picker's, or goes back on the shelf.
-      const keep = async () => {
-        if (!held) return;
-        if (live.current) reserved.current = held;
-        else if (!inUse.current.has(held.code) && !shared.current.has(held.code)) {
-          await shelveReservedCode(connection, held.locationId, held.code, adapters);
-        }
-      };
-      let result: TagReading;
-      try {
-        result = await adapters.nfc.scanTag(connection, {
-          mode: 'write',
-          url,
-          fingerprint: pending.reading.fingerprint,
-          messages,
-        });
-      } catch (error) {
-        // The reader refused the request: nothing was written.
-        await keep();
-        throw error;
+      if (
+        pending.reading.occupied &&
+        !(await confirm({
+          title: t`Overwrite NFC tag?`,
+          body: t`This replaces the information on the tag. You can use another tag instead.`,
+          confirmLabel: t`Overwrite NFC tag`,
+          cancelLabel: t`Use another NFC tag`,
+          destructive: true,
+        }))
+      ) {
+        setInspection(undefined);
+        setStatus(t`Use another NFC tag`);
+        return;
       }
-      if (result.status !== 'written' && writeNotStarted(result)) await keep();
-      if (!live.current) return;
-      if (result.status === 'written') {
-        pick({ code: codeOf(url), locationId, source: 'nfc' });
-        setStatus(t`SheepKeep tag verified.`);
-      } else {
-        setStatus(nfcStatus(result));
-      }
+      await programTag(pending);
     });
+  }
+
+  async function programTag(pending: { reading: TagReading; url?: string }) {
+    if (!pending.reading.fingerprint) return;
+    // A blank tag from Scan has no code yet: reserve it now, as Write new NFC tag does.
+    const url = pending.url ?? (await reserve())?.url;
+    if (!url || !live.current) return;
+    const next: ItemLabel = { code: codeOf(url), locationId, source: 'nfc' };
+    await beforeNfcWrite?.(next, url);
+    if (!live.current) {
+      await nfcWriteAborted?.(next.code);
+      return;
+    }
+    const held = reserved.current;
+    // Keep potentially written codes out of both the shelf and a retry on a different tag.
+    reserved.current = undefined;
+    setInspection(undefined);
+    setExistingOwner(null);
+    // A code no tag can hold yet stays this picker's, or goes back on the shelf.
+    const keep = async () => {
+      if (!held) return;
+      if (live.current) reserved.current = held;
+      else if (!inUse.current.has(held.code) && !shared.current.has(held.code)) {
+        await shelveReservedCode(connection, held.locationId, held.code, adapters);
+      }
+    };
+    const result = await adapters.nfc.scanTag(connection, {
+      mode: 'write',
+      url,
+      fingerprint: pending.reading.fingerprint,
+      messages,
+    });
+    if (result.status !== 'written' && writeNotStarted(result)) {
+      await nfcWriteAborted?.(next.code);
+      await keep();
+    }
+    if (!live.current) return;
+    if (result.status === 'written') {
+      pick(next);
+      setStatus(t`SheepKeep tag verified.`);
+    } else {
+      setStatus(
+        entry && !writeNotStarted(result)
+          ? t`Scan the tag again to check whether it was written.`
+          : nfcStatus(result),
+      );
+    }
   }
 
   function newQrLabel() {
@@ -421,6 +498,48 @@ export function ItemLabelPicker({
 
   const valueUrl = value ? labelUrl(base, value.code) : null;
   const locked = disabled || busy;
+
+  const inspectionActions = inspection && canWriteNfc && (
+    <div className="grid gap-3 rounded-xl border border-line bg-sunken p-4">
+      {inspection.reading.occupied ? (
+        <p>
+          <Trans>This tag already holds information. Writing will replace its contents.</Trans>
+        </p>
+      ) : (
+        <p>
+          <Trans>This tag is blank and ready to write.</Trans>
+        </p>
+      )}
+      {existingOwner && (
+        <p className="font-semibold">{t`Currently linked to: ${isolate(existingOwner)}`}</p>
+      )}
+      <Button isPending={busy} isDisabled={disabled} onPress={() => void writeNewTag()}>
+        <Nfc size={16} aria-hidden />
+        {inspection.reading.occupied ? (
+          <Trans>Overwrite NFC tag</Trans>
+        ) : (
+          <Trans>Write and verify</Trans>
+        )}
+      </Button>
+    </div>
+  );
+  if (entry) {
+    return (
+      <div className="grid gap-2">
+        <Button
+          variant="secondary"
+          isPending={busy}
+          isDisabled={!https || disabled}
+          onPress={() => void inspectEntryTag()}
+        >
+          <Nfc size={16} aria-hidden />
+          <Trans>Start with NFC</Trans>
+        </Button>
+        {inspectionActions}
+        {status && <p role="status">{status}</p>}
+      </div>
+    );
+  }
 
   return (
     <details
@@ -556,34 +675,7 @@ export function ItemLabelPicker({
                 <ScannerView detect={appDetect()} paused={busy} onRead={readCamera} />
               </div>
             )}
-            {inspection && canWriteNfc && (
-              <div className="grid gap-3 rounded-xl border border-line bg-sunken p-4">
-                {inspection.reading.occupied ? (
-                  <p>
-                    <Trans>
-                      This tag already holds information. Writing will replace its contents.
-                    </Trans>
-                  </p>
-                ) : (
-                  <p>
-                    <Trans>This tag is blank and ready to write.</Trans>
-                  </p>
-                )}
-                {existingOwner && (
-                  <p className="font-semibold">
-                    {t`Currently linked to: ${isolate(existingOwner)}`}
-                  </p>
-                )}
-                <Button isPending={busy} isDisabled={disabled} onPress={() => void writeNewTag()}>
-                  <Nfc size={16} aria-hidden />
-                  {inspection.reading.occupied ? (
-                    <Trans>Overwrite NFC tag</Trans>
-                  ) : (
-                    <Trans>Write and verify</Trans>
-                  )}
-                </Button>
-              </div>
-            )}
+            {inspectionActions}
           </>
         )}
         {status && (

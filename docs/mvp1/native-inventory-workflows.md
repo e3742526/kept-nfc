@@ -52,6 +52,43 @@ Review saves the destination, intent, originals, selected entries, edits, and ca
 
 The outbox reuses stable operation and request IDs. It uploads each original once per replay pass and reuses canonical server file IDs across the entries and destination bin. Records in a room share the originals through their attachments. A bin receives an additional photo-only capture, so its history and attachments retain the originals independently of the child records. A batch completes after the server confirms the approved operations, category writes and expected attachment hashes. A retry skips completed entries and reuses the same upload IDs. Held work stays scoped to its original account, origin and restore epoch. Its recovery export includes the review, IDs, checksums and originals.
 
+## Add item entry points
+
+Use the same item form after taking photos, starting manually, reading a UPC,
+or preparing an NFC tag. Under **Change**, select a room or bin or create a new
+bin inside the selected destination. The item's type and any available custom
+fields are under **Details**. Categories remain a flat list with multiple
+selections.
+
+**Start with NFC** checks the tag. A blank writable tag is programmed and
+verified before the item details open. To use an occupied tag, choose
+**Overwrite NFC tag** and confirm, or tap another tag. SheepKeep saves the
+draft on the phone before programming. Scan the written tag again from Add or
+Scan to resume the item, including its saved details and staged files. New NFC
+labels need an HTTPS connection. A tag whose write could not be verified can
+be scanned again to check its contents.
+
+In Add item, treat a UPC as identifying one inventory item. If a matching item
+exists in the inventory, open it. Otherwise, start a new item with the UPC filled
+in. A repeat scan opens the same item. Two physical copies can share a UPC. If
+you later want to track a copy separately, give it its own item record and put
+that item's SheepKeep QR label over the package barcode.
+If older records already share a UPC, choose which one to open. The phone
+remembers the choice while the record still matches.
+
+If another phone creates the item first, the second phone keeps the entry and
+its originals in the capture queue for review. Add item uses capture payload
+version 7 for UPCs and custom values. An older server holds these entries on
+the phone until it supports the newer payload.
+
+## Print queue
+
+Choose **Queue label** on an item or bin, or after a new item has synced.
+Open **Print queue** in Labels on another device signed in as you. Prepare
+labels by inventory location and record type, then open a batch to print.
+The app keeps a prepared batch available for retry and removes its entries
+when you confirm they printed successfully.
+
 ## Browse contract
 
 Native Browse uses the existing `GET /api/v1/things` list with additive query fields. Repeated `roomId`, `binId`, `tagId`, `typeId`, and `brandId` select alternatives within their dimensions. `all=tagId` requires all selected categories. Active dimensions combine by intersection, or by union with `match=any`. Base visibility, deletion rules and inventory mode requirements apply in either mode.

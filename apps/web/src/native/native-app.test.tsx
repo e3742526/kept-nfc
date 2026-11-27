@@ -280,7 +280,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           if (capabilitiesOverride) return capabilitiesOverride(_conn) as T;
           return {
             contractVersion: 1,
-            capturePayloadVersions: [2, 3, 4, 5],
+            capturePayloadVersions: [2, 3, 4, 5, 7],
             placeDescriptions: true,
             placeCreationPayloadVersion: 6,
             account: _conn.account,
@@ -5008,6 +5008,143 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(await screen.findByRole('button', { name: 'Spare charger' }));
     await user.click(await screen.findByRole('button', { name: 'QR and NFC label' }));
     expect(await screen.findByRole('button', { name: 'Share QR label PDF' })).toBeVisible();
+  });
+
+  it('recovers a tag-first item after restarting before save', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    const request = env.adapters.transport.request;
+    vi.spyOn(env.adapters.transport, 'request').mockImplementation((connection, path, options) =>
+      path === capturePaths.labelTags
+        ? Promise.resolve({ configured: true })
+        : request(connection, path, options),
+    );
+    const start = async (withPhoto = false) => {
+      const boxes = await screen.findByRole('button', { name: '2 Boxes' });
+      await waitFor(() => expect(boxes).toBeEnabled());
+      await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+      if (withPhoto) {
+        const input = document.querySelector<HTMLInputElement>('input[type="file"][multiple]');
+        if (!input) throw new Error('Missing photos picker');
+        await user.upload(input, new File(['photo'], 'clamp.jpg', { type: 'image/jpeg' }));
+      }
+      await user.click(await screen.findByRole('button', { name: 'Start with NFC' }));
+    };
+    const inspected = {
+      fingerprint: 'fp-1',
+      writable: true,
+      capacity: 137,
+      required: 35,
+    };
+    const view = env.renderApp();
+    env.pushScan({ ...inspected, status: 'blank', occupied: false }, { status: 'written' });
+    await start(true);
+    await user.type(await screen.findByLabelText('Description'), 'Workshop clamp');
+    view.unmount();
+    env.renderApp();
+    env.pushScan({ ...inspected, status: 'read', occupied: true, url: `${origin}/l/RSV234` });
+    await start();
+    expect(await screen.findByLabelText('Description')).toHaveValue('Workshop clamp');
+    expect(screen.getByText('clamp.jpg')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Save item' }));
+    expect(await screen.findByText('Synced: 1')).toBeVisible();
+  });
+
+  it('does not write a used tag when overwrite is declined', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    env.pushScan({
+      status: 'read',
+      url: `${origin}/l/7KQ4MZ`,
+      fingerprint: 'first',
+      writable: true,
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await screen.findByRole('button', { name: '2 Boxes' });
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await user.click(await screen.findByRole('button', { name: 'Start with NFC' }));
+    expect(await screen.findByText(/Currently linked to:/)).toHaveTextContent('Winter Box');
+    await user.click(screen.getByRole('button', { name: 'Overwrite NFC tag' }));
+    const confirm = await screen.findByRole('alertdialog', { name: 'Overwrite NFC tag?' });
+    await user.click(within(confirm).getByRole('button', { name: 'Use another NFC tag' }));
+    expect(await screen.findByText('Use another NFC tag')).toBeVisible();
+    expect(scanTag.mock.calls.map(([, input]) => input.mode)).toEqual(['read']);
+  });
+
+  it('uses the same form for a new UPC and opens the existing item on a repeat scan', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = env.adapters.transport.request;
+    const queued = vi.fn();
+    let existing: { id: string; locationId: string; kind: 'thing' } | undefined;
+    vi.spyOn(env.adapters.transport, 'request').mockImplementation(
+      async (connection, path, options) => {
+        if (path === capturePaths.scanResolve) {
+          return existing
+            ? { outcome: 'open', target: existing }
+            : { outcome: 'barcode', barcode: { code: '036000291452', lookupEnabled: false } };
+        }
+        if (path === capturePaths.labelQueue) {
+          queued(options?.body);
+          return { items: [] };
+        }
+        if (path === capturePaths.syncOps) {
+          const body = options?.body as
+            | {
+                ops: { clientId: string; locationId: string; payload: { barcode?: string } }[];
+              }
+            | undefined;
+          const op = body?.ops[0];
+          expect(op?.payload.barcode).toBe('036000291452');
+          if (op) existing = { id: op.clientId, locationId: op.locationId, kind: 'thing' };
+        }
+        return request(connection, path, options);
+      },
+    );
+    const user = userEvent.setup();
+    env.renderApp();
+    await screen.findByRole('button', { name: '2 Boxes' });
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    const enter = async (text: string) => {
+      await user.click(await screen.findByRole('button', { name: 'Scan UPC' }));
+      await user.type(screen.getByLabelText('UPC digits'), text);
+      await user.click(screen.getByRole('button', { name: 'Check UPC' }));
+    };
+    await enter('036000291452');
+    await user.type(await screen.findByLabelText('Description'), 'UPC fixture');
+    await user.click(screen.getByRole('button', { name: 'Save item' }));
+    expect(await screen.findByText('Synced: 1')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Queue label' }));
+    expect(await screen.findByText('Added to print queue.')).toBeVisible();
+    expect(queued).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'add', recordId: existing?.id }),
+    );
+    await enter('0036000291452');
+    expect(await screen.findByRole('heading', { name: 'UPC fixture' })).toBeVisible();
   });
 
   it('gives a new item a scanned blank label or a newly written NFC tag, claimed at sync', async () => {

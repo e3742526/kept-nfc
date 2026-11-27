@@ -79,6 +79,7 @@ export function LabelPanel({
   onClearFindTarget,
   onAuthError,
   onBlankTag,
+  onNfcDraft,
   tagPlace,
 }: {
   connection: Connection;
@@ -99,6 +100,7 @@ export function LabelPanel({
   onAuthError?: (reason: 'expired' | 'restored') => void;
   /** Scan found a blank NFC tag: start adding an item that gets it as its label. */
   onBlankTag?: (reading: TagReading) => void;
+  onNfcDraft?: (url: string, signal?: AbortSignal) => Promise<boolean>;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
@@ -324,6 +326,7 @@ export function LabelPanel({
   async function read(text: string, mode: 'qr' | 'nfc', format?: string, signal?: AbortSignal) {
     setClaim(undefined);
     setSuperseded(undefined);
+    if (mode === 'nfc' && (await onNfcDraft?.(text, signal))) return;
     const result = await resolveLabel(connection, cache, text, mode, format, false, adapters);
     if (!live.current || signal?.aborted) return;
     if (action === 'find') {

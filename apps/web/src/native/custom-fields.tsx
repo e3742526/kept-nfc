@@ -202,7 +202,7 @@ export function CustomFieldEditor({
   drafts,
   onChange,
 }: {
-  thing: ThingView;
+  thing: CustomRecord;
   drafts: Record<string, unknown>;
   onChange: (key: string, value: unknown) => void;
 }) {

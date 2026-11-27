@@ -249,6 +249,11 @@ export async function fillCapture(c: pg.ClientBase, t: Tenant, label: string): P
   ]);
   const batch = newId();
   await c.query(
+    `INSERT INTO public.label_print_queue (user_id, location_id, kind, record_id)
+     VALUES ($1, $2, 'thing', $3)`,
+    [t.userId, t.locationId, thing],
+  );
+  await c.query(
     `INSERT INTO public.label_batches (id, location_id, kind, stock, code_count, created_by)
      VALUES ($1, $2, 'things', 'thermal_50x30', 1, $3)`,
     [batch, t.locationId, t.userId],
