@@ -665,18 +665,47 @@ export function Browse({
               l.role !== 'viewer' &&
               l.ownerAccountId === owner?.ownerAccountId,
           );
+          const selectable = online && writable;
+          const name = row.name ?? t`Untitled`;
           const boxType = cache.types.find(
             (type) =>
               type.id === row.typeId &&
-              ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(type.builtinKey ?? ''),
+              ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(
+                type.builtinKey ?? '',
+              ),
           );
           return (
-            <li key={row.id} className="grid min-w-0 gap-1">
-              <div className="flex min-w-0 items-stretch rounded-lg border border-line bg-surface">
+            <li key={row.id} className="min-w-0">
+              <div className="relative flex h-full min-w-0 items-stretch rounded-lg border border-line bg-surface">
+                {selectable && (
+                  <label
+                    className={`flex size-11 shrink-0 cursor-pointer items-center justify-center ${
+                      f.grid
+                        ? 'absolute start-1 top-1 z-10 rounded-lg bg-surface shadow-sm'
+                        : 'self-center'
+                    }`}
+                  >
+                    <input
+                      className="size-5 cursor-pointer"
+                      type="checkbox"
+                      checked={selected.includes(row.id)}
+                      onChange={(event) =>
+                        setSelected((prev) =>
+                          event.target.checked
+                            ? [...prev, row.id]
+                            : prev.filter((id) => id !== row.id),
+                        )
+                      }
+                    />
+                    <span className="sr-only">
+                      <Trans>Select</Trans> <bdi>{name}</bdi>
+                    </span>
+                  </label>
+                )}
                 <Button
                   className={
                     f.grid
-                      ? 'min-w-0 flex-1 flex-col items-start p-2'
+                      ? `min-w-0 flex-1 flex-col items-start p-2${selectable && !row.thumb ? ' pt-12' : ''}`
                       : 'kept-phone-row min-w-0 flex-1'
                   }
                   variant="ghost"
@@ -692,7 +721,7 @@ export function Browse({
                     <Package size={20} aria-hidden />
                   )}
                   <span className="kept-row-body text-start">
-                    <bdi>{row.name ?? t`Untitled`}</bdi>
+                    <bdi>{name}</bdi>
                     {f.mode === 'bins' && boxType && (
                       <span className="text-small">
                         {typeName({
@@ -738,14 +767,14 @@ export function Browse({
                   ) && (
                     <Button
                       variant="ghost"
-                      aria-label={t`Add to ${row.name ?? t`Untitled`}`}
+                      aria-label={t`Add to ${name}`}
                       onPress={() =>
                         onAddToBox({
                           id: row.id,
                           locationId: row.locationId,
-                          name: row.name ?? t`Untitled`,
+                          name,
                           kind: 'box',
-                          path: [row.path, row.name ?? t`Untitled`].filter(Boolean).join(' › '),
+                          path: [row.path, name].filter(Boolean).join(' › '),
                         })
                       }
                     >
@@ -753,26 +782,6 @@ export function Browse({
                     </Button>
                   )}
               </div>
-              {online && writable && (
-                <label className="flex min-h-10 items-center gap-2 px-2 text-small">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(row.id)}
-                    onChange={(event) =>
-                      setSelected((prev) =>
-                        event.target.checked
-                          ? [...prev, row.id]
-                          : prev.filter((id) => id !== row.id),
-                      )
-                    }
-                  />
-                  <Trans>Select</Trans>
-                  <span className="sr-only">
-                    {' '}
-                    <bdi>{row.name}</bdi>
-                  </span>
-                </label>
-              )}
             </li>
           );
         })}

@@ -15,8 +15,7 @@
  * 4. A boiler service on the Kitchen, due in five days: Complete from Home's Due row (through
  *    Expiring, the seed's warranties and documents sharing the count); the next due moves by the
  *    interval; Undo puts it back; Snooze from the row.
- * 5. A lease on Alfred's بيت العائلة, running out: Renew from the Expiring screen, in Arabic (RTL,
- *    Eastern digits); the old term stays in its history.
+ * 5. A lease on Alfred's بيت العائلة is renewed from Expiring, and the old term stays in history.
  * 6. Louis turns on warranties by email and sets his digest time; the digest reaches Mailpit at the
  *    faked time with the thing, path, location and date (see MAIL below: the instance has no SMTP,
  *    and the seed's members have unverified addresses, so the pass confirms Louis's first);
@@ -118,7 +117,7 @@ async function storageFor(browser: Browser, login: string): Promise<string> {
   return file;
 }
 
-/** A signed-in context shaped like the running project, optionally in Arabic. */
+/** A signed-in context shaped like the running project, optionally with a legacy language preference. */
 async function person(
   browser: Browser,
   login: string,
@@ -620,7 +619,7 @@ type Doc = {
   history: { id: string; expiresOn: string }[];
 };
 
-test('documents: a lease on بيت العائلة is renewed from Expiring in Arabic, and the old term stays in its history', async ({
+test('documents: a lease on بيت العائلة is renewed from Expiring, and the old term stays in its history', async ({
   browser,
 }) => {
   onlyOn('phone');
@@ -637,19 +636,19 @@ test('documents: a lease on بيت العائلة is renewed from Expiring in Ar
   });
 
   await page.goto('/expiring');
-  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   const row = page.getByRole('article', { name: title });
   await expect(row).toBeVisible();
-  await axe(page, 'Expiring (ar)');
+  await axe(page, 'Expiring with an Arabic document title');
 
-  await row.getByRole('button', { name: `تجديد ${title}` }).click();
-  const sheet = page.getByRole('dialog', { name: `تجديد ${title}` });
+  await row.getByRole('button', { name: `Renew ${title}` }).click();
+  const sheet = page.getByRole('dialog', { name: `Renew ${title}` });
   await expect(sheet).toBeVisible();
   const renewed = shift(day, { months: 12, days: 20 });
-  await setDate(sheet, 'تنتهي المدة الجديدة في', renewed, 'eastern');
-  await axe(page, 'Renew sheet (ar)');
-  await sheet.getByRole('button', { name: 'تجديد', exact: true }).click();
-  await expect(page.getByText(`جُدِّد ${title}`).first()).toBeVisible();
+  await setDate(sheet, 'New term runs out on', renewed);
+  await axe(page, 'Renew sheet');
+  await sheet.getByRole('button', { name: 'Renew', exact: true }).click();
+  await expect(page.getByText(`Renewed ${title}`).first()).toBeVisible();
 
   // The server: the old term superseded by the new one, which lists it in its history.
   await expect
@@ -660,13 +659,12 @@ test('documents: a lease on بيت العائلة is renewed from Expiring in Ar
   expect(current.expiresOn).toBe(renewed);
   expect(current.history.map((h) => h.id)).toContain(lease.id);
 
-  // The Expiring screen now shows the new term's row only, its date in Eastern digits.
+  // The Expiring screen now shows the new term's row only, with its date.
   await page.reload();
   const rows = page.getByRole('article', { name: title });
   await expect(rows).toHaveCount(1);
-  await expect(rows.first()).toContainText(/[٠-٩]/);
-  await expect(rows.first()).not.toContainText(/[0-9]/);
-  await axe(page, 'Expiring after renewing (ar)');
+  await expect(rows.first()).toContainText(/[0-9]/);
+  await axe(page, 'Expiring after renewing');
   await context.close();
 });
 

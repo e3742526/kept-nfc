@@ -219,11 +219,11 @@ describe('numbering and the format rule (Settings → General)', () => {
 describe('Arabic', () => {
   it('keeps codes left to right in a right-to-left page', async () => {
     const { user } = await renderApp(`/t/${T.drill}?tab=overview`, { locale: 'ar' });
-    const form = await screen.findByRole('form', { name: 'أضف رمزًا' });
+    const form = await screen.findByRole('form', { name: 'Add a code' });
     const input = within(form).getByRole('textbox');
     expect(input).toHaveAttribute('dir', 'ltr');
     await user.type(input, 'gar-٠٠٤٢');
-    await user.click(within(form).getByRole('button', { name: 'إضافة' }));
+    await user.click(within(form).getByRole('button', { name: 'Add' }));
     expect(await screen.findByText('GAR-0042')).toHaveAttribute('dir', 'ltr');
   });
 });

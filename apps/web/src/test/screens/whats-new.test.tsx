@@ -341,31 +341,31 @@ describe("What's new", () => {
 
   it('in Arabic, its words are translated, the slides run right to left, and the highlights say they are in English', async () => {
     const { user } = await renderApp('/', { state: updated(), locale: 'ar' });
-    const dialog = await screen.findByRole('dialog', { name: 'ما الجديد في SheepKeep' });
-    expect(dialog).toHaveTextContent('ملاحظات الإصدار بالإنجليزية.');
-    const slide = () => screen.getByRole('group', { name: /^الشريحة/ });
-    expect(slide()).toHaveAccessibleName('الشريحة ١ من ٣');
+    const dialog = await screen.findByRole('dialog', { name: "What's new in SheepKeep" });
+    expect(dialog).toHaveTextContent('The release notes are in English.');
+    const slide = () => screen.getByRole('group', { name: /^Slide/ });
+    expect(slide()).toHaveAccessibleName('Slide ١ of ٣');
     expect(within(slide()).getByRole('heading', { name: 'Shelf view' })).toHaveAttribute(
       'dir',
       'ltr',
     );
     // Forward is towards the left in Arabic: the left arrow, and a swipe towards the right.
     act(() => void fireEvent.keyDown(slide(), { key: 'ArrowLeft' }));
-    expect(slide()).toHaveAccessibleName('الشريحة ٢ من ٣');
+    expect(slide()).toHaveAccessibleName('Slide ٢ of ٣');
     expect(dialog.querySelector('[aria-live="polite"]')).toHaveTextContent(
-      'الشريحة ٢ من ٣: Paperwork',
+      'Slide ٢ of ٣: Paperwork',
     );
     act(() => void fireEvent.keyDown(slide(), { key: 'ArrowRight' }));
-    expect(slide()).toHaveAccessibleName('الشريحة ١ من ٣');
+    expect(slide()).toHaveAccessibleName('Slide ١ of ٣');
     const viewport = document.querySelector('[data-slides]') as HTMLElement;
     fireEvent.pointerDown(viewport, { clientX: 150, clientY: 200, pointerId: 1, button: 0 });
     fireEvent.pointerUp(viewport, { clientX: 300, clientY: 205, pointerId: 1 });
-    expect(slide()).toHaveAccessibleName('الشريحة ٢ من ٣');
+    expect(slide()).toHaveAccessibleName('Slide ٢ of ٣');
     // The track moves the other way: slide 2 comes in from the left.
     const track = document.querySelector('[data-slides] > [data-track]') as HTMLElement;
     expect(track.style.transform).toBe('translateX(100%)');
-    await user.click(within(dialog).getByRole('button', { name: 'الشريحة ٣ من ٣' }));
-    await user.click(within(dialog).getByRole('button', { name: 'فهمت' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Slide ٣ of ٣' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Got it' }));
     await waitFor(() => expect(card()).toBeNull());
   });
 });

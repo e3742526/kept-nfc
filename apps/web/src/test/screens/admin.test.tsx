@@ -334,8 +334,8 @@ describe('Instance admin', () => {
 
   it('renders in Arabic', async () => {
     await renderApp('/admin/status', { locale: 'ar' });
-    expect(await findHeading('إدارة الخادم')).toBeInTheDocument();
-    expect(await screen.findByText('١ مفتوحة')).toBeInTheDocument();
+    expect(await findHeading('Instance admin')).toBeInTheDocument();
+    expect(await screen.findByText('١ open')).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

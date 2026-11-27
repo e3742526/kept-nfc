@@ -144,16 +144,16 @@ describe('in Arabic', () => {
     });
     const link = await screen.findByRole('link', { name: MAIN });
     expect(link).toHaveClass('ltr');
-    expect(link.closest('p')).toHaveTextContent('مفاتيح المرور تعمل فقط على');
+    expect(link.closest('p')).toHaveTextContent('Passkeys work only at');
   });
 
-  it('Status’s tile is translated, and its addresses stay left to right', async () => {
+  it('Status addresses stay left to right', async () => {
     const state = ownerScenario();
     state.admin.status.addresses = { main: MAIN, extra: ['http://100.64.0.7'] };
     await renderApp('/admin/status', { state, locale: 'ar' });
-    const label = await screen.findByText('العناوين');
+    const label = await screen.findByText('Addresses');
     const t = label.parentElement as HTMLElement;
-    expect(t).toHaveTextContent('العنوان الرئيسي، وعليه تبقى الروابط والبريد ومفاتيح المرور.');
+    expect(t).toHaveTextContent('The main address, where links, mail and passkeys stay.');
     expect(within(t).getByText('KEPT_EXTRA_ADDRESSES')).toHaveClass('ltr');
     expect(within(t).getByText(MAIN)).toHaveClass('ltr');
   });

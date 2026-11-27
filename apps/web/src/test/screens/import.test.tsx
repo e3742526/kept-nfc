@@ -88,19 +88,19 @@ describe('CSV import', () => {
     expect(screen.getByRole('link', { name: 'Search Home' })).toBeInTheDocument();
   });
 
-  it('reads in Arabic, right to left, with the reasons translated from their codes', async () => {
+  it('shows English reasons from their codes in a right-to-left layout', async () => {
     const app = await renderApp(`/settings/import?location=${IDS.home}`, { locale: 'ar' });
-    await findHeading('اختر الملف');
+    await findHeading('Choose the file');
     expect(document.documentElement.dir).toBe('rtl');
     await waitFor(() => expect(fileInput()).not.toBeNull());
     await app.user.upload(fileInput() as HTMLInputElement, csvFile(ARABIC));
-    await findHeading('طابِق الأعمدة');
-    expect(screen.getByRole('combobox', { name: 'الاسم يذهب إلى' })).toHaveValue('الاسم');
-    await app.user.click(screen.getByRole('button', { name: 'التالي' }));
-    await app.user.click(await screen.findByRole('button', { name: 'فحص الاستيراد' }));
-    const rows = await screen.findByRole('list', { name: 'الصفوف' });
-    expect(rows).toHaveTextContent('ليس تاريخًا مكتوبًا بصيغة DD/MM/YYYY؛ حُفظ في الملاحظات.');
-    expect(rows).toHaveTextContent('بلا اسم، فيُتخطّى.');
+    await findHeading('Match the columns');
+    expect(screen.getByRole('combobox', { name: 'الاسم goes to' })).toHaveValue('Name');
+    await app.user.click(screen.getByRole('button', { name: 'Next' }));
+    await app.user.click(await screen.findByRole('button', { name: 'Check the import' }));
+    const rows = await screen.findByRole('list', { name: 'Rows' });
+    expect(rows).toHaveTextContent('Not a date written as DD/MM/YYYY; kept in the notes.');
+    expect(rows).toHaveTextContent("No name, so it's skipped.");
     expectLogicalOnly();
   });
 

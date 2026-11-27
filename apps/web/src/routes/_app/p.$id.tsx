@@ -481,9 +481,11 @@ function PlaceBody({ place, location }: { place: PlaceView; location: LocationDe
             ) : null}
             <LabelRow place={place} location={location} />
             {(location.effectiveModules ?? location.modules).includes('labels') && (
-              <QueueLabelButton
-                target={{ kind: 'place', locationId: location.id, recordId: place.id }}
-              />
+              <li>
+                <QueueLabelButton
+                  target={{ kind: 'place', locationId: location.id, recordId: place.id }}
+                />
+              </li>
             )}
             {admin && location.kind !== 'personal' ? (
               <ActionRow

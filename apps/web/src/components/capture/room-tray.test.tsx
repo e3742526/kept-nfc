@@ -72,9 +72,7 @@ describe('the room tray', () => {
     expect(screen.queryByText(/About 1 photo/)).toBeNull();
     one.unmount();
     await renderUI(tray(2), { locale: 'ar' });
-    expect(
-      screen.getByText(/^صورتان.+لا يعمل الذكاء الاصطناعي في هذا العرض التجريبي$/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/^٢ photos.+No AI runs in this demo$/)).toBeInTheDocument();
   });
 
   it('counts the photos only while the cost is unknown (offline)', async () => {

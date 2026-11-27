@@ -663,10 +663,10 @@ describe('a Kept export made without its secrets', () => {
 describe('in Arabic', () => {
   it('reads a Kept export right to left, with its words translated', async () => {
     await renderApp(`/settings/import?run=${PORTABILITY_IDS.keptRun}`, { locale: 'ar' });
-    expect(await findHeading('ما في الملف')).toBeInTheDocument();
+    expect(await findHeading("What's in it")).toBeInTheDocument();
     expect(document.documentElement.dir).toBe('rtl');
-    expect(screen.getByText('فيه أسرار مشفّرة')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'التالي' })).toBeInTheDocument();
+    expect(screen.getByText('It holds encrypted secrets')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

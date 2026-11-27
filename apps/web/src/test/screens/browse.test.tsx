@@ -230,7 +230,7 @@ describe('the location page', () => {
   it('renders right to left in Arabic', async () => {
     await renderApp(`/loc/${IDS.family}`, { locale: 'ar' });
     await findHeading('بيت العائلة');
-    await screen.findByRole('list', { name: 'محتويات «بيت العائلة»' });
+    await screen.findByRole('list', { name: 'Contents of بيت العائلة' });
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly();
   });
@@ -527,25 +527,25 @@ describe('a grid keeps places and things apart, in three sizes (#139)', () => {
     const { user } = await renderApp(`/loc/${IDS.family}?view=grid&size=small`, {
       locale: 'ar',
     });
-    const ul = await screen.findByRole('list', { name: 'محتويات «بيت العائلة»' });
+    const ul = await screen.findByRole('list', { name: 'Contents of بيت العائلة' });
     expect(ul).toHaveAttribute('data-tile-size', 'small');
     console.log(
       within(ul)
         .getAllByRole('button')
         .map((b) => JSON.stringify(b.textContent)),
     );
-    expect(within(ul).getByRole('button', { name: /^الأماكن، [٠-٩]+$/ })).toBeInTheDocument();
-    expect(within(ul).getByRole('button', { name: /^الأشياء، [٠-٩]+\+?$/ })).toBeInTheDocument();
+    expect(within(ul).getByRole('button', { name: /^Places، [٠-٩]+$/ })).toBeInTheDocument();
+    expect(within(ul).getByRole('button', { name: /^Things، [٠-٩]+\+?$/ })).toBeInTheDocument();
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly();
-    await user.click(screen.getByRole('button', { name: /^خيارات العرض/ }));
+    await user.click(screen.getByRole('button', { name: /^Display options/ }));
     const sheet = await screen.findByRole('dialog');
-    const size = within(sheet).getByRole('group', { name: 'الحجم' });
+    const size = within(sheet).getByRole('group', { name: 'Size' });
     expect(
       within(size)
         .getAllByRole('menuitemradio')
         .map((r) => r.textContent),
-    ).toEqual(['صغير', 'متوسط', 'كبير']);
+    ).toEqual(['Small', 'Medium', 'Large']);
   });
 });
 
@@ -980,7 +980,7 @@ describe('the place page', () => {
   it('renders right to left in Arabic, the path mirrored', async () => {
     await renderApp(`/p/${P.familyKitchen}`, { locale: 'ar' });
     await findHeading('المطبخ');
-    const crumb = screen.getByRole('navigation', { name: 'المسار' });
+    const crumb = screen.getByRole('navigation', { name: 'Path' });
     expect(within(crumb).getByRole('link', { name: 'بيت العائلة' })).toBeInTheDocument();
     expectLogicalOnly();
   });
@@ -1050,7 +1050,7 @@ describe('what a row says about a box and a type (#321)', () => {
   it('names a built-in type in the reader’s language, right to left', async () => {
     await renderApp(`/p/${P.familyKitchen}`, { locale: 'ar' });
     await findHeading('المطبخ');
-    const fridge = await rowOf('محتويات «المطبخ»', /ثلاجة توشيبا/);
+    const fridge = await rowOf('Contents of المطبخ', /ثلاجة توشيبا/);
     expect(within(fridge).getByText('جهاز منزلي كبير')).toBeInTheDocument();
     expectLogicalOnly();
   });

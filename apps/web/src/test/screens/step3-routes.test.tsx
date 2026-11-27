@@ -60,8 +60,8 @@ describe('capture route stubs', () => {
 
   it('Labels is built, in Arabic too', async () => {
     await renderApp('/labels', { locale: 'ar' });
-    expect(await findHeading('الملصقات')).toBeInTheDocument();
-    expect(screen.queryByText('يأتي في مرحلة لاحقة')).toBeNull();
+    expect(await findHeading('Labels')).toBeInTheDocument();
+    expect(screen.queryByText('يأتي on مرحلة لاحقة')).toBeNull();
     expectLogicalOnly();
   });
 });

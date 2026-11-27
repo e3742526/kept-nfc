@@ -5,7 +5,7 @@
  * browser on camera-qr.y4m, a QR of the seeded Bosch drill's label).
  *
  * One instance for both projects, so each test runs in one project and writes to its own things:
- * the phone (375×780) runs capture, scan, the claim race, the viewer and Arabic; the desktop
+ * the phone (375×780) runs capture, scan, the claim race, viewer access and legacy language preferences; the desktop
  * (1280×800) prints labels. Every page a test visits is checked with axe (nothing above "minor").
  *
  *   KEPT_E2E_INSTANCES=capture pnpm --filter @kept/web exec playwright test step3.spec.ts
@@ -77,7 +77,7 @@ async function storageFor(browser: Browser, login: string): Promise<string> {
   return file;
 }
 
-/** A signed-in context shaped like the running project, optionally in Arabic. */
+/** A signed-in context shaped like the running project, optionally with a legacy language preference. */
 async function person(
   browser: Browser,
   login: string,
@@ -664,17 +664,14 @@ test('a viewer: captures only where they write, and a scanned label opens read-o
   await context.close();
 });
 
-test('Arabic: capture and the inbox mirror, and short IDs stay left to right', async ({
-  browser,
-}) => {
+test('Capture and Inbox in English with a legacy Arabic preference', async ({ browser }) => {
   onlyOn('phone');
   const { context, page } = await person(browser, 'alfred@kept.test', { locale: 'ar' });
   await page.goto('/capture');
-  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-  await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
-  // The mode strip ("وضع الالتقاط", Capture mode) runs right to left: its first mode is the
-  // rightmost.
-  const strip = page.getByRole('radiogroup', { name: 'وضع الالتقاط' });
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  // The capture modes follow the direction of the English interface.
+  const strip = page.getByRole('radiogroup', { name: 'Capture mode' });
   await expect(strip.getByRole('radio')).toHaveCount(5);
   const xs = await strip
     .getByRole('radio')
@@ -682,15 +679,15 @@ test('Arabic: capture and the inbox mirror, and short IDs stay left to right', a
       els.map((e) => ((e.closest('label') ?? e) as HTMLElement).getBoundingClientRect().x),
     );
   expect(xs.length).toBeGreaterThanOrEqual(5);
-  expect([...xs].sort((p, q) => q - p)).toEqual(xs);
-  await axe(page, 'Capture (Arabic)');
+  expect([...xs].sort((p, q) => p - q)).toEqual(xs);
+  await axe(page, 'Capture');
 
   await page.goto('/inbox');
-  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(/[؀-ۿ]/);
-  await axe(page, 'Inbox (Arabic)');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Inbox');
+  await axe(page, 'Inbox');
 
-  // A short ID in an Arabic page reads left to right.
+  // The short ID stays left to right.
   await page.goto(`/t/${CABLE.code}`);
   const chip = page.getByRole('img', { name: CABLE.code }).first();
   await expect(chip).toBeVisible();

@@ -93,7 +93,7 @@ describe('HeightField', () => {
       const { user } = await renderUI(<HeightField item={tv} onHeight={onHeight} />, {
         locale: 'ar',
       });
-      const field = screen.getByRole('textbox', { name: 'الارتفاع' });
+      const field = screen.getByRole('textbox', { name: 'Height' });
       await user.clear(field);
       await user.type(field, `${typed}{Enter}`);
       expect(onHeight).toHaveBeenLastCalledWith(1.75);
@@ -135,7 +135,7 @@ describe('HeightField', () => {
       const { user } = await renderUI(<HeightField item={{ ...tv, hang }} onHeight={onHeight} />, {
         locale: 'ar',
       });
-      const field = screen.getByRole('textbox', { name: 'الارتفاع' }) as HTMLInputElement;
+      const field = screen.getByRole('textbox', { name: 'Height' }) as HTMLInputElement;
       expect(field.value.replace(/\u00a0/g, ' ')).toBe(shown);
       // Typed over with the same text, it is the same height.
       await user.clear(field);
@@ -148,10 +148,10 @@ describe('HeightField', () => {
   it('reads in Arabic, right to left, in Arabic digits', async () => {
     setLocale('ar');
     await renderUI(<HeightField item={tv} onHeight={vi.fn()} />, { locale: 'ar' });
-    const field = screen.getByRole('textbox', { name: 'الارتفاع' }) as HTMLInputElement;
+    const field = screen.getByRole('textbox', { name: 'Height' }) as HTMLInputElement;
     expect(field.value).toMatch(/١٫٢/);
     expect(document.documentElement.dir).toBe('rtl');
-    expect(screen.getByRole('button', { name: /^أعلى/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Higher/ })).toBeTruthy();
     expectLogicalOnly();
   });
 });

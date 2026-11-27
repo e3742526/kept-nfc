@@ -106,8 +106,8 @@ describe('first-run setup', () => {
 
   it('renders in Arabic with Eastern step numbers', async () => {
     await renderApp('/setup', { state: setupScenario(), locale: 'ar' });
-    expect(await findHeading('أدخل رمز الإعداد')).toBeInTheDocument();
-    expect(screen.getAllByText('الخطوة ١ من ٣').length).toBeGreaterThan(0);
+    expect(await findHeading('Enter the setup code')).toBeInTheDocument();
+    expect(screen.getAllByText('Step ١ of ٣').length).toBeGreaterThan(0);
     expectLogicalOnly();
   });
 });

@@ -14,7 +14,7 @@
  *    one it is allowed; then that last passkey can't be removed. Signed back in with the passkey
  *    (with the app off, the old session no longer counts as a second factor), the owner turns the
  *    requirement off.
- * 3. Arabic, right to left, on a phone: the section and the add sheet, with axe.
+ * 3. On a phone, check the sign-in and security section and the add sheet with axe.
  * 4. The sign-in page reads "Sign in with Google" as one line, its words spaced as written.
  *
  * Passkeys come from Chromium's virtual authenticator (e2e/sign-in-kit.ts), codes from
@@ -476,24 +476,20 @@ test('the sign-in page reads "Sign in with Google" as one line, beside its icon'
   await context.close();
 });
 
-test('in Arabic on a phone: the section reads right to left, and the add sheet too', async ({
-  browser,
-}) => {
+test('on a phone: sign-in security and the add sheet stay readable', async ({ browser }) => {
   test.skip(test.info().project.name !== 'phone', 'runs in the phone project');
   test.setTimeout(120_000);
-  // Alfred (src/seed/cast.ts) reads Kept in Arabic: chosen per device, in Settings → Display.
   const login = 'alfred@kept.test';
   const { context, page } = await newPerson(browser);
   await signInWithPassword(page, login);
   await expect(page).toHaveURL(/\/$/);
   await go(page, '/settings');
-  await page.getByRole('combobox', { name: 'Language' }).click();
-  await page.getByRole('option', { name: /العربية/ }).click();
+  await expect(page.getByRole('combobox', { name: 'Language' })).toHaveCount(0);
   const section = page.locator('#sign-in-security');
-  await expect(section.getByRole('heading', { name: 'تسجيل الدخول والأمان' })).toBeVisible();
-  await expect(section.getByRole('heading', { name: 'مفاتيح المرور' })).toBeVisible();
-  await expect(section.getByText('لا مفاتيح مرور بعد')).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.dir)).toBe('rtl');
+  await expect(section.getByRole('heading', { name: 'Sign-in and security' })).toBeVisible();
+  await expect(section.getByRole('heading', { name: 'Passkeys' })).toBeVisible();
+  await expect(section.getByText('No passkeys yet')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.dir)).toBe('ltr');
   // Nothing cut off with an ellipsis.
   const clipped = await section.evaluate((root) =>
     [...root.querySelectorAll<HTMLElement>('*')]
@@ -501,11 +497,11 @@ test('in Arabic on a phone: the section reads right to left, and the add sheet t
       .map((el) => el.textContent),
   );
   expect(clipped).toEqual([]);
-  await axe(page, 'Sign-in and security in Arabic');
-  await section.getByRole('button', { name: 'أضِف مفتاح مرور' }).click();
-  const sheet = page.getByRole('dialog', { name: 'أضِف مفتاح مرور' });
+  await axe(page, 'Sign-in and security on a phone');
+  await section.getByRole('button', { name: 'Add a passkey' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Add a passkey' });
   await expect(sheet).toBeVisible();
-  expect(await sheet.evaluate((el) => getComputedStyle(el).direction)).toBe('rtl');
-  await axe(page, 'the add-a-passkey sheet in Arabic');
+  expect(await sheet.evaluate((el) => getComputedStyle(el).direction)).toBe('ltr');
+  await axe(page, 'the add-a-passkey sheet on a phone');
   await context.close();
 });

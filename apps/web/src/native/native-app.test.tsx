@@ -4822,6 +4822,38 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: 'Items' })).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('selects containers inside the list and grid cards without opening them', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: '2 Containers' }));
+
+    const checkbox = await screen.findByRole('checkbox', { name: 'Select Winter Box' });
+    const card = checkbox.closest('label')?.parentElement;
+    if (!card) throw new Error('Missing checkbox card');
+    expect(card.firstElementChild).toBe(checkbox.closest('label'));
+    expect(within(card).getByRole('button', { name: 'Add to Winter Box' })).toBeEnabled();
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    expect(screen.getByRole('heading', { name: 'Containers' })).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Grid' }));
+    const gridSelection = screen.getByRole('checkbox', { name: 'Select Winter Box' });
+    expect(gridSelection.closest('label')).toHaveClass('absolute', 'start-1', 'top-1');
+    const previous = (gridSelection as HTMLInputElement).checked;
+    await user.click(gridSelection);
+    expect((gridSelection as HTMLInputElement).checked).toBe(!previous);
+    expect(screen.getByRole('heading', { name: 'Containers' })).toBeVisible();
+  });
+
   it('adds manually or from the camera on Home and keeps Scan in the tab bar', async () => {
     const env = createFakeEnvironment({
       initialConnection: {

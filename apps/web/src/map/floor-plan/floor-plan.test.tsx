@@ -256,8 +256,8 @@ describe('the review’s panel', () => {
     setLocale('ar');
     await renderUI(panel(review()), { locale: 'ar' });
     expect(document.documentElement.dir).toBe('rtl');
-    expect(screen.getByRole('heading', { name: 'غرف من المخطط' })).toBeTruthy();
-    expect(screen.getByRole('switch', { name: 'أضف Living room' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Rooms from the plan' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Add Living room' })).toBeTruthy();
     expectLogicalOnly();
   });
 });

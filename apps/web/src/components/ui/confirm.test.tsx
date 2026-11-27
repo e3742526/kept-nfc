@@ -51,7 +51,7 @@ describe('useConfirm', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('renders RTL with translated buttons', async () => {
+  it('renders RTL with an Arabic title and English buttons', async () => {
     const { user } = await renderUI(<Example title="إزالة سيلينا من هذا المنزل؟" />, {
       locale: 'ar',
     });
@@ -59,7 +59,7 @@ describe('useConfirm', () => {
     expect(
       screen.getByRole('alertdialog', { name: 'إزالة سيلينا من هذا المنزل؟' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'إلغاء' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

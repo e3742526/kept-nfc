@@ -137,7 +137,7 @@ describe('/auth/email-change', () => {
       state: signedOutScenario(),
       locale: 'ar',
     });
-    expect(await findHeading('تأكيد تغيير البريد الإلكتروني')).toBeInTheDocument();
+    expect(await findHeading('Confirm the email change')).toBeInTheDocument();
     expectLogicalOnly();
   });
 });
@@ -339,7 +339,7 @@ describe('Instance admin → Admins', () => {
 
   it('renders in Arabic', async () => {
     await renderApp('/admin/admins', { locale: 'ar' });
-    expect(await screen.findByRole('heading', { name: 'مشرفو الخادم' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Instance admins' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });
@@ -409,8 +409,10 @@ describe('Settings → Me → Delete my account', () => {
     const state = free();
     state.me.deletion = { purgeAfter: '2026-11-13T10:00:00.000Z' };
     await renderApp('/', { state, locale: 'ar' });
-    expect(await screen.findByRole('heading', { name: /سيُحذف حسابك في/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'الإبقاء على حسابي' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: /Your account will be deleted on/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Keep my account' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

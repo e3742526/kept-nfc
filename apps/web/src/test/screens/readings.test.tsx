@@ -88,12 +88,12 @@ describe('Log a reading, online', () => {
 
   it('takes Eastern Arabic digits, and mirrors in Arabic', async () => {
     const r = await renderApp(`/t/${I.thing.car}`, { locale: 'ar' });
-    await r.user.click(await screen.findByRole('button', { name: 'سجّل قراءة' }));
+    await r.user.click(await screen.findByRole('button', { name: 'Log a reading' }));
     const dialog = await screen.findByRole('dialog');
     await r.user.type(within(dialog).getAllByRole('textbox')[0] as HTMLElement, '٥٢٥٠٠');
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly();
-    await r.user.click(within(dialog).getByRole('button', { name: 'احفظ القراءة' }));
+    await r.user.click(within(dialog).getByRole('button', { name: 'Save reading' }));
     await waitFor(() =>
       expect(r.mock.lastCall('POST', p.meterReadings(I.meter.carOdometer))?.body).toMatchObject({
         value: '52500',

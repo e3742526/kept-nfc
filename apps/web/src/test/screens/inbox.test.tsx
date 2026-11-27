@@ -494,7 +494,7 @@ describe('the inbox', () => {
 
   it('mirrors in Arabic', async () => {
     await renderApp('/inbox', { locale: 'ar' });
-    await screen.findByRole('list', { name: 'الوارد' }, { timeout: 3000 });
+    await screen.findByRole('list', { name: 'Inbox' }, { timeout: 3000 });
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly();
   });

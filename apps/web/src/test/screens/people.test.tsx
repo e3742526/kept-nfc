@@ -155,7 +155,7 @@ describe('Members and roles', () => {
 
   it('renders in Arabic', async () => {
     await renderApp(members, { locale: 'ar' });
-    expect(await screen.findByRole('heading', { name: 'المشرفون' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Admins' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });
@@ -419,7 +419,7 @@ describe('Settings → Me', () => {
 
   it('switching the digits changes how Arabic counts read', async () => {
     const { user } = await renderApp('/settings', { locale: 'ar' });
-    await findHeading('الإعدادات');
+    await findHeading('Settings');
     await user.click(screen.getByRole('radio', { name: '0123' }));
     // The catalogue reloads with the new digits first, so the choice is stored a moment later.
     await waitFor(() => expect(localStorage.getItem('kept.digits')).toBe('western'));

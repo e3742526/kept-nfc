@@ -3,7 +3,7 @@
  * instance, e2e/instances.ts, behind HTTPS on the `households` seed), in a location of each
  * attempt's own: dragging its edge with the pointer, the same with the keys, folding it with the
  * main navigation's control, both remembered through a reload with no jump, the edge following
- * the tree in Arabic, the page's own state untouched (#336), and no edge below 1280 px, where the
+ * the tree with a legacy Arabic preference, the page's own state untouched (#336), and no edge below 1280 px, where the
  * tree is the "All places" outline.
  *
  *   KEPT_E2E_INSTANCES=homebox pnpm --filter @kept/web exec playwright test place-tree-width.spec.ts \
@@ -238,9 +238,7 @@ test('it folds with the main navigation’s control, remembered, and the page ke
   });
 });
 
-test('in Arabic the edge is on the tree’s left, and dragging follows it', async ({
-  browser,
-}, info) => {
+test('the edge stays on the right with a legacy Arabic preference', async ({ browser }, info) => {
   test.skip(info.project.name !== 'desktop', 'the panel shows from 1280 px');
   test.setTimeout(180_000);
   await withOffice(
@@ -249,24 +247,24 @@ test('in Arabic the edge is on the tree’s left, and dragging follows it', asyn
     async (page, { office }, name) => {
       await page.goto(`/p/${office}`);
       await expect(treeOf(page, name)).toBeVisible();
-      expect(await page.evaluate(() => document.documentElement.dir)).toBe('rtl');
+      await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
       const tree = await box(page, name);
       const line = await edge(page).boundingBox();
       expect(line).not.toBeNull();
-      // Left of the tree, in the gap between it and the page.
-      expect((line as NonNullable<typeof line>).x).toBeLessThan(tree.x);
+      // Right of the tree, in the gap between it and the page.
+      expect((line as NonNullable<typeof line>).x).toBeGreaterThan(tree.x);
 
-      await drag(page, -60); // to the left: wider
+      await drag(page, 60); // to the right: wider
       await expect.poll(() => widthNow(page)).toBe(DEFAULT + 60);
       await settled(page);
       expect((await box(page, name)).width).toBeCloseTo(DEFAULT + 60, 0);
-      await drag(page, 30); // to the right: narrower
+      await drag(page, -30); // to the left: narrower
       await expect.poll(() => widthNow(page)).toBe(DEFAULT + 30);
 
       await edge(page).focus();
-      await page.keyboard.press('ArrowLeft');
+      await page.keyboard.press('ArrowRight');
       await expect.poll(() => widthNow(page)).toBe(DEFAULT + 46);
-      await axe(page, 'the place tree in Arabic');
+      await axe(page, 'the place tree with a legacy Arabic preference');
     },
     () => localStorage.setItem('kept.locale', 'ar'),
   );

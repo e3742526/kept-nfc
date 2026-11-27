@@ -4,11 +4,10 @@
  * with a name of several words and a place that folds, so the header shows "Fold all".
  *
  * At 1280, the panel beside the Office's page:
- * - at its narrowest (208 px) in German, where "Alle einklappen" is about twice "Fold all", the
- *   location's name keeps whole words (it used to break into "Ho / me / St / re / et") and the
+ * - at its narrowest (208 px), the location's name keeps whole words (it used to break into "Ho / me / St / re / et") and the
  *   button goes under it, at its start;
- * - as wide as it goes in English, the name and the button share one line, the button at its end;
- * - in Arabic, the same mirrored.
+ * - as wide as it goes, the name and the button share one line, the button at its end;
+ * - with right-to-left direction, the same mirrored.
  * At 375, the "All places" outline, whose Fold all has a row of its own: it stays on one line and
  * inside the outline.
  *
@@ -121,17 +120,15 @@ function expectBeside(m: Measured) {
   expect(Math.abs(end), at).toBeLessThanOrEqual(1);
 }
 
-async function openIn(page: Page, office: string, locale: 'ar' | 'de' | 'en', width: number) {
-  await page.evaluate(
-    ({ l, w }) => {
-      localStorage.setItem('kept.locale', l);
-      localStorage.setItem('kept.placeTreeWidth', w);
-    },
-    { l: locale, w: String(width) },
-  );
+async function openIn(page: Page, office: string, width: number, direction: 'ltr' | 'rtl' = 'ltr') {
+  await page.evaluate((w) => localStorage.setItem('kept.placeTreeWidth', w), String(width));
   await page.goto(`/p/${office}`);
-  await expect(page.locator('html')).toHaveAttribute('lang', locale);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('heading', { name: 'Office', level: 1 })).toBeVisible();
+  if (direction === 'rtl')
+    await page.evaluate(() => {
+      document.documentElement.dir = 'rtl';
+    });
 }
 
 test("the location's name in the place tree's header keeps whole words beside Fold all", async ({
@@ -148,11 +145,11 @@ test("the location's name in the place tree's header keeps whole words beside Fo
     loc = made.id;
 
     if (!docked) {
-      // The outline: Fold all has its own row, in German too.
-      await openIn(page, made.office, 'de', 208);
-      const outline = page.locator('details').filter({ hasText: 'Alle Orte' });
+      // The outline: Fold all has its own row.
+      await openIn(page, made.office, 208);
+      const outline = page.locator('details').filter({ hasText: 'All places' });
       await outline.locator('summary').click();
-      const fold = outline.getByRole('button', { name: 'Alle einklappen' });
+      const fold = outline.getByRole('button', { name: 'Fold all' });
       await expect(fold).toBeVisible();
       const m = await fold.evaluate((b) => {
         const r = document.createRange();
@@ -168,54 +165,53 @@ test("the location's name in the place tree's header keeps whole words beside Fo
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         375,
       );
-      await axe(page, 'the place tree outline in German');
+      await axe(page, 'the place tree outline');
       return;
     }
 
     const nav = (words: string) =>
       page.getByRole('navigation', { name: words.replace('{name}', name) });
 
-    // German at the narrowest, as it was reported.
-    await openIn(page, made.office, 'de', 208);
-    let tree = nav('Orte in {name}');
-    await expect(tree.getByRole('button', { name: 'Alle einklappen' })).toBeVisible();
+    // At the narrowest width.
+    await openIn(page, made.office, 208);
+    let tree = nav('Places in {name}');
+    await expect(tree.getByRole('button', { name: 'Fold all' })).toBeVisible();
     expect((await tree.boundingBox())?.width).toBeCloseTo(208, 0);
     let m = await measure(tree);
     expect(m.nameText).toBe(name);
     expectReadable(m);
     expectBeneath(m);
-    await axe(page, 'the place tree header in German');
+    await axe(page, 'the narrow place tree header');
 
     // Open all, the other label, the same way.
-    await tree.getByRole('button', { name: 'Alle einklappen' }).click();
-    await expect(tree.getByRole('button', { name: 'Alle ausklappen' })).toBeVisible();
+    await tree.getByRole('button', { name: 'Fold all' }).click();
+    await expect(tree.getByRole('button', { name: 'Open all' })).toBeVisible();
     m = await measure(tree);
     expectReadable(m);
     expectBeneath(m);
-    await tree.getByRole('button', { name: 'Alle ausklappen' }).click();
-    await expect(tree.getByRole('button', { name: 'Alle einklappen' })).toBeVisible();
+    await tree.getByRole('button', { name: 'Open all' }).click();
+    await expect(tree.getByRole('button', { name: 'Fold all' })).toBeVisible();
 
-    // English, as wide as the tree goes: room for both on one line.
-    await openIn(page, made.office, 'en', 99999);
+    // As wide as the tree goes: room for both on one line.
+    await openIn(page, made.office, 99999);
     tree = nav('Places in {name}');
     await expect(tree.getByRole('button', { name: 'Fold all' })).toBeVisible();
     m = await measure(tree);
     expectReadable(m);
     expectBeside(m);
 
-    // Arabic at the narrowest: mirrored.
-    await openIn(page, made.office, 'ar', 208);
-    tree = nav('الأماكن في {name}');
-    await expect(tree.getByRole('button', { name: 'طيّ الكل' })).toBeVisible();
+    // Right-to-left at the narrowest width.
+    await openIn(page, made.office, 208, 'rtl');
+    tree = nav('Places in {name}');
+    await expect(tree.getByRole('button', { name: 'Fold all' })).toBeVisible();
     m = await measure(tree);
     expect(m.dir).toBe('rtl');
     expectReadable(m);
     expectBeneath(m);
-    await axe(page, 'the place tree header in Arabic');
+    await axe(page, 'the right-to-left place tree header');
   } finally {
     await page
       .evaluate(() => {
-        localStorage.removeItem('kept.locale');
         localStorage.removeItem('kept.placeTreeWidth');
       })
       .catch(() => {});

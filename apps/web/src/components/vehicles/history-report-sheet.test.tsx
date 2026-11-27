@@ -69,16 +69,14 @@ describe('the history report sheet', () => {
     await user.click(segments[0] as HTMLElement);
     await user.keyboard('01012026');
     await user.click(within(dialog).getByRole('switch', { name: 'Proof photos' }));
-    // Every language Kept speaks (#465), not only English and Arabic.
-    await user.click(within(dialog).getByRole('combobox', { name: 'Language' }));
-    await user.click(screen.getByRole('option', { name: 'Українська' }));
+    expect(within(dialog).queryByRole('combobox', { name: 'Language' })).toBeNull();
     await user.click(within(dialog).getByRole('button', { name: 'Make the PDF' }));
     await waitFor(() =>
       expect(mock.lastCall('POST', vehiclePaths.reportsVehicleHistory)?.body).toMatchObject({
         thingId: COROLLA.thing,
         from: '2026-01-01',
         include: { costs: true, proofPhotos: false, fuel: true, documents: true },
-        locale: 'uk',
+        locale: 'en',
       }),
     );
     expect(

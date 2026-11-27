@@ -29,10 +29,12 @@ describe('useErrorText: a move refused over a code', () => {
     ).toBeInTheDocument();
   });
 
-  it('leaves out the holder when it has no name, and says it in Arabic', async () => {
+  it('leaves out the holder when it has no name, with an RTL document', async () => {
     await renderUI(<Shown error={clash(null)} />, { locale: 'ar' });
     expect(
-      screen.getByText('في Garage الرمز SHED-7 بالفعل. غيّره أو احذفه من أحدهما، ثم انقل مجددًا.'),
+      screen.getByText(
+        'Garage already has the code SHED-7. Change or remove it on one of them, then move again.',
+      ),
     ).toBeInTheDocument();
   });
 

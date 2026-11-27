@@ -34,8 +34,8 @@ describe("a provider's data-use note", () => {
     expect(screen.queryByRole('link')).toBeNull();
   });
 
-  it('is translated, with Eastern digits in Arabic', async () => {
+  it('keeps English retention copy in a right-to-left layout', async () => {
     await renderUI(<DataUseNote kind="openai" />, { locale: 'ar' });
-    expect(screen.getByText(/مدة تصل إلى ٣٠ يومًا/)).toBeInTheDocument();
+    expect(screen.getByText(/up to 30 days/)).toBeInTheDocument();
   });
 });

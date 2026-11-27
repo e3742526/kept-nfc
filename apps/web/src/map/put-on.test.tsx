@@ -205,8 +205,8 @@ describe('Put on… (#137)', () => {
       { locale: 'ar' },
     );
     expect(document.documentElement.dir).toBe('rtl');
-    expect(screen.getByRole('dialog', { name: 'ضع HD webcam على…' })).toBeTruthy();
-    expect(screen.getAllByRole('option')[1]?.textContent).toContain('شاشة');
+    expect(screen.getByRole('dialog', { name: 'Put HD webcam on…' })).toBeTruthy();
+    expect(screen.getAllByRole('option')[1]?.textContent).toContain('Monitor');
     expect(document.body.innerHTML).not.toMatch(/truncate|text-ellipsis/);
   });
 });

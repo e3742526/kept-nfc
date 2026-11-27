@@ -197,7 +197,7 @@ describe('the assistant sheet (phone)', () => {
     await renderApp(GARAGE, { locale: 'ar' });
     await screen.findAllByRole('navigation', {}, { timeout: 4000 });
     act(() => showThread(A.thread.arabic));
-    const s = await screen.findByRole('dialog', { name: 'المساعد' }, { timeout: 4000 });
+    const s = await screen.findByRole('dialog', { name: 'Assistant' }, { timeout: 4000 });
     expect(await within(s).findByText('وين كابل الـ HDMI؟')).toBeInTheDocument();
     expect(within(s).getAllByRole('link', { name: 'كابل HDMI' })[0]).toBeInTheDocument();
     expectLogicalOnly(s);

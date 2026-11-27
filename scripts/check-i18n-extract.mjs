@@ -15,6 +15,7 @@
 import { spawnSync } from 'node:child_process';
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -98,7 +99,7 @@ function main() {
   const scratch = mkdtempSync(join(repo, '.tmp/ci-i18n-'));
   try {
     const names = readdirSync(locales, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
+      .filter((d) => d.isDirectory() && existsSync(join(locales, d.name, 'messages.po')))
       .map((d) => d.name)
       .sort();
     for (const l of names) {

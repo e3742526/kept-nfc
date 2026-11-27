@@ -50,11 +50,11 @@ describe('a customised built-in type (#546)', () => {
     {
       locale: 'de',
       name: 'TV / Bildschirm',
-      actions: 'Aktionen',
-      retype: 'Typ ändern',
-      title: 'Typ ändern',
-      confirm: 'Typ ändern',
-      newType: 'Neuer Typ',
+      actions: 'Actions',
+      retype: 'Re-type',
+      title: 'Change the type',
+      confirm: 'Change type',
+      newType: 'New type',
       typed: 'Bildsch',
     },
   ] as const) {

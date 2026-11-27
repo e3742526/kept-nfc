@@ -4211,6 +4211,10 @@ msgstr "Add them as places in <0>{name}</0>, so things can go in them."
 msgid "Add them to"
 msgstr "Add them to"
 
+#: src/native/browse.tsx
+msgid "Add to {name}"
+msgstr "Add to {name}"
+
 #: src/components/things/selection-bar.tsx
 msgid "Add to incident"
 msgstr "Add to incident"

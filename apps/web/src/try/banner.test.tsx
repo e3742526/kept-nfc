@@ -32,8 +32,8 @@ describe('TryBanner', () => {
   it('links to the Arabic install page in Arabic', async () => {
     setLocale('ar');
     await renderUI(<TryBanner show onReset={() => {}} />, { locale: 'ar' });
-    expect(screen.getByRole('button', { name: 'إعادة تعيين' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'ثبّت SheepKeep' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Install SheepKeep' })).toHaveAttribute(
       'href',
       '/ar/install/compose/',
     );

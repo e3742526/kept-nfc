@@ -482,7 +482,7 @@ describe('the print view', () => {
     const state = ownerScenario();
     state.capture.labelBatches.unshift(batch());
     await renderApp('/labels/01926f00-0000-7000-8000-000000100099', { state, locale: 'ar' });
-    const sheet = await screen.findByRole('region', { name: 'الورقة ١ من ١' });
+    const sheet = await screen.findByRole('region', { name: 'Sheet ١ of ١' });
     const name = within(sheet).getByText('كابل HDMI');
     expect(name.closest('p')).toHaveAttribute('dir', 'auto');
     const code = within(sheet).getByText('AR7‑HDM');

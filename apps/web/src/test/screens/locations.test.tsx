@@ -85,11 +85,11 @@ describe('new location wizard', () => {
 
   it('renders the Arabic templates right to left', async () => {
     const { user } = await renderApp('/locations/new', { locale: 'ar' });
-    await findHeading('موقع جديد');
-    await user.type(screen.getByLabelText('الاسم'), 'البيت');
-    await user.click(screen.getByRole('button', { name: 'التالي' }));
-    await findHeading('الغرف في «البيت»');
-    expect((screen.getAllByRole('textbox')[0] as HTMLInputElement).value).toBe('غرفة المعيشة');
+    await findHeading('New location');
+    await user.type(screen.getByLabelText('Name'), 'البيت');
+    await user.click(screen.getByRole('button', { name: 'Next' }));
+    await findHeading('Rooms in البيت');
+    expect((screen.getAllByRole('textbox')[0] as HTMLInputElement).value).toBe('Living room');
     expectLogicalOnly();
   });
 });
@@ -310,7 +310,7 @@ describe('accept invite', () => {
 
   it('renders in Arabic', async () => {
     await renderApp(`/invite#${INVITE_TOKEN}`, { locale: 'ar' });
-    expect(await screen.findByText('يدعوك Ibrahim إلى')).toBeInTheDocument();
+    expect(await screen.findByText('Ibrahim invites you to')).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

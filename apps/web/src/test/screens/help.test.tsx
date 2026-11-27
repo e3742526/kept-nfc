@@ -258,15 +258,17 @@ describe('Help', () => {
 
   it('in Arabic the arrows follow the reading direction, and the steps use its digits', async () => {
     const { user } = await renderApp('/help', { locale: 'ar' });
-    await findHeading('المساعدة');
-    await user.click(await screen.findByRole('button', { name: 'الأساسيات' }));
-    const first = await screen.findByRole('dialog', { name: 'ما يحتاج إليك' });
-    expect(first).toHaveTextContent('الفصل ١ من ١٢، الخطوة ١ من ٦');
+    await findHeading('Help');
+    await user.click(await screen.findByRole('button', { name: 'Basics' }));
+    const first = await screen.findByRole('dialog', { name: 'Needs you' });
+    expect(first).toHaveTextContent('Chapter ١ of ١٢، step ١ of ٦');
     // Forward is to the left in Arabic.
     act(() => key('ArrowLeft'));
-    expect(await screen.findByRole('dialog', { name: 'مواقعك' })).toHaveTextContent('٢ من ٦');
+    expect(await screen.findByRole('dialog', { name: 'Your locations' })).toHaveTextContent(
+      '٢ of ٦',
+    );
     act(() => key('ArrowRight'));
-    expect(await screen.findByRole('dialog', { name: 'ما يحتاج إليك' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Needs you' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 

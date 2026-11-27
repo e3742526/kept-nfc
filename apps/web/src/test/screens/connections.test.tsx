@@ -266,9 +266,9 @@ describe('Connections', () => {
 describe('Connections in Arabic', () => {
   it('reads right to left, with names isolated', async () => {
     await renderApp('/settings/connections', { locale: 'ar' });
-    const list = await screen.findByRole('list', { name: 'الرموز والتطبيقات المتصلة' });
+    const list = await screen.findByRole('list', { name: 'Tokens and connected apps' });
     expect(document.documentElement.dir).toBe('rtl');
-    expect(within(list).getByText('الرموز الشخصية')).toBeInTheDocument();
+    expect(within(list).getByText('Personal tokens')).toBeInTheDocument();
     expect(within(list).getByText('Garage dashboard').tagName).toBe('BDI');
   });
 });

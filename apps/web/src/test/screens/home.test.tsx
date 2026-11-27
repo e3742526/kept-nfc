@@ -277,20 +277,20 @@ describe('Home', () => {
 
   it('renders in Arabic, right to left, with Eastern digits', async () => {
     await renderApp('/', { locale: 'ar' });
-    expect(await screen.findByText('تم ٣ من ٧')).toBeInTheDocument();
-    expect(await findHeading('ما يحتاج إليك')).toBeInTheDocument();
+    expect(await screen.findByText('٣ of ٧ done')).toBeInTheDocument();
+    expect(await findHeading('Needs you')).toBeInTheDocument();
     expect(document.documentElement).toHaveAttribute('dir', 'rtl');
     // The cards count what /home counted (the mock's inventory), in Eastern digits.
-    expect(within(await section('المواقع')).getByRole('link', { name: /Home/ })).toHaveTextContent(
-      '١٢ شيئًا',
-    );
-    expect(await findHeading('اختصارات')).toBeInTheDocument();
+    expect(
+      within(await section('Locations')).getByRole('link', { name: /Home/ }),
+    ).toHaveTextContent('١٢ things');
+    expect(await findHeading('Shortcuts')).toBeInTheDocument();
     expectLogicalOnly();
   });
 
   it('Western digits when the person chooses them', async () => {
     await renderApp('/', { locale: 'ar', digits: 'western' });
-    expect(await screen.findByText('تم 3 من 7')).toBeInTheDocument();
+    expect(await screen.findByText('3 of 7 done')).toBeInTheDocument();
   });
 
   it('at a phone width nothing is cut off with an ellipsis', async () => {

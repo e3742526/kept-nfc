@@ -179,8 +179,8 @@ describe('Print inventory', () => {
 
   it('in Arabic, the sheet keeps to logical CSS', async () => {
     const { user } = await renderApp(`/loc/${IDS.home}`, { locale: 'ar' });
-    await user.click(await screen.findByRole('button', { name: 'اطبع الجرد' }));
-    await screen.findByRole('dialog', { name: 'اطبع الجرد' });
+    await user.click(await screen.findByRole('button', { name: 'Print inventory' }));
+    await screen.findByRole('dialog', { name: 'Print inventory' });
     expectLogicalOnly();
   });
 });
@@ -321,8 +321,8 @@ describe("Email-only options lock when mail can't go out (#141)", () => {
       locale: 'ar',
       state: mailOff(ownerScenario()),
     });
-    await user.click(await screen.findByRole('button', { name: 'اطبع الجرد' }));
-    const dialog = await screen.findByRole('dialog', { name: 'اطبع الجرد' });
+    await user.click(await screen.findByRole('button', { name: 'Print inventory' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Print inventory' });
     await waitFor(() => expect(within(dialog).getAllByRole('switch').at(-1)).toBeDisabled());
     expectLogicalOnly();
   });

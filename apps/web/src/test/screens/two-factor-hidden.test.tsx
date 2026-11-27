@@ -73,7 +73,7 @@ describe('a location hidden until this session has a second factor', () => {
 
   it('reads right to left in Arabic', async () => {
     await renderApp(`/loc/${WORKSHOP}`, { state: hiddenScenario(), locale: 'ar' });
-    const link = await screen.findByRole('link', { name: 'أعدّ التحقق بخطوتين' });
+    const link = await screen.findByRole('link', { name: 'Set up two-factor' });
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly(link.closest('main') as HTMLElement);
   });

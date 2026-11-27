@@ -21,6 +21,6 @@ it('shows English settings and leaves a legacy account language alone', async ()
 
 it('shows the English sign-in page without a language picker', async () => {
   await renderApp('/signin', { state: signedOutScenario() });
-  await findHeading('Sign in');
+  await findHeading('Sign in to SheepKeep');
   expect(screen.queryByRole('combobox', { name: 'Language' })).not.toBeInTheDocument();
 });

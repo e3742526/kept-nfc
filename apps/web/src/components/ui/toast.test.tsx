@@ -11,10 +11,10 @@ describe('Toast', () => {
   it('shows a toast in a labelled notifications region', async () => {
     await renderUI(<div />);
     act(() => {
-      toast({ title: 'Moved to Garage', description: 'Cordless drill' });
+      toast({ title: 'نُقل إلى المرآب', description: 'Cordless drill' });
     });
     const region = screen.getByRole('region', { name: 'Notifications' });
-    expect(region).toHaveTextContent('Moved to Garage');
+    expect(region).toHaveTextContent('نُقل إلى المرآب');
     expect(region).toHaveTextContent('Cordless drill');
   });
 
@@ -33,12 +33,12 @@ describe('Toast', () => {
     const onAction = vi.fn();
     const { user } = await renderUI(<div />);
     act(() => {
-      toast({ title: 'Moved to Garage', action: { label: 'Undo', onAction } });
+      toast({ title: 'نُقل إلى المرآب', action: { label: 'Undo', onAction } });
     });
     screen.getByRole('button', { name: 'Undo' }).focus();
     await user.keyboard('{Enter}');
     expect(onAction).toHaveBeenCalledOnce();
-    expect(screen.queryByText('Moved to Garage')).not.toBeInTheDocument();
+    expect(screen.queryByText('نُقل إلى المرآب')).not.toBeInTheDocument();
   });
 
   it('closes with its Close button', async () => {
@@ -51,13 +51,15 @@ describe('Toast', () => {
     expect(screen.queryByText('Saved')).not.toBeInTheDocument();
   });
 
-  it('renders RTL with a translated region label', async () => {
+  it('renders RTL with an English region label', async () => {
     await renderUI(<div />, { locale: 'ar' });
     act(() => {
       toast({ title: 'نُقل إلى المرآب', tone: 'ok' });
     });
-    expect(screen.getByRole('region', { name: 'الإشعارات' })).toHaveTextContent('نُقل إلى المرآب');
-    expect(screen.getByRole('button', { name: 'إغلاق' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Notifications' })).toHaveTextContent(
+      'نُقل إلى المرآب',
+    );
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

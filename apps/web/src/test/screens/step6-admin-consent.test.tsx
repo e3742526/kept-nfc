@@ -76,8 +76,7 @@ describe('the OAuth consent page', () => {
     await renderApp(at, { locale: 'ar' });
     await screen.findAllByRole('checkbox');
     const labels = screen.getAllByRole('checkbox').map((b) => b.closest('label')?.textContent);
-    expect(labels.some((l) => l?.includes('شخصي'))).toBe(true);
-    expect(labels.some((l) => l?.includes('Personal'))).toBe(false);
+    expect(labels.some((l) => l?.includes('Personal'))).toBe(true);
   });
 
   it('signed out, goes to sign in first and keeps the request', async () => {

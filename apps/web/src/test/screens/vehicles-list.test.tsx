@@ -66,7 +66,7 @@ describe('the Vehicles list', () => {
 
   it('reads right to left in Arabic, with Eastern digits', async () => {
     await renderApp('/vehicles', { state: seeded(), locale: 'ar', digits: 'eastern' });
-    const rows = within(await list('السيارات')).getAllByRole('article');
+    const rows = within(await list('Vehicles')).getAllByRole('article');
     expect(document.documentElement.dir).toBe('rtl');
     const corolla = rows.find((r) => r.getAttribute('aria-label') === 'Toyota Corolla');
     expect(corolla?.textContent).toMatch(/[٠-٩]/);

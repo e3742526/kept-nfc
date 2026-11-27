@@ -159,22 +159,22 @@ describe('a thing’s purchase', () => {
   it('reads a German price by German rules: a point groups, and what can’t be told apart is refused (#474)', async () => {
     const { user, mock } = await renderApp(`/t/${T.tv}`, { locale: 'de' });
     const section = (
-      await screen.findByRole('heading', { name: 'Kauf', level: 2 }, { timeout: 3000 })
+      await screen.findByRole('heading', { name: 'Purchase', level: 2 }, { timeout: 3000 })
     ).closest('section') as HTMLElement;
-    await user.click(within(section).getByRole('button', { name: 'Kauf bearbeiten' }));
-    const sheet = await screen.findByRole('dialog', { name: /^Kauf von/ });
-    const price = within(sheet).getByLabelText('Stückpreis');
+    await user.click(within(section).getByRole('button', { name: 'Edit the purchase' }));
+    const sheet = await screen.findByRole('dialog', { name: /^Purchase of/ });
+    const price = within(sheet).getByLabelText('Price of one');
     await waitFor(() => expect(price).toHaveValue('28999'));
     await user.clear(price);
     await user.type(price, '0.125');
-    await user.click(within(sheet).getByRole('button', { name: 'Speichern' }));
+    await user.click(within(sheet).getByRole('button', { name: 'Save' }));
     expect(
-      await within(sheet).findByText('Gib einen Betrag ein, z. B. 1250 oder 1250.50.'),
+      await within(sheet).findByText('Enter an amount, like 1250 or 1250.50.'),
     ).toBeInTheDocument();
     expect(mock.lastCall('PATCH', TV_PURCHASE)).toBeUndefined();
     await user.clear(price);
     await user.type(price, '27.500');
-    await user.click(within(sheet).getByRole('button', { name: 'Speichern' }));
+    await user.click(within(sheet).getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(mock.lastCall('PATCH', TV_PURCHASE)).toBeDefined());
     const body = mock.lastCall('PATCH', TV_PURCHASE)?.body as UpdatePurchaseBody;
     expect(body.lines).toEqual([{ id: expect.any(String), unitPrice: '27500' }]);
@@ -184,7 +184,7 @@ describe('a thing’s purchase', () => {
     const { user } = await renderApp(`/t/${T.phone}`, { locale: 'ar' });
     await screen.findByRole('heading', { level: 1 });
     expect(document.documentElement.dir).toBe('rtl');
-    const add = await screen.findByRole('button', { name: 'أضف الشراء' });
+    const add = await screen.findByRole('button', { name: 'Add the purchase' });
     await user.click(add);
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
     expectLogicalOnly();

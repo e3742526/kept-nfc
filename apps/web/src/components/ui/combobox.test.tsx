@@ -61,7 +61,7 @@ describe('Combobox', () => {
     });
     await user.tab();
     await user.keyboard('zzz');
-    expect(screen.getByText('لا توجد نتائج')).toBeInTheDocument();
+    expect(screen.getByText('No matches')).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

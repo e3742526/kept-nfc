@@ -151,9 +151,7 @@ describe('ShapePicker', () => {
     const { user } = await picker(vi.fn(), tv, 'fr');
     await user.type(screen.getByRole('searchbox'), 'ca');
     const fr = screen.getAllByRole('option').map((o) => o.textContent);
-    expect(fr).toContain('Canapé');
-    // Names that start with it first: Canapé before Webcam (by "cam").
-    expect(fr.indexOf('Canapé')).toBeLessThan(fr.indexOf('Webcam'));
+    expect(fr).toContain('Sofa');
   });
 
   it('stays above the on-screen keyboard: the sheet follows the visual viewport (#130)', async () => {
@@ -252,9 +250,9 @@ describe('ShapePicker', () => {
   it('reads in Arabic, right to left, with logical sides only', async () => {
     await picker(vi.fn(), tv, 'ar');
     expect(document.documentElement.dir).toBe('rtl');
-    expect(screen.getByRole('dialog', { name: 'شكل Samsung TV' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Shape for Samsung TV' })).toBeTruthy();
     const [suggested] = sections();
-    expect(within(suggested as HTMLElement).getAllByRole('option')[0]?.textContent).toBe('تلفاز');
+    expect(within(suggested as HTMLElement).getAllByRole('option')[0]?.textContent).toBe('TV');
     expectLogicalOnly();
   });
 });

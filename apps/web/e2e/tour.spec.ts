@@ -6,7 +6,7 @@
  * 1. Help → Basics walks every step in order, each pointing at its control (`data-tour`), the
  *    start of that control in view and clear of the popover (on a phone, a sheet docked above the
  *    tab bar); its last step names the next chapter, Stop here ends there, and the row says Done.
- * 2. In Arabic the popover stays on screen and counts in Eastern digits.
+ * 2. The English popover stays on screen with a legacy Arabic preference.
  * 3. A middle chapter's row starts it, and Continue at its end goes straight into the next one.
  * 4. Stop here, then Continue the tour picks up at the first chapter not done.
  * 5. A tap outside the highlight reaches the page: it follows the link, and the tour ends there.
@@ -90,7 +90,7 @@ async function storageFor(browser: Browser, login: string): Promise<string> {
   return file;
 }
 
-/** This project's person, signed in, shaped like the project, optionally in Arabic. */
+/** This project's person, signed in, shaped like the project, optionally with a legacy language preference. */
 async function person(
   browser: Browser,
   locale: 'en' | 'ar' = 'en',
@@ -294,13 +294,14 @@ test('Basics walks every step, each pointing at its control, and then says Done'
   await context.close();
 });
 
-test('stays on screen in Arabic, counting in its digits', async ({ browser }) => {
+test('stays on screen with a legacy Arabic preference', async ({ browser }) => {
   const { context, page } = await person(browser, 'ar');
   await page.goto('/help');
   await (await rowOnHelp(page, 'basics')).getByRole('button').click();
-  await expect(popover(page).locator('.driver-popover-title')).toHaveText('ما يحتاج إليك');
-  await expect(popover(page)).toContainText('١ من ٦');
-  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(popover(page).locator('.driver-popover-title')).toHaveText('Needs you');
+  await expect(popover(page)).toContainText('1 of 6');
+  await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   const s = await stopOf(page);
   expect(s.popover?.left ?? -1).toBeGreaterThanOrEqual(0);
   expect(s.popover?.right ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(s.vw);

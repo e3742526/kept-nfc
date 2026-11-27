@@ -941,11 +941,11 @@ describe('#140: plain sentences, not JSON and event codes', () => {
     await renderApp('/activity', { state: state(), locale: 'ar' });
     const arranged = await screen.findByRole(
       'article',
-      { name: 'رُتّبت الخريطة' },
+      { name: 'Arranged the map' },
       { timeout: 3000 },
     );
-    expect(arranged.textContent).toContain('وُضع «HD webcam» على «Corner desk»');
-    expect(screen.getByRole('article', { name: /ملصقًا فارغًا/ })).toBeInTheDocument();
+    expect(arranged.textContent).toContain('Put HD webcam on Corner desk');
+    expect(screen.getByRole('article', { name: /blank label/ })).toBeInTheDocument();
     expect(document.body.textContent).not.toContain('English, never shown');
     expectLogicalOnly();
   });

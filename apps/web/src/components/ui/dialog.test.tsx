@@ -52,11 +52,11 @@ describe('Dialog', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders RTL with a translated close button', async () => {
+  it('renders RTL with an Arabic title', async () => {
     const { user } = await renderUI(<Example title="أعد تسمية هذا الشيء" />, { locale: 'ar' });
     await user.click(screen.getByRole('button', { name: 'Rename' }));
     expect(screen.getByRole('dialog', { name: 'أعد تسمية هذا الشيء' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'إغلاق' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

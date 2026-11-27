@@ -143,7 +143,11 @@ describe('AI usage', () => {
     const { container, user } = await renderApp('/settings/ai/usage?scope=account', {
       locale: 'ar',
     });
-    const tables = await screen.findAllByRole('button', { name: 'عرض كجدول' }, { timeout: 5000 });
+    const tables = await screen.findAllByRole(
+      'button',
+      { name: 'Show as a table' },
+      { timeout: 5000 },
+    );
     await user.click(tables[0] as HTMLElement);
     expect(document.documentElement.dir).toBe('rtl');
     expect(screen.getAllByRole('table')[0]?.textContent).toMatch(/[٠-٩]/);
@@ -152,7 +156,7 @@ describe('AI usage', () => {
 
   it('Arabic: the day chart is an LTR SVG drawn right to left, labels clear of the plot', async () => {
     await renderApp('/settings/ai/usage?scope=account', { locale: 'ar' });
-    const chart = await screen.findByRole('img', { name: 'الرموز حسب اليوم، مكدّسة حسب المهمة' });
+    const chart = await screen.findByRole('img', { name: 'Tokens by day, stacked by task' });
     // SVG text-anchor follows the inherited direction: an LTR SVG keeps start and end physical.
     expect((chart as unknown as SVGElement).style.direction).toBe('ltr');
     const num = (el: Element, a: string) => Number(el.getAttribute(a));

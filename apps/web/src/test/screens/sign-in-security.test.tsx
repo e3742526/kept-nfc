@@ -510,7 +510,7 @@ describe('the authenticator app', () => {
 describe('in Arabic, and at a phone width', () => {
   it('draws the section right to left with logical CSS only and Eastern digits', async () => {
     await renderApp('/settings', { locale: 'ar' });
-    const heading = await screen.findByRole('heading', { name: 'تسجيل الدخول والأمان' });
+    const heading = await screen.findByRole('heading', { name: 'Sign-in and security' });
     const root = heading.closest('section') as HTMLElement;
     expect(await within(root).findByText('Laptop')).toBeInTheDocument();
     expect(root).toHaveTextContent('٨');

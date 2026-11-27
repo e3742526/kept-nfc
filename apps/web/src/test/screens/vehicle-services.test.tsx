@@ -280,7 +280,7 @@ describe('the Services tab', () => {
 
   it('mirrors in Arabic', async () => {
     await renderApp(`/t/${CAR}?tab=services`, { state: aiState(), locale: 'ar' });
-    await screen.findByRole('button', { name: 'سجّل صيانة' }, { timeout: 10_000 });
+    await screen.findByRole('button', { name: 'Log a service' }, { timeout: 10_000 });
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly();
   });

@@ -427,9 +427,9 @@ describe('the rail', () => {
   it('renders mirrored in Arabic with logical CSS only', async () => {
     media(TABLET);
     await renderApp('/', { locale: 'ar' });
-    await findHeading('الرئيسية');
+    await findHeading('Home');
     expect(document.documentElement).toHaveAttribute('dir', 'rtl');
-    const toggle = screen.getByRole('button', { name: 'توسيع الشريط الجانبي' });
+    const toggle = screen.getByRole('button', { name: 'Expand sidebar' });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expectLogicalOnly(document.getElementById('kept-sidebar') as HTMLElement);
   });

@@ -170,7 +170,7 @@ describe('incidents', () => {
     const state = ownerScenario();
     const id = withBurglary(state);
     await renderApp(`/incidents/${id}`, { state, locale: 'ar' });
-    await screen.findByRole('list', { name: /سرقة/ });
+    await screen.findByRole('list', { name: /Burglary/ });
     expect(document.documentElement.dir).toBe('rtl');
     expectLogicalOnly();
   });

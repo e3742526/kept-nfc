@@ -30,7 +30,7 @@ describe('PasswordField', () => {
 
   it('renders RTL with translated controls', async () => {
     await renderUI(<PasswordField label="كلمة المرور" />, { locale: 'ar' });
-    expect(screen.getByRole('button', { name: 'إظهار كلمة المرور' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
     expectLogicalOnly();
   });
 });

@@ -13,10 +13,10 @@
  * 5. Fuel: two full fills and a partial between them give the car's consumption.
  * 6. Starter schedules on a new car: four, and their distance due points read as estimated dates
  *    once the odometer has two readings.
- * 7. The history report of the Corolla, in English and in Arabic: made, downloaded, a PDF.
+ * 7. The history report of the Corolla, made and downloaded as an English PDF.
  * 8. Talia as a viewer of the Garage (invited by Ibrahim here; the seed has her in Home only): the
  *    Corolla with no Log buttons and no amounts.
- * 9. The vehicle page in Arabic: right to left, Eastern digits.
+ * 9. The vehicle page with a legacy Arabic preference still opens in English.
  *
  * Every page a test visits is checked with axe (nothing above "minor"). Each journey that writes
  * works on a car of its own, made through the API as the person would, so the phone and desktop
@@ -569,43 +569,33 @@ test('starter schedules on a new car, with estimated dates once the odometer has
   await context.close();
 });
 
-test('the history report of the Corolla downloads as a PDF in English and in Arabic', async ({
-  browser,
-}) => {
+test('the history report of the Corolla downloads as an English PDF', async ({ browser }) => {
   onlyOn('desktop');
   test.setTimeout(300_000);
   const { context, page } = await person(browser, 'ibrahim@kept.test');
   const garage = await locationNamed(page, 'Garage');
   const corolla = await thingNamed(page, garage.id, 'Toyota Corolla');
 
-  for (const [language, words] of [
-    ['English', 'Vehicle history'],
-    ['العربية', 'سجل المركبة'],
-  ] as const) {
-    await page.goto(`/t/${corolla.id}`);
-    await expect(page.getByRole('heading', { name: 'Toyota Corolla', level: 1 })).toBeVisible();
-    await page.getByRole('button', { name: 'More actions' }).click();
-    await page.getByRole('menuitem', { name: 'History report' }).click();
-    const sheet = page.getByRole('dialog', { name: 'History report' });
-    await expect(sheet).toBeVisible();
-    // A list of every language Kept speaks (#465), not two radio buttons.
-    await sheet.getByRole('combobox', { name: 'Language' }).click();
-    await page.getByRole('option', { name: language }).click();
-    await axe(page, `History report sheet (${language})`);
-    await sheet.getByRole('button', { name: 'Make the PDF' }).click();
-    await expect(sheet.getByText('Your PDF is ready')).toBeVisible({ timeout: 120_000 });
-    const href = await sheet.getByRole('link', { name: 'Download' }).getAttribute('href');
-    expect(href).toBeTruthy();
-    const res = await page.request.get(href as string);
-    expect(res.status()).toBe(200);
-    const pdf = await res.body();
-    expect(pdf.subarray(0, 5).toString('latin1')).toBe('%PDF-');
-    if (hasPoppler) {
-      const text = pdfText(pdf);
-      expect(text).toContain('Toyota Corolla');
-      expect(text).toContain(words);
-    }
-    await page.keyboard.press('Escape');
+  await page.goto(`/t/${corolla.id}`);
+  await expect(page.getByRole('heading', { name: 'Toyota Corolla', level: 1 })).toBeVisible();
+  await page.getByRole('button', { name: 'More actions' }).click();
+  await page.getByRole('menuitem', { name: 'History report' }).click();
+  const sheet = page.getByRole('dialog', { name: 'History report' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole('combobox', { name: 'Language' })).toHaveCount(0);
+  await axe(page, 'History report sheet');
+  await sheet.getByRole('button', { name: 'Make the PDF' }).click();
+  await expect(sheet.getByText('Your PDF is ready')).toBeVisible({ timeout: 120_000 });
+  const href = await sheet.getByRole('link', { name: 'Download' }).getAttribute('href');
+  expect(href).toBeTruthy();
+  const res = await page.request.get(href as string);
+  expect(res.status()).toBe(200);
+  const pdf = await res.body();
+  expect(pdf.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+  if (hasPoppler) {
+    const text = pdfText(pdf);
+    expect(text).toContain('Toyota Corolla');
+    expect(text).toContain('Vehicle history');
   }
   await context.close();
 });
@@ -650,21 +640,20 @@ test('Talia, a viewer of the Garage, sees the Corolla with no Log buttons and no
   await context.close();
 });
 
-test('the vehicle page in Arabic reads right to left, in Eastern digits', async ({ browser }) => {
+test('the vehicle page remains in English for a legacy Arabic preference', async ({ browser }) => {
   onlyOn('phone');
   test.setTimeout(180_000);
   const { context, page } = await person(browser, 'alfred@kept.test', { locale: 'ar' });
   const garage = await locationNamed(page, 'Garage');
   const corolla = await thingNamed(page, garage.id, 'Toyota Corolla');
   await page.goto(`/t/${corolla.id}`);
-  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('heading', { name: 'Toyota Corolla', level: 1 })).toBeVisible();
-  const odometer = page.getByRole('region', { name: 'عدّاد المسافة' });
-  await expect(odometer).toContainText(/[٠-٩]/);
-  await expect(odometer).not.toContainText(/[0-9]/);
-  await axe(page, 'Vehicle overview (ar)');
+  const odometer = page.getByRole('region', { name: 'Odometer' });
+  await expect(odometer).toContainText(/[0-9]/);
+  await axe(page, 'Vehicle overview');
   await page.goto('/vehicles');
   await expect(page.getByText('Toyota Corolla').first()).toBeVisible();
-  await axe(page, 'Vehicles (ar)');
+  await axe(page, 'Vehicles');
   await context.close();
 });

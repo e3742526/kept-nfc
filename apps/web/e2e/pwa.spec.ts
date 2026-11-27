@@ -144,7 +144,7 @@ test('a page load logs no CSP violations: setup and sign-in', async ({ page }) =
   expect(logged).toEqual([]);
 });
 
-test('the language in use is kept on the first visit, and the shell opens in it offline', async ({
+test('the shell uses English online and offline with a legacy Arabic preference', async ({
   page,
   context,
 }) => {
@@ -172,12 +172,11 @@ test('the language in use is kept on the first visit, and the shell opens in it 
   await context.setOffline(true);
   try {
     await page.reload();
-    // The pre-paint script ran (CSP hash), in Arabic, right to left.
-    await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
-    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    // The pre-paint script initializes the English shell before it starts.
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     await expect(page.locator('html')).toHaveAttribute('data-theme', /^(light|dark)$/);
-    // The first render is in Arabic, from the cached catalogue.
-    await expect(page.locator('#root')).toContainText(/[\u0600-\u06FF]/);
+    await expect(page.locator('#root')).toContainText('SheepKeep');
   } finally {
     await context.setOffline(false);
   }

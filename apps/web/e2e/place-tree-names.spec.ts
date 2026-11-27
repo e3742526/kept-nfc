@@ -7,8 +7,7 @@
  * and a plain place at depth 3, seen from the Office's page: the 15rem panel at 1280, the "All
  * places" outline at 375.
  *
- * - a short name stays on one line (it used to break into Cr / at / e0 / 42), in German too, where
- *   the count is longest, and in Arabic;
+ * - a short name stays on one line (it used to break into Cr / at / e0 / 42), including right-to-left layouts;
  * - the count sits at the row's end when both fit, and under the name, at its start, when not;
  * - a single word too long for the row breaks, and never overflows or gets an ellipsis.
  *
@@ -69,21 +68,23 @@ async function makeLocation(page: Page, name: string) {
   return { id, office: room('Office').id };
 }
 
-/** The Office's page in `locale`, and its tree: the panel at 1280, the opened outline at 375. */
+/** The Office's tree at desktop or phone width, with an optional direction override. */
 async function treeIn(
   page: Page,
   office: string,
-  locale: 'ar' | 'de' | 'en',
-  words: string,
   locationName: string,
+  direction: 'ltr' | 'rtl' = 'ltr',
 ): Promise<Locator> {
-  await page.evaluate((l) => localStorage.setItem('kept.locale', l), locale);
   await page.goto(`/p/${office}`);
-  await expect(page.locator('html')).toHaveAttribute('lang', locale);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('heading', { name: 'Office', level: 1 })).toBeVisible();
+  if (direction === 'rtl')
+    await page.evaluate(() => {
+      document.documentElement.dir = 'rtl';
+    });
   if (test.info().project.name === 'desktop')
-    return page.getByRole('navigation', { name: words.replace('{name}', locationName) });
-  const outline = page.locator('details').filter({ hasText: words });
+    return page.getByRole('navigation', { name: `Places in ${locationName}` });
+  const outline = page.locator('details').filter({ hasText: 'All places' });
   await outline.locator('summary').click();
   return outline;
 }
@@ -158,8 +159,8 @@ test("a box's name stays readable in the place tree, with its count beside it or
     const row = (tree: Locator, box: string) =>
       tree.getByRole('link', { name: new RegExp(`^${box}`) });
 
-    // German, as it was reported: the longest count.
-    let tree = await treeIn(page, made.office, 'de', docked ? 'Orte in {name}' : 'Alle Orte', name);
+    // At the default panel width.
+    let tree = await treeIn(page, made.office, name);
     if (docked) {
       const width = await tree.evaluate((el) => el.getBoundingClientRect().width);
       expect(width).toBeLessThanOrEqual(240);
@@ -170,7 +171,7 @@ test("a box's name stays readable in the place tree, with its count beside it or
       (el) => el.querySelector('ul')?.getBoundingClientRect().width ?? 0,
     );
     expect(wider).toBeLessThanOrEqual((await tree.boundingBox())?.width ?? 0);
-    await expect(row(tree, 'Crate042')).toContainText('0 Gegenstände');
+    await expect(row(tree, 'Crate042')).toContainText('0 things');
     // Depth 6 has room for a name only at the outline's width: the panel has about 46 px there.
     for (const box of docked ? ['Crate042', 'Crate044'] : ['Crate042', 'Crate044', 'Crate046']) {
       const m = await measure(row(tree, box));
@@ -192,17 +193,15 @@ test("a box's name stays readable in the place tree, with its count beside it or
     expect(long.rowOverflows, JSON.stringify(long)).toBe(false);
     expect(long.name.right, JSON.stringify(long)).toBeLessThanOrEqual(long.row.right + 0.5);
     expectBeneath(long);
-    await axe(page, 'the place tree in German');
+    await axe(page, 'the place tree at its default width');
 
-    // English, where a shallow box has room for both: the count stays at the row's end.
-    tree = await treeIn(page, made.office, 'en', docked ? 'Places in {name}' : 'All places', name);
+    // A shallow box has room for both: the count stays at the row's end.
     await expect(row(tree, 'Crate001')).toContainText('0 things');
     const beside = await measure(row(tree, 'Crate001'));
     expect(beside.lines, JSON.stringify(beside)).toBe(1);
     expectBeside(beside);
 
-    // Arabic: the same, mirrored.
-    tree = await treeIn(page, made.office, 'ar', docked ? 'الأماكن في {name}' : 'كل الأماكن', name);
+    tree = await treeIn(page, made.office, name, 'rtl');
     for (const box of ['Crate001', 'Crate042', 'Crate044']) {
       const m = await measure(row(tree, box));
       expect(m.dir).toBe('rtl');
@@ -213,9 +212,8 @@ test("a box's name stays readable in the place tree, with its count beside it or
     expect(longAr.rowOverflows, JSON.stringify(longAr)).toBe(false);
     expect(longAr.name.left, JSON.stringify(longAr)).toBeGreaterThanOrEqual(longAr.row.left - 0.5);
     expectBeneath(longAr);
-    await axe(page, 'the place tree in Arabic');
+    await axe(page, 'the right-to-left place tree');
   } finally {
-    await page.evaluate(() => localStorage.removeItem('kept.locale')).catch(() => {});
     await dropLocation(page, { id: loc, name });
     await context.close();
   }

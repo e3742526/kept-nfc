@@ -4,8 +4,8 @@
  * own seeded instance (e2e/instances.ts):
  *
  * 1. axe on every route a signed-in owner can reach by following links from Home, one page per
- *    route pattern, plus the pages outside the app (sign in, a missing page) and the Arabic pages
- *    of a member whose Kept is in Arabic. Nothing above "minor" passes (WCAG 2.2 A and AA, and
+ *    route pattern, plus the pages outside the app (sign in, a missing page) and the pages a
+ *    member can reach. Nothing above "minor" passes (WCAG 2.2 A and AA, and
  *    axe's best practices).
  * 2. A keyboard walk (desktop): capture → inbox → search → thing, and the label print flow, with
  *    no mouse at all.
@@ -148,7 +148,7 @@ test('axe: every route an owner reaches from Home, nothing above minor', async (
   await p.close();
 });
 
-test('axe: the Arabic pages of a member, nothing above minor', async ({ browser, baseURL }) => {
+test('axe: the pages of a member, nothing above minor', async ({ browser, baseURL }) => {
   test.setTimeout(600_000);
   const ctx = await session(browser, baseURL as string, 'alfred@kept.test', 'ar');
   const p = await ctx.newPage();
@@ -165,50 +165,37 @@ test('axe: sign in and a missing page, nothing above minor', async ({ page }) =>
   }
 });
 
-/**
- * The phone's filter strip keeps Filters, Views, Display on one row in every language, with
- * the longest Display words a list can show (UI audit L11: in Arabic it sat at its limit, and a
- * longer sort word would wrap it). A location's contents carry every sort, grouping and layout.
- */
-test('the filter strip keeps one row at 375 px in every language', async ({ browser, baseURL }) => {
+/** The phone's filter actions fit on one row with the longest sort labels. */
+test('the filter strip keeps one row at 375 px', async ({ browser, baseURL }) => {
   test.skip(test.info().project.name !== 'phone', 'the strip wraps only on a phone');
   test.setTimeout(180_000);
   const ctx = await session(browser, baseURL as string, 'ibrahim@kept.test');
-  const p = await ctx.newPage();
-  await p.goto('/');
-  await settle(p);
-  const location = await p.locator('a[href^="/loc/"]').first().getAttribute('href');
+  const page = await ctx.newPage();
+  await page.goto('/');
+  await settle(page);
+  const location = await page.locator('a[href^="/loc/"]').first().getAttribute('href');
   expect(location).toBeTruthy();
-  const rows: string[] = [];
-  for (const lang of ['ar', 'de', 'en', 'es', 'fr', 'it', 'uk', 'vi']) {
-    // The page-level script runs after the session's, so this language wins for this page.
-    const page = await ctx.newPage();
-    await page.addInitScript((l) => localStorage.setItem('kept.locale', l), lang);
-    for (const q of ['sort=lastSeen&group=type', 'sort=updated&group=type']) {
-      await page.goto(`${location}?${q}`);
-      await settle(page);
-      await expect(page.locator('html')).toHaveAttribute('lang', new RegExp(`^${lang}`));
-      const strip = page
-        .locator('[role=group]')
-        .filter({ has: page.locator('input[type=search]') });
-      await expect(strip).toBeVisible();
-      const buttons = await strip.evaluate((g) =>
-        [...g.children]
-          .filter((c) => c.matches('button, [role=button]'))
-          .map((c) => {
-            const r = c.getBoundingClientRect();
-            return { top: Math.round(r.top), left: r.left, right: r.right };
-          }),
-      );
-      expect(buttons.length, `${lang} ${q}`).toBeGreaterThanOrEqual(2);
-      const tops = new Set(buttons.map((b) => b.top));
-      const inside = buttons.every((b) => b.left >= 0 && b.right <= 375);
-      if (tops.size !== 1 || !inside) rows.push(`${lang} ${q}: ${JSON.stringify(buttons)}`);
-    }
-    await page.close();
+  for (const q of ['sort=lastSeen&group=type', 'sort=updated&group=type']) {
+    await page.goto(`${location}?${q}`);
+    await settle(page);
+    const strip = page.locator('[role=group]').filter({ has: page.locator('input[type=search]') });
+    await expect(strip).toBeVisible();
+    const buttons = await strip.evaluate((g) =>
+      [...g.children]
+        .filter((c) => c.matches('button, [role=button]'))
+        .map((c) => {
+          const r = c.getBoundingClientRect();
+          return { top: Math.round(r.top), left: r.left, right: r.right };
+        }),
+    );
+    expect(buttons.length, q).toBeGreaterThanOrEqual(2);
+    expect(new Set(buttons.map((b) => b.top)).size, q).toBe(1);
+    expect(
+      buttons.every((b) => b.left >= 0 && b.right <= 375),
+      q,
+    ).toBe(true);
   }
-  expect(rows).toEqual([]);
-  await p.close();
+  await page.close();
 });
 
 /** The focused element's accessible name, roughly: enough to tell where the keyboard is. */
