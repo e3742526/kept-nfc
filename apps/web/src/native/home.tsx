@@ -125,10 +125,10 @@ function RecentBoxes({
     })
     .slice(0, 4);
   return (
-    <section className="kept-recent" aria-label={t`Recently used boxes`}>
+    <section className="kept-recent" aria-label={t`Recently used containers`}>
       <div className="kept-recent-head">
         <h2 className="kept-recent-title">
-          <Trans>Recently used boxes</Trans>
+          <Trans>Recently used containers</Trans>
         </h2>
       </div>
       {boxes.length ? (
@@ -155,7 +155,7 @@ function RecentBoxes({
         </ul>
       ) : (
         <p className="text-small text-ink-2">
-          <Trans>Boxes you open or add items to will appear here.</Trans>
+          <Trans>Containers you open or add items to will appear here.</Trans>
         </p>
       )}
     </section>
@@ -235,7 +235,7 @@ export function HomeDashboard({
         />
         <StatTile
           value={stats.boxes}
-          label={t`Boxes`}
+          label={t`Containers`}
           Icon={Boxes}
           isDisabled={!ready}
           onPress={onBoxes}
@@ -286,7 +286,7 @@ export function HomeDashboard({
           <span className="kept-action-well" aria-hidden>
             <Boxes size={20} />
           </span>
-          <Trans>Add to bin</Trans>
+          <Trans>Add to container</Trans>
         </Button>
         {findName && (
           <Button

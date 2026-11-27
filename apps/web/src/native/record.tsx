@@ -927,7 +927,7 @@ export function RecordScreen({
                   onPress={() => onCapture({ ...box, kind: 'box', path: destinationPath }, path)}
                 >
                   <Plus size={16} aria-hidden />
-                  <Trans>Add to this box</Trans>
+                  <Trans>Add to this container</Trans>
                 </Button>
               )}
               {online && canEdit && (
@@ -936,7 +936,7 @@ export function RecordScreen({
                   onPress={() => onCreateBox({ ...box, kind: 'box', path: destinationPath })}
                 >
                   <Package size={16} aria-hidden />
-                  <Trans>Create box</Trans>
+                  <Trans>Create container</Trans>
                 </Button>
               )}
               <Button variant="secondary" onPress={() => onLabel('find', box)}>
@@ -986,7 +986,7 @@ export function RecordScreen({
                   onPress={() => onCreateBox({ ...target, name, path, kind: 'place' })}
                 >
                   <Package size={16} aria-hidden />
-                  <Trans>Create box</Trans>
+                  <Trans>Create container</Trans>
                 </Button>
                 <Button
                   variant="secondary"

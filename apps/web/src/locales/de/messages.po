@@ -34674,3 +34674,74 @@ msgstr "Zuletzt verwendete Boxen"
 #: src/native/home.tsx
 msgid "Boxes you open or add items to will appear here."
 msgstr "Hier erscheinen Boxen, die du öffnest oder befüllst."
+
+#: src/native/browse.tsx
+#: src/native/home.tsx
+msgid "Containers"
+msgstr "Behälter"
+
+#: src/native/browse.tsx
+#: src/native/capture-form.tsx
+msgid "New container"
+msgstr "Neuer Behälter"
+
+#: src/native/browse.tsx
+msgid "Inside a matching container"
+msgstr "In einem passenden Behälter"
+
+#: src/native/capture-form.tsx
+msgid "Could not create the container. Check your connection and selected location."
+msgstr "Der Behälter konnte nicht erstellt werden. Prüfe deine Verbindung und den ausgewählten Standort."
+
+#: src/native/capture-form.tsx
+msgid "Adding to container"
+msgstr "Zu Behälter hinzufügen"
+
+#: src/native/capture-form.tsx
+msgid "Container name"
+msgstr "Name des Behälters"
+
+#: src/native/capture-form.tsx
+#: src/native/record.tsx
+msgid "Create container"
+msgstr "Behälter erstellen"
+
+#: src/native/capture-form.tsx
+msgid "The container was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "Der Behälter wurde erstellt, aber sein Inhalt konnte auf diesem iPhone nicht gespeichert werden. Versuche es erneut."
+
+#: src/native/capture-form.tsx
+msgid "Container name (optional)"
+msgstr "Name des Behälters (optional)"
+
+#: src/native/capture-form.tsx
+msgid "Container type"
+msgstr "Behältertyp"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the container.} other {# items go in the container.}}"
+msgstr "{itemCount, plural, one {# Gegenstand kommt in den Behälter.} other {# Gegenstände kommen in den Behälter.}}"
+
+#: src/native/capture-form.tsx
+msgid "Create container and add items"
+msgstr "Behälter erstellen und Gegenstände hinzufügen"
+
+#: src/native/home.tsx
+msgid "Recently used containers"
+msgstr "Zuletzt verwendete Behälter"
+
+#: src/native/home.tsx
+msgid "Containers you open or add items to will appear here."
+msgstr "Behälter, die du öffnest oder denen du Gegenstände hinzufügst, erscheinen hier."
+
+#: src/native/home.tsx
+msgid "Add to container"
+msgstr "In Behälter legen"
+
+#: src/native/main.tsx
+msgid "Add container"
+msgstr "Behälter hinzufügen"
+
+#: src/native/record.tsx
+msgid "Add to this container"
+msgstr "In diesen Behälter legen"

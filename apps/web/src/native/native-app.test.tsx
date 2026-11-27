@@ -1082,10 +1082,10 @@ async function openSettings(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('button', { name: 'Settings' }));
 }
 
-/** Home is a command center now: boxes are one tap away behind the Boxes tile. */
+/** Home lists containers behind the Containers tile. */
 async function openWinterBox(user: ReturnType<typeof userEvent.setup>) {
   await screen.findByRole('navigation');
-  const tile = screen.queryByRole('button', { name: /Boxes$/ });
+  const tile = screen.queryByRole('button', { name: /Containers$/ });
   if (tile) {
     await waitFor(() => expect(tile).toBeEnabled());
     await user.click(tile);
@@ -1106,15 +1106,15 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     const view = env.renderApp();
-    const recent = await screen.findByRole('region', { name: 'Recently used boxes' });
+    const recent = await screen.findByRole('region', { name: 'Recently used containers' });
     expect(
-      within(recent).getByText('Boxes you open or add items to will appear here.'),
+      within(recent).getByText('Containers you open or add items to will appear here.'),
     ).toBeVisible();
     await openWinterBox(user);
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Home' }));
     expect(
-      await within(screen.getByRole('region', { name: 'Recently used boxes' })).findByRole(
+      await within(screen.getByRole('region', { name: 'Recently used containers' })).findByRole(
         'button',
         { name: /Winter Box/ },
       ),
@@ -1122,7 +1122,7 @@ describe('KeptPhone mobile workflows', () => {
     view.unmount();
     env.setOnline(false);
     env.renderApp();
-    const offline = await screen.findByRole('region', { name: 'Recently used boxes' });
+    const offline = await screen.findByRole('region', { name: 'Recently used containers' });
     await user.click(await within(offline).findByRole('button', { name: /Winter Box/ }));
     expect(await screen.findByRole('heading', { name: 'Winter Box' })).toBeVisible();
   });
@@ -1138,7 +1138,7 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    await user.click(await screen.findByRole('button', { name: 'Add to bin' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to container' }));
     await user.click(await screen.findByRole('button', { name: 'Add to Winter Box' }));
     expect(screen.getByText('Destination').closest('.kept-destination')).toHaveTextContent(
       'Winter Box',
@@ -2347,7 +2347,7 @@ describe('KeptPhone mobile workflows', () => {
     const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
     const user = userEvent.setup();
     env.renderApp();
-    const boxes = await screen.findByRole('button', { name: '2 Boxes' });
+    const boxes = await screen.findByRole('button', { name: '2 Containers' });
     await waitFor(() => expect(boxes).toBeEnabled());
 
     env.pushScan(
@@ -3701,7 +3701,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(serverField).toHaveValue(address);
 
     await user.click(signIn);
-    expect(await screen.findByRole('button', { name: /Boxes$/ })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /Containers$/ })).toBeInTheDocument();
     expect(connect).toHaveBeenCalledTimes(5);
     expect(connect).toHaveBeenLastCalledWith(address);
   });
@@ -3759,7 +3759,7 @@ describe('KeptPhone mobile workflows', () => {
         ]);
       });
       expect(env.events.disconnected).toBe(0);
-      expect(await screen.findByRole('button', { name: /Boxes$/ })).toBeVisible();
+      expect(await screen.findByRole('button', { name: /Containers$/ })).toBeVisible();
 
       supportsTagRegistration = true;
       await user.click(await screen.findByRole('button', { name: 'Retry sync' }));
@@ -3858,7 +3858,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.type(serverField, 'https://kept.example.com');
     await user.click(screen.getByRole('button', { name: 'Sign in with Apple' }));
 
-    const boxesTile = await screen.findByRole('button', { name: /Boxes$/ });
+    const boxesTile = await screen.findByRole('button', { name: /Containers$/ });
     await waitFor(() => expect(boxesTile).toBeEnabled());
     await user.click(boxesTile);
     const winterBoxBtn = await screen.findByRole('button', { name: /^Winter Box/i });
@@ -3866,8 +3866,8 @@ describe('KeptPhone mobile workflows', () => {
     expectLogicalOnly();
     await user.click(winterBoxBtn);
 
-    await screen.findByRole('button', { name: 'Add to this box' });
-    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await screen.findByRole('button', { name: 'Add to this container' });
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
 
     // Start with a photo, then add details and a PDF while offline.
     env.setOnline(false);
@@ -4141,7 +4141,7 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
 
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
 
     env.setStorageFull(true);
     await user.type(screen.getByLabelText('Description'), 'Tools');
@@ -4191,7 +4191,7 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
 
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     env.setOnline(false);
     await user.type(screen.getByLabelText('Description'), 'Offline discard me');
     await saveNewItem(user);
@@ -4368,7 +4368,7 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
 
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
 
     // 1. Failed sync while form is open -> Needs attention: 1, never Synced or Saved on device.
     env.setForceDrop('target_trashed');
@@ -4632,7 +4632,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     const view = env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     const original = new File(['a photo'], 'holiday.jpg', { type: 'image/jpeg' });
     const fileInput = view.container.querySelector<HTMLInputElement>('input[type=file]');
     if (!fileInput) throw new Error('Expected a photograph input');
@@ -4641,7 +4641,7 @@ describe('KeptPhone mobile workflows', () => {
 
     const tabbar = screen.getByRole('navigation');
     expect(within(tabbar).queryByRole('button', { name: 'Add' })).not.toBeInTheDocument();
-    expect(screen.getByText('Adding to box')).toBeInTheDocument();
+    expect(screen.getByText('Adding to container')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
     await user.click(within(tabbar).getByRole('button', { name: 'More' }));
@@ -4653,9 +4653,11 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }));
     dialog = await screen.findByRole('alertdialog', { name: 'Discard this draft?' });
     await user.click(within(dialog).getByRole('button', { name: 'Discard draft' }));
-    expect(await screen.findByRole('button', { name: 'Add to this box' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Add to this container' }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(await screen.findByRole('heading', { name: 'Boxes' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Containers' })).toBeInTheDocument();
     expect(env.events.uploadedFiles).toHaveLength(0);
   });
 
@@ -4671,7 +4673,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
 
-    const boxes = await screen.findByRole('button', { name: '2 Boxes' });
+    const boxes = await screen.findByRole('button', { name: '2 Containers' });
     expect(screen.getByRole('button', { name: '2 Items' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '1 Places' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '0 Unplaced' })).toBeInTheDocument();
@@ -4683,7 +4685,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: 'Assistant' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
     await user.click(boxes);
-    expect(await screen.findByRole('button', { name: 'Boxes' })).toHaveAttribute(
+    expect(await screen.findByRole('button', { name: 'Containers' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
@@ -4697,7 +4699,7 @@ describe('KeptPhone mobile workflows', () => {
 
     // A search shows results instead of the command center, and the enter arrow opens Browse.
     await user.type(screen.getByRole('searchbox', { name: 'Search inventory' }), 'Winter');
-    expect(screen.queryByRole('button', { name: /Boxes$/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Containers$/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Open in Browse' }));
     expect(await screen.findByRole('textbox', { name: 'Search' })).toHaveValue('Winter');
     expect(screen.getByRole('button', { name: 'Items' })).toHaveAttribute('aria-pressed', 'true');
@@ -4754,7 +4756,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openAddFromHome(user);
-    const addBox = screen.getByRole('button', { name: 'Add box' });
+    const addBox = screen.getByRole('button', { name: 'Add container' });
     await waitFor(() => expect(addBox).toBeEnabled());
     await user.type(screen.getByLabelText('Description'), 'Keep this draft');
     await user.click(addBox);
@@ -4766,7 +4768,10 @@ describe('KeptPhone mobile workflows', () => {
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Discard draft' }),
     );
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add box' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Add container' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await user.click(screen.getByRole('button', { name: 'Add item' }));
     expect(await screen.findByLabelText('Description')).toHaveValue('');
   });
@@ -4839,7 +4844,9 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    expect(await screen.findByRole('region', { name: 'Recently used boxes' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('region', { name: 'Recently used containers' }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Recent activity' })).not.toBeInTheDocument();
     await user.click(
       within(screen.getByRole('navigation')).getByRole('button', { name: 'History' }),
@@ -5104,7 +5111,7 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    await screen.findByRole('button', { name: /Boxes$/ });
+    await screen.findByRole('button', { name: /Containers$/ });
     await user.type(screen.getByRole('searchbox', { name: 'Search inventory' }), 'Snow shovel');
     await user.click(await screen.findByRole('button', { name: /Add .*Snow shovel/ }));
     expect(screen.getByLabelText('Description')).toHaveValue('Snow shovel');
@@ -5130,7 +5137,7 @@ describe('KeptPhone mobile workflows', () => {
     const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
     env.renderApp();
     await openWinterBox(user);
-    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
     // One screen: the description, the photo buttons and Save are all there from the start.
     expect(screen.getByLabelText('Description')).toHaveValue('');
     expect(screen.getByRole('button', { name: 'Camera' })).toBeVisible();
@@ -5160,7 +5167,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openWinterBox(user);
-    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
     const read = vi.spyOn(navigator.clipboard, 'read');
     read.mockResolvedValueOnce([]);
     await user.click(screen.getByRole('button', { name: 'Clipboard' }));
@@ -5195,7 +5202,7 @@ describe('KeptPhone mobile workflows', () => {
         : request(connection, path, options),
     );
     const start = async (withPhoto = false) => {
-      const boxes = await screen.findByRole('button', { name: '2 Boxes' });
+      const boxes = await screen.findByRole('button', { name: '2 Containers' });
       await waitFor(() => expect(boxes).toBeEnabled());
       await openAddFromHome(user);
       if (withPhoto) {
@@ -5244,7 +5251,7 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    await screen.findByRole('button', { name: '2 Boxes' });
+    await screen.findByRole('button', { name: '2 Containers' });
     await openAddFromHome(user);
     await user.click(await screen.findByRole('button', { name: 'Start with NFC' }));
     expect(await screen.findByText(/Currently linked to:/)).toHaveTextContent('Winter Box');
@@ -5294,7 +5301,7 @@ describe('KeptPhone mobile workflows', () => {
     );
     const user = userEvent.setup();
     env.renderApp();
-    await screen.findByRole('button', { name: '2 Boxes' });
+    await screen.findByRole('button', { name: '2 Containers' });
     await openAddFromHome(user);
     const enter = async (text: string) => {
       await user.click(await screen.findByRole('button', { name: 'Scan UPC' }));
@@ -5328,7 +5335,7 @@ describe('KeptPhone mobile workflows', () => {
     const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
     const user = userEvent.setup();
     env.renderApp();
-    const boxes = await screen.findByRole('button', { name: '2 Boxes' });
+    const boxes = await screen.findByRole('button', { name: '2 Containers' });
     await waitFor(() => expect(boxes).toBeEnabled());
     await openAddFromHome(user);
     await user.type(screen.getByLabelText('Description'), 'Camera');
@@ -5423,7 +5430,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Watch');
     await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
@@ -5461,7 +5468,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Ring');
     await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
@@ -5472,7 +5479,7 @@ describe('KeptPhone mobile workflows', () => {
     // Discarding the draft leaves the reserved code unused; the next form takes it back.
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Necklace');
     await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
@@ -5492,7 +5499,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Ring');
     await openItemLabelPicker(user);
     env.pushScan(
@@ -5511,7 +5518,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
 
-    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Ring');
     await openItemLabelPicker(user);
     env.pushScan({ status: 'read', url: `${origin}/l/RSV234` });
@@ -5535,7 +5542,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Ring');
     await openItemLabelPicker(user);
     const inspected = {
@@ -5581,18 +5588,18 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Ring');
     await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'Write new NFC tag' }));
     await waitFor(() => expect(env.events.reservedLabelKeys).toHaveLength(1));
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(await screen.findByRole('button', { name: 'Discard draft' }));
-    await screen.findByRole('button', { name: 'Add to this box' });
+    await screen.findByRole('button', { name: 'Add to this container' });
     await act(async () => gate.resolve());
     expect(scan).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole('button', { name: 'Add to this box' }));
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
     await user.type(screen.getByLabelText('Description'), 'Ring');
     await openItemLabelPicker(user);
     await user.click(screen.getByRole('button', { name: 'New QR label' }));
@@ -5629,7 +5636,7 @@ describe('KeptPhone mobile workflows', () => {
     );
     env.renderApp();
     await openWinterBox(user);
-    await user.click(await screen.findByRole('button', { name: 'Add to this box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to this container' }));
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -5777,14 +5784,14 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await openAddFromHome(user);
-    await user.click(await screen.findByRole('button', { name: 'Add box' }));
+    await user.click(await screen.findByRole('button', { name: 'Add container' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Contents (optional)' }),
       'First{Enter}Second',
     );
-    await user.click(screen.getByRole('button', { name: 'Create box' }));
+    await user.click(screen.getByRole('button', { name: 'Create container' }));
     expect(
-      await screen.findByText(/box was created, but its contents could not be saved/),
+      await screen.findByText(/container was created, but its contents could not be saved/),
     ).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Contents (optional)' })).toHaveValue('Second');
     await user.click(screen.getByRole('button', { name: 'Save contents' }));
@@ -5792,7 +5799,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(boxes).toBe(1);
   });
 
-  it('creates a box with its contents listed, or goes on to add items to it', async () => {
+  it('creates a container from the list, or goes on to add items from the Add form', async () => {
     const connection = {
       id: 'https://kept.example.com|ibrahim|epoch-1',
       origin: 'https://kept.example.com',
@@ -5832,21 +5839,30 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     const openBoxForm = async () => {
       await openAddFromHome(user);
-      const addBox = await screen.findByRole('button', { name: 'Add box' });
+      const addBox = await screen.findByRole('button', { name: 'Add container' });
       await waitFor(() => expect(addBox).toBeEnabled());
       await user.click(addBox);
     };
 
-    await openBoxForm();
-    await user.type(screen.getByRole('textbox', { name: 'Box name (optional)' }), 'Cables');
-    await user.click(screen.getByRole('button', { name: /Box type/ }));
+    await user.click(await screen.findByRole('button', { name: '2 Containers' }));
+    const header = (await screen.findByRole('heading', { name: 'Containers' })).closest(
+      '.kept-screen-header',
+    );
+    if (!(header instanceof HTMLElement)) throw new Error('Missing Containers header');
+    await user.click(within(header).getByRole('button', { name: 'New container' }));
+    expect(screen.getByRole('heading', { name: 'New container' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('heading', { name: 'Containers' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'New container' }));
+    await user.type(screen.getByRole('textbox', { name: 'Container name (optional)' }), 'Cables');
+    await user.click(screen.getByRole('button', { name: /Container type/ }));
     await user.click(screen.getByRole('option', { name: '27-gallon tote' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Contents (optional)' }),
       '3 x HDMI cable{Enter}Power strip',
     );
-    expect(screen.getByText('2 items go in the box.')).toBeVisible();
-    await user.click(screen.getByRole('button', { name: 'Create box' }));
+    expect(screen.getByText('2 items go in the container.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Create container' }));
     expect(
       spy.mock.calls.some(
         ([, path, options]) =>
@@ -5867,10 +5883,11 @@ describe('KeptPhone mobile workflows', () => {
 
     // Or the box is made and Add item opens with it as the destination; Back returns to it.
     await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('heading', { name: 'Containers' })).toBeVisible();
     await openBoxForm();
-    await user.type(screen.getByRole('textbox', { name: 'Box name (optional)' }), 'Tools');
-    await user.click(screen.getByRole('button', { name: 'Create box and add items' }));
-    expect(await screen.findByRole('heading', { name: 'Adding to box' })).toBeInTheDocument();
+    await user.type(screen.getByRole('textbox', { name: 'Container name (optional)' }), 'Tools');
+    await user.click(screen.getByRole('button', { name: 'Create container and add items' }));
+    expect(await screen.findByRole('heading', { name: 'Adding to container' })).toBeInTheDocument();
     expect(
       (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent,
     ).toContain('Tools');

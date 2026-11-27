@@ -413,7 +413,7 @@ export function CaptureForm({
       setChangingDestination(false);
       onSave();
     } catch {
-      setStatus(t`Could not create the box. Check your connection and selected location.`);
+      setStatus(t`Could not create the container. Check your connection and selected location.`);
     } finally {
       setBusy(false);
     }
@@ -813,7 +813,7 @@ export function CaptureForm({
       : documentsOnly
         ? t`Add documents`
         : box && box.kind !== 'place'
-          ? t`Adding to box`
+          ? t`Adding to container`
           : t`Add item`;
 
   const canPaste =
@@ -1214,13 +1214,13 @@ export function CaptureForm({
                 )}
                 {online && destination && newBinName === undefined && (
                   <Button size="small" variant="secondary" onPress={() => setNewBinName('')}>
-                    <Trans>New bin</Trans>
+                    <Trans>New container</Trans>
                   </Button>
                 )}
                 {newBinName !== undefined && (
                   <div className="grid gap-2">
                     <TextField
-                      label={t`Box name`}
+                      label={t`Container name`}
                       value={newBinName}
                       onChange={setNewBinName}
                       inputProps={{ maxLength: 200 }}
@@ -1232,7 +1232,7 @@ export function CaptureForm({
                         isDisabled={!newBinName.trim()}
                         onPress={() => void createDestinationBin()}
                       >
-                        <Trans>Create box</Trans>
+                        <Trans>Create container</Trans>
                       </Button>
                       <Button
                         variant="ghost"
@@ -1463,21 +1463,21 @@ export function NewBoxForm({
           connection,
           cache,
           target,
-          name.trim() || t`Box`,
+          name.trim() || t`Container`,
           adapters,
           boxTypeId || undefined,
         );
         box = {
           id: result.id,
           locationId: result.locationId,
-          name: result.name ?? (name.trim() || t`Box`),
+          name: result.name ?? (name.trim() || t`Container`),
           kind: 'box',
         };
         setCreated(box);
         onAdded?.(target);
       }
     } catch {
-      setStatus(t`Could not create the box. Check your connection and selected location.`);
+      setStatus(t`Could not create the container. Check your connection and selected location.`);
       setBusy(false);
       return;
     }
@@ -1524,7 +1524,7 @@ export function NewBoxForm({
         onContentsSaved?.();
       }
       setStatus(
-        t`The box was created, but its contents could not be saved on this iPhone. Try again.`,
+        t`The container was created, but its contents could not be saved on this iPhone. Try again.`,
       );
     } finally {
       setBusy(false);
@@ -1534,7 +1534,7 @@ export function NewBoxForm({
   return (
     <section className="grid gap-4">
       <ScreenHeader
-        title={<Trans>Create a box</Trans>}
+        title={<Trans>New container</Trans>}
         onBack={onClose}
         backDisabled={busy}
         icon={<Package size={18} aria-hidden />}
@@ -1548,14 +1548,14 @@ export function NewBoxForm({
         }}
       >
         <TextField
-          label={t`Box name (optional)`}
+          label={t`Container name (optional)`}
           value={name}
           onChange={setName}
           inputProps={{ maxLength: 200 }}
           isDisabled={busy || !!created}
         />
         <Select
-          label={t`Box type`}
+          label={t`Container type`}
           selectedKey={boxTypeId || 'default'}
           isDisabled={busy || !!created}
           items={[
@@ -1605,18 +1605,18 @@ export function NewBoxForm({
         {lines.length > 0 && (
           <p className="m-0 text-small text-ink-2">
             {plural(itemCount, {
-              one: '# item goes in the box.',
-              other: '# items go in the box.',
+              one: '# item goes in the container.',
+              other: '# items go in the container.',
             })}
           </p>
         )}
         <Button type="submit" isPending={busy} isDisabled={!target}>
           <Plus size={18} aria-hidden />
-          {created ? <Trans>Save contents</Trans> : <Trans>Create box</Trans>}
+          {created ? <Trans>Save contents</Trans> : <Trans>Create container</Trans>}
         </Button>
         <Button variant="secondary" isDisabled={busy || !target} onPress={() => void submit(true)}>
           <Camera size={18} aria-hidden />
-          {created ? <Trans>Add items</Trans> : <Trans>Create box and add items</Trans>}
+          {created ? <Trans>Add items</Trans> : <Trans>Create container and add items</Trans>}
         </Button>
       </form>
       <p role="status" className="text-ink-2">

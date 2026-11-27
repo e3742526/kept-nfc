@@ -58,6 +58,9 @@ spec:
       {{- end }}
       initContainers:
         {{- include "kept.waitForDb" $root | nindent 8 }}
+        {{- if $v.visualEncoder.enabled }}
+        {{- include "kept.visualEncoder" $root | nindent 8 }}
+        {{- end }}
       containers:
         - name: kept
           image: {{ include "kept.image" $root }}
@@ -72,6 +75,10 @@ spec:
             {{- include "kept.dbUrlEnv" (dict "root" $root "login" "owner" "var" "KEPT_OWNER_DATABASE_URL") | nindent 12 }}
             {{- end }}
             {{- include "kept.commonEnv" $root | nindent 12 }}
+            {{- if $v.visualEncoder.enabled }}
+            - name: KEPT_VISUAL_ENCODER_URL
+              value: {{ printf "http://127.0.0.1:%v" $v.visualEncoder.port | quote }}
+            {{- end }}
           {{- $envFrom := include "kept.envFrom" $root | trim }}
           {{- if or $envFrom (and $v.metrics.tokenSecret (ne $c "worker")) }}
           envFrom:
@@ -163,6 +170,10 @@ spec:
         - name: backups
           persistentVolumeClaim:
             claimName: {{ include "kept.backupClaim" $root }}
+        {{- end }}
+        {{- if $v.visualEncoder.enabled }}
+        - name: visual-encoder-tmp
+          emptyDir: {}
         {{- end }}
         {{- with $v.extraVolumes }}
         {{- toYaml . | nindent 8 }}

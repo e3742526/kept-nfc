@@ -34674,3 +34674,74 @@ msgstr "Boîtes utilisées récemment"
 #: src/native/home.tsx
 msgid "Boxes you open or add items to will appear here."
 msgstr "Les boîtes ouvertes ou remplies apparaîtront ici."
+
+#: src/native/browse.tsx
+#: src/native/home.tsx
+msgid "Containers"
+msgstr "Contenants"
+
+#: src/native/browse.tsx
+#: src/native/capture-form.tsx
+msgid "New container"
+msgstr "Nouveau contenant"
+
+#: src/native/browse.tsx
+msgid "Inside a matching container"
+msgstr "Dans un contenant correspondant"
+
+#: src/native/capture-form.tsx
+msgid "Could not create the container. Check your connection and selected location."
+msgstr "Impossible de créer le contenant. Vérifiez votre connexion et le lieu sélectionné."
+
+#: src/native/capture-form.tsx
+msgid "Adding to container"
+msgstr "Ajout au contenant"
+
+#: src/native/capture-form.tsx
+msgid "Container name"
+msgstr "Nom du contenant"
+
+#: src/native/capture-form.tsx
+#: src/native/record.tsx
+msgid "Create container"
+msgstr "Créer un contenant"
+
+#: src/native/capture-form.tsx
+msgid "The container was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "Le contenant a été créé, mais son contenu n’a pas pu être enregistré sur cet iPhone. Réessayez."
+
+#: src/native/capture-form.tsx
+msgid "Container name (optional)"
+msgstr "Nom du contenant (facultatif)"
+
+#: src/native/capture-form.tsx
+msgid "Container type"
+msgstr "Type de contenant"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the container.} other {# items go in the container.}}"
+msgstr "{itemCount, plural, one {# objet sera ajouté au contenant.} other {# objets seront ajoutés au contenant.}}"
+
+#: src/native/capture-form.tsx
+msgid "Create container and add items"
+msgstr "Créer un contenant et ajouter des objets"
+
+#: src/native/home.tsx
+msgid "Recently used containers"
+msgstr "Contenants utilisés récemment"
+
+#: src/native/home.tsx
+msgid "Containers you open or add items to will appear here."
+msgstr "Les contenants que vous ouvrez ou auxquels vous ajoutez des objets s’affichent ici."
+
+#: src/native/home.tsx
+msgid "Add to container"
+msgstr "Ajouter à un contenant"
+
+#: src/native/main.tsx
+msgid "Add container"
+msgstr "Ajouter un contenant"
+
+#: src/native/record.tsx
+msgid "Add to this container"
+msgstr "Ajouter à ce contenant"

@@ -34674,3 +34674,74 @@ msgstr "Recently used boxes"
 #: src/native/home.tsx
 msgid "Boxes you open or add items to will appear here."
 msgstr "Boxes you open or add items to will appear here."
+
+#: src/native/browse.tsx
+#: src/native/home.tsx
+msgid "Containers"
+msgstr "Containers"
+
+#: src/native/browse.tsx
+#: src/native/capture-form.tsx
+msgid "New container"
+msgstr "New container"
+
+#: src/native/browse.tsx
+msgid "Inside a matching container"
+msgstr "Inside a matching container"
+
+#: src/native/capture-form.tsx
+msgid "Could not create the container. Check your connection and selected location."
+msgstr "Could not create the container. Check your connection and selected location."
+
+#: src/native/capture-form.tsx
+msgid "Adding to container"
+msgstr "Adding to container"
+
+#: src/native/capture-form.tsx
+msgid "Container name"
+msgstr "Container name"
+
+#: src/native/capture-form.tsx
+#: src/native/record.tsx
+msgid "Create container"
+msgstr "Create container"
+
+#: src/native/capture-form.tsx
+msgid "The container was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "The container was created, but its contents could not be saved on this iPhone. Try again."
+
+#: src/native/capture-form.tsx
+msgid "Container name (optional)"
+msgstr "Container name (optional)"
+
+#: src/native/capture-form.tsx
+msgid "Container type"
+msgstr "Container type"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the container.} other {# items go in the container.}}"
+msgstr "{itemCount, plural, one {# item goes in the container.} other {# items go in the container.}}"
+
+#: src/native/capture-form.tsx
+msgid "Create container and add items"
+msgstr "Create container and add items"
+
+#: src/native/home.tsx
+msgid "Recently used containers"
+msgstr "Recently used containers"
+
+#: src/native/home.tsx
+msgid "Containers you open or add items to will appear here."
+msgstr "Containers you open or add items to will appear here."
+
+#: src/native/home.tsx
+msgid "Add to container"
+msgstr "Add to container"
+
+#: src/native/main.tsx
+msgid "Add container"
+msgstr "Add container"
+
+#: src/native/record.tsx
+msgid "Add to this container"
+msgstr "Add to this container"

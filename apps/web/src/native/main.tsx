@@ -124,7 +124,7 @@ type Screen =
       backToAssistant?: boolean;
       backToVisual?: boolean;
     }
-  | { kind: 'new'; place?: Target; destination?: Destination }
+  | { kind: 'new'; place?: Target; destination?: Destination; backToBrowse?: boolean }
   | { kind: 'rooms' }
   | { kind: 'unplaced' }
   | { kind: 'labelSheets' }
@@ -1539,10 +1539,10 @@ export function Inventory({
     </>
   );
 
-  // Item | Box: the Add tab makes either. Hidden when adding into a given box or room.
+  // The shared Add form switches between items and containers. Direct actions open one form.
   const addTabs =
     (screen.kind === 'capture' && !screen.destination && !screen.fromRecord) ||
-    (screen.kind === 'new' && !screen.place) ? (
+    (screen.kind === 'new' && !screen.place && !screen.backToBrowse) ? (
       <div className="kept-add-tabs">
         <Button
           variant="secondary"
@@ -1569,7 +1569,7 @@ export function Inventory({
           }}
         >
           <Package size={16} aria-hidden />
-          <Trans>Add box</Trans>
+          <Trans>Add container</Trans>
         </Button>
       </div>
     ) : null;
@@ -1862,13 +1862,18 @@ export function Inventory({
             authoritativeCache?.places.find((entry) => entry.id === screen.place?.id)
           }
           suggested={suggestedDestination}
-          onClose={() => (screen.place ? open(screen.place, true) : goHome())}
+          onClose={
+            screen.backToBrowse
+              ? goBack
+              : () => (screen.place ? open(screen.place, true) : goHome())
+          }
           onAdded={rememberAdded}
           onContentsSaved={savedLocally}
           onCreated={(box, addItems) => {
             const record: Screen = {
               kind: 'record',
               target: { id: box.id, locationId: box.locationId, kind: 'thing' },
+              backToBrowse: screen.backToBrowse,
             };
             // Adding items: Back from Add returns to the new box, not the box form.
             if (addItems) {
@@ -2083,6 +2088,9 @@ export function Inventory({
           onOpen={(target) => {
             pushScreen({ kind: 'record', target, backToBrowse: true });
           }}
+          onCreateContainer={
+            canWrite ? () => pushScreen({ kind: 'new', backToBrowse: true }) : undefined
+          }
           onAddToBox={(destination) =>
             pushScreen({ kind: 'capture', destination, fromRecord: true })
           }
@@ -2346,7 +2354,9 @@ export function Inventory({
           tab={
             screen.kind === 'assistant'
               ? undefined
-              : screen.kind === 'capture' || screen.kind === 'new' || screen.kind === 'photoReview'
+              : screen.kind === 'capture' ||
+                  (screen.kind === 'new' && !screen.backToBrowse) ||
+                  screen.kind === 'photoReview'
                 ? 'home'
                 : tabFor(backStack.current[0] ?? screen)
           }

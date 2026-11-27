@@ -32,6 +32,22 @@ class InvalidInput(ValueError):
     """The supplied text or JPEG could not be encoded."""
 
 
+def parse_text(body):
+    """The query text of an encode/text body: {"text": <non-blank string of at most 4 KiB>}."""
+    try:
+        value = json.loads(body.decode("utf-8"))
+        text = value.get("text") if isinstance(value, dict) and set(value) == {"text"} else None
+        if (
+            not isinstance(text, str)
+            or not text.strip()
+            or len(text.encode("utf-8")) > MAX_TEXT_BYTES
+        ):
+            raise InvalidInput()
+    except (UnicodeError, ValueError, RecursionError):
+        raise InvalidInput() from None
+    return text
+
+
 class Encoder:
     def __init__(self, weights):
         for package, pinned in MODEL_VERSIONS.items():
@@ -73,17 +89,7 @@ class Encoder:
         ])
 
     def encode_text(self, body):
-        try:
-            value = json.loads(body.decode("utf-8"))
-            text = value.get("text") if isinstance(value, dict) and set(value) == {"text"} else None
-            if (
-                not isinstance(text, str)
-                or not text.strip()
-                or len(text.encode("utf-8")) > MAX_TEXT_BYTES
-            ):
-                raise InvalidInput()
-        except (UnicodeError, ValueError, RecursionError):
-            raise InvalidInput() from None
+        text = parse_text(body)
         with self.torch.inference_mode():
             return self.vector(self.model.encode_text(self.tokenize([text])))
 

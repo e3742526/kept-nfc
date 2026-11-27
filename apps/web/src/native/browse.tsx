@@ -173,6 +173,7 @@ export function Browse({
   onFilters,
   onBack,
   onOpen,
+  onCreateContainer,
   onAddToBox,
   onPhotoSearch,
   onRooms,
@@ -187,6 +188,7 @@ export function Browse({
   onFilters: (next: BrowseFilters) => void;
   onBack: () => void;
   onOpen: (target: Target) => void;
+  onCreateContainer?: () => void;
   onAddToBox: (destination: Destination) => void;
   onPhotoSearch: (mode: VisualSearchIntent['mode']) => void;
   onRooms: () => void;
@@ -328,7 +330,7 @@ export function Browse({
           f.state === 'uncertain' && f.mode === 'all' ? (
             <Trans>Missing items</Trans>
           ) : f.mode === 'bins' ? (
-            <Trans>Boxes</Trans>
+            <Trans>Containers</Trans>
           ) : f.mode === 'categories' ? (
             <Trans>Categories</Trans>
           ) : (
@@ -336,6 +338,23 @@ export function Browse({
           )
         }
         onBack={onBack}
+        trailing={
+          f.mode === 'bins' && onCreateContainer ? (
+            <Button
+              variant="secondary"
+              size="small"
+              className="min-h-11 min-w-11"
+              aria-label={t`New container`}
+              isDisabled={!online}
+              onPress={onCreateContainer}
+            >
+              <Plus size={16} aria-hidden />
+              <span className="hidden min-[360px]:inline">
+                <Trans>New container</Trans>
+              </span>
+            </Button>
+          ) : undefined
+        }
       />
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" onPress={onRooms}>
@@ -345,7 +364,7 @@ export function Browse({
           [
             { id: 'all', name: t`Items` },
             { id: 'categories', name: t`Categories` },
-            { id: 'bins', name: t`Boxes` },
+            { id: 'bins', name: t`Containers` },
           ] as const
         ).map((mode) => (
           <Button
@@ -418,7 +437,7 @@ export function Browse({
             update={(rooms) => update({ rooms })}
           />
           <MultiFilter
-            label={t`Bins`}
+            label={t`Containers`}
             options={boxes}
             selected={f.bins}
             update={(bins) => update({ bins })}
@@ -708,7 +727,7 @@ export function Browse({
                     )}
                     {inBox && (
                       <span className="text-small">
-                        <Trans>Inside a matching bin</Trans>
+                        <Trans>Inside a matching container</Trans>
                       </span>
                     )}
                   </span>

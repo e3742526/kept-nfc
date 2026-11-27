@@ -34674,3 +34674,74 @@ msgstr "Hộp dùng gần đây"
 #: src/native/home.tsx
 msgid "Boxes you open or add items to will appear here."
 msgstr "Các hộp bạn mở hoặc thêm đồ vào sẽ xuất hiện ở đây."
+
+#: src/native/browse.tsx
+#: src/native/home.tsx
+msgid "Containers"
+msgstr "Vật chứa"
+
+#: src/native/browse.tsx
+#: src/native/capture-form.tsx
+msgid "New container"
+msgstr "Vật chứa mới"
+
+#: src/native/browse.tsx
+msgid "Inside a matching container"
+msgstr "Trong vật chứa phù hợp"
+
+#: src/native/capture-form.tsx
+msgid "Could not create the container. Check your connection and selected location."
+msgstr "Không thể tạo vật chứa. Hãy kiểm tra kết nối và vị trí đã chọn."
+
+#: src/native/capture-form.tsx
+msgid "Adding to container"
+msgstr "Đang thêm vào vật chứa"
+
+#: src/native/capture-form.tsx
+msgid "Container name"
+msgstr "Tên vật chứa"
+
+#: src/native/capture-form.tsx
+#: src/native/record.tsx
+msgid "Create container"
+msgstr "Tạo vật chứa"
+
+#: src/native/capture-form.tsx
+msgid "The container was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "Đã tạo vật chứa nhưng không thể lưu các mục bên trong trên iPhone này. Hãy thử lại."
+
+#: src/native/capture-form.tsx
+msgid "Container name (optional)"
+msgstr "Tên vật chứa (không bắt buộc)"
+
+#: src/native/capture-form.tsx
+msgid "Container type"
+msgstr "Loại vật chứa"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the container.} other {# items go in the container.}}"
+msgstr "{itemCount, plural, other {# mục sẽ được thêm vào vật chứa.}}"
+
+#: src/native/capture-form.tsx
+msgid "Create container and add items"
+msgstr "Tạo vật chứa và thêm mục"
+
+#: src/native/home.tsx
+msgid "Recently used containers"
+msgstr "Vật chứa dùng gần đây"
+
+#: src/native/home.tsx
+msgid "Containers you open or add items to will appear here."
+msgstr "Các vật chứa bạn mở hoặc thêm mục vào sẽ xuất hiện ở đây."
+
+#: src/native/home.tsx
+msgid "Add to container"
+msgstr "Thêm vào vật chứa"
+
+#: src/native/main.tsx
+msgid "Add container"
+msgstr "Thêm vật chứa"
+
+#: src/native/record.tsx
+msgid "Add to this container"
+msgstr "Thêm vào vật chứa này"

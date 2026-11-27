@@ -123,6 +123,29 @@ worker:
     limits:
       memory: 768Mi
 
+# Visual search (experimental): find things by a photo or a description of how they look. The
+# encoder (docker/visual-encoder/Dockerfile: OpenCLIP ViT-B/32 with its pinned checkpoint, CPU
+# only) answers only on 127.0.0.1, so it runs as a sidecar in every pod that runs Kept (server,
+# or web and worker), and Kept's container starts once it answers. Enabling it sets
+# KEPT_VISUAL_ENCODER_URL. Each pod then needs about 1.5 GB more image and up to 1.5 GiB more
+# memory.
+visualEncoder:
+  enabled: false
+  image:
+    # No public image is published: build docker/visual-encoder/Dockerfile and push it.
+    repository: ""
+    # A tag (never latest), a digest, or both.
+    tag: ""
+    digest: ""
+    pullPolicy: IfNotPresent
+  port: 8798
+  resources:
+    requests:
+      cpu: 250m
+      memory: 768Mi
+    limits:
+      memory: 2Gi
+
 smtp:
   # A secret holding KEPT_SMTP_URL, e.g. smtps://user:password@mail.example.org:465.
   existingSecret: ""
@@ -177,8 +200,7 @@ jobs:
 # `- {name: KEPT_EXTRA_ADDRESSES, value: "https://kept-lan.example.org"}` for other exact addresses
 # this Kept answers on, comma-separated, on the same scheme as the public URL. Your ingress must
 # route them too.
-# To opt in to visual search, set KEPT_VISUAL_ENCODER_URL to an HTTP loopback origin only when
-# a compatible OpenCLIP sidecar runs in the same Pod as the server and worker.
+# For visual search, use visualEncoder below rather than setting KEPT_VISUAL_ENCODER_URL here.
 extraEnv: []
 # More envFrom sources for Kept's containers.
 extraEnvFrom: []

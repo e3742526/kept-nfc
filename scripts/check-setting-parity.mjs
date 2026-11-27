@@ -148,6 +148,8 @@ const NOT_SETTINGS = new Set([
   'KEPT_DB_SYSTEM_PASSWORD',
   'KEPT_HTTP_PORT',
   'KEPT_IMAGE',
+  // The visual-encoder service's image (compose.yaml's `visual` profile).
+  'KEPT_VISUAL_ENCODER_IMAGE',
 ]);
 
 const NAME = /\bKEPT_[A-Z0-9_]+\b/g;

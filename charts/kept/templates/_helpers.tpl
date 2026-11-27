@@ -78,6 +78,66 @@ app.kubernetes.io/component: {{ .component }}
 {{- if and (eq .Values.storage.mode "s3") (not .Values.storage.s3.bucket) -}}
 {{- fail "storage.mode=s3 needs storage.s3.bucket" -}}
 {{- end -}}
+{{- if .Values.visualEncoder.enabled -}}
+{{- range .Values.extraEnv -}}
+{{- if eq .name "KEPT_VISUAL_ENCODER_URL" -}}
+{{- fail "visualEncoder.enabled sets KEPT_VISUAL_ENCODER_URL itself: remove it from extraEnv" -}}
+{{- end -}}
+{{- end -}}
+{{- $_ := include "kept.visualEncoderImage" . -}}
+{{- end -}}
+{{- end -}}
+
+{{/* The visual encoder's image (docker/visual-encoder/Dockerfile). There is no published one to
+default to, so the repository and a tag or digest are required. */}}
+{{- define "kept.visualEncoderImage" -}}
+{{- $img := .Values.visualEncoder.image -}}
+{{- if not $img.repository -}}
+{{- fail "visualEncoder.image.repository is required: build docker/visual-encoder/Dockerfile and push it to your registry" -}}
+{{- end -}}
+{{- if or (eq (toString $img.tag) "latest") (and (not $img.tag) (not $img.digest)) -}}
+{{- fail "visualEncoder.image: set a tag (not latest) or a digest" -}}
+{{- end -}}
+{{- if and $img.digest $img.tag -}}
+{{- printf "%s:%s@%s" $img.repository (toString $img.tag) $img.digest -}}
+{{- else if $img.digest -}}
+{{- printf "%s@%s" $img.repository $img.digest -}}
+{{- else -}}
+{{- printf "%s:%s" $img.repository (toString $img.tag) -}}
+{{- end -}}
+{{- end -}}
+
+{{/* The visual encoder, a native sidecar (an init container that keeps running): Kept's container
+starts once the encoder answers on the pod's loopback, and the encoder stops after it. It binds
+127.0.0.1 only, so its probes run healthcheck.py inside the pod. */}}
+{{- define "kept.visualEncoder" -}}
+{{- $e := .Values.visualEncoder -}}
+- name: visual-encoder
+  image: {{ include "kept.visualEncoderImage" . }}
+  imagePullPolicy: {{ $e.image.pullPolicy }}
+  restartPolicy: Always
+  env:
+    - name: KEPT_VISUAL_ENCODER_PORT
+      value: {{ $e.port | quote }}
+  startupProbe:
+    exec:
+      command: ["python", "/opt/encoder/healthcheck.py"]
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 60
+  livenessProbe:
+    exec:
+      command: ["python", "/opt/encoder/healthcheck.py"]
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+  securityContext:
+    {{- include "kept.securityContext" . | nindent 4 }}
+  resources:
+    {{- toYaml $e.resources | nindent 4 }}
+  volumeMounts:
+    - name: visual-encoder-tmp
+      mountPath: /tmp
 {{- end -}}
 
 {{/* Database coordinates. */}}

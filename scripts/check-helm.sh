@@ -15,7 +15,8 @@
 #    cache is .tmp/kubeconform: a cold cache needs the network once, a warm one runs offline;
 # 4. every rendered image carries a tag or a digest, and none is `latest`;
 # 5. the chart refuses what it must: no publicUrl, image.tag=latest, split without secret keys,
-#    split with local files on a ReadWriteOnce volume;
+#    split with local files on a ReadWriteOnce volume, a visual encoder without a pinned image or
+#    beside its own KEPT_VISUAL_ENCODER_URL in extraEnv;
 # 6. with KEPT_HELM_KIND=1, a kind cluster: install with the bundled Postgres and a local image,
 #    /readyz, `helm test`, one upgrade (the migrate hook runs again), then the cluster is deleted.
 #    NOT RUN YET: build agents may not create clusters; it is the maintainer's device row H1b.
@@ -58,7 +59,7 @@ render() { # <set> [extra helm args...]
 fail=0
 sets=()
 for f in "$chart"/ci/*.values.yaml; do sets+=("$(basename "$f" .values.yaml)"); done
-[[ ${#sets[@]} -ge 4 ]] || { echo "check-helm: expected the four value sets in charts/kept/ci/" >&2; exit 1; }
+[[ ${#sets[@]} -ge 5 ]] || { echo "check-helm: expected the five value sets in charts/kept/ci/" >&2; exit 1; }
 
 echo "==> the checkout's chart version"
 for key in version appVersion; do
@@ -144,6 +145,12 @@ refuses 'latest' "${base[@]}" --set image.tag=latest
 refuses 'split.enabled needs keys.existingSecret' "${base[@]}" --set split.enabled=true
 refuses 'ReadWriteMany' "${base[@]}" --set split.enabled=true --set keys.existingSecret=k
 refuses 'postgres.external.host is required' "${base[@]}" --set postgres.bundled=false
+refuses 'visualEncoder.image.repository is required' "${base[@]}" --set visualEncoder.enabled=true
+refuses 'set a tag (not latest) or a digest' "${base[@]}" --set visualEncoder.enabled=true \
+  --set visualEncoder.image.repository=r.example.org/enc --set visualEncoder.image.tag=latest
+refuses 'remove it from extraEnv' "${base[@]}" --set visualEncoder.enabled=true \
+  --set visualEncoder.image.repository=r.example.org/enc --set visualEncoder.image.tag=1.0.0 \
+  --set 'extraEnv[0].name=KEPT_VISUAL_ENCODER_URL' --set 'extraEnv[0].value=http://127.0.0.1:1'
 
 if [[ ${KEPT_HELM_KIND:-} == 1 ]]; then
   echo "==> kind smoke (KEPT_HELM_KIND=1)"

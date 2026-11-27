@@ -204,6 +204,25 @@
       "additionalProperties": false,
       "properties": { "resources": { "$ref": "#/definitions/resources" } }
     },
+    "visualEncoder": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "image": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "repository": { "type": "string" },
+            "tag": { "type": "string" },
+            "digest": { "type": "string", "pattern": "^$|^sha256:[0-9a-f]{64}$" },
+            "pullPolicy": { "enum": ["IfNotPresent", "Always", "Never"] }
+          }
+        },
+        "port": { "type": "integer", "minimum": 1024, "maximum": 65535 },
+        "resources": { "$ref": "#/definitions/resources" }
+      }
+    },
     "smtp": {
       "type": "object",
       "additionalProperties": false,

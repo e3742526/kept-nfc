@@ -9,7 +9,7 @@
 #
 # The image holds everything the encoder reads: the hashed Python lock, CPU-only PyTorch and the
 # checkpoint, verified against its SHA-256 at build time. At run time it makes no network requests
-# and writes only to /tmp, as uid 10001 on a read-only root filesystem. Expect about 1.3 GB on disk
+# and writes only to /tmp, as uid 10001 on a read-only root filesystem. Expect about 1.5 GB on disk
 # and 600 MiB to 1.5 GiB of memory.
 #
 # The build uses no BuildKit-only syntax, so the legacy builder can build it too.

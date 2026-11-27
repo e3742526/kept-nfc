@@ -248,6 +248,28 @@ services:
         condition: service_completed_successfully
     networks: [kept]
 
+  visual-encoder:
+    # Visual search's encoder, opt-in (KEPT_VISUAL_ENCODER_URL on the docs' Configuration page).
+    # Build its image in a checkout (`docker build -f docker/visual-encoder/Dockerfile
+    # -t sheepkeep-visual-encoder:local .`) or name a published one in KEPT_VISUAL_ENCODER_IMAGE,
+    # set KEPT_VISUAL_ENCODER_URL=http://127.0.0.1:8798 in .env, then
+    # `docker compose --profile visual up -d`. It answers only on 127.0.0.1, so it joins kept's
+    # network namespace: nothing is published and nothing else on the network reaches it. Kept
+    # logs "visual search on" once it answers. About 1.5 GB of image and up to 1.5 GiB of memory.
+    profiles: [visual]
+    image: ${KEPT_VISUAL_ENCODER_IMAGE:-sheepkeep-visual-encoder:local}
+    restart: unless-stopped
+    network_mode: service:kept
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      kept:
+        condition: service_started
+        # A recreated kept has a new network namespace: restart the encoder into it.
+        restart: true
+
   init:
     # `docker compose run --rm init` (`kept init`): asks the address and writes .env in this
     # folder. `up` never starts it. The only service that sees this folder; it runs as root with
