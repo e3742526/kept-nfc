@@ -1213,6 +1213,89 @@ describe('KeptPhone mobile workflows', () => {
     expect(history).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    { description: 'Fixture  WRENCH', expectedQuantity: '4' },
+    { description: '', expectedQuantity: '4' },
+    { description: 'Screwdriver', expectedQuantity: '' },
+  ])(
+    'carries the entered quantity into a single-item photo review for description "$description"',
+    async ({ description, expectedQuantity }) => {
+      const origin = 'https://kept.example.com';
+      const connection = {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      };
+      const env = createFakeEnvironment({ initialConnection: connection });
+      env.adapters.captureAI = {
+        status: vi.fn(async () => ({ apple: 'unsupported' as const })),
+        connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+        disconnect: vi.fn(async () => ({ revoked: true })),
+        models: vi.fn(async () => []),
+        suggest: vi.fn(async () => ({ name: '' })),
+        serverProposals: vi.fn(async () => ({
+          items: [{ name: 'Fixture wrench', quantity: 2 }],
+        })),
+      };
+      await env.adapters.outbox.setValue(connection, 'defaultPhotoAI', 'server');
+
+      const request = vi.spyOn(env.adapters.transport, 'request');
+      const user = userEvent.setup();
+      const mounted = env.renderApp();
+      await user.click(
+        within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+      );
+      const picker = document.querySelector<HTMLInputElement>(
+        'input[type=file][accept="image/*"][multiple]',
+      );
+      if (!picker) throw new Error('Photo input is missing');
+      await user.upload(picker, new File(['photo'], 'review.jpg', { type: 'image/jpeg' }));
+      await continueToItemDetails(user);
+      if (description)
+        await user.type(screen.getByRole('textbox', { name: 'Description' }), description);
+      await user.click(screen.getByText('Details', { selector: 'summary' }));
+      await user.type(screen.getByRole('textbox', { name: 'Quantity (optional)' }), '4');
+      await user.click(await screen.findByRole('button', { name: 'Suggest items' }));
+
+      await screen.findByRole('heading', { name: 'Photo review' });
+      await user.click(screen.getByText('Details', { selector: 'summary' }));
+      expect(screen.getByRole('textbox', { name: 'Quantity (optional)' })).toHaveValue(
+        expectedQuantity,
+      );
+      expect(screen.getByText('AI estimate: 2')).toBeVisible();
+
+      await user.click(screen.getByRole('button', { name: 'Save review for later' }));
+      await screen.findByRole('button', { name: /^Review$/ });
+      mounted.unmount();
+      env.renderApp();
+      await user.click(await screen.findByRole('button', { name: /^Review$/ }));
+      await user.click(screen.getByText('Details', { selector: 'summary' }));
+      expect(screen.getByRole('textbox', { name: 'Quantity (optional)' })).toHaveValue(
+        expectedQuantity,
+      );
+      await user.click(screen.getByRole('button', { name: 'Save selected entries' }));
+      await waitFor(() =>
+        expect(request).toHaveBeenCalledWith(
+          expect.anything(),
+          capturePaths.syncOps,
+          expect.objectContaining({
+            body: expect.objectContaining({
+              ops: [
+                expect.objectContaining({
+                  payload: expect.objectContaining({
+                    name: 'Fixture wrench',
+                    quantity: expectedQuantity || undefined,
+                  }),
+                }),
+              ],
+            }),
+          }),
+        ),
+      );
+    },
+  );
+
   it('resumes a two-photo review and syncs only selected entries with shared originals', async () => {
     const origin = 'https://kept.example.com';
     const category = (id: string, name: string): Tag => ({
@@ -1267,6 +1350,9 @@ describe('KeptPhone mobile workflows', () => {
       new File([new Uint8Array([4, 5, 6])], 'second.jpg', { type: 'image/jpeg' }),
     ]);
     await continueToItemDetails(user);
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Drill');
+    await user.click(screen.getByText('Details', { selector: 'summary' }));
+    await user.type(screen.getByRole('textbox', { name: 'Quantity (optional)' }), '4');
     await user.click(await screen.findByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
     await user.click(screen.getByRole('button', { name: 'Suggest items' }));

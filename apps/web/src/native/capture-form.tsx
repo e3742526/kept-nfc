@@ -284,6 +284,7 @@ export function CaptureForm({
     try {
       const proposals: PhotoSuggestion[] =
         items.length && !single ? items : [{ name: name.trim() }];
+      const draftName = normalize(name);
       // The label goes with the item when the review is of one item; with several, it stays
       // here for the next item saved (confirmed above).
       const labelled = proposals.length === 1 ? claimCode : undefined;
@@ -311,7 +312,10 @@ export function CaptureForm({
               tagRequestId: newId(),
               name: item.name,
               note: items.length && !single ? (item.description ?? note.trim()) : note.trim(),
-              quantity: items.length && !single ? '' : quantity,
+              quantity:
+                proposals.length === 1 && (!draftName || normalize(item.name) === draftName)
+                  ? quantity
+                  : '',
               estimatedQuantity: items.length && !single ? (item.quantity ?? undefined) : undefined,
               evidence: item.evidence,
               include: true,
