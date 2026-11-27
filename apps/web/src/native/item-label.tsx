@@ -1,7 +1,7 @@
 import { newId } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Nfc, QrCode as QrCodeIcon, Share, Tag, X } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import type { ReservedLabel } from '@/api/capture/types';
 import { appDetect } from '@/camera/scanner';
@@ -77,6 +77,7 @@ export function ItemLabelPicker({
   beforeNfcWrite,
   nfcWriteAborted,
   recoverNfcDraft,
+  leading,
   disabled = false,
 }: {
   connection: Connection;
@@ -95,6 +96,8 @@ export function ItemLabelPicker({
   beforeNfcWrite?: (label: ItemLabel, url: string) => Promise<void>;
   nfcWriteAborted?: (code: string) => Promise<void>;
   recoverNfcDraft?: (url: string) => Promise<boolean>;
+  /** Entry only: another quick start (Scan UPC) shown in the same row as Start with NFC. */
+  leading?: ReactNode;
   disabled?: boolean;
 }) {
   const { t } = useLingui();
@@ -526,15 +529,18 @@ export function ItemLabelPicker({
   if (entry) {
     return (
       <div className="grid gap-2">
-        <Button
-          variant="secondary"
-          isPending={busy}
-          isDisabled={!https || disabled}
-          onPress={() => void inspectEntryTag()}
-        >
-          <Nfc size={16} aria-hidden />
-          <Trans>Start with NFC</Trans>
-        </Button>
+        <div className="kept-scan-row">
+          {leading}
+          <Button
+            variant="secondary"
+            isPending={busy}
+            isDisabled={!https || disabled}
+            onPress={() => void inspectEntryTag()}
+          >
+            <Nfc size={16} aria-hidden />
+            <Trans>Start with NFC</Trans>
+          </Button>
+        </div>
         {inspectionActions}
         {status && <p role="status">{status}</p>}
       </div>

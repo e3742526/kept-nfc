@@ -34265,23 +34265,11 @@ msgstr "Questa etichetta non è ancora stata assegnata. Scansionala dalla scheda
 msgid "That code matches more than one item. Scan it from the Scan tab to choose one."
 msgstr "Questo codice corrisponde a più oggetti. Scansionalo dalla scheda Scansiona per sceglierne uno."
 
-msgid "Item details"
-msgstr "Dettagli dell’oggetto"
-
-msgid "Add an NFC tag?"
-msgstr "Aggiungere un tag NFC?"
-
 msgid "Your item gets a QR code when it syncs. You can print it later."
 msgstr "All’oggetto viene assegnato un codice QR al momento della sincronizzazione. Puoi stamparlo in seguito."
 
-msgid "Continue to labels"
-msgstr "Continua con le etichette"
-
 msgid "Save item"
 msgstr "Salva oggetto"
-
-msgid "Skip NFC and save"
-msgstr "Salva senza tag NFC"
 
 msgid "Turn on Bluetooth to use the label printer."
 msgstr "Attiva il Bluetooth per usare la stampante di etichette."
@@ -34614,3 +34602,15 @@ msgstr "Usa un altro tag NFC"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "La tua coda di stampa è vuota."
+
+#: src/native/capture-form.tsx
+msgid "Action, category, quantity, notes and label"
+msgstr "Azione, categoria, quantità, note ed etichetta"
+
+#: src/native/capture-form.tsx
+msgid "Clipboard"
+msgstr "Appunti"
+
+#: src/native/capture-form.tsx
+msgid "Copy a photo first, then try again."
+msgstr "Copia prima una foto, poi riprova."

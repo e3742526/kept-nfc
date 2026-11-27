@@ -1,11 +1,22 @@
 import { AMOUNT_STRING, newId, normalize, TAG_LIMITS } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
+import {
+  Camera,
+  Check,
+  ClipboardPaste,
+  FileText,
+  FolderOpen,
+  Images,
+  MapPin,
+  Package,
+  Plus,
+  ScanBarcode,
+  Trash2,
+} from 'lucide-react';
 import {
   type ReactNode,
   type Ref,
-  useCallback,
   useEffect,
   useEffectEvent,
   useImperativeHandle,
@@ -75,7 +86,11 @@ import { readRecentDestinations } from './recent-destinations';
 import { UpcCapture } from './upc-capture';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
-type AddStep = 'photos' | 'details' | 'label';
+type FileRole = SelectedOriginal['role'] | ((file: File) => SelectedOriginal['role']);
+
+/** Files take PDFs and images alike: each file's type says which it is. */
+const roleOfFile = (file: File): SelectedOriginal['role'] =>
+  file.type.startsWith('image/') ? 'photo' : 'document';
 
 /** Return the recorded path, with the location name when the screen has room for it. */
 function destinationLabel(cache: InventoryCache, destination: Destination, full = false): string {
@@ -109,7 +124,6 @@ export function CaptureForm({
   initialName = '',
   initialPhoto,
   initialNfcDraft,
-  skipPhotos = false,
   blankTag,
   suggested,
   pending = [],
@@ -135,7 +149,6 @@ export function CaptureForm({
   initialName?: string;
   initialPhoto?: File;
   initialNfcDraft?: NfcCaptureDraft;
-  skipPhotos?: boolean;
   /** A blank NFC tag scanned on the way here: the label step offers to write it. */
   blankTag?: TagReading;
   /** Where Add starts (the place or box added to last, else Unplaced); the picker changes it. */
@@ -172,16 +185,14 @@ export function CaptureForm({
   const photosOnly = destination?.kind === 'photos' || locationPhoto;
   const documentsOnly = destination?.kind === 'documents';
   const evidenceOnly = photosOnly || documentsOnly;
-  const [step, setStep] = useState<AddStep>(() =>
-    initialName || initialPhoto || initialNfcDraft || blankTag || skipPhotos ? 'details' : 'photos',
-  );
-  const focusStepHeading = useCallback(
-    (heading: HTMLHeadingElement | null) => heading?.focus(),
-    [],
-  );
   const [labelBusy, setLabelBusy] = useState(false);
-  const showDetails = !evidenceOnly && step === 'details';
-  const showLabels = !evidenceOnly && step === 'label';
+  // One screen: an item's description, files, destination and collapsed details are all here.
+  const isItem = !evidenceOnly;
+  // Details open on arrival when a blank NFC tag scanned on the way here waits to be written.
+  const [detailsOpen, setDetailsOpen] = useState(!!blankTag);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  // Set by a save: once the form is enabled again, focus returns to the description.
+  const refocusDescription = useRef(false);
   const [tags, setTags] = useState<string[]>(initialNfcDraft?.tags ?? []);
   const [intent, setIntent] = useState<'record' | 'add'>(initialNfcDraft?.intent ?? 'record');
   const [batchId] = useState(newId);
@@ -216,11 +227,7 @@ export function CaptureForm({
   const firstPhoto = photos[0];
   const captureLocation = cache?.locations.find(({ id }) => id === destination?.locationId);
   const nfcEntry =
-    !evidenceOnly &&
-    step === 'photos' &&
-    !!captureLocation &&
-    captureLocation.role !== 'viewer' &&
-    !label;
+    isItem && !blankTagWaiting && !!captureLocation && captureLocation.role !== 'viewer' && !label;
   const account = captureLocation?.ownerAccountId;
 
   const [batchEntryIds, setBatchEntryIds] = useState<string[]>([]);
@@ -321,7 +328,9 @@ export function CaptureForm({
       : [];
 
   async function canLeave() {
-    if (busy || labelBusy) return false;
+    // A label still being made (a reservation or an NFC write) can be left like any draft: the
+    // picker shelves a late reservation for the next item.
+    if (busy) return false;
     if (nfcDraft) return true;
     if (!name && !note && !quantity && !files.length && !tags.length && !label && !upc && !typeId)
       return true;
@@ -340,6 +349,14 @@ export function CaptureForm({
       previewUrlsRef.current = [];
     };
   }, []);
+
+  // After a save the description is disabled until `busy` clears; focus it then, ready for the
+  // next item.
+  useEffect(() => {
+    if (busy || !refocusDescription.current) return;
+    refocusDescription.current = false;
+    descriptionRef.current?.querySelector('input')?.focus();
+  }, [busy]);
 
   const quantityInvalid =
     quantity !== '' && (!AMOUNT_STRING.test(quantity) || Number(quantity) <= 0);
@@ -439,7 +456,6 @@ export function CaptureForm({
       setNfcDraft(preparedNfc.current);
       preparedNfc.current = undefined;
     }
-    if (label && nfcEntry) goToStep('details');
   }
 
   async function recoverNfc(url: string) {
@@ -459,7 +475,7 @@ export function CaptureForm({
     setCustomDraft(saved.customDraft ?? {});
     setNfcDraft({ ...saved, originals });
     setLabel({ code: saved.code, locationId: saved.locationId, source: 'nfc' });
-    goToStep('details');
+    setStatus('');
     return true;
   }
 
@@ -519,10 +535,6 @@ export function CaptureForm({
     );
   }
 
-  function goToStep(next: AddStep) {
-    setStatus('');
-    setStep(next);
-  }
   const pendingById = new Map(pending.map((entry) => [entry.capture.id, entry]));
   const batchPendingCount = batchEntryIds.filter((id) => {
     const entry = pendingById.get(id);
@@ -541,7 +553,7 @@ export function CaptureForm({
     (id) => !pendingById.has(id) && completions[id] === 'discarded',
   ).length;
 
-  function prepareFiles(source: ArrayLike<File>, role: SelectedOriginal['role']) {
+  function prepareFiles(source: ArrayLike<File>, chosenRole: FileRole) {
     const items = Array.from(source);
     if (
       items.some((file) => file.size === 0 || file.size > mobileFileLimit) ||
@@ -556,6 +568,7 @@ export function CaptureForm({
     }
     setStatus('');
     return items.map((file): ChosenFile => {
+      const role = typeof chosenRole === 'function' ? chosenRole(file) : chosenRole;
       const previewUrl = role === 'photo' ? createPreviewUrl(file) : undefined;
       if (previewUrl) previewUrlsRef.current.push(previewUrl);
       return { file, role, key: newId(), ...(previewUrl ? { previewUrl } : {}) };
@@ -577,7 +590,7 @@ export function CaptureForm({
     return originals;
   }
 
-  async function choose(source: FileList | null, role: SelectedOriginal['role']) {
+  async function choose(source: ArrayLike<File> | null, role: FileRole) {
     if (!source || busy || labelBusy) return;
     const next = prepareFiles(source, role);
     if (!next) return;
@@ -619,6 +632,26 @@ export function CaptureForm({
       }
       return current.filter((item) => item.key !== key);
     });
+  }
+
+  /** Attaches the images on the clipboard; text is pasted into a field the usual way. */
+  async function pasteImages() {
+    if (busy || labelBusy) return;
+    const images: File[] = [];
+    try {
+      for (const item of await navigator.clipboard.read()) {
+        const type = item.types.find((entry) => entry.startsWith('image/'));
+        if (!type) continue;
+        const blob = await item.getType(type);
+        images.push(
+          new File([blob], `clipboard-${images.length + 1}.${type.slice(6) || 'png'}`, { type }),
+        );
+      }
+    } catch {
+      // Refused or unreadable: same answer as an empty clipboard.
+    }
+    if (images.length) await choose(images, 'photo');
+    else setStatus(t`Copy a photo first, then try again.`);
   }
 
   async function reviewPhoto(items: PhotoSuggestion[] = []) {
@@ -758,7 +791,7 @@ export function CaptureForm({
         setNfcDraft(undefined);
       }
       clearLabel();
-      setStep('photos');
+      refocusDescription.current = isItem;
       setStatus(t`Saved on device.`);
       if (!evidenceOnly) added(destination);
       onSave();
@@ -783,19 +816,26 @@ export function CaptureForm({
           ? t`Adding to box`
           : t`Add item`;
 
+  const canPaste =
+    isItem && typeof navigator !== 'undefined' && typeof navigator.clipboard?.read === 'function';
+  const canLabel = !!destination && !!captureLocation && captureLocation.role !== 'viewer';
+  const upcButton =
+    isItem && !label && !upc && onOpen && !scanningUpc ? (
+      <Button
+        variant="secondary"
+        isDisabled={busy || labelBusy}
+        onPress={() => setScanningUpc(true)}
+      >
+        <ScanBarcode size={18} aria-hidden />
+        <Trans>Scan UPC</Trans>
+      </Button>
+    ) : null;
+
   return (
     <section className="grid gap-4">
       <ScreenHeader
         title={headerTitle}
         onBack={() => {
-          if (showLabels) {
-            goToStep('details');
-            return;
-          }
-          if (showDetails) {
-            goToStep('photos');
-            return;
-          }
           void canLeave().then((ok) => {
             if (ok) onClose();
           });
@@ -812,6 +852,9 @@ export function CaptureForm({
         }
       />
       {headerExtra}
+      <p role="status" className="m-0 text-ink-2 empty:sr-only">
+        {status}
+      </p>
       {online && lastSavedItem && completions[lastSavedItem.id] === 'synced' && (
         <QueueLabelButton
           key={lastSavedItem.id}
@@ -842,53 +885,264 @@ export function CaptureForm({
           </div>
         </header>
       )}
-      {batchEntryIds.length > 0 && (
-        <div
-          className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-small"
-          role="status"
-        >
-          <span>{t`Entries in this batch: ${batchEntryIds.length}`}</span>
-          {batchSyncedCount > 0 && (
-            <span className="kept-badge kept-badge-ok">{t`Synced: ${batchSyncedCount}`}</span>
-          )}
-          {batchPendingCount > 0 && (
-            <span className="kept-badge kept-badge-warn">
-              {syncing
-                ? t`Syncing: ${batchPendingCount}`
-                : t`Saved on device: ${batchPendingCount}`}
-            </span>
-          )}
-          {batchFailedCount > 0 && (
-            <span className="kept-badge kept-badge-danger">
-              {t`Needs attention: ${batchFailedCount}`}
-            </span>
-          )}
-          {batchDiscardedCount > 0 && (
-            <span className="kept-badge">{t`Discarded: ${batchDiscardedCount}`}</span>
-          )}
-        </div>
-      )}
       <form
         className="grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          if (showDetails && canSave) {
-            if (blankTagWaiting) goToStep('label');
-            else void save();
-          }
-          if ((evidenceOnly || showLabels) && !labelBusy) void save();
+          if (canSave && !labelBusy) void save();
         }}
       >
-        {!evidenceOnly && (
-          <h3 key={step} ref={focusStepHeading} tabIndex={-1} className="text-title font-semibold">
-            {step === 'photos'
-              ? t`Add photos`
-              : step === 'details'
-                ? t`Item details`
-                : t`Add an NFC tag?`}
-          </h3>
+        {isItem && (
+          <div ref={descriptionRef}>
+            <TextField
+              label={t`Description`}
+              placeholder={t`Holiday decorations`}
+              value={name}
+              onChange={setName}
+              isDisabled={busy}
+              inputProps={{
+                maxLength: 200,
+                name: 'name',
+                enterKeyHint: 'done',
+              }}
+            />
+          </div>
         )}
-        {cache && showDetails && (
+        {isItem && upc && <p>{t`UPC: ${upc}`}</p>}
+        {isItem && nfcDraft && (
+          <p role="status">
+            <Trans>SheepKeep tag verified.</Trans> <bdi>{nfcDraft.code}</bdi>
+          </p>
+        )}
+        {nfcEntry && destination ? (
+          <ItemLabelPicker
+            key={destination.locationId}
+            entry
+            leading={upcButton}
+            connection={connection}
+            cache={cache}
+            locationId={destination.locationId}
+            itemName={name}
+            online={online}
+            value={undefined}
+            onChange={acceptNfc}
+            onBusyChange={setLabelBusy}
+            beforeNfcWrite={prepareNfc}
+            nfcWriteAborted={abortNfc}
+            recoverNfcDraft={recoverNfc}
+            disabled={busy}
+          />
+        ) : (
+          upcButton && <div className="kept-scan-row">{upcButton}</div>
+        )}
+        {isItem && scanningUpc && onOpen && (
+          <UpcCapture
+            connection={connection}
+            cache={cache}
+            online={online}
+            onClose={() => setScanningUpc(false)}
+            onOpen={(target) => {
+              setScanningUpc(false);
+              onOpen(target);
+            }}
+            onNew={(code, suggestedName) => {
+              setScanningUpc(false);
+              setUpc(code);
+              if (suggestedName && !name) setName(suggestedName);
+            }}
+          />
+        )}
+        <div className="kept-media-bar">
+          {isItem ? (
+            <>
+              <FileTrigger
+                acceptedFileTypes={['image/*']}
+                defaultCamera="environment"
+                onSelect={(list) => choose(list, 'photo')}
+              >
+                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                  <Camera size={20} aria-hidden />
+                  <Trans>Camera</Trans>
+                </Button>
+              </FileTrigger>
+              <FileTrigger
+                acceptedFileTypes={['image/*']}
+                allowsMultiple
+                onSelect={(list) => choose(list, 'photo')}
+              >
+                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                  <Images size={20} aria-hidden />
+                  <Trans>Photos</Trans>
+                </Button>
+              </FileTrigger>
+              <FileTrigger
+                acceptedFileTypes={['image/*', 'application/pdf', '.pdf']}
+                allowsMultiple
+                onSelect={(list) => choose(list, roleOfFile)}
+              >
+                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                  <FolderOpen size={20} aria-hidden />
+                  <Trans>Files</Trans>
+                </Button>
+              </FileTrigger>
+              {canPaste && (
+                <Button
+                  variant="secondary"
+                  className="kept-media-btn"
+                  isDisabled={busy}
+                  onPress={() => void pasteImages()}
+                >
+                  <ClipboardPaste size={20} aria-hidden />
+                  <Trans>Clipboard</Trans>
+                </Button>
+              )}
+            </>
+          ) : documentsOnly ? (
+            <FileTrigger
+              acceptedFileTypes={['application/pdf', '.pdf']}
+              allowsMultiple
+              onSelect={(list) => choose(list, 'document')}
+            >
+              <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
+                <FileText size={20} aria-hidden />
+                <Trans>Attach PDF</Trans>
+              </Button>
+            </FileTrigger>
+          ) : (
+            <>
+              <FileTrigger
+                acceptedFileTypes={['image/*']}
+                defaultCamera="environment"
+                onSelect={(list) => choose(list, 'photo')}
+              >
+                <Button
+                  variant="secondary"
+                  className="kept-media-btn"
+                  isDisabled={busy || (locationPhoto && files.length > 0)}
+                >
+                  <Camera size={20} aria-hidden />
+                  <Trans>Take a photo</Trans>
+                </Button>
+              </FileTrigger>
+              <FileTrigger
+                acceptedFileTypes={['image/*']}
+                allowsMultiple={!locationPhoto}
+                onSelect={(list) => choose(list, 'photo')}
+              >
+                <Button
+                  variant="secondary"
+                  className="kept-media-btn"
+                  isDisabled={busy || (locationPhoto && files.length > 0)}
+                >
+                  <Images size={20} aria-hidden />
+                  {locationPhoto ? <Trans>Choose photo</Trans> : <Trans>Choose photos</Trans>}
+                </Button>
+              </FileTrigger>
+            </>
+          )}
+        </div>
+        {nfcDraft?.originals
+          .filter(({ id }) => !files.some(({ key }) => key === id))
+          .map((original) => (
+            <div key={original.id} className="flex items-center gap-2">
+              <bdi>{original.name}</bdi>
+              <Button
+                size="small"
+                variant="ghost"
+                isDisabled={busy}
+                onPress={() => removeFile(original.id)}
+              >
+                <Trans>Remove</Trans>
+              </Button>
+            </div>
+          ))}
+        {files.length > 0 && (
+          <ul className="grid gap-2">
+            {files.map(({ file, key, role, previewUrl }) => (
+              <li
+                className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-2"
+                key={key}
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  {previewUrl ? (
+                    <img src={previewUrl} alt="" className="kept-thumb" loading="lazy" />
+                  ) : (
+                    <span className="kept-row-lead" aria-hidden>
+                      <FileText size={18} />
+                    </span>
+                  )}
+                  <div className="grid min-w-0 gap-0.5">
+                    <bdi className="break-words font-medium">{file.name}</bdi>
+                    <span className="text-small text-ink-2">
+                      {role === 'photo' ? t`Photo` : t`PDF document`}
+                      {sep()}
+                      {formatBytes(file.size)}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="small"
+                  isDisabled={busy}
+                  onPress={() => removeFile(key)}
+                >
+                  <Trash2 size={15} aria-hidden />
+                  <Trans>Remove</Trans>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {isItem && firstPhoto && (
+          <CaptureSuggestion
+            key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
+            connection={connection}
+            files={photos.map(({ file }) => file)}
+            locationId={destination?.locationId}
+            provider={provider}
+            onProviderChange={setProvider}
+            onDetails={(items) => setDetails({ photoKey, items })}
+            onProposals={
+              destination && onReview && !nfcDraft && !upc && !typeId ? reviewPhoto : undefined
+            }
+            online={online}
+            disabled={busy || !photoPreferenceLoaded}
+          />
+        )}
+        {isItem && shownDetails && (
+          <DetailSuggestions
+            key={photoKey}
+            rows={
+              leadSuggestion(shownDetails)
+                ? detailRowsFor(
+                    leadSuggestion(shownDetails) as PhotoSuggestion,
+                    { name, quantity, note, tags },
+                    categoryOptions,
+                    online && !!captureLocation && captureLocation.role !== 'viewer',
+                  )
+                : []
+            }
+            others={Math.max(0, shownDetails.length - 1)}
+            disabled={busy}
+            onApply={(rows) => void applyDetails(rows)}
+            onDismiss={() => setDetails(undefined)}
+            onReviewItems={
+              destination && onReview && !nfcDraft && !upc && !typeId
+                ? () => void reviewPhoto(shownDetails)
+                : undefined
+            }
+          />
+        )}
+        {isItem && firstPhoto && onReview && !shownDetails && (
+          <Button
+            variant="secondary"
+            isDisabled={busy || !destination || !!nfcDraft || !!upc || !!typeId}
+            onPress={() => void reviewPhoto()}
+          >
+            <Trans>Review multiple items</Trans>
+          </Button>
+        )}
+        {cache && isItem && (
           <div className="grid gap-2">
             {destination && !changingDestination ? (
               <div className="kept-card kept-destination">
@@ -916,12 +1170,34 @@ export function CaptureForm({
               </div>
             ) : (
               <div className="grid gap-3">
+                {recentDestinations.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-small text-ink-2">
+                      <Trans>Recent</Trans>
+                    </span>
+                    {recentDestinations.map((recent) => (
+                      <Button
+                        key={recent.id}
+                        variant="secondary"
+                        size="small"
+                        isDisabled={busy}
+                        onPress={() => {
+                          changeDestination(recent);
+                          setChangingDestination(false);
+                        }}
+                      >
+                        <bdi>{destinationLabel(cache, recent)}</bdi>
+                      </Button>
+                    ))}
+                  </div>
+                )}
                 <DestinationPicker
                   connection={connection}
                   online={online}
                   cache={cache}
                   value={destination}
                   offerTagWrite
+                  showRecent={false}
                   onAuthError={onAuthError}
                   onChange={changeDestination}
                   disabled={busy}
@@ -970,249 +1246,50 @@ export function CaptureForm({
                 )}
               </div>
             )}
-            {!changingDestination && recentDestinations.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1">
-                <span className="text-small text-ink-2">
-                  <Trans>Recent</Trans>
-                </span>
-                {recentDestinations.map((recent) => (
-                  <Button
-                    key={recent.id}
-                    variant="secondary"
-                    size="small"
-                    isDisabled={busy}
-                    onPress={() => changeDestination(recent)}
-                  >
-                    <bdi>{destinationLabel(cache, recent)}</bdi>
-                  </Button>
-                ))}
-              </div>
-            )}
           </div>
         )}
-        {showDetails && (
-          <TextField
-            label={t`Description`}
-            placeholder={t`Holiday decorations`}
-            value={name}
-            onChange={setName}
-            isDisabled={busy}
-            inputProps={{
-              maxLength: 200,
-              name: 'name',
-              enterKeyHint: 'next',
-            }}
-          />
-        )}
-        {showDetails && upc && <p>{t`UPC: ${upc}`}</p>}
-        {showDetails && nfcDraft && (
-          <p role="status">
-            <Trans>SheepKeep tag verified.</Trans> <bdi>{nfcDraft.code}</bdi>
-          </p>
-        )}
-        {!showLabels &&
-          nfcDraft?.originals
-            .filter(({ id }) => !files.some(({ key }) => key === id))
-            .map((original) => (
-              <div key={original.id} className="flex items-center gap-2">
-                <bdi>{original.name}</bdi>
-                <Button
-                  size="small"
-                  variant="ghost"
-                  isDisabled={busy}
-                  onPress={() => removeFile(original.id)}
-                >
-                  <Trans>Remove</Trans>
-                </Button>
-              </div>
-            ))}
-        {!showLabels && (
-          <div className="kept-media-bar">
-            {!documentsOnly && (evidenceOnly || step === 'photos') && (
-              <>
-                <FileTrigger
-                  acceptedFileTypes={['image/*']}
-                  defaultCamera="environment"
-                  onSelect={(list) => choose(list, 'photo')}
-                >
-                  <Button
-                    variant="secondary"
-                    className="kept-media-btn"
-                    isDisabled={busy || (locationPhoto && files.length > 0)}
-                  >
-                    <Camera size={20} aria-hidden />
-                    <Trans>Take a photo</Trans>
-                  </Button>
-                </FileTrigger>
-                <FileTrigger
-                  acceptedFileTypes={['image/*']}
-                  allowsMultiple={!locationPhoto}
-                  onSelect={(list) => choose(list, 'photo')}
-                >
-                  <Button
-                    variant="secondary"
-                    className="kept-media-btn"
-                    isDisabled={busy || (locationPhoto && files.length > 0)}
-                  >
-                    <Images size={20} aria-hidden />
-                    {locationPhoto ? <Trans>Choose photo</Trans> : <Trans>Choose photos</Trans>}
-                  </Button>
-                </FileTrigger>
-              </>
-            )}
-            {!photosOnly && (evidenceOnly || showDetails) && (
-              <FileTrigger
-                acceptedFileTypes={['application/pdf', '.pdf']}
-                allowsMultiple
-                onSelect={(list) => choose(list, 'document')}
-              >
-                <Button variant="secondary" className="kept-media-btn" isDisabled={busy}>
-                  <FileText size={20} aria-hidden />
-                  <Trans>Attach PDF</Trans>
-                </Button>
-              </FileTrigger>
-            )}
-          </div>
-        )}
-        {!showLabels && files.length > 0 && (
-          <ul className="grid gap-2">
-            {files.map(({ file, key, role, previewUrl }) => (
-              <li
-                className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface p-2"
-                key={key}
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  {previewUrl ? (
-                    <img src={previewUrl} alt="" className="kept-thumb" loading="lazy" />
-                  ) : (
-                    <span className="kept-row-lead" aria-hidden>
-                      <FileText size={18} />
-                    </span>
-                  )}
-                  <div className="grid min-w-0 gap-0.5">
-                    <bdi className="break-words font-medium">{file.name}</bdi>
-                    <span className="text-small text-ink-2">
-                      {role === 'photo' ? t`Photo` : t`PDF document`}
-                      {sep()}
-                      {formatBytes(file.size)}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="small"
-                  isDisabled={busy}
-                  onPress={() => removeFile(key)}
-                >
-                  <Trash2 size={15} aria-hidden />
-                  <Trans>Remove</Trans>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {showDetails && firstPhoto && (
-          <CaptureSuggestion
-            key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
-            connection={connection}
-            files={photos.map(({ file }) => file)}
-            locationId={destination?.locationId}
-            provider={provider}
-            onProviderChange={setProvider}
-            onDetails={(items) => setDetails({ photoKey, items })}
-            onProposals={
-              destination && onReview && !nfcDraft && !upc && !typeId ? reviewPhoto : undefined
-            }
-            online={online}
-            disabled={busy || !photoPreferenceLoaded}
-          />
-        )}
-        {showDetails && shownDetails && (
-          <DetailSuggestions
-            key={photoKey}
-            rows={
-              leadSuggestion(shownDetails)
-                ? detailRowsFor(
-                    leadSuggestion(shownDetails) as PhotoSuggestion,
-                    { name, quantity, note, tags },
-                    categoryOptions,
-                    online && !!captureLocation && captureLocation.role !== 'viewer',
-                  )
-                : []
-            }
-            others={Math.max(0, shownDetails.length - 1)}
-            disabled={busy}
-            onApply={(rows) => void applyDetails(rows)}
-            onDismiss={() => setDetails(undefined)}
-            onReviewItems={
-              destination && onReview && !nfcDraft && !upc && !typeId
-                ? () => void reviewPhoto(shownDetails)
-                : undefined
-            }
-          />
-        )}
-        {showDetails && firstPhoto && onReview && (
-          <Button
-            variant="secondary"
-            isDisabled={busy || !destination || !!nfcDraft || !!upc || !!typeId}
-            onPress={() => void reviewPhoto()}
+        {isItem && (
+          <details
+            className="kept-details"
+            open={detailsOpen}
+            onToggle={(event) => setDetailsOpen(event.currentTarget.open)}
           >
-            <Trans>Review multiple items</Trans>
-          </Button>
-        )}
-        {showDetails && (
-          <Select
-            label={t`Action`}
-            selectedKey={intent}
-            isDisabled={busy}
-            items={[
-              { id: 'record', label: t`Record existing contents` },
-              { id: 'add', label: t`Add contents` },
-            ]}
-            onSelectionChange={(key) => setIntent(key === 'add' ? 'add' : 'record')}
-          >
-            {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
-          </Select>
-        )}
-        {showDetails && account && (
-          <CategoryPicker
-            key={account}
-            connection={connection}
-            accountId={account}
-            online={online}
-            canCreate={captureLocation.role !== 'viewer'}
-            options={categoryOptions}
-            selected={tags}
-            disabled={busy}
-            onChange={setTags}
-          />
-        )}
-        {showLabels && (
-          <p className="text-small text-ink-2">
-            <Trans>Your item gets a QR code when it syncs. You can print it later.</Trans>
-          </p>
-        )}
-        {showLabels && destination && captureLocation && captureLocation.role !== 'viewer' && (
-          <ItemLabelPicker
-            key={`${labelSession}:${destination.locationId}`}
-            connection={connection}
-            cache={cache}
-            locationId={destination.locationId}
-            itemName={name}
-            online={online}
-            value={claimCode ? label : undefined}
-            blankTag={labelSession === 0 ? blankTag : undefined}
-            onChange={setLabel}
-            onBusyChange={setLabelBusy}
-            disabled={busy}
-          />
-        )}
-        {showDetails && (
-          <details className="kept-details">
             <summary>
-              <Trans>Details</Trans>
+              <span className="grid gap-0.5">
+                <span>
+                  <Trans>Details</Trans>
+                </span>
+                <span className="text-small font-normal">
+                  <Trans>Action, category, quantity, notes and label</Trans>
+                </span>
+              </span>
             </summary>
             <div className="grid gap-4 pt-3">
+              <Select
+                label={t`Action`}
+                selectedKey={intent}
+                isDisabled={busy}
+                items={[
+                  { id: 'record', label: t`Record existing contents` },
+                  { id: 'add', label: t`Add contents` },
+                ]}
+                onSelectionChange={(key) => setIntent(key === 'add' ? 'add' : 'record')}
+              >
+                {(option) => <SelectItem id={option.id}>{option.label}</SelectItem>}
+              </Select>
+              {account && (
+                <CategoryPicker
+                  key={account}
+                  connection={connection}
+                  accountId={account}
+                  online={online}
+                  canCreate={captureLocation.role !== 'viewer'}
+                  options={categoryOptions}
+                  selected={tags}
+                  disabled={busy}
+                  onChange={setTags}
+                />
+              )}
               {!!cache?.types.length && (
                 <Select
                   label={t`Type`}
@@ -1271,96 +1348,66 @@ export function CaptureForm({
                 </Label>
                 <TextArea className={inputClass} maxLength={500} rows={3} />
               </AriaTextField>
+              {canLabel && destination && (
+                <div className="grid gap-2">
+                  <p className="m-0 text-small text-ink-2">
+                    <Trans>Your item gets a QR code when it syncs. You can print it later.</Trans>
+                  </p>
+                  <ItemLabelPicker
+                    key={`${labelSession}:${destination.locationId}`}
+                    connection={connection}
+                    cache={cache}
+                    locationId={destination.locationId}
+                    itemName={name}
+                    online={online}
+                    value={claimCode ? label : undefined}
+                    blankTag={labelSession === 0 ? blankTag : undefined}
+                    onChange={setLabel}
+                    onBusyChange={setLabelBusy}
+                    disabled={busy}
+                  />
+                </div>
+              )}
             </div>
           </details>
         )}
-        {!evidenceOnly && step === 'photos' && (
-          <Button onPress={() => goToStep('details')}>
-            {files.length ? <Trans>Continue</Trans> : <Trans>Add manually</Trans>}
-          </Button>
-        )}
-        {nfcEntry && destination && (
-          <ItemLabelPicker
-            key={destination.locationId}
-            entry
-            connection={connection}
-            cache={cache}
-            locationId={destination.locationId}
-            itemName={name}
-            online={online}
-            value={undefined}
-            onChange={acceptNfc}
-            onBusyChange={setLabelBusy}
-            beforeNfcWrite={prepareNfc}
-            nfcWriteAborted={abortNfc}
-            recoverNfcDraft={recoverNfc}
-            disabled={busy}
-          />
-        )}
-        {!evidenceOnly &&
-          step === 'photos' &&
-          !label &&
-          onOpen &&
-          (scanningUpc ? (
-            <UpcCapture
-              connection={connection}
-              cache={cache}
-              online={online}
-              onClose={() => setScanningUpc(false)}
-              onOpen={(target) => {
-                setScanningUpc(false);
-                onOpen(target);
-              }}
-              onNew={(code, suggestedName) => {
-                setScanningUpc(false);
-                setUpc(code);
-                if (suggestedName && !name) setName(suggestedName);
-                goToStep('details');
-              }}
-            />
-          ) : (
-            <Button
-              variant="secondary"
-              isDisabled={busy || labelBusy || !!upc}
-              onPress={() => setScanningUpc(true)}
-            >
-              <Trans>Scan UPC</Trans>
-            </Button>
-          ))}
-        {showDetails && !blankTagWaiting && (
-          <Button type="submit" isPending={busy} isDisabled={!canSave}>
-            <Check size={18} aria-hidden />
-            <Trans>Save item</Trans>
-          </Button>
-        )}
-        {showDetails && !nfcDraft && (
-          <Button
-            type={blankTagWaiting ? 'submit' : 'button'}
-            variant={blankTagWaiting ? 'primary' : 'secondary'}
-            isDisabled={!canSave || busy}
-            onPress={blankTagWaiting ? undefined : () => goToStep('label')}
-          >
-            <Trans>Continue to labels</Trans>
-          </Button>
-        )}
-        {(evidenceOnly || showLabels) && (
-          <Button type="submit" isPending={busy} isDisabled={!canSave || labelBusy}>
-            <Check size={18} aria-hidden />
-            {locationPhoto
-              ? t`Save location photo`
-              : photosOnly
-                ? t`Save photos`
-                : documentsOnly
-                  ? t`Save documents`
-                  : claimCode
-                    ? t`Save item`
-                    : t`Skip NFC and save`}
-          </Button>
-        )}
+        <Button type="submit" isPending={busy} isDisabled={!canSave || labelBusy}>
+          <Check size={18} aria-hidden />
+          {locationPhoto
+            ? t`Save location photo`
+            : photosOnly
+              ? t`Save photos`
+              : documentsOnly
+                ? t`Save documents`
+                : t`Save item`}
+        </Button>
       </form>
-      <p role="status" className="text-ink-2">
-        {status}
-      </p>
+      {batchEntryIds.length > 0 && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-lg bg-sunken px-3 py-2 text-small"
+          role="status"
+        >
+          <span>{t`Entries in this batch: ${batchEntryIds.length}`}</span>
+          {batchSyncedCount > 0 && (
+            <span className="kept-badge kept-badge-ok">{t`Synced: ${batchSyncedCount}`}</span>
+          )}
+          {batchPendingCount > 0 && (
+            <span className="kept-badge kept-badge-warn">
+              {syncing
+                ? t`Syncing: ${batchPendingCount}`
+                : t`Saved on device: ${batchPendingCount}`}
+            </span>
+          )}
+          {batchFailedCount > 0 && (
+            <span className="kept-badge kept-badge-danger">
+              {t`Needs attention: ${batchFailedCount}`}
+            </span>
+          )}
+          {batchDiscardedCount > 0 && (
+            <span className="kept-badge">{t`Discarded: ${batchDiscardedCount}`}</span>
+          )}
+        </div>
+      )}
     </section>
   );
 }
