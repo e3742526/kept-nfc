@@ -2,6 +2,7 @@ import {
   CreateAreaPayload,
   CreateThingPayload,
   KEPT_VERSION,
+  NATIVE_ADD_ITEM_PAYLOAD_VERSION,
   NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
   NATIVE_INVENTORY_PAYLOAD_VERSION,
@@ -70,6 +71,9 @@ export type DraftFields = {
   note?: string;
   quantity?: string;
   batchId?: string;
+  barcode?: string;
+  typeId?: string;
+  custom?: Record<string, unknown>;
   review?: PhotoReviewDraft;
   tags?: string[];
   binEvidenceId?: string;
@@ -90,6 +94,7 @@ export const mobileFileLimit = 25 * 1024 * 1024;
 
 /** Failures requiring user action (move target, discard, etc.) rather than silent auto-retry. */
 export const ACTION_REQUIRED_FAILURES = new Set([
+  'upc_already_exists',
   'parent_dropped',
   'target_trashed',
   'target_missing',
@@ -262,16 +267,17 @@ export async function saveOnPhone(
   fields: DraftFields,
   files: SelectedOriginal[],
   adapters: PlatformAdapters = capacitorAdapters,
+  staged?: { id: string; originals: OriginalMeta[] },
 ): Promise<string> {
   if (
-    files.length > 20 ||
+    files.length + (staged?.originals.length ?? 0) > 20 ||
     files.some(({ file }) => file.size <= 0 || file.size > mobileFileLimit)
   ) {
     throw new Error('Invalid file size');
   }
-  const id = newId();
+  const id = staged?.id ?? newId();
   const takenAt = new Date().toISOString();
-  const originals: OriginalMeta[] = [];
+  const originals: OriginalMeta[] = [...(staged?.originals ?? [])];
   const payload = JSON.stringify({
     ...fields,
     batchId: fields.batchId ?? id,
@@ -297,7 +303,7 @@ export async function saveOnPhone(
     });
     return id;
   } catch (error) {
-    await adapters.outbox.abort(connection, id).catch(() => {});
+    if (!staged) await adapters.outbox.abort(connection, id).catch(() => {});
     throw error;
   }
 }
@@ -465,11 +471,13 @@ export async function replayCapture(
   if (reviewed && !reviewed.length) throw new ReplayError('validation');
   const required = fields.locationPhoto
     ? NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION
-    : fields.skipServerSuggestions
-      ? NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION
-      : fields.captureIntent
-        ? NATIVE_INVENTORY_PAYLOAD_VERSION
-        : NATIVE_CAPTURE_PAYLOAD_VERSION;
+    : fields.barcode || fields.custom
+      ? NATIVE_ADD_ITEM_PAYLOAD_VERSION
+      : fields.skipServerSuggestions
+        ? NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION
+        : fields.captureIntent
+          ? NATIVE_INVENTORY_PAYLOAD_VERSION
+          : NATIVE_CAPTURE_PAYLOAD_VERSION;
   await ensureCaptureCompatible(connection, adapters, required);
   const verified = new Set(fields.review?.verified);
   const entries = reviewed ?? [
@@ -554,6 +562,9 @@ export async function replayCapture(
             name: entry.name,
             note: ('note' in entry ? entry.note : fields.note)?.trim() || undefined,
             quantity: entry.quantity || undefined,
+            ...(!reviewed && fields.barcode ? { barcode: fields.barcode } : {}),
+            ...(!reviewed && fields.typeId ? { typeId: fields.typeId } : {}),
+            ...(!reviewed && fields.custom ? { custom: fields.custom } : {}),
             claimCode: entry.claimCode,
           }),
       files: uploadedFiles,

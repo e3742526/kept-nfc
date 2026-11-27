@@ -36,6 +36,7 @@ export const NATIVE_INVENTORY_PAYLOAD_VERSION = 3;
 export const NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION = 4;
 export const NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION = 5;
 export const NATIVE_CREATE_AREA_PAYLOAD_VERSION = 6;
+export const NATIVE_ADD_ITEM_PAYLOAD_VERSION = 7;
 
 export const DEVICE_PHOTO_PROPOSAL_LIMIT = 12;
 export const DevicePhotoProposals = z.strictObject({
@@ -134,6 +135,7 @@ export const CreateThingPayload = z.strictObject({
   mode: z.enum(CAPTURE_MODES),
   name: name.optional(),
   typeId: uuid.optional(),
+  custom: z.record(z.string().max(128), z.unknown()).optional(),
   quantity: positive.optional(),
   batchId: uuid,
   files: z

@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import {
+  NATIVE_ADD_ITEM_PAYLOAD_VERSION,
   NATIVE_CAPTURE_PAYLOAD_VERSION,
   NATIVE_CREATE_AREA_PAYLOAD_VERSION,
   NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
@@ -477,6 +478,7 @@ ${confirmsLink ? '<input type="hidden" name="confirmLink" value="yes">' : ''}
           NATIVE_INVENTORY_PAYLOAD_VERSION,
           NATIVE_DEVICE_SUGGESTIONS_PAYLOAD_VERSION,
           NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
+          NATIVE_ADD_ITEM_PAYLOAD_VERSION,
         ],
         ...context,
       } satisfies z.infer<typeof NativeCaptureCapabilitiesSchema>;

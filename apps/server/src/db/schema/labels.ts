@@ -13,6 +13,7 @@ import {
   unique,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { user } from './auth.js';
 import { id, mutable, textEnum, tstz } from './common.js';
 import { locations } from './tenancy.js';
 import { shortIds } from './things.js';
@@ -78,6 +79,29 @@ export const labelBatchCodes = pgTable(
       .onUpdate('cascade')
       .onDelete('cascade'),
     index('label_batch_codes_code_idx').on(t.code),
+  ],
+);
+
+const queueKind = textEnum('kind', ['thing', 'place'] as const);
+
+export const labelPrintQueue = pgTable(
+  'label_print_queue',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    locationId: uuid('location_id')
+      .notNull()
+      .references(() => locations.id, { onDelete: 'cascade' }),
+    kind: queueKind.col().notNull(),
+    recordId: uuid('record_id').notNull(),
+    batchId: uuid('batch_id').references(() => labelBatches.id, { onDelete: 'set null' }),
+    queuedAt: tstz('queued_at').notNull().defaultNow(),
+  },
+  (t) => [
+    queueKind.check('label_print_queue'),
+    primaryKey({ name: 'label_print_queue_pk', columns: [t.userId, t.kind, t.recordId] }),
+    index('label_print_queue_batch_idx').on(t.batchId),
   ],
 );
 

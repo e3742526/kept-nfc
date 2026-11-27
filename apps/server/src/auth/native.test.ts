@@ -299,7 +299,7 @@ describe('SheepKeep for iPhone sign-in', () => {
       contractVersion: 1,
       placeDescriptions: true,
       placeCreationPayloadVersion: 6,
-      capturePayloadVersions: [2, 3, 4, 5],
+      capturePayloadVersions: [2, 3, 4, 5, 7],
       account,
       epoch,
     });

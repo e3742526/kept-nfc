@@ -166,6 +166,17 @@ afterAll(async () => {
 });
 
 describe('POST /api/v1/captures', () => {
+  it('serializes simultaneous captures of equivalent UPC formats', async () => {
+    const codes = ['036000291452', '0036000291452'];
+    const responses = await Promise.all(
+      codes.map((barcode) => capture(ibrahim, body(home, { name: 'UPC example', barcode }))),
+    );
+    expect(responses.map((response) => response.statusCode).sort()).toEqual([201, 409]);
+    expect(responses.find((response) => response.statusCode === 409)?.json()).toMatchObject({
+      code: 'conflict',
+      candidates: [expect.objectContaining({ locationId: home.id })],
+    });
+  });
   // catalogue: POST /api/v1/captures
   it('makes a photo-only capture a draft with an inbox draft item, and answers its undo event', async () => {
     const fileId = await up(louis, home);

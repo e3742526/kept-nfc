@@ -661,6 +661,7 @@ export const NOT_EXPORTED: Readonly<Record<string, string>> = Object.freeze({
   inbox_items: 'open decisions, re-made by the importer',
   invites: 'pending invitations to this server',
   label_batches: 'print jobs; the codes travel in data/codes.ndjson',
+  label_print_queue: 'personal print work in progress; existing labels travel with their records',
   label_batch_codes: 'print jobs; the codes travel in data/codes.ndjson',
   label_series:
     "numbered series reserved on this server; their labels' short IDs travel in data/codes.ndjson",

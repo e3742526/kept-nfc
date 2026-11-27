@@ -840,6 +840,7 @@ export async function markPrinted(ctx: Ctx, publicUrl: string, id: string): Prom
       requestId: ctx.requestId,
     });
   }
+  await client.query('DELETE FROM public.label_print_queue WHERE batch_id = $1', [id]);
   return getBatch(client, publicUrl, id);
 }
 

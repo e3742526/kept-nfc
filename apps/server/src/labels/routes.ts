@@ -14,6 +14,7 @@ import type { Ctx } from '../things/service.js';
 import { ClaimTarget, claimableCode, claimLabel, labelClaimed } from './claim.js';
 import { formerHostHook } from './former-hosts.js';
 import { APPLE_ASSOCIATION_PATH, appleAssociation } from './label-host.js';
+import { changePrintQueue, QueueAction, QueueResult, readPrintQueue } from './print-queue.js';
 import { ReplaceLabelBody, ReplaceLabelResult, replaceLabel } from './replace.js';
 import {
   CreateBatchBody,
@@ -149,6 +150,20 @@ export async function labelRoutes(app: KeptApp, deps: InventoryDeps): Promise<vo
         .header('cache-control', 'public, max-age=3600')
         .send(JSON.stringify(association));
     },
+  );
+
+  app.get('/api/v1/labels/queue', { schema: { response: { 200: QueueResult } } }, (req) =>
+    scopedRead(pools, req, async (_tx, client) => ({ items: await readPrintQueue(client) })),
+  );
+
+  app.post(
+    '/api/v1/labels/queue',
+    { schema: { body: QueueAction, response: { 200: QueueResult } } },
+    (req, reply) =>
+      scopedWrite(pools, req, reply, async (tx, client, scope) => ({
+        status: 200,
+        body: await changePrintQueue(ctxOf(req, tx, client, scope), publicUrl, req.body),
+      })),
   );
 
   app.get(

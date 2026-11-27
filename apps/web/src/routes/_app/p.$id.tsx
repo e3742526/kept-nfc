@@ -13,6 +13,7 @@
  * location's map opened on this place, in place of the list. Not on the Unplaced area, which the
  * map doesn't draw.
  */
+
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
@@ -44,6 +45,7 @@ import {
   TrashIcon,
 } from '@/components/icons';
 import { IdChip } from '@/components/id-chip';
+import { QueueLabelButton } from '@/components/labels/print-queue';
 import {
   EmptyState,
   ErrorState,
@@ -478,6 +480,11 @@ function PlaceBody({ place, location }: { place: PlaceView; location: LocationDe
               />
             ) : null}
             <LabelRow place={place} location={location} />
+            {(location.effectiveModules ?? location.modules).includes('labels') && (
+              <QueueLabelButton
+                target={{ kind: 'place', locationId: location.id, recordId: place.id }}
+              />
+            )}
             {admin && location.kind !== 'personal' ? (
               <ActionRow
                 icon={<ShareIcon />}

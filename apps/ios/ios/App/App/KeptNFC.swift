@@ -224,7 +224,8 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
             )
         }
         let existing = records.count == 1 ? records[0].wellKnownTypeURIPayload()?.absoluteString : nil
-        let fingerprint = NDEFRecordSnapshot.fingerprint(snapshots)
+        let contentFingerprint = NDEFRecordSnapshot.fingerprint(snapshots)
+        let fingerprint = writeFingerprint(tag, content: contentFingerprint)
         var metadata: JSObject = [
             "fingerprint": fingerprint, "occupied": !records.isEmpty,
             "writable": writable, "capacity": capacity
@@ -234,7 +235,7 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
         case .read:
             finish(existing != nil ? "read" : records.isEmpty ? "blank" : "malformed", metadata)
         case .find:
-            guard debouncer.shouldAccept(fingerprint: fingerprint) else {
+            guard debouncer.shouldAccept(fingerprint: contentFingerprint) else {
                 event(["status": "repeated", "fingerprint": fingerprint])
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) { [weak self] in
                     guard let self, self.session === session, self.result != nil else { return }
@@ -301,6 +302,22 @@ final class KeptNFC: NSObject, NFCNDEFReaderSessionDelegate {
                 }
             }
         }
+    }
+
+    // The second tap must match both the content and the chip when Core NFC supplies its ID.
+    // Keep the read-back test independent so it checks the new message byte for byte.
+    private func writeFingerprint(_ tag: NFCNDEFTag, content: String) -> String {
+        let chip: (String, Data)
+        switch tag {
+        case let value as NFCMiFareTag: chip = ("mifare", value.identifier)
+        case let value as NFCISO15693Tag: chip = ("iso15693", value.identifier)
+        case let value as NFCISO7816Tag: chip = ("iso7816", value.identifier)
+        case let value as NFCFeliCaTag: chip = ("felica", value.currentIDm)
+        default: return content
+        }
+        guard !chip.1.isEmpty else { return content }
+        let value = Data("\(chip.0):\(chip.1.base64EncodedString()):\(content)".utf8)
+        return SHA256.hash(data: value).map { String(format: "%02x", $0) }.joined()
     }
 }
 

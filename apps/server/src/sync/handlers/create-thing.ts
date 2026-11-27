@@ -1,4 +1,5 @@
 import { capture } from '../../capture/service.js';
+import { UpcCaptureConflict } from '../../capture/upc.js';
 import { claimableCode } from '../../labels/claim.js';
 import type { Entity, Handler } from './common.js';
 import { requireLive, targetRef } from './common.js';
@@ -26,7 +27,15 @@ export const createThing: Handler<'create_thing'> = async (
   if (gone) return gone;
 
   const { captureIntent, ...input } = payload;
-  const out = await capture(ctx, { ...input, locationId }, { via: 'op', takenAt, captureIntent });
+  const out = await capture(
+    ctx,
+    { ...input, locationId },
+    { via: 'op', takenAt, captureIntent },
+  ).catch((error: unknown) => {
+    if (!(error instanceof UpcCaptureConflict)) throw error;
+    return null;
+  });
+  if (!out) return { outcome: 'needs_review', reason: 'upc_already_exists' };
   const entity: Entity | undefined = out.thing
     ? { type: 'thing', id: out.thing.id, shortCode: out.thing.shortCode }
     : out.purchaseId

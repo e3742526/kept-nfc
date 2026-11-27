@@ -28,6 +28,7 @@ import { BatchBuilder, type BatchSource, MAX_BLANK } from '@/components/labels/b
 import { useBatchSummary } from '@/components/labels/batch-summary';
 import { perPage } from '@/components/labels/layout';
 import { PendingPrompt } from '@/components/labels/pending-prompt';
+import { PrintQueue } from '@/components/labels/print-queue';
 import { useConfirmPrinted } from '@/components/labels/printed-ok';
 import { rememberedStock, useStockText } from '@/components/labels/stock-picker';
 import { webPrintApi } from '@/components/labels/thermal/api';
@@ -227,6 +228,7 @@ function LabelsOff({ location }: { location: LocationDetail }) {
 }
 
 function LabelsHome() {
+  const navigate = Route.useNavigate();
   const locations = useLocationsInView();
   const locationName = useLocationName();
   if (locations.isPending) return <LoadingRows />;
@@ -237,6 +239,10 @@ function LabelsHome() {
   const off = all.filter((l) => !labelsOn(l));
   return (
     <>
+      <PrintQueue
+        locationName={(id) => all.find((location) => location.id === id)?.name}
+        openBatch={(batchId) => navigate({ to: '/labels/$batchId', params: { batchId } })}
+      />
       <PendingPrompt />
       {on.length === 0 ? (
         <EmptyState icon={<TagIcon />} title={<Trans>No location to print labels for</Trans>}>
