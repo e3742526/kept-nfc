@@ -23,6 +23,34 @@ msgstr ", "
 msgid "Add “{0}”"
 msgstr "Add “{0}”"
 
+#: src/native/capture-ai.tsx
+msgid "Could not look up this item online."
+msgstr "Could not look up this item online."
+
+#: src/native/capture-ai.tsx
+msgid "Enter an item name or scan a UPC to search online."
+msgstr "Enter an item name or scan a UPC to search online."
+
+#: src/native/capture-ai.tsx
+msgid "No sourced details found for this item."
+msgstr "No sourced details found for this item."
+
+#: src/native/capture-ai.tsx
+msgid "Online search needs OpenAI or OpenRouter configured for this location."
+msgstr "Online search needs OpenAI or OpenRouter configured for this location."
+
+#: src/native/capture-ai.tsx
+msgid "Search online for details"
+msgstr "Search online for details"
+
+#: src/native/capture-form.tsx
+msgid "Some details did not fit in Notes. Check the fields before saving."
+msgstr "Some details did not fit in Notes. Check the fields before saving."
+
+#: src/native/capture-ai.tsx
+msgid "Update the SheepKeep server to use online search."
+msgstr "Update the SheepKeep server to use online search."
+
 #: src/components/things/links.tsx
 msgid "…this one"
 msgstr "…this one"

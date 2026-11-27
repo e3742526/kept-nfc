@@ -16,6 +16,7 @@ import { ThingRowSchema } from '../things/view.js';
 import { registerCaptureUndo, undoCaptureBatch } from './batch-undo.js';
 import { listBatches } from './batches.js';
 import { setDisplay } from './display.js';
+import { registerItemLookup } from './item-lookup.js';
 import { registerPhotoProposals } from './photo-proposals.js';
 import { CaptureBody, capture } from './service.js';
 
@@ -87,6 +88,7 @@ export async function captureRoutes(app: KeptApp, deps: InventoryDeps): Promise<
   const { pools } = deps;
   registerCaptureUndo();
   registerPhotoProposals(app, deps);
+  registerItemLookup(app, deps);
   registerPhotoDetails(app, deps);
   const need = (): FileStorage => {
     if (!deps.files) throw new AppError('internal', 503, 'File storage is not configured.');

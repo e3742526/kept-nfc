@@ -1,12 +1,15 @@
 import {
   DEVICE_PHOTO_PROPOSAL_LIMIT,
+  type DeviceItemLookup,
   type DevicePhotoProposal,
   DevicePhotoProposals,
+  gtinShort,
+  gtinValid,
   normalize,
 } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-aria-components';
+import { Checkbox, Link } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { usePlatform } from './adapters';
@@ -17,6 +20,7 @@ import {
   type Connection,
   nativeErrorCode,
 } from './bridge';
+import { leadSuggestion } from './capture-details';
 
 export type PhotoSuggestion = DevicePhotoProposal & { evidence?: number[] };
 
@@ -40,6 +44,8 @@ export function mergePhotoSuggestions(photos: readonly DevicePhotoProposal[][]):
       previous.categories = [...categories.values()].slice(0, 4);
       if (previous.quantity !== item.quantity) previous.quantity = null;
       previous.description ??= item.description;
+      if (previous.barcode === undefined) previous.barcode = item.barcode;
+      else if (item.barcode && previous.barcode !== item.barcode) previous.barcode = null;
       if (!previous.evidence?.includes(index)) previous.evidence?.push(index);
     }
   }
@@ -279,6 +285,7 @@ export function CaptureSuggestion({
   onProviderChange,
   onSuggestions,
   disabled,
+  lookup,
 }: {
   connection: Connection;
   files: readonly File[];
@@ -286,8 +293,15 @@ export function CaptureSuggestion({
   online: boolean;
   provider: CaptureAIProvider;
   onProviderChange: (provider: CaptureAIProvider) => void;
-  onSuggestions: (items: PhotoSuggestion[]) => void;
+  onSuggestions: (items: PhotoSuggestion[], lookup?: DeviceItemLookup) => void;
   disabled: boolean;
+  lookup?: {
+    enabled: boolean;
+    onChange: (enabled: boolean) => void;
+    name: string;
+    barcode?: string;
+    typeId?: string;
+  };
 }) {
   const { t } = useLingui();
   const { captureAI } = usePlatform();
@@ -331,28 +345,47 @@ export function CaptureSuggestion({
     };
   }, [captureAI, connection, provider, status, t]);
 
+  const lookupItem = captureAI?.lookupItem;
+  const canLookup = Boolean(online && locationId && lookup && lookupItem);
+  const canAnalyze =
+    files.length > 0 &&
+    (provider === 'apple'
+      ? status?.apple === 'available'
+      : online &&
+        (provider === 'chatgpt'
+          ? models.some(({ id }) => id === model)
+          : Boolean(locationId && captureAI?.serverProposals)));
+  const canSuggest =
+    canAnalyze ||
+    (canLookup &&
+      lookup?.enabled &&
+      (files.length > 0 || Boolean(lookup.name.trim() || lookup.barcode)));
+
   async function suggest() {
-    if (!captureAI || busy || !files[0]) return;
+    if (!captureAI || busy || !canSuggest) return;
     const run = ++generation.current;
     const current = () => generation.current === run;
     setBusy(true);
     setMessage('');
+    let items: PhotoSuggestion[] = [];
     try {
-      const modelId = provider === 'chatgpt' ? model : undefined;
-      const results: DevicePhotoProposal[][] = [];
-      for (const file of files) {
-        let value: unknown;
-        if (provider === 'server') {
-          if (!locationId || !captureAI.serverProposals) return;
-          value = await captureAI.serverProposals(connection, locationId, file);
-        } else {
-          const { name } = await captureAI.suggest(connection, provider, file, modelId, true);
-          value = JSON.parse(name.replace(/^\s*\x60{3}(?:json)?\s*|\s*\x60{3}\s*$/gi, ''));
+      if (canAnalyze) {
+        const modelId = provider === 'chatgpt' ? model : undefined;
+        const results: DevicePhotoProposal[][] = [];
+        for (const file of files) {
+          let value: unknown;
+          if (provider === 'server') {
+            if (!locationId || !captureAI.serverProposals) break;
+            value = await captureAI.serverProposals(connection, locationId, file);
+          } else {
+            const { name } = await captureAI.suggest(connection, provider, file, modelId, true);
+            value = JSON.parse(name.replace(/^\s*\x60{3}(?:json)?\s*|\s*\x60{3}\s*$/gi, ''));
+          }
+          if (!current()) return;
+          results.push(DevicePhotoProposals.parse(value).items);
         }
-        if (!current()) return;
-        results.push(DevicePhotoProposals.parse(value).items);
+        items = mergePhotoSuggestions(results);
       }
-      onSuggestions(mergePhotoSuggestions(results));
     } catch (error) {
       const code = nativeErrorCode(error);
       if (!current()) return;
@@ -367,90 +400,151 @@ export function CaptureSuggestion({
                 ? t`Reconnect ChatGPT and try again.`
                 : t`Could not analyze these photos.`,
       );
+    }
+    try {
+      if (canLookup && lookup?.enabled && lookupItem && locationId) {
+        const photo = leadSuggestion(items);
+        let barcode = lookup.barcode;
+        if (!barcode) {
+          const { productCodesIn } = await import('@/camera/still-codes');
+          const codes = await productCodesIn(files);
+          if (codes.length === 1 && items.length <= 1) barcode = codes[0];
+          else if (
+            photo?.barcode &&
+            gtinValid(photo.barcode) &&
+            (codes.length === 0 || codes.includes(gtinShort(photo.barcode)))
+          ) {
+            barcode = gtinShort(photo.barcode);
+          }
+        }
+        if (!current()) return;
+        const name = lookup.name.trim() || photo?.name;
+        if (!name && !barcode) {
+          setMessage(t`Enter an item name or scan a UPC to search online.`);
+          return;
+        }
+        const result = await lookupItem(connection, {
+          locationId,
+          ...(name ? { name } : {}),
+          ...(barcode ? { barcode } : {}),
+          ...(lookup.typeId ? { typeId: lookup.typeId } : {}),
+        });
+        if (!current()) return;
+        if (result.facts.length) {
+          onSuggestions(items, result);
+          return;
+        }
+        setMessage(t`No sourced details found for this item.`);
+      }
+      if (items.length) onSuggestions(items);
+    } catch (error) {
+      if (!current()) return;
+      if (items.length) onSuggestions(items);
+      const code = nativeErrorCode(error);
+      setMessage(
+        code === 'ai_unavailable'
+          ? t`Online search needs OpenAI or OpenRouter configured for this location.`
+          : code === 'ai_paused'
+            ? t`AI paused`
+            : code === 'not_found'
+              ? t`Update the SheepKeep server to use online search.`
+              : t`Could not look up this item online.`,
+      );
     } finally {
       if (current()) setBusy(false);
     }
   }
 
-  if (!captureAI || !status) return null;
+  if (!captureAI || (!status && !canLookup)) return null;
 
   const appleMessage =
-    status.apple === 'disabled'
+    status?.apple === 'disabled'
       ? t`Turn on Apple Intelligence in your iPhone settings.`
-      : status.apple === 'notReady'
+      : status?.apple === 'notReady'
         ? t`Apple Intelligence is still getting ready.`
-        : status.apple === 'unsupported'
+        : status?.apple === 'unsupported'
           ? t`Photo suggestions need Apple Intelligence on iOS 27 or later.`
           : null;
-  const canSuggest =
-    provider === 'apple'
-      ? status.apple === 'available'
-      : online &&
-        (provider === 'chatgpt'
-          ? models.some(({ id }) => id === model)
-          : !!locationId && !!captureAI.serverProposals);
-
   return (
     <div className="kept-card">
-      <Select
-        label={t`AI provider`}
-        items={providers}
-        value={provider}
-        isDisabled={busy || disabled}
-        onChange={(key) => {
-          const choice = providers.find(({ id }) => id === key);
-          if (!choice) return;
-          setMessage('');
-          onProviderChange(choice.id);
-        }}
-      >
-        {(item) => (
-          <SelectItem id={item.id} textValue={item.name}>
-            {item.name}
-          </SelectItem>
-        )}
-      </Select>
-      {provider === 'apple' && appleMessage && (
-        <p className="text-small text-ink-2">{appleMessage}</p>
-      )}
-      {provider === 'chatgpt' && (
+      {files.length > 0 && (
         <>
-          <p className="text-small text-ink-2">
-            <Trans>
-              ChatGPT receives copies of the photos you ask it to analyze and uses your plan
-              allowance.
-            </Trans>
-          </p>
-          {(!status.chatGPT || message) && (
-            <ChatGPTConnection
-              connection={connection}
-              account={status.chatGPT}
-              isDisabled={busy || disabled}
-              onChange={(account) => {
-                setMessage('');
-                setAccount(account);
-              }}
-            />
+          <Select
+            label={t`AI provider`}
+            items={providers}
+            value={provider}
+            isDisabled={busy || disabled}
+            onChange={(key) => {
+              const choice = providers.find(({ id }) => id === key);
+              if (!choice) return;
+              setMessage('');
+              onProviderChange(choice.id);
+            }}
+          >
+            {(item) => (
+              <SelectItem id={item.id} textValue={item.name}>
+                {item.name}
+              </SelectItem>
+            )}
+          </Select>
+          {provider === 'apple' && appleMessage && (
+            <p className="text-small text-ink-2">{appleMessage}</p>
           )}
-          {models.length > 0 && (
-            <Select
-              label={t`Model`}
-              items={models}
-              value={model}
-              isDisabled={busy || disabled}
-              onChange={(key) => {
-                setModel(String(key ?? ''));
-                setMessage('');
-              }}
-            >
-              {(item) => (
-                <SelectItem id={item.id} textValue={item.name}>
-                  {item.name}
-                </SelectItem>
+          {provider === 'chatgpt' && (
+            <>
+              <p className="text-small text-ink-2">
+                <Trans>
+                  ChatGPT receives copies of the photos you ask it to analyze and uses your plan
+                  allowance.
+                </Trans>
+              </p>
+              {(!status?.chatGPT || message) && (
+                <ChatGPTConnection
+                  connection={connection}
+                  account={status?.chatGPT}
+                  isDisabled={busy || disabled}
+                  onChange={(account) => {
+                    setMessage('');
+                    setAccount(account);
+                  }}
+                />
               )}
-            </Select>
+              {models.length > 0 && (
+                <Select
+                  label={t`Model`}
+                  items={models}
+                  value={model}
+                  isDisabled={busy || disabled}
+                  onChange={(key) => {
+                    setModel(String(key ?? ''));
+                    setMessage('');
+                  }}
+                >
+                  {(item) => (
+                    <SelectItem id={item.id} textValue={item.name}>
+                      {item.name}
+                    </SelectItem>
+                  )}
+                </Select>
+              )}
+            </>
           )}
         </>
+      )}
+      {canLookup && lookup && (
+        <Checkbox
+          className="flex min-h-11 items-center gap-2"
+          isSelected={lookup.enabled}
+          onChange={lookup.onChange}
+          isDisabled={busy || disabled}
+        >
+          {({ isSelected }) => (
+            <>
+              <span aria-hidden>{isSelected ? '☑' : '☐'}</span>
+              <Trans>Search online for details</Trans>
+            </>
+          )}
+        </Checkbox>
       )}
       {canSuggest && (
         <Button

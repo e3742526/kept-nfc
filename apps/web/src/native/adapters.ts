@@ -1,4 +1,4 @@
-import { PhotoDetails } from '@kept/shared';
+import { DeviceItemLookup, type DeviceItemLookupRequest, PhotoDetails } from '@kept/shared';
 import { createContext, createElement, type ReactNode, useContext } from 'react';
 import { capturePaths } from '@/api/capture/paths';
 import { inventoryPaths } from '@/api/inventory/paths';
@@ -163,6 +163,10 @@ export type PlatformAdapters = {
   visualSearch?: VisualSearchAdapter;
   captureAI?: {
     serverProposals?: (connection: Connection, locationId: string, file: File) => Promise<unknown>;
+    lookupItem?: (
+      connection: Connection,
+      input: DeviceItemLookupRequest,
+    ) => Promise<DeviceItemLookup>;
     /** The ChatGPT plan's reading of a thing's photos (signed links) and one just taken: JSON text. */
     chatGPTDetails?: (
       connection: Connection,
@@ -225,6 +229,14 @@ export const capacitorAdapters: PlatformAdapters = {
         method: 'POST',
         body: { locationId, jpeg: await photoJpeg(file) },
       });
+    },
+    async lookupItem(connection, input) {
+      return DeviceItemLookup.parse(
+        await nativeRequest(connection, capturePaths.nativeItemLookup, {
+          method: 'POST',
+          body: input,
+        }),
+      );
     },
     async photoDetails(connection, thingId, { attachmentIds, photo }) {
       return PhotoDetails.parse(

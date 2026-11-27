@@ -16,6 +16,7 @@ import type {
   FileView,
   Tag,
   ThingView,
+  TypeDetail,
   UpdateAttachmentBody,
 } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
@@ -45,6 +46,7 @@ type FakeEnvOptions = {
   initialConnection?: Connection | null;
   cabinLocation?: boolean;
   tags?: Tag[];
+  lookupType?: Pick<TypeDetail, 'id' | 'name' | 'fields'>;
 };
 
 function createFakeEnvironment(opts: FakeEnvOptions = {}) {
@@ -294,6 +296,8 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           return { id: 'ibrahim', email: 'ibrahim@kept.test' } as T;
         }
         if (path === inventoryPaths.thingsTags) return { changed: [], events: [] } as T;
+        if (opts.lookupType && path === inventoryPaths.type(opts.lookupType.id))
+          return opts.lookupType as T;
         if (path.startsWith(inventoryPaths.accountRegistry('acc-1', 'tags'))) {
           return { items: opts.tags ?? [], next_cursor: null } as T;
         }
@@ -341,6 +345,16 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                   isContainer: true,
                 },
                 { id: 'type-cabinet', builtinKey: 'cabinet', name: 'cabinet', isContainer: true },
+                ...(opts.lookupType
+                  ? [
+                      {
+                        id: opts.lookupType.id,
+                        name: opts.lookupType.name,
+                        builtinKey: null,
+                        isContainer: false,
+                      },
+                    ]
+                  : []),
               ],
             },
             changes: {
@@ -5383,6 +5397,109 @@ describe('KeptPhone mobile workflows', () => {
                 barcode: '036000291452',
                 quantity: '2',
               }),
+            }),
+          ]),
+        }),
+      }),
+    );
+  });
+
+  it('uses a UPC visible in an AI photo reading to review sourced game details before saving', async () => {
+    const origin = 'https://kept.example.com';
+    const typeId = '01911111-1111-7111-8111-111111111111';
+    const source = 'https://publisher.example.com/games/cedar-island';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+      lookupType: {
+        id: typeId,
+        name: 'Board game',
+        fields: [
+          {
+            id: '01922222-2222-7222-8222-222222222222',
+            key: 'min_age',
+            label: 'Minimum age',
+            labelKey: null,
+            kind: 'number',
+            unit: 'years',
+            options: null,
+            repeatable: false,
+            required: false,
+            secret: false,
+            sort: 0,
+            archivedAt: null,
+            rowVersion: 1,
+            source: { typeId, via: 'own' },
+          },
+        ],
+      },
+    });
+    const lookup = vi.fn(async () => ({
+      name: 'Cedar Island',
+      facts: [
+        { field: 'min_age', label: 'Minimum age', value: '10', source },
+        { field: null, label: 'Genre', value: 'Strategy', source },
+      ],
+    }));
+    env.adapters.captureAI = {
+      lookupItem: lookup,
+      status: vi.fn(async () => ({ apple: 'available' as const })),
+      connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
+      disconnect: vi.fn(async () => ({ revoked: true })),
+      models: vi.fn(async () => []),
+      suggest: vi.fn(async () => ({
+        name: JSON.stringify({ items: [{ name: 'Cedar Island game', barcode: '036000291452' }] }),
+      })),
+    };
+    const request = vi.spyOn(env.adapters.transport, 'request');
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(screen.getByRole('button', { name: 'Add to this container' }));
+    await openAddDetails(user);
+    await user.click(screen.getByRole('button', { name: /Type$/ }));
+    await user.click(screen.getByRole('option', { name: 'Board game' }));
+    const age = await screen.findByRole('textbox', { name: /Minimum age/ });
+    const picker = document.querySelector<HTMLInputElement>(
+      'input[type=file][accept="image/*"][multiple]',
+    );
+    if (!picker) throw new Error('Missing photo input');
+    await user.upload(picker, new File(['photo'], 'game.jpg', { type: 'image/jpeg' }));
+    await user.click(await screen.findByRole('button', { name: /AI provider/ }));
+    await user.click(screen.getByRole('option', { name: 'Apple Intelligence' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Search online for details' }));
+    await user.click(screen.getByRole('button', { name: 'AI assist' }));
+    const accept = await screen.findByRole('button', { name: 'Accept all' });
+    expect(lookup).toHaveBeenCalledWith(expect.anything(), {
+      locationId: env.rooms[0]?.locationId,
+      typeId,
+      name: 'Cedar Island game',
+      barcode: '036000291452',
+    });
+    expect(screen.getAllByRole('link', { name: 'publisher.example.com' })[0]).toHaveAttribute(
+      'href',
+      source,
+    );
+    expect(age).toHaveValue('');
+    await user.click(accept);
+    expect(age).toHaveValue('10');
+    expect(screen.getByLabelText('Description')).toHaveValue('Cedar Island');
+    expect(screen.getByRole('textbox', { name: 'Notes' })).toHaveValue('Genre: Strategy');
+    expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(false);
+    await saveNewItem(user);
+    expect(await screen.findByText('Synced: 1')).toBeVisible();
+    expect(request).toHaveBeenCalledWith(
+      expect.anything(),
+      capturePaths.syncOps,
+      expect.objectContaining({
+        body: expect.objectContaining({
+          ops: expect.arrayContaining([
+            expect.objectContaining({
+              payload: expect.objectContaining({ typeId, custom: { min_age: 10 } }),
             }),
           ]),
         }),

@@ -19,6 +19,7 @@ export const capturePaths = {
   syncOps: `${V1}/sync/ops`,
   nativeCaptureCapabilities: `${V1}/native/capture-capabilities`,
   nativePhotoProposals: `${V1}/native/photo-proposals`,
+  nativeItemLookup: `${V1}/native/item-lookup`,
 
   // ----- capture -----------
   captures: `${V1}/captures`,
@@ -119,6 +120,7 @@ export const CAPTURE_METHODS: Record<keyof typeof capturePaths, readonly Method[
   syncOps: ['POST'],
   nativeCaptureCapabilities: ['GET'],
   nativePhotoProposals: ['POST'],
+  nativeItemLookup: ['POST'],
   captures: ['POST'],
   captureBatches: ['GET'],
   captureBatchUndo: ['POST'],

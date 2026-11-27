@@ -33,6 +33,8 @@ const ALLOWLIST: Record<string, string> = {
     'verifies an Apple identity token and starts an expiring iPhone sign-in; linking and native session creation have their own audit events',
   'POST /api/v1/native/photo-proposals':
     'reads an inference copy in memory using the location provider and returns suggestions; approved records and evidence are audited when saved through sync',
+  'POST /api/v1/native/item-lookup':
+    'looks up public product facts through the location provider and returns cited suggestions; provider usage goes to the AI ledger, and accepted inventory changes are audited when saved through sync',
   'POST /api/v1/things/:id/photo-details':
     "reads a thing's photos (or photos just taken) in memory with the location's provider and returns suggestions for the edit form; nothing is applied and no extraction attempt is made, and the edit the person saves is audited (thing.update)",
   'POST /api/v1/auth/*':

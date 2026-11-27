@@ -24,8 +24,8 @@ describe('detailRowsFor', () => {
       ['category:electrical', 'category', 'Electrical'],
       ['category:decorations', 'category', 'Decorations'],
     ]);
-    expect(rows[3]?.tag).toBe(electrical);
-    expect(rows[4]?.tag).toBeUndefined();
+    const categories = rows.filter((row) => row.field === 'category');
+    expect(categories.map(({ tag }) => tag)).toEqual([electrical, undefined]);
   });
 
   it('leaves out what the form already has and categories it cannot create', () => {

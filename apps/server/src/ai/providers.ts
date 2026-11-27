@@ -27,7 +27,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { ProviderKind, ReasoningLevel } from '@kept/shared';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import type { EmbeddingModel, LanguageModel } from 'ai';
+import type { EmbeddingModel, LanguageModel, ToolSet } from 'ai';
 
 export type ModelObject = Exclude<LanguageModel, string>;
 /** An embeddings model object (never a string id, for the same reason as `ModelObject`). */
@@ -62,6 +62,15 @@ export type ModelTarget = {
 };
 
 type Fetch = typeof fetch;
+
+/** Search runs at the configured provider, without application tools or local URL fetches. */
+export function webSearchTools(kind: ProviderKind): ToolSet | undefined {
+  if (kind === 'openai')
+    return { web_search: createOpenAI().tools.webSearch({ searchContextSize: 'low' }) };
+  if (kind === 'openrouter')
+    return { web_search: createOpenRouter().tools.webSearch({ maxResults: 4 }) };
+  return undefined;
+}
 
 /** The model object for a resolved provider. The key lives only in the returned closure. */
 export function modelFor(t: ModelTarget, apiKey: string | null, fetchFn: Fetch): ModelObject {

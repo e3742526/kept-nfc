@@ -367,17 +367,19 @@ export function syncRoutes(state: MockState): MockRoute[] {
           'Both native sync context headers are required.',
         ),
     ),
-    route(
-      'POST',
-      p.nativePhotoProposals,
-      () =>
-        sessionGate(state) ??
-        err(
-          400,
-          'validation',
-          'The request is not valid.',
-          'Both native sync context headers are required.',
-        ),
+    ...[p.nativePhotoProposals, p.nativeItemLookup].map((path) =>
+      route(
+        'POST',
+        path,
+        () =>
+          sessionGate(state) ??
+          err(
+            400,
+            'validation',
+            'The request is not valid.',
+            'Both native sync context headers are required.',
+          ),
+      ),
     ),
 
     route('POST', p.syncOps, ({ body }) => {

@@ -1,26 +1,31 @@
-import { normalize } from '@kept/shared';
+import { type DeviceItemLookup, normalize } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { Checkbox } from 'react-aria-components';
+import type { ResolvedField } from '@/api/inventory/types';
 import { Button } from '@/components/ui/button';
 import type { PhotoSuggestion } from './capture-ai';
 import { equivalentCategory } from './category-picker';
+import { nativeCustomPatch } from './custom-fields';
 
 type Category = { id: string; name: string; colour: string | null };
 
 /** One field the AI would fill on the Add form. A category without `tag` is created on accept. */
 export type DetailRow = {
   key: string;
-  field: 'name' | 'quantity' | 'note' | 'category';
   value: string;
   /** What the field holds now, when accepting replaces it. */
   replaces?: string;
   /** Notes already have text: accepting adds a line. */
   appends?: true;
-  tag?: Category;
-};
+  source?: string;
+} & (
+  | { field: 'name' | 'quantity' | 'note' }
+  | { field: 'category'; tag?: Category }
+  | { field: 'custom'; customKey: string; label: string }
+);
 
 export type DetailDraft = {
   name: string;
@@ -85,6 +90,53 @@ export function detailRowsFor(
       continue;
     seen.add(key);
     rows.push({ key, field: 'category', value: tag?.name ?? value, ...(tag && { tag }) });
+  }
+  return rows;
+}
+
+export function lookupRows(
+  facts: DeviceItemLookup['facts'],
+  fields: readonly ResolvedField[],
+  drafts: Record<string, unknown>,
+  note: string,
+): DetailRow[] {
+  const rows: DetailRow[] = [];
+  for (const fact of facts) {
+    const field = fields.find(({ key }) => key === fact.field);
+    if (
+      field &&
+      !field.secret &&
+      !field.archivedAt &&
+      Object.hasOwn(
+        nativeCustomPatch(
+          { fields: [field], custom: {}, moneyHidden: true },
+          { [field.key]: fact.value },
+        ).custom,
+        field.key,
+      )
+    ) {
+      const current = drafts[field.key];
+      if (current != null && String(current) === fact.value) continue;
+      rows.push({
+        key: `online:field:${field.key}`,
+        field: 'custom',
+        customKey: field.key,
+        label: field.label ?? fact.label,
+        value: fact.value,
+        source: fact.source,
+        ...(current != null && String(current) && { replaces: String(current) }),
+      });
+    } else {
+      const value = `${fact.label}: ${fact.value}`;
+      if (normalize(note).includes(normalize(value))) continue;
+      rows.push({
+        key: `online:note:${normalize(fact.label)}`,
+        field: 'note',
+        value,
+        source: fact.source,
+        ...(note.trim() && { appends: true as const }),
+      });
+    }
   }
   return rows;
 }
@@ -157,7 +209,9 @@ export function DetailSuggestions({
                         <span className="text-small text-ink-2">
                           {row.field === 'category' && !row.tag
                             ? t`New category`
-                            : labels[row.field]}
+                            : row.field === 'custom'
+                              ? row.label
+                              : labels[row.field]}
                         </span>
                         <bdi className="break-words font-semibold">{row.value}</bdi>
                         {current && (
@@ -172,6 +226,16 @@ export function DetailSuggestions({
                     </>
                   )}
                 </Checkbox>
+                {row.source && (
+                  <a
+                    className="ms-5 block min-h-9 text-small text-ink underline"
+                    href={row.source}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {new URL(row.source).hostname}
+                  </a>
+                )}
               </li>
             );
           })}

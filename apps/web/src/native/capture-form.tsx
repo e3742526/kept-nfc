@@ -1,4 +1,4 @@
-import { AMOUNT_STRING, newId, normalize, TAG_LIMITS } from '@kept/shared';
+import { AMOUNT_STRING, type DeviceItemLookup, newId, normalize, TAG_LIMITS } from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
@@ -56,6 +56,7 @@ import {
   DetailSuggestions,
   detailRowsFor,
   leadSuggestion,
+  lookupRows,
 } from './capture-details';
 import { CategoryPicker, equivalentCategory } from './category-picker';
 import { CustomFieldEditor, nativeCustomPatch } from './custom-fields';
@@ -303,8 +304,16 @@ export function CaptureForm({
   const previewUrlsRef = useRef<string[]>([]);
   // The AI's reading of these photos, itemized by field; it goes stale when the photos change.
   const photoKey = photos.map(({ key }) => key).join(',');
-  const [details, setDetails] = useState<{ photoKey: string; items: PhotoSuggestion[] }>();
+  const [searchOnline, setSearchOnline] = useState(false);
+  const lookupKey = JSON.stringify([destination?.locationId, typeId, name.trim(), upc]);
+  const [details, setDetails] = useState<{
+    photoKey: string;
+    items: PhotoSuggestion[];
+    lookup?: { key: string; result: DeviceItemLookup };
+  }>();
   const shownDetails = details?.photoKey === photoKey ? details.items : undefined;
+  const foundOnline =
+    shownDetails && details?.lookup?.key === lookupKey ? details.lookup.result : undefined;
   // Categories created from a suggestion, named until the cache has them.
   const [createdTags, setCreatedTags] = useState<(Tag & { accountId: string })[]>([]);
   const categoryOptions = [
@@ -489,7 +498,9 @@ export function CaptureForm({
   }
 
   /** A category the AI named: an existing one by name, else created (online only). */
-  async function categoryFor(row: DetailRow): Promise<string | undefined> {
+  async function categoryFor(
+    row: Extract<DetailRow, { field: 'category' }>,
+  ): Promise<string | undefined> {
     if (row.tag) return row.tag.id;
     if (!account) return;
     const path = inventoryPaths.accountRegistry(account, 'tags');
@@ -518,13 +529,19 @@ export function CaptureForm({
     setBusy(true);
     setStatus('');
     let failed = false;
+    let notesFull = false;
+    let nextNote = note;
+    const customUpdates: Record<string, string> = {};
     const addedTags: string[] = [];
     for (const row of rows) {
       if (row.field === 'name') setName(row.value);
       else if (row.field === 'quantity') setQuantity(row.value);
-      else if (row.field === 'note')
-        setNote((current) => (current.trim() ? `${current.trimEnd()}\n${row.value}` : row.value));
-      else {
+      else if (row.field === 'custom') customUpdates[row.customKey] = row.value;
+      else if (row.field === 'note') {
+        const next = nextNote.trim() ? `${nextNote.trimEnd()}\n${row.value}` : row.value;
+        if (next.length <= 500) nextNote = next;
+        else notesFull = true;
+      } else if (row.field === 'category') {
         try {
           const id = await categoryFor(row);
           if (id) addedTags.push(id);
@@ -533,6 +550,9 @@ export function CaptureForm({
         }
       }
     }
+    if (nextNote !== note) setNote(nextNote);
+    if (Object.keys(customUpdates).length)
+      setCustomDraft((current) => ({ ...current, ...customUpdates }));
     if (addedTags.length)
       setTags((current) => [...new Set([...current, ...addedTags])].slice(0, TAG_LIMITS.perThing));
     setDetails(undefined);
@@ -540,7 +560,9 @@ export function CaptureForm({
     setStatus(
       failed
         ? t`Some categories could not be added. Check your connection and try again.`
-        : t`Filled in. Check the fields, then save.`,
+        : notesFull
+          ? t`Some details did not fit in Notes. Check the fields before saving.`
+          : t`Filled in. Check the fields, then save.`,
     );
   }
 
@@ -867,6 +889,23 @@ export function CaptureForm({
 
   const canPaste =
     isItem && typeof navigator !== 'undefined' && typeof navigator.clipboard?.read === 'function';
+  const canLookUp = online && !!destination && !!adapters.captureAI?.lookupItem;
+  const showAssist = firstPhoto || (canLookUp && Boolean(name.trim() || upc));
+  const photoLead = shownDetails ? leadSuggestion(shownDetails) : undefined;
+  const lead = foundOnline?.name ? { ...photoLead, name: foundOnline.name } : photoLead;
+  const detailRows = lead
+    ? detailRowsFor(
+        lead,
+        { name, quantity, note, tags },
+        categoryOptions,
+        online && !!captureLocation && captureLocation.role !== 'viewer',
+      )
+    : [];
+  if (foundOnline) {
+    const nameRow = detailRows.find((row) => row.field === 'name');
+    if (nameRow && foundOnline.name) nameRow.source = foundOnline.facts[0]?.source;
+    detailRows.push(...lookupRows(foundOnline.facts, customRecord.fields, customDraft, note));
+  }
   const canLabel = !!destination && !!captureLocation && captureLocation.role !== 'viewer';
   const upcButton =
     isItem && !label && !upc && onOpen && !scanningUpc ? (
@@ -1074,12 +1113,12 @@ export function CaptureForm({
             </>
           )}
         </div>
-        {isItem && !firstPhoto && (
+        {isItem && !showAssist && (
           <Button variant="secondary" isDisabled>
             <Trans>AI assist</Trans>
           </Button>
         )}
-        {isItem && firstPhoto && (
+        {isItem && showAssist && (
           <CaptureSuggestion
             key={`${photos.map(({ key }) => key).join(',')}:${destination?.id ?? ''}`}
             connection={connection}
@@ -1087,30 +1126,34 @@ export function CaptureForm({
             locationId={destination?.locationId}
             provider={provider}
             onProviderChange={setProvider}
-            onSuggestions={(items) => setDetails({ photoKey, items })}
+            onSuggestions={(items, result) =>
+              setDetails({ photoKey, items, ...(result && { lookup: { key: lookupKey, result } }) })
+            }
             online={online}
             disabled={busy || !photoPreferenceLoaded}
+            lookup={
+              canLookUp
+                ? { enabled: searchOnline, onChange: setSearchOnline, name, barcode: upc, typeId }
+                : undefined
+            }
           />
         )}
-        {isItem && shownDetails && (
+        {isItem && shownDetails && (shownDetails.length > 0 || foundOnline) && (
           <DetailSuggestions
-            key={photoKey}
-            rows={
-              leadSuggestion(shownDetails)
-                ? detailRowsFor(
-                    leadSuggestion(shownDetails) as PhotoSuggestion,
-                    { name, quantity, note, tags },
-                    categoryOptions,
-                    online && !!captureLocation && captureLocation.role !== 'viewer',
-                  )
-                : []
-            }
+            key={foundOnline ? JSON.stringify([photoKey, lookupKey]) : photoKey}
+            rows={detailRows}
             others={Math.max(0, shownDetails.length - 1)}
             disabled={busy}
             onApply={(rows) => void applyDetails(rows)}
             onDismiss={() => setDetails(undefined)}
             onReviewItems={
-              destination && onReview && !nfcDraft && !upc && !typeId
+              firstPhoto &&
+              shownDetails.length > 0 &&
+              destination &&
+              onReview &&
+              !nfcDraft &&
+              !upc &&
+              !typeId
                 ? () => void reviewPhoto(shownDetails)
                 : undefined
             }

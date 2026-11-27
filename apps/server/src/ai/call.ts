@@ -161,6 +161,8 @@ export type CallRequest<T> = {
   /** The tools offered for this one step; never a function to run. A tool-calling
    * request passes `output: null`: `value` is the text answer ('' for a step of tool calls). */
   tools?: { defs: ToolSpec[]; choice: 'auto' | 'none' };
+  /** A provider-managed, read-only web lookup. It cannot be combined with assistant tools. */
+  webSearch?: ToolSet;
   /** What a call like this usually produces, for the provider's window (estimate.ts). */
   expectedOutputTokens: number;
   promptVersion: string | null;
@@ -193,6 +195,7 @@ export type CallResult<T> =
       finishReason: string | null;
       /** The reasoning the provider returned, kept in the private thread only (S6.3 finding 4). */
       reasoning: string | null;
+      sourceUrls?: string[];
     }
   | {
       status: 'paused';
@@ -497,6 +500,7 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
     let value: T | null = null;
     let toolCalls: ToolCallOut[] = [];
     let reasoning: string | null = null;
+    let sourceUrls: string[] | undefined;
     const photoIndex = req.conversation?.photoMessageIndex;
     const messages: ModelMessage[] = toModelMessages(
       history,
@@ -514,7 +518,15 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
         model: model(rt, resolved),
         instructions,
         messages,
-        ...(req.tools ? { tools: toToolSet(req.tools.defs), toolChoice: req.tools.choice } : {}),
+        ...(req.webSearch
+          ? {
+              tools: req.webSearch,
+              // OpenRouter reports search through citations without a client tool-call event.
+              toolChoice: provider.kind === 'openrouter' ? 'auto' : 'required',
+            }
+          : req.tools
+            ? { tools: toToolSet(req.tools.defs), toolChoice: req.tools.choice }
+            : {}),
         // One provider request per call, always: Kept runs the loop (the SDK's default today,
         // set so a future default can't start a loop Kept can't see).
         stopWhen: isStepCount(1),
@@ -529,7 +541,16 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
         maxRetries: 0,
         maxOutputTokens: req.maxOutputTokens,
         ...(settings.reasoning ? { reasoning: settings.reasoning } : {}),
-        ...(settings.providerOptions ? { providerOptions: settings.providerOptions } : {}),
+        ...(req.webSearch && provider.kind === 'openai'
+          ? {
+              providerOptions: {
+                ...settings.providerOptions,
+                openai: { ...settings.providerOptions?.openai, store: false, maxToolCalls: 1 },
+              },
+            }
+          : settings.providerOptions
+            ? { providerOptions: settings.providerOptions }
+            : {}),
         abortSignal: AbortSignal.timeout(rt.callTimeoutMs ?? CALL_TIMEOUT_MS),
       });
       usage = {
@@ -541,7 +562,13 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
       finishReason = result.finishReason;
       headers = result.response?.headers;
       providerMetadata = result.providerMetadata;
-      toolCalls = fromToolCalls(result);
+      if (req.webSearch) {
+        sourceUrls = result.sources.flatMap((source) =>
+          source.sourceType === 'url' ? [source.url] : [],
+        );
+      } else {
+        toolCalls = fromToolCalls(result);
+      }
       reasoning = result.reasoningText ?? null;
       if (result.finishReason === 'length') {
         outcome = 'truncated';
@@ -661,6 +688,7 @@ export async function callModel<T>(rt: AiRuntime, req: CallRequest<T>): Promise<
         toolCalls,
         finishReason,
         reasoning,
+        ...(sourceUrls !== undefined ? { sourceUrls } : {}),
       };
     }
     if (pauses) {

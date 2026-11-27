@@ -21,6 +21,7 @@ import type { ModuleId } from './modules.js';
 import { BOX_STATES } from './moving.js';
 import type { ChildOrder } from './order.js';
 import type { Role } from './roles.js';
+import { gtinValid } from './scan.js';
 import { SHORT_CODE } from './short-code.js';
 import { TAG_LIMITS } from './tags.js';
 import { AMOUNT_STRING } from './type-fields.js';
@@ -47,12 +48,38 @@ export const DevicePhotoProposals = z.strictObject({
         description: z.string().trim().min(1).max(500).nullable().optional(),
         quantity: z.number().int().positive().max(10_000).nullable().optional(),
         categories: z.array(z.string().trim().min(1).max(60)).max(4).nullable().optional(),
+        barcode: z.string().trim().max(24).nullable().optional(),
       }),
     )
     .min(1)
     .max(DEVICE_PHOTO_PROPOSAL_LIMIT),
 });
 export type DevicePhotoProposal = z.infer<typeof DevicePhotoProposals>['items'][number];
+
+export const DeviceItemLookupRequest = z
+  .strictObject({
+    locationId: z.uuid(),
+    name: z.string().trim().min(1).max(200).optional(),
+    barcode: z.string().refine(gtinValid).optional(),
+    typeId: z.uuid().optional(),
+  })
+  .refine(({ name, barcode }) => Boolean(name || barcode));
+export type DeviceItemLookupRequest = z.infer<typeof DeviceItemLookupRequest>;
+
+export const DeviceItemLookup = z.strictObject({
+  name: z.string().trim().min(1).max(200).nullable(),
+  facts: z
+    .array(
+      z.strictObject({
+        field: z.string().trim().min(1).max(60).nullable(),
+        label: z.string().trim().min(1).max(80),
+        value: z.string().trim().min(1).max(180),
+        source: z.url({ protocol: /^https$/ }).max(1500),
+      }),
+    )
+    .max(10),
+});
+export type DeviceItemLookup = z.infer<typeof DeviceItemLookup>;
 export const NativeCaptureCapabilitiesSchema = z.object({
   contractVersion: z.literal(1),
   capturePayloadVersions: z.array(z.number().int().positive()),
