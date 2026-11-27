@@ -34465,3 +34465,31 @@ msgstr "Gợi ý chi tiết"
 #: src/native/capture-details.tsx
 msgid "Suggested details"
 msgstr "Chi tiết được gợi ý"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the box.} other {# items go in the box.}}"
+msgstr "{itemCount, plural, other {# món sẽ được cho vào hộp.}}"
+
+#: src/native/capture-form.tsx
+msgid "Add items"
+msgstr "Thêm món đồ"
+
+#: src/native/capture-form.tsx
+msgid "Contents (optional)"
+msgstr "Đồ bên trong (không bắt buộc)"
+
+#: src/native/capture-form.tsx
+msgid "Create box and add items"
+msgstr "Tạo hộp và thêm món đồ"
+
+#: src/native/capture-form.tsx
+msgid "One item per line. For more than one, add the count, like 3 x HDMI cable."
+msgstr "Mỗi dòng một món. Nếu nhiều hơn một, hãy thêm số lượng, ví dụ 3 x cáp HDMI."
+
+#: src/native/capture-form.tsx
+msgid "Save contents"
+msgstr "Lưu đồ bên trong"
+
+#: src/native/capture-form.tsx
+msgid "The box was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "Đã tạo hộp, nhưng không thể lưu đồ bên trong trên iPhone này. Hãy thử lại."

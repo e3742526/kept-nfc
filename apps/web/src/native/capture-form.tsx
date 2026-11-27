@@ -1,4 +1,5 @@
 import { AMOUNT_STRING, newId, normalize, TAG_LIMITS } from '@kept/shared';
+import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
 import {
@@ -11,7 +12,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import { TextField as AriaTextField, FileTrigger, Label, TextArea } from 'react-aria-components';
+import {
+  TextField as AriaTextField,
+  FileTrigger,
+  Label,
+  Text,
+  TextArea,
+} from 'react-aria-components';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { CreateRegistryResult, Page, Tag } from '@/api/inventory/types';
 import { Button } from '@/components/ui/button';
@@ -22,6 +29,7 @@ import { TextField } from '@/components/ui/text-field';
 import { sep, useBytes } from '@/lib/format';
 import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
+import { parseBoxContents } from './box-contents';
 import {
   type CaptureAIProvider,
   type CompletionState,
@@ -948,6 +956,7 @@ export function NewBoxForm({
   onClose,
   onCreated,
   onAdded,
+  onContentsSaved,
   headerExtra,
 }: {
   connection: Connection;
@@ -956,29 +965,74 @@ export function NewBoxForm({
   /** Where Add starts when no place was given (the place or box added to last, else Unplaced). */
   suggested?: Destination;
   onClose: () => void;
-  onCreated: (id: string, locationId: string) => void;
+  /** `box` is the new box; `addItems` opens Add item with it as the destination. */
+  onCreated: (box: Destination, addItems: boolean) => void;
   onAdded?: (destination: Destination) => void;
+  /** Items listed as the box's contents were saved on the phone, to sync. */
+  onContentsSaved?: () => void;
   headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
   const [name, setName] = useState('');
+  const [contents, setContents] = useState('');
   const [target, setTarget] = useState<Destination | undefined>(() =>
     place ? { ...place, kind: place.kind ?? 'place' } : (suggested ?? defaultDestination(cache)),
   );
+  // Set once the box exists: a retry then saves only the contents, never a second box.
+  const [created, setCreated] = useState<Destination>();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const lines = parseBoxContents(contents);
+  const itemCount = lines.length;
 
-  async function submit() {
+  async function submit(addItems: boolean) {
     if (!target || busy) return;
     setBusy(true);
     setStatus('');
+    let box = created;
     try {
-      const result = await createBox(connection, cache, target, name.trim() || t`Box`, adapters);
-      onAdded?.(target);
-      onCreated(result.id, result.locationId);
+      if (!box) {
+        const result = await createBox(connection, cache, target, name.trim() || t`Box`, adapters);
+        box = {
+          id: result.id,
+          locationId: result.locationId,
+          name: result.name ?? (name.trim() || t`Box`),
+          kind: 'box',
+        };
+        setCreated(box);
+        onAdded?.(target);
+      }
     } catch {
       setStatus(t`Could not create the box. Check your connection and selected location.`);
+      setBusy(false);
+      return;
+    }
+    try {
+      if (lines.length) {
+        const batchId = newId();
+        for (const line of lines)
+          await saveOnPhone(
+            connection,
+            {
+              locationId: box.locationId,
+              boxId: box.id,
+              name: line.name,
+              ...(line.quantity ? { quantity: line.quantity } : {}),
+              captureIntent: 'add',
+              batchId,
+            },
+            [],
+            adapters,
+          );
+        setContents('');
+        onContentsSaved?.();
+      }
+      onCreated(box, addItems);
+    } catch {
+      setStatus(
+        t`The box was created, but its contents could not be saved on this iPhone. Try again.`,
+      );
     } finally {
       setBusy(false);
     }
@@ -997,7 +1051,7 @@ export function NewBoxForm({
         className="kept-card"
         onSubmit={(event) => {
           event.preventDefault();
-          void submit();
+          void submit(false);
         }}
       >
         <TextField
@@ -1005,19 +1059,47 @@ export function NewBoxForm({
           value={name}
           onChange={setName}
           inputProps={{ maxLength: 200 }}
+          isDisabled={busy || !!created}
+        />
+        {!created && (
+          <DestinationPicker
+            connection={connection}
+            online={true}
+            cache={cache}
+            value={target}
+            onChange={setTarget}
+            disabled={busy}
+          />
+        )}
+        <AriaTextField
+          className="grid gap-1"
+          value={contents}
+          onChange={setContents}
           isDisabled={busy}
-        />
-        <DestinationPicker
-          connection={connection}
-          online={true}
-          cache={cache}
-          value={target}
-          onChange={setTarget}
-          disabled={busy}
-        />
+        >
+          <Label className="text-small font-semibold">
+            <Trans>Contents (optional)</Trans>
+          </Label>
+          <TextArea className={inputClass} rows={4} maxLength={10_000} />
+          <Text slot="description" className="text-small text-ink-2">
+            <Trans>One item per line. For more than one, add the count, like 3 x HDMI cable.</Trans>
+          </Text>
+        </AriaTextField>
+        {lines.length > 0 && (
+          <p className="m-0 text-small text-ink-2">
+            {plural(itemCount, {
+              one: '# item goes in the box.',
+              other: '# items go in the box.',
+            })}
+          </p>
+        )}
         <Button type="submit" isPending={busy} isDisabled={!target}>
           <Plus size={18} aria-hidden />
-          <Trans>Create box</Trans>
+          {created ? <Trans>Save contents</Trans> : <Trans>Create box</Trans>}
+        </Button>
+        <Button variant="secondary" isDisabled={busy || !target} onPress={() => void submit(true)}>
+          <Camera size={18} aria-hidden />
+          {created ? <Trans>Add items</Trans> : <Trans>Create box and add items</Trans>}
         </Button>
       </form>
       <p role="status" className="text-ink-2">

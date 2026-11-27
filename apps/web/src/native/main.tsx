@@ -1796,8 +1796,17 @@ export function Inventory({
           suggested={suggestedDestination}
           onClose={() => (screen.place ? open(screen.place, true) : goHome())}
           onAdded={rememberAdded}
-          onCreated={(id, locationId) => {
-            open({ id, locationId, kind: 'thing' });
+          onContentsSaved={savedLocally}
+          onCreated={(box, addItems) => {
+            const record: Screen = {
+              kind: 'record',
+              target: { id: box.id, locationId: box.locationId, kind: 'thing' },
+            };
+            // Adding items: Back from Add returns to the new box, not the box form.
+            if (addItems) {
+              backStack.current = [...backStack.current.slice(-9), record];
+              setScreen({ kind: 'capture', destination: box, fromRecord: true });
+            } else setScreen(record);
             void refresh();
           }}
         />

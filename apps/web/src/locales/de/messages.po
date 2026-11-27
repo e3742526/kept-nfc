@@ -34465,3 +34465,31 @@ msgstr "Details vorschlagen"
 #: src/native/capture-details.tsx
 msgid "Suggested details"
 msgstr "Vorgeschlagene Details"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the box.} other {# items go in the box.}}"
+msgstr "{itemCount, plural, one {# Gegenstand kommt in die Kiste.} other {# Gegenstände kommen in die Kiste.}}"
+
+#: src/native/capture-form.tsx
+msgid "Add items"
+msgstr "Gegenstände hinzufügen"
+
+#: src/native/capture-form.tsx
+msgid "Contents (optional)"
+msgstr "Inhalt (optional)"
+
+#: src/native/capture-form.tsx
+msgid "Create box and add items"
+msgstr "Kiste erstellen und Gegenstände hinzufügen"
+
+#: src/native/capture-form.tsx
+msgid "One item per line. For more than one, add the count, like 3 x HDMI cable."
+msgstr "Ein Gegenstand pro Zeile. Bei mehreren die Anzahl angeben, etwa 3 x HDMI-Kabel."
+
+#: src/native/capture-form.tsx
+msgid "Save contents"
+msgstr "Inhalt speichern"
+
+#: src/native/capture-form.tsx
+msgid "The box was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "Die Kiste wurde erstellt, aber ihr Inhalt konnte auf diesem iPhone nicht gespeichert werden. Versuche es erneut."

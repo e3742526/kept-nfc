@@ -34465,3 +34465,31 @@ msgstr "اقتراح التفاصيل"
 #: src/native/capture-details.tsx
 msgid "Suggested details"
 msgstr "التفاصيل المقترحة"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the box.} other {# items go in the box.}}"
+msgstr "{itemCount, plural, zero {لن يدخل أي عنصر في الصندوق.} one {سيدخل عنصر واحد في الصندوق.} two {سيدخل عنصران في الصندوق.} few {ستدخل # عناصر في الصندوق.} many {سيدخل # عنصرًا في الصندوق.} other {سيدخل # عنصر في الصندوق.}}"
+
+#: src/native/capture-form.tsx
+msgid "Add items"
+msgstr "إضافة عناصر"
+
+#: src/native/capture-form.tsx
+msgid "Contents (optional)"
+msgstr "المحتويات (اختياري)"
+
+#: src/native/capture-form.tsx
+msgid "Create box and add items"
+msgstr "إنشاء صندوق وإضافة عناصر"
+
+#: src/native/capture-form.tsx
+msgid "One item per line. For more than one, add the count, like 3 x HDMI cable."
+msgstr "عنصر واحد في كل سطر. لأكثر من واحد، أضف العدد، مثل 3 x كابل HDMI."
+
+#: src/native/capture-form.tsx
+msgid "Save contents"
+msgstr "حفظ المحتويات"
+
+#: src/native/capture-form.tsx
+msgid "The box was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "تم إنشاء الصندوق، لكن تعذّر حفظ محتوياته على هذا iPhone. حاول مرة أخرى."

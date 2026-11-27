@@ -34465,3 +34465,31 @@ msgstr "Запропонувати подробиці"
 #: src/native/capture-details.tsx
 msgid "Suggested details"
 msgstr "Запропоновані подробиці"
+
+#: src/native/capture-form.tsx
+msgid "{itemCount, plural, one {# item goes in the box.} other {# items go in the box.}}"
+msgstr "{itemCount, plural, one {# предмет піде в коробку.} few {# предмети підуть у коробку.} many {# предметів підуть у коробку.} other {# предмета підуть у коробку.}}"
+
+#: src/native/capture-form.tsx
+msgid "Add items"
+msgstr "Додати предмети"
+
+#: src/native/capture-form.tsx
+msgid "Contents (optional)"
+msgstr "Вміст (необов’язково)"
+
+#: src/native/capture-form.tsx
+msgid "Create box and add items"
+msgstr "Створити коробку й додати предмети"
+
+#: src/native/capture-form.tsx
+msgid "One item per line. For more than one, add the count, like 3 x HDMI cable."
+msgstr "Один предмет на рядок. Якщо їх кілька, додайте кількість, наприклад 3 x кабель HDMI."
+
+#: src/native/capture-form.tsx
+msgid "Save contents"
+msgstr "Зберегти вміст"
+
+#: src/native/capture-form.tsx
+msgid "The box was created, but its contents could not be saved on this iPhone. Try again."
+msgstr "Коробку створено, але її вміст не вдалося зберегти на цьому iPhone. Повторіть спробу."

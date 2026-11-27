@@ -5468,4 +5468,84 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: 'Remove category Electrical' })).toBeInTheDocument();
     expect(destination()).toContain('Home › Garage › Winter Box');
   });
+
+  it('creates a box with its contents listed, or goes on to add items to it', async () => {
+    const connection = {
+      id: 'https://kept.example.com|ibrahim|epoch-1',
+      origin: 'https://kept.example.com',
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    let created = 0;
+    const spy = vi
+      .spyOn(env.adapters.transport, 'request')
+      .mockImplementation(async (conn, path, options) => {
+        if (path !== inventoryPaths.things || options?.method !== 'POST')
+          return request(conn, path, options);
+        const body = options.body as { id: string; name: string; placeId?: string };
+        const box = {
+          ...(env.serverThings.get(env.boxId) as Record<string, unknown>),
+          id: body.id,
+          name: body.name,
+          placeId: body.placeId ?? null,
+          shortCode: `NEWB0${++created}`,
+        };
+        env.serverThings.set(body.id, box);
+        return box as never;
+      });
+    const syncedNames = () =>
+      spy.mock.calls.flatMap(([, path, options]) =>
+        path === capturePaths.syncOps
+          ? ((
+              options?.body as
+                | { ops: { payload: { name: string; quantity?: string; target: object } }[] }
+                | undefined
+            )?.ops.map(({ payload }) => [payload.name, payload.quantity ?? null]) ?? [])
+          : [],
+      );
+    const user = userEvent.setup();
+    env.renderApp();
+    const openBoxForm = async () => {
+      await user.click(
+        within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+      );
+      const addBox = await screen.findByRole('button', { name: 'Add box' });
+      await waitFor(() => expect(addBox).toBeEnabled());
+      await user.click(addBox);
+    };
+
+    await openBoxForm();
+    await user.type(screen.getByRole('textbox', { name: 'Box name (optional)' }), 'Cables');
+    await user.type(
+      screen.getByRole('textbox', { name: 'Contents (optional)' }),
+      '3 x HDMI cable{Enter}Power strip',
+    );
+    expect(screen.getByText('2 items go in the box.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Create box' }));
+    expect(await screen.findByRole('heading', { name: 'Cables' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(syncedNames()).toEqual(
+        expect.arrayContaining([
+          ['HDMI cable', '3'],
+          ['Power strip', null],
+        ]),
+      ),
+    );
+
+    // Or the box is made and Add item opens with it as the destination; Back returns to it.
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await openBoxForm();
+    await user.type(screen.getByRole('textbox', { name: 'Box name (optional)' }), 'Tools');
+    await user.click(screen.getByRole('button', { name: 'Create box and add items' }));
+    expect(await screen.findByRole('heading', { name: 'Adding to box' })).toBeInTheDocument();
+    await continueToItemDetails(user);
+    expect(
+      (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent,
+    ).toContain('Tools');
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(await screen.findByRole('heading', { name: 'Tools' })).toBeInTheDocument();
+  });
 });
