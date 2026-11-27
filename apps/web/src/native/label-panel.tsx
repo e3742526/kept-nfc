@@ -468,7 +468,10 @@ export function LabelPanel({
         { method: 'POST' },
       );
       const url = labelUrl(await loadLabelAddress(connection, adapters).catch(() => base), code);
-      if (!live.current || !(await checkAssignment(url, { id: place.id, kind: 'place' }))) return;
+      if (!live.current) return;
+      const assigned = await checkAssignment(url, { id: place.id, kind: 'place' });
+      // The scanner may have been closed while the server answered: do not reopen the NFC sheet.
+      if (!assigned || !live.current) return;
       const result = await adapters.nfc.scanTag(connection, {
         mode: 'write',
         url,
