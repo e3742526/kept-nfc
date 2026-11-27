@@ -533,6 +533,7 @@ export function CaptureForm({
                   online={online}
                   cache={cache}
                   value={destination}
+                  offerTagWrite
                   onAuthError={onAuthError}
                   onChange={(next) => {
                     const owner = cache.locations.find(

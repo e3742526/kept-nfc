@@ -33190,6 +33190,15 @@ msgstr "هذا الملصق موضوع بالفعل على {0}. استخدم م�
 msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
 msgstr "بطاقة NFC هذه فارغة. اختر «الكتابة على بطاقة NFC جديدة» لتمنحها ملصقًا."
 
+#: src/native/label-panel.tsx
+msgid "This NFC tag is blank. Choose a room or place (not Unplaced) while connected, then scan it again to write it."
+msgstr "بطاقة NFC هذه فارغة. اختر غرفة أو مكانًا (غير «بلا مكان») وأنت متصل بالإنترنت، ثم امسحها مرة أخرى لكتابتها."
+
+#. placeholder {0}: isolate(tagPlace.name)
+#: src/native/label-panel.tsx
+msgid "This NFC tag is blank. Write it for {0}?"
+msgstr "بطاقة NFC هذه فارغة. هل تريد كتابتها لـ {0}؟"
+
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "الكتابة على بطاقة NFC جديدة"

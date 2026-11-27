@@ -33190,6 +33190,15 @@ msgstr "Nhãn này đã gắn trên {0}. Hãy dùng nhãn trống."
 msgid "This NFC tag is blank. Choose Write new NFC tag to give it a label."
 msgstr "Thẻ NFC này đang trống. Chọn «Ghi thẻ NFC mới» để gắn nhãn cho thẻ."
 
+#: src/native/label-panel.tsx
+msgid "This NFC tag is blank. Choose a room or place (not Unplaced) while connected, then scan it again to write it."
+msgstr "Thẻ NFC này đang trống. Khi đã kết nối, hãy chọn một phòng hoặc vị trí (không phải “Chưa có vị trí”), rồi quét lại để ghi."
+
+#. placeholder {0}: isolate(tagPlace.name)
+#: src/native/label-panel.tsx
+msgid "This NFC tag is blank. Write it for {0}?"
+msgstr "Thẻ NFC này đang trống. Ghi cho {0}?"
+
 #: src/native/item-label.tsx
 msgid "Write new NFC tag"
 msgstr "Ghi thẻ NFC mới"

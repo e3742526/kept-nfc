@@ -1328,6 +1328,85 @@ describe('KeptPhone mobile workflows', () => {
     );
   });
 
+  it('writes a blank NFC tag for the chosen place from the add screen picker', async () => {
+    const origin = 'https://kept.example.com';
+    const connection = {
+      id: `${origin}|ibrahim|epoch-1`,
+      origin,
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const garage = env.rooms[0];
+    if (!garage) throw new Error('Missing Garage');
+    const code = 'P14CE2';
+    const url = `${origin}/l/${code}`;
+    const request = env.adapters.transport.request;
+    const issue = vi.fn();
+    const scanTag = vi.spyOn(env.adapters.nfc, 'scanTag');
+    env.adapters.transport.request = async <T,>(
+      context: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ): Promise<T> => {
+      if (path === inventoryPaths.placeLabel(garage.id)) {
+        issue(options);
+        return { code } as T;
+      }
+      if (path === capturePaths.scanResolve) {
+        const text = (options?.body as { text?: string })?.text;
+        if (text === url) {
+          return { outcome: 'open', target: { ...garage, kind: 'place' } } as T;
+        }
+      }
+      return request(context, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+    );
+    await continueToItemDetails(user);
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'USB cable');
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    const fingerprint = 'd'.repeat(64);
+    const blank = { status: 'blank', writable: true, fingerprint } as const;
+
+    // Unplaced never takes a label: a blank tag explains instead of offering to write it.
+    await user.click(screen.getByRole('button', { name: 'Scan place label' }));
+    let scanner = within(await screen.findByRole('dialog', { name: 'Scan place label' }));
+    env.pushScan(blank);
+    await user.click(await scanner.findByRole('button', { name: 'Scan NFC tag' }));
+    expect(await scanner.findByText(/Choose a room or place \(not Unplaced\)/)).toBeInTheDocument();
+    expect(scanner.queryByRole('button', { name: 'Write and verify' })).toBeNull();
+    expect(issue).not.toHaveBeenCalled();
+    await user.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Scan place label' })).toBeNull(),
+    );
+
+    // A real place offers the write, then becomes the destination.
+    await user.click(screen.getByRole('button', { name: /Room or box/ }));
+    await user.click(await screen.findByRole('option', { name: 'Garage' }));
+    await user.click(screen.getByRole('button', { name: 'Scan place label' }));
+    scanner = within(await screen.findByRole('dialog', { name: 'Scan place label' }));
+    env.pushScan(blank, { status: 'written' });
+    await user.click(await scanner.findByRole('button', { name: 'Scan NFC tag' }));
+    expect(await scanner.findByText(/This NFC tag is blank\. Write it for/)).toBeInTheDocument();
+    await user.click(scanner.getByRole('button', { name: 'Write and verify' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Scan place label' })).toBeNull(),
+    );
+    expect(issue).toHaveBeenCalledWith(expect.objectContaining({ method: 'POST' }));
+    expect(scanTag).toHaveBeenLastCalledWith(
+      connection,
+      expect.objectContaining({ mode: 'write', url, fingerprint }),
+    );
+    expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue('USB cable');
+    await user.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('Home › Garage')).toBeInTheDocument();
+  });
+
   it('opens Where to look from an item and switches the historical grouping', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({

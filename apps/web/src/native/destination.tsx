@@ -10,6 +10,7 @@ import { Select, SelectItem } from '@/components/ui/select';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
 import { type InventoryCache, inventoryPath, loadPlace, previewUrl } from './inventory';
+import type { TagPlace } from './label-panel';
 import type { Target } from './labels';
 import { useOfflinePlacePhotos } from './place-photo-cache';
 import { readRecentDestinations } from './recent-destinations';
@@ -207,6 +208,7 @@ export function DestinationPicker({
   onlyLocation,
   exclude,
   forParent,
+  offerTagWrite,
   onAuthError,
 }: {
   cache: InventoryCache;
@@ -221,6 +223,8 @@ export function DestinationPicker({
   exclude?: string;
   /** Reparenting permits the location root and excludes Unplaced and all boxes. */
   forParent?: boolean;
+  /** Adding: a blank NFC tag scanned in Scan place label can be written for the chosen place. */
+  offerTagWrite?: boolean;
   onAuthError?: ((reason: 'expired' | 'restored') => void) | undefined;
 }) {
   const { t } = useLingui();
@@ -290,6 +294,19 @@ export function DestinationPicker({
     scanGeneration.current++;
     setScannerOpen(false);
   }
+
+  // Writing a tag needs the chosen place to take a label (never Unplaced), a connection over
+  // HTTPS, and the Labels module; null tells the scanner it could write but has nothing to write for.
+  const tagTarget = selected ?? branch;
+  const tagPlace: TagPlace | null | undefined = !offerTagWrite
+    ? undefined
+    : online &&
+        connection.origin.startsWith('https://') &&
+        location?.effectiveModules?.includes('labels') &&
+        tagTarget?.kind === 'place' &&
+        !tagTarget.isUnplaced
+      ? { id: tagTarget.id, name: label(tagTarget), locationId: tagTarget.locationId }
+      : null;
 
   async function chooseScannedPlace(target: Target) {
     const generation = scanGeneration.current;
@@ -468,6 +485,7 @@ export function DestinationPicker({
                 placeOnly
                 onOpen={chooseScannedPlace}
                 onClose={closeScanner}
+                {...(tagPlace !== undefined ? { tagPlace } : {})}
                 {...(onAuthError ? { onAuthError } : {})}
               />
             </Suspense>
