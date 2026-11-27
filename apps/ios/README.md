@@ -20,6 +20,51 @@ See the [NFC runbook](../../docs/runbooks/nfc-mvp.md) for the integrated setup a
 
 ---
 
+## NIIMBOT B1 Pro printing
+
+Open **Thermal printing** from a record’s **QR and NFC label** screen or from
+**Print label sheets**. Open **NIIMBOT B1 Pro Bluetooth**, tap **Find nearby
+printers**, and select the printer. SheepKeep reads its model ID before
+remembering it. **Check printer status** reconnects briefly and reports the
+battery, lid, paper, or roll information the printer supplies. The app
+reconnects to the selected printer for each print job.
+
+Load genuine NIIMBOT gap stock, starting with **50 × 20 mm**. You can also select
+40 × 20, 30 × 20, 40 × 30, 50 × 30, and 50 × 50 mm. Choose **Prepare
+calibration print** for a QR sample and alignment ticks, or **Prepare labels**
+for inventory output. **Print on B1 Pro** accepts a range of up to 40 pages and
+up to 20 copies per label. Use **Layout and printer calibration** for offsets
+and **Save printer profile** for density. AirPrint and PDF export remain
+available. USB direct printing to the B1 Pro is outside this adapter's scope.
+
+After a signed-in phone has cached the permanent label address, it can prepare
+numbered batches and print them offline. Cached record labels with a known QR
+address can also print offline. Registration and confirmation sync when the
+server is available. If Bluetooth drops or a job is interrupted, check what
+printed before reprinting the same identifiers. A printer completion report and
+your confirmation are separate.
+
+### Protocol references and qualification
+
+The B1 Pro adapter checks model **4097** and uses the V4 print task over
+CoreBluetooth. SheepKeep renders the existing thermal layout at **300 DPI**
+with a conservative **567-dot** usable width. The pinned upstream hardware
+notes report a **576-dot** head. This release uses the narrower area to leave
+clearance. It does not reinterpret the consumable RFID reader as inventory NFC.
+
+The Swift implementation uses published packet formats and no vendor app,
+printer SDK, cloud service, or firmware patch. References are
+[the hardware-tested driver at `98f352d`](https://github.com/JeisonSDC/niimbot/tree/98f352db6bbda1db7a63ad5d8865349a67a51e79),
+[the V4 protocol document at `50801f4`](https://github.com/iscarelli/niimbot-web-bluetooth/blob/50801f40bc91a5bde782451c0e45b7e4e826f729/docs/protocol-v4.md),
+and [NiimBlueLib at `7738f0a`](https://github.com/MultiMote/niimbluelib/tree/7738f0a777be340b00e2ceb6ed52aff656370f31).
+The references are MIT licensed, copyright iscarelli (2026) and MultiMote
+(2024). No upstream driver is bundled.
+
+For hardware qualification, identify the printer, print the calibration label,
+scan its QR, then print distinct labels and copies. Repeat offline and confirm
+paper-out, an open lid, and printer power loss give actionable results before
+reprinting. Check edge clearance and alignment when trying another stock size.
+
 ## Architecture
 
 - **`apps/ios/NativeStore` (`KeptNativeStore` Swift Package):**

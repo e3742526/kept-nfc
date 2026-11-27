@@ -17,8 +17,11 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { liveQuery } from 'dexie';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CreateLabelBatchBody, LabelBatch, LabelCellContent } from '@/api/capture/types';
+import { isApiError } from '@/api/client';
 import { ErrorState, Notice, useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm';
+import { Dialog, DialogTrigger, Modal } from '@/components/ui/dialog';
 import { TextField } from '@/components/ui/text-field';
 import { sep } from '@/lib/format';
 import { useOnline } from '@/lib/online';
@@ -31,8 +34,17 @@ import {
   ThermalFitError,
   thermalDocument,
 } from './document';
-import { EpcForm } from './epc-form';
 import { knownLabelAddress, printSpec, syncPrintConfirmation, syncPrintManifest } from './jobs';
+import { LabelTools } from './label-tools';
+import {
+  fitsNiimbotStock,
+  isNiimbotStock,
+  NIIMBOT_COPY_LIMIT,
+  NIIMBOT_PAGE_LIMIT,
+  type NiimbotOutput,
+  niimbotJob,
+} from './niimbot';
+import { isNiimbotError, NiimbotSettings, useNiimbotErrorText } from './niimbot-settings';
 import {
   BrowserPrintPages,
   canBrowserPrint,
@@ -42,7 +54,6 @@ import {
   ThermalPreview,
 } from './output';
 import { loadThermalPdf, thermalPdf } from './pdf';
-import { ReplaceLabelForm } from './replace-form';
 import { Choices, PrintNumber, ThermalSettings } from './settings';
 import {
   batchLabels,
@@ -59,17 +70,30 @@ const initialStock = COMPACT_THERMAL_STOCK;
 const stocksMatch = (stock: string, layout: ThermalLayout) =>
   stock === 'thermal_4x6in' ? layout : 'single';
 
-type Prepared = { queue?: string | undefined } & (
+type Prepared = { queue?: string | undefined; stock?: string } & (
   | { kind: 'calibration'; doc: ThermalDocument }
+  | { kind: 'cached'; doc: ThermalDocument; label: LabelCellContent }
   | { kind: 'local'; job: PrintManifest; doc: ThermalDocument }
   | { kind: 'server'; batch: LabelBatch; doc: ThermalDocument }
 );
+
+function receiptKey(prepared: Prepared) {
+  if (prepared.kind === 'server') return `batch:${prepared.batch.id}`;
+  if (prepared.kind === 'cached') return `label:${prepared.label.url}`;
+}
+
+function observedAttempt(state: PrintState | undefined): PrintState | null {
+  return state === 'connecting' ? 'uncertain' : (state ?? null);
+}
 
 export function ThermalStudio({
   owner,
   source,
   api,
   nativeOutput,
+  bluetooth,
+  canManageLabels,
+  cachedLabel,
   batch,
   reprintStock,
   suggestIcon,
@@ -79,6 +103,9 @@ export function ThermalStudio({
   source: ThermalSource;
   api: PrintApi;
   nativeOutput?: NativeThermalOutput | undefined;
+  bluetooth?: NiimbotOutput | undefined;
+  canManageLabels?: boolean | undefined;
+  cachedLabel?: LabelCellContent | undefined;
   batch?: LabelBatch | undefined;
   reprintStock?: string | undefined;
   suggestIcon?: ((photo: File) => Promise<WorkshopIcon | undefined>) | undefined;
@@ -86,6 +113,8 @@ export function ThermalStudio({
 }) {
   const { t } = useLingui();
   const errorText = useErrorText();
+  const bluetoothErrorText = useNiimbotErrorText();
+  const confirmDialog = useConfirm();
   const encode = useQrEncoder();
   const online = useOnline();
   const [address, setAddress] = useState('');
@@ -113,6 +142,28 @@ export function ThermalStudio({
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const inFlight = useRef(false);
+  const bluetoothActive = useRef(false);
+  const [firstPage, setFirstPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [copies, setCopies] = useState(1);
+  const [reported, setReported] = useState<number>();
+  const bluetoothId =
+    bluetooth && profile.adapter === 'niimbot-b1-pro' ? profile.bluetoothId : undefined;
+  const bluetoothReady = !!(
+    bluetoothId &&
+    selected?.stock &&
+    fitsNiimbotStock(selected.stock, selected.doc)
+  );
+  const pageCount = selected?.doc.pages.length ?? 0;
+  const validPageRange =
+    Number.isInteger(firstPage) &&
+    Number.isInteger(lastPage) &&
+    firstPage >= 1 &&
+    lastPage >= firstPage &&
+    lastPage <= pageCount &&
+    lastPage - firstPage + 1 <= NIIMBOT_PAGE_LIMIT;
+  const validCopies = Number.isInteger(copies) && copies >= 1 && copies <= NIIMBOT_COPY_LIMIT;
+
   const selectedJobId = selected?.kind === 'local' ? selected.job.id : undefined;
   const selectedDocument = selected?.doc;
   const locationId = source.locationId;
@@ -126,6 +177,13 @@ export function ThermalStudio({
     if (online) void loadThermalPdf().catch(() => {});
   }, [online]);
 
+  useEffect(
+    () => () => {
+      if (bluetoothActive.current) void bluetooth?.cancel().catch(() => {});
+    },
+    [bluetooth],
+  );
+
   useEffect(() => {
     let active = true;
     void printStore.preferences
@@ -136,11 +194,21 @@ export function ThermalStudio({
           setProfiles(row.profiles);
           if (row.address) setAddress((current) => current || row.address || '');
         }
-        const saved = row?.profiles.find((item) => item.id === row.profileId);
+        const saved = row?.profiles.find(
+          (item) => item.id === row.profileId && (item.adapter !== 'niimbot-b1-pro' || bluetooth),
+        );
         if (reprintStock) {
-          if (saved) setProfile(printerOnStock(saved, reprintStock));
+          if (saved && (saved.adapter !== 'niimbot-b1-pro' || isNiimbotStock(reprintStock))) {
+            setProfile(printerOnStock(saved, reprintStock));
+          }
         } else if (batch?.thermal) {
           const rendering = profileForBatch(batch.stock, batch.thermal);
+          if (saved?.adapter === 'niimbot-b1-pro') {
+            setProfile(
+              isNiimbotStock(batch.stock) ? printerOnStock(saved, batch.stock) : rendering,
+            );
+            return;
+          }
           setProfile(
             saved
               ? { ...saved, ...rendering, id: saved.id, name: saved.name, media: saved.media }
@@ -177,7 +245,7 @@ export function ThermalStudio({
     return () => {
       active = false;
     };
-  }, [api, owner, batch, reprintStock]);
+  }, [api, owner, batch, reprintStock, bluetooth]);
 
   useEffect(() => {
     let active = true;
@@ -251,7 +319,22 @@ export function ThermalStudio({
     };
   }, [api, source, newNumbered, batch, online, previewRetry]);
 
-  const labels = batch?.labels ?? (loaded && 'labels' in loaded ? loaded.labels : undefined);
+  const offlineLabel =
+    !batch &&
+    cachedLabel &&
+    (!online ||
+      (loaded && 'error' in loaded && isApiError(loaded.error) && loaded.error.code === 'offline'))
+      ? cachedLabel
+      : undefined;
+  const labels =
+    batch?.labels ??
+    (offlineLabel ? [offlineLabel] : loaded && 'labels' in loaded ? loaded.labels : undefined);
+  const currentLabels = selected?.kind === 'server' ? selected.batch.labels : labels;
+  const currentLabel = currentLabels
+    ? currentLabels.length === 1 && currentLabels[0]?.targetId
+      ? currentLabels[0].code
+      : undefined
+    : cachedLabel?.code;
 
   const preview = useMemo(() => {
     if (!encode) return null;
@@ -312,11 +395,16 @@ export function ThermalStudio({
     };
   }, [selectedDocument, t]);
 
-  const show = (prepared: Prepared) => {
+  const show = async (prepared: Prepared, physicalStock = stock) => {
+    const key = receiptKey(prepared);
+    const latest = bluetooth && key ? await printStore.receipts.get([owner, key]) : undefined;
     setPdf(null);
-    setSelected({ ...prepared, queue: profile.queue?.trim() });
-    setAttempt(null);
+    setSelected({ ...prepared, stock: physicalStock, queue: profile.queue?.trim() });
+    setAttempt(observedAttempt(latest?.state));
     setConfirmed(false);
+    setReported(undefined);
+    setFirstPage(1);
+    setLastPage(Math.min(prepared.doc.pages.length, NIIMBOT_PAGE_LIMIT));
   };
 
   async function run(task: () => Promise<void>) {
@@ -338,14 +426,21 @@ export function ThermalStudio({
     }
   }
 
-  async function remember(saved?: PrinterProfile) {
+  async function remember(saved?: PrinterProfile, physicalStock = stock) {
     await printStore.transaction('rw', printStore.preferences, async () => {
       const prior = await printStore.preferences.get(owner);
       const list = prior?.profiles ?? [];
+      // Preparing a job with a different output should not replace the saved Bluetooth default.
+      if (
+        !saved &&
+        prior?.profileId !== profile.id &&
+        list.some((item) => item.id === prior?.profileId && item.adapter === 'niimbot-b1-pro')
+      )
+        return;
       const next = saved ? [...list.filter((item) => item.id !== saved.id), saved] : list;
       await printStore.preferences.put({
         owner,
-        stock,
+        stock: physicalStock,
         profileId: saved?.id ?? profile.id,
         profiles: next,
         address: address || prior?.address,
@@ -363,6 +458,18 @@ export function ThermalStudio({
     setProfile(next);
     setStock(next.stock);
     setLayout(stocksMatch(next.stock, next.layout));
+  }
+
+  function applyPrinterSettings(next: PrinterProfile[], selected?: PrinterProfile) {
+    setProfiles(next);
+    if (selected) {
+      const nextStock = isNiimbotStock(stock) ? stock : selected.stock;
+      setProfile(printerOnStock(selected, nextStock));
+      setStock(nextStock);
+      setLayout('single');
+    } else if (bluetoothId && !next.some((item) => item.id === profile.id)) {
+      setProfile(printerOnStock(defaultPrinterProfile(), stock));
+    }
   }
 
   async function prepare() {
@@ -388,7 +495,19 @@ export function ThermalStudio({
       const doc = thermalDocument(stock, layout, profile, options, manifestLabels(job), encode);
       if (online) job = await syncPrintManifest(job, api);
       setJobs((old) => old.map((row) => (row.id === job.id ? job : row)));
-      show({ kind: 'local', doc, job });
+      await show({ kind: 'local', doc, job });
+      return;
+    }
+    if (offlineLabel) {
+      const doc = thermalDocument(
+        stock,
+        layout,
+        profile,
+        options,
+        batchLabels({ labels: [offlineLabel] }),
+        encode,
+      );
+      await show({ kind: 'cached', doc, label: offlineLabel });
       return;
     }
     const ready = batch ?? (await api.create({ ...source, stock, thermal: settings })).batch;
@@ -404,7 +523,7 @@ export function ThermalStudio({
       }),
       encode,
     );
-    show({ kind: 'server', doc, batch: ready });
+    await show({ kind: 'server', doc, batch: ready });
     onSaved?.(ready);
   }
 
@@ -419,8 +538,8 @@ export function ThermalStudio({
       manifestLabels(job),
       encode,
     );
-    show({ kind: 'local', doc, job });
-    setAttempt(job.prints.at(-1)?.state ?? null);
+    await show({ kind: 'local', doc, job }, useSelectedStock ? stock : job.stock);
+    setAttempt(observedAttempt(job.prints.at(-1)?.state));
   }
 
   async function sync(job: PrintManifest) {
@@ -432,6 +551,8 @@ export function ThermalStudio({
   }
 
   async function mark(state: PrintState) {
+    const key = selected && receiptKey(selected);
+    if (bluetoothId && key) await printStore.receipts.put({ owner, key, state });
     setAttempt(state);
     if (selected?.kind === 'local') {
       await recordPrint(printStore, selected.job.id, state);
@@ -452,8 +573,46 @@ export function ThermalStudio({
   }
 
   async function print() {
-    if (!selected || (nativeOutput && !pdf)) return;
+    if (!selected || (!(bluetooth && bluetoothId) && nativeOutput && !pdf)) return;
     if (!(await outputAllowed())) return;
+    if (
+      (attempt === 'uncertain' || attempt === 'partial') &&
+      !(await confirmDialog({
+        title: t`Print these labels again?`,
+        body: t`Check the printer output first. Printing again can produce duplicate labels.`,
+        confirmLabel: t`Print`,
+      }))
+    )
+      return;
+
+    if (bluetooth && bluetoothId && selected.stock) {
+      if (!bluetoothReady || !validPageRange || !validCopies) return;
+      const job = niimbotJob(
+        selected.stock,
+        selected.doc,
+        firstPage,
+        lastPage,
+        copies,
+        profile.darkness ?? 3,
+      );
+      await mark('connecting');
+      bluetoothActive.current = true;
+      setReported(undefined);
+      try {
+        const result = await bluetooth.print(bluetoothId, job);
+        setReported(result.completed);
+        await mark(result.state === 'completed' ? 'printer-completed' : result.state);
+      } catch (error) {
+        // A response lost after dispatch cannot distinguish a print from a dropped connection.
+        // Native NIIMBOT errors only escape before a print job has been started.
+        await mark(isNiimbotError(error) ? 'failed' : 'uncertain');
+        setProblem(bluetoothErrorText(error));
+      } finally {
+        bluetoothActive.current = false;
+      }
+      return;
+    }
+
     try {
       if (nativeOutput && pdf) {
         const result = await nativeOutput(pdf, false);
@@ -469,7 +628,7 @@ export function ThermalStudio({
   }
 
   async function confirm() {
-    if (!selected || selected.kind === 'calibration') return;
+    if (!selected || selected.kind === 'calibration' || selected.kind === 'cached') return;
     if (!(await outputAllowed())) return;
     if (selected.kind === 'server') await api.confirm(selected.batch.id);
     await mark('confirmed');
@@ -540,6 +699,25 @@ export function ThermalStudio({
             </p>
           )}
           <ThermalSettings
+            printerSettings={
+              bluetooth && (
+                <DialogTrigger>
+                  <Button variant="secondary" isDisabled={busy} className="justify-self-start">
+                    <Trans>Printer settings</Trans>
+                  </Button>
+                  <Modal>
+                    <Dialog title={<Trans>Printer settings</Trans>}>
+                      <NiimbotSettings
+                        owner={owner}
+                        output={bluetooth}
+                        stock={stock}
+                        onChange={applyPrinterSettings}
+                      />
+                    </Dialog>
+                  </Modal>
+                </DialogTrigger>
+              )
+            }
             stock={stock}
             setStock={(value) => {
               const printer = printerOnStock(profile, value);
@@ -551,7 +729,7 @@ export function ThermalStudio({
             setLayout={setLayout}
             profile={profile}
             setProfile={setProfile}
-            profiles={profiles}
+            profiles={profiles.filter((entry) => bluetooth || entry.adapter !== 'niimbot-b1-pro')}
             selectProfile={restore}
             saveProfile={() =>
               void run(async () => {
@@ -593,7 +771,7 @@ export function ThermalStudio({
               </Trans>
             </Notice>
           )}
-          {!batch && loaded && 'error' in loaded && (
+          {!batch && !offlineLabel && loaded && 'error' in loaded && (
             <ErrorState
               error={loaded.error}
               onRetry={() => setPreviewRetry((attempt) => attempt + 1)}
@@ -623,7 +801,7 @@ export function ThermalStudio({
               onPress={() =>
                 void run(async () => {
                   if (encode)
-                    show({
+                    await show({
                       kind: 'calibration',
                       doc: calibrationDocument(
                         stock,
@@ -649,20 +827,83 @@ export function ThermalStudio({
           <ThermalPreview doc={selected.doc} />
           {selected.kind === 'local' && <RegistrationStatus job={selected.job} />}
           <DocumentWarnings doc={selected.doc} />
-          {queue && (
+          {queue && !bluetoothId && (
             <p className="m-0">
               <Trans>Choose {queue} in the print dialog.</Trans>
             </p>
           )}
-          <p className="m-0 text-small text-ink-2">
-            <Trans>
-              Use the matching paper size, actual size (100%), and no headers or footers.
-            </Trans>
-          </p>
+          {bluetoothId ? (
+            bluetoothReady ? (
+              <div className="grid gap-2">
+                <p className="m-0 text-small text-ink-2">
+                  <Trans>Load the matching NIIMBOT gap stock before printing.</Trans>
+                </p>
+                {pageCount > NIIMBOT_PAGE_LIMIT && (
+                  <p className="m-0 text-small">{t`Pages in this job: ${selected.doc.pages.length}`}</p>
+                )}
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {pageCount > 1 && (
+                    <>
+                      <PrintNumber
+                        label={t`First page`}
+                        value={firstPage}
+                        min={1}
+                        max={pageCount}
+                        change={(value) => setFirstPage(value ?? 0)}
+                      />
+                      <PrintNumber
+                        label={t`Last page`}
+                        value={lastPage}
+                        min={1}
+                        max={pageCount}
+                        change={(value) => setLastPage(value ?? 0)}
+                      />
+                    </>
+                  )}
+                  <PrintNumber
+                    label={t`Copies per label`}
+                    value={copies}
+                    min={1}
+                    max={NIIMBOT_COPY_LIMIT}
+                    change={(value) => setCopies(value ?? 0)}
+                  />
+                </div>
+                {pageCount > 1 && !validPageRange && (
+                  <Notice tone="warn">{t`Select a valid range of up to ${NIIMBOT_PAGE_LIMIT} pages.`}</Notice>
+                )}
+                {!validCopies && (
+                  <Notice tone="warn">{t`Enter 1 to ${NIIMBOT_COPY_LIMIT} copies per label.`}</Notice>
+                )}
+              </div>
+            ) : (
+              <Notice tone="warn">
+                <Trans>Prepare this job on a supported B1 Pro stock.</Trans>
+              </Notice>
+            )
+          ) : (
+            <p className="m-0 text-small text-ink-2">
+              <Trans>
+                Use the matching paper size, actual size (100%), and no headers or footers.
+              </Trans>
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
-            {canOutput && (nativeOutput || canBrowserPrint()) && (
-              <Button isDisabled={busy || (!!nativeOutput && !pdf)} onPress={() => void run(print)}>
-                <Trans>Print</Trans>
+            {canOutput && (bluetoothId || nativeOutput || canBrowserPrint()) && (
+              <Button
+                isDisabled={
+                  busy ||
+                  (bluetoothId
+                    ? !bluetoothReady || !validPageRange || !validCopies
+                    : !!nativeOutput && !pdf)
+                }
+                onPress={() => void run(print)}
+              >
+                {bluetoothId ? <Trans>Print on B1 Pro</Trans> : <Trans>Print</Trans>}
+              </Button>
+            )}
+            {attempt === 'connecting' && busy && bluetooth && (
+              <Button variant="secondary" onPress={() => void bluetooth.cancel().catch(() => {})}>
+                <Trans>Cancel print</Trans>
               </Button>
             )}
             {canOutput && (
@@ -683,6 +924,25 @@ export function ThermalStudio({
               <Trans>Print confirmed.</Trans>
             </Notice>
           ) : null}
+          {attempt === 'connecting' && (
+            <Notice>
+              <Trans>Connecting to the printer or sending labels…</Trans>
+            </Notice>
+          )}
+          {attempt === 'printer-completed' && (
+            <Notice tone="ok">
+              <Trans>The printer reports completion. Check the printed labels.</Trans>
+            </Notice>
+          )}
+          {attempt === 'uncertain' && (
+            <Notice tone="warn">
+              <Trans>
+                Print completion is uncertain. Check the output before reprinting the same
+                identifiers.
+              </Trans>
+              {reported !== undefined && <p>{t`Labels reported complete: ${reported}`}</p>}
+            </Notice>
+          )}
           {attempt === 'cancelled' && (
             <Notice>
               <Trans>Print cancelled. The same job is ready to retry.</Trans>
@@ -695,19 +955,24 @@ export function ThermalStudio({
           )}
           {attempt === 'partial' && (
             <Notice tone="warn">
-              <Trans>
-                Partial print recorded. Reprint the missing pages using the page range in the print
-                dialog.
-              </Trans>
+              <Trans>Partial print recorded. Reprint the missing pages using the page range.</Trans>
             </Notice>
           )}
           {selected.kind !== 'calibration' &&
-            (attempt === 'opened' || attempt === 'submitted' || (!attempt && canOutput)) && (
+            selected.kind !== 'cached' &&
+            (attempt === 'opened' ||
+              attempt === 'submitted' ||
+              attempt === 'printer-completed' ||
+              attempt === 'uncertain' ||
+              (!attempt && canOutput)) && (
               <div className="flex flex-wrap gap-2">
                 <Button variant="secondary" isDisabled={busy} onPress={() => void run(confirm)}>
                   <Trans>Confirm printed</Trans>
                 </Button>
-                {(attempt === 'opened' || attempt === 'submitted') && (
+                {(attempt === 'opened' ||
+                  attempt === 'submitted' ||
+                  attempt === 'printer-completed' ||
+                  attempt === 'uncertain') && (
                   <>
                     <Button
                       variant="secondary"
@@ -761,15 +1026,16 @@ export function ThermalStudio({
                       <Trans>Open batch for reprint</Trans>
                     </Button>
                   )}
-                  {job.stock !== stock && job.registration !== 'collision' && (
-                    <Button
-                      variant="secondary"
-                      isDisabled={!encode || busy}
-                      onPress={() => void run(async () => openJob(job, true))}
-                    >
-                      <Trans>Reprint on selected stock</Trans>
-                    </Button>
-                  )}
+                  {(job.stock !== stock || (bluetoothId && job.spec.profile.dpi !== profile.dpi)) &&
+                    job.registration !== 'collision' && (
+                      <Button
+                        variant="secondary"
+                        isDisabled={!encode || busy}
+                        onPress={() => void run(async () => openJob(job, true))}
+                      >
+                        <Trans>Reprint on selected stock</Trans>
+                      </Button>
+                    )}
                   {job.registration !== 'registered' && job.registration !== 'collision' && (
                     <Button
                       variant="secondary"
@@ -785,8 +1051,14 @@ export function ThermalStudio({
           </ul>
         </section>
       )}
-      {newNumbered && online && <ReplaceLabelForm locationId={locationId} replace={api.replace} />}
-      {newNumbered && online && <EpcForm locationId={locationId} register={api.registerTag} />}
+      {online && (canManageLabels ?? newNumbered) && (
+        <LabelTools
+          key={JSON.stringify([locationId, currentLabel])}
+          locationId={locationId}
+          currentLabel={currentLabel}
+          api={api}
+        />
+      )}
       {problem && <Notice tone="danger">{problem}</Notice>}
     </div>
   );

@@ -91,6 +91,24 @@ export function previewUrl(url: string | null | undefined, origin: string): stri
   }
 }
 
+/**
+ * Turn a short search instruction into keyword input for the existing online and offline search.
+ * Keep unrecognised input and quoted names intact, including punctuation in names and codes.
+ */
+export function inventorySearchTerm(input: string): string {
+  const literal = input.trim();
+  const phrase = literal
+    .replace(/[?!]+$/u, '')
+    .trimEnd()
+    .replace(/^(?:please|(?:can|could|would)\s+you)\s+/iu, '');
+  const command =
+    /^(?:find(?:\s+me)?|look\s+for|search\s+for|show\s+me|where\s+(?:is|are))(?:\s+|$)/iu;
+  const prefix = command.exec(phrase);
+  if (!prefix) return literal;
+  const target = phrase.slice(prefix[0].length).replace(/^the(?:\s+|$)/iu, '');
+  return target && /[\p{L}\p{N}]/u.test(target) ? target : literal;
+}
+
 const searchTerms = (value: string | null | undefined) => queryWords(value ?? '');
 
 export function localInventorySearch(

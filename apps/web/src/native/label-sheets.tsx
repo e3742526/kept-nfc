@@ -165,6 +165,7 @@ export function LabelSheets({
               connection={connection}
               locationId={location}
               batch={reprint}
+              canManageLabels
             />
           )
         ) : (

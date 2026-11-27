@@ -4,6 +4,7 @@ import type { Connection } from './bridge';
 import {
   type InventoryCache,
   inventoryPath,
+  inventorySearchTerm,
   loadInventory,
   localInventorySearch,
   pendingForRecord,
@@ -15,6 +16,26 @@ const connection: Connection = {
   account: 'user-1',
   epoch: 'epoch-1',
 };
+
+describe('inventory search phrases', () => {
+  it.each([
+    ['find matilda Jane', 'matilda Jane'],
+    ['  Could you find me Matilda Jane? ', 'Matilda Jane'],
+    ['Where are the 10 mm bits?', '10 mm bits'],
+    ['please search for CAFÉ!', 'CAFÉ'],
+    ['look for TMP-A09Z-0001', 'TMP-A09Z-0001'],
+    ['find صندوق', 'صندوق'],
+    ['find "The North Face"', '"The North Face"'],
+    ['"Find My iPhone"', '"Find My iPhone"'],
+    ['Finding Nemo', 'Finding Nemo'],
+    ['Find-001', 'Find-001'],
+    ['find me?', 'find me?'],
+    ['where is the?', 'where is the?'],
+    ['who made this?', 'who made this?'],
+  ])('interprets %s as %s', (input, expected) => {
+    expect(inventorySearchTerm(input)).toBe(expected);
+  });
+});
 
 describe('inventory snapshot, path, and offline search', () => {
   it('builds readable location paths and searches names, notes, codes, and attachments', () => {

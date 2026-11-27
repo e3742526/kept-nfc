@@ -1,8 +1,8 @@
 import { DevicePhotoProposals } from '@kept/shared';
-import { Trans, useLingui } from '@lingui/react/macro';
+import { useLingui } from '@lingui/react/macro';
 import { useMemo } from 'react';
 import { capturePaths } from '@/api/capture/paths';
-import type { LabelBatch } from '@/api/capture/types';
+import type { LabelBatch, LabelCellContent } from '@/api/capture/types';
 import type { PrintApi } from '@/components/labels/thermal/api';
 import type { NativeThermalOutput } from '@/components/labels/thermal/output';
 import { type ThermalSource, ThermalStudio } from '@/components/labels/thermal/studio';
@@ -17,6 +17,8 @@ export function NativeThermalPrint({
   thingId,
   placeId,
   onSaved,
+  cachedLabel,
+  canManageLabels,
 }: {
   connection: Connection;
   locationId: string;
@@ -24,9 +26,12 @@ export function NativeThermalPrint({
   thingId?: string | undefined;
   placeId?: string | undefined;
   onSaved?: (batch: LabelBatch) => void;
+  cachedLabel?: LabelCellContent | undefined;
+  canManageLabels?: boolean | undefined;
 }) {
   const { t } = useLingui();
-  const { transport, media, captureAI } = usePlatform();
+  const { transport, media, captureAI, niimbot } = usePlatform();
+  const bluetooth = useMemo(() => niimbot?.(connection), [connection, niimbot]);
   const sourceLocationId = batch?.locationId ?? locationId;
   const batchKind = batch?.kind;
   const api = useMemo<PrintApi>(
@@ -71,33 +76,28 @@ export function NativeThermalPrint({
   const propose = captureAI?.serverProposals;
 
   return (
-    <div className="grid gap-4">
-      <p className="m-0 text-small text-ink-2">
-        <Trans>
-          Choose an AirPrint-compatible network printer. For a printer connected to a computer by
-          USB, export the PDF and print it on that computer.
-        </Trans>
-      </p>
-      <ThermalStudio
-        key={JSON.stringify([connection.id, source, batch?.id])}
-        owner={connection.id}
-        source={source}
-        api={api}
-        nativeOutput={output}
-        batch={batch}
-        suggestIcon={
-          propose &&
-          (async (photo) => {
-            const { items } = DevicePhotoProposals.parse(
-              await propose(connection, sourceLocationId, photo),
-            );
-            return items
-              .map((item) => suggestWorkshopIcon('', item.categories?.join(' ') ?? '', item.name))
-              .find((icon) => icon !== 'MSC');
-          })
-        }
-        {...(onSaved ? { onSaved } : {})}
-      />
-    </div>
+    <ThermalStudio
+      key={JSON.stringify([connection.id, source, batch?.id])}
+      owner={connection.id}
+      source={source}
+      api={api}
+      nativeOutput={output}
+      bluetooth={bluetooth}
+      cachedLabel={cachedLabel}
+      canManageLabels={canManageLabels}
+      batch={batch}
+      suggestIcon={
+        propose &&
+        (async (photo) => {
+          const { items } = DevicePhotoProposals.parse(
+            await propose(connection, sourceLocationId, photo),
+          );
+          return items
+            .map((item) => suggestWorkshopIcon('', item.categories?.join(' ') ?? '', item.name))
+            .find((icon) => icon !== 'MSC');
+        })
+      }
+      {...(onSaved ? { onSaved } : {})}
+    />
   );
 }
