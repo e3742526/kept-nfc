@@ -15,8 +15,9 @@ The committed `apps/server/test/fixtures/files/doc.pdf` provides synthetic bytes
    the original and compare its length and SHA-256 to the source.
 3. In Settings → This device, enable the app lock and keep the item's location
    available offline. Go offline and reload the item's existing short link.
-   Unlock the app and find the named PDF under **Kept on this device**. Return
-   online and check that the original still opens.
+   Choose **Enter PIN** and find the named PDF under **SheepKeep on this
+   device**. Try one wrong PIN first. Return online and check that the
+   original still opens.
 
 **Expected and observe.** Cancellation adds no attachment, rejection lets the
 user retry, and a successful attachment is a document. The downloaded copy has

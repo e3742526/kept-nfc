@@ -22,15 +22,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { FileTrigger } from 'react-aria-components';
-import { inventoryPaths, qs } from '@/api/inventory/paths';
-import type { HistoryEvent, Page } from '@/api/inventory/types';
-import { useSummary } from '@/components/history/labels';
 import { Button } from '@/components/ui/button';
 import { useFormat } from '@/lib/format';
 import { usePlatform } from './adapters';
 import type { Connection } from './bridge';
-import type { InventoryCache } from './inventory';
+import { type InventoryCache, inventoryPath } from './inventory';
 import type { Target } from './labels';
+import { readRecentBoxes } from './recent-destinations';
 
 /** What the four Home tiles count. Items and boxes match what Browse lists (drafts excluded). */
 function homeStats(cache: InventoryCache | undefined) {
@@ -93,98 +91,80 @@ export function eventIcon(action: string) {
   return Pencil;
 }
 
-function RecentActivity({
+function RecentBoxes({
   connection,
   cache,
-  online,
   onOpen,
-  onHistory,
 }: {
   connection: Connection;
   cache: InventoryCache | undefined;
-  online: boolean;
   onOpen: (target: Target) => void;
-  onHistory?: () => void;
 }) {
   const { t } = useLingui();
-  const { transport } = usePlatform();
-  const fmt = useFormat();
-  const summary = useSummary();
-  const [events, setEvents] = useState<HistoryEvent[]>([]);
-  const asOf = cache?.asOf;
-
+  const adapters = usePlatform();
+  const [ids, setIds] = useState<string[]>([]);
   useEffect(() => {
-    if (!online || !asOf) return;
-    let live = true;
-    transport
-      .request<Page<HistoryEvent>>(connection, inventoryPaths.activity + qs({ limit: 4 }))
-      .then((page) => {
-        if (live) setEvents(page.items);
-      })
-      .catch(() => {
-        /* A stale list is fine here; Home never blocks on the feed. */
+    let active = true;
+    const load = () =>
+      void readRecentBoxes(connection, adapters).then((next) => {
+        if (active) setIds(next);
       });
+    load();
+    window.addEventListener('kept-recent-boxes', load);
     return () => {
-      live = false;
+      active = false;
+      window.removeEventListener('kept-recent-boxes', load);
     };
-  }, [asOf, connection, online, transport]);
-
-  if (!events.length) return null;
+  }, [connection, adapters]);
+  const boxes = ids
+    .flatMap((id) => {
+      const box = cache?.things.find(
+        (thing) => thing.id === id && thing.isContainer && thing.reviewState !== 'draft',
+      );
+      return box ? [box] : [];
+    })
+    .slice(0, 4);
   return (
-    <section className="kept-recent" aria-label={t`Recent activity`}>
+    <section className="kept-recent" aria-label={t`Recently used boxes`}>
       <div className="kept-recent-head">
         <h2 className="kept-recent-title">
-          <Trans>Recent activity</Trans>
+          <Trans>Recently used boxes</Trans>
         </h2>
-        {onHistory && (
-          <Button variant="ghost" size="small" className="kept-recent-link" onPress={onHistory}>
-            <Trans>History</Trans>
-          </Button>
-        )}
       </div>
-      <ul className="kept-recent-list">
-        {events.map((event) => {
-          const Icon = eventIcon(event.action);
-          const { type, id } = event.entity;
-          const locationId = event.location_id;
-          const records =
-            type === 'place' ? cache?.places : type === 'thing' ? cache?.things : undefined;
-          const target: Target | undefined =
-            id &&
-            locationId &&
-            (type === 'place' || type === 'thing') &&
-            records?.some((record) => record.id === id && record.locationId === locationId)
-              ? { id, locationId, kind: type }
-              : undefined;
-          const body = (
-            <>
-              <span className="kept-recent-icon" aria-hidden>
-                <Icon size={15} />
-              </span>
-              <span className="kept-recent-text">{summary(event)}</span>
-              <span className="kept-recent-when">{fmt.relative(event.at)}</span>
-            </>
-          );
-          return (
-            <li key={event.id}>
-              {target ? (
-                <Button variant="ghost" className="kept-recent-row" onPress={() => onOpen(target)}>
-                  {body}
-                </Button>
-              ) : (
-                <div className="kept-recent-row">{body}</div>
-              )}
+      {boxes.length ? (
+        <ul className="kept-recent-list">
+          {boxes.map((box) => (
+            <li key={box.id}>
+              <Button
+                variant="ghost"
+                className="kept-recent-row"
+                onPress={() => onOpen({ id: box.id, locationId: box.locationId, kind: 'thing' })}
+              >
+                <span className="kept-recent-icon" aria-hidden>
+                  <Boxes size={15} />
+                </span>
+                <span className="kept-recent-text">
+                  <bdi>{box.name ?? t`Untitled`}</bdi>
+                  <span className="block text-small text-ink-2">
+                    <bdi>{cache && inventoryPath(cache, box).join(' › ')}</bdi>
+                  </span>
+                </span>
+              </Button>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-small text-ink-2">
+          <Trans>Boxes you open or add items to will appear here.</Trans>
+        </p>
+      )}
     </section>
   );
 }
 
 /**
  * The command center: counts that open their lists, capture actions, shortcuts, the
- * review bar, recent activity, and the sync status line with a way to Settings.
+ * review bar, recent boxes, and the sync status line with a way to Settings.
  */
 export function HomeDashboard({
   connection,
@@ -210,7 +190,6 @@ export function HomeDashboard({
   onSettings,
   findName,
   onFind,
-  onHistory,
 }: {
   connection: Connection;
   cache: InventoryCache | undefined;
@@ -236,7 +215,6 @@ export function HomeDashboard({
   /** The saved Find target's name; the Find action shows only while one is saved. */
   findName?: string;
   onFind: () => void;
-  onHistory?: () => void;
 }) {
   const { t } = useLingui();
   const fmt = useFormat();
@@ -365,13 +343,7 @@ export function HomeDashboard({
           </Button>
         </section>
       )}
-      <RecentActivity
-        connection={connection}
-        cache={cache}
-        online={online}
-        onOpen={onOpen}
-        onHistory={onHistory}
-      />
+      <RecentBoxes connection={connection} cache={cache} onOpen={onOpen} />
       <div className="kept-statusline">
         <Button
           variant="ghost"

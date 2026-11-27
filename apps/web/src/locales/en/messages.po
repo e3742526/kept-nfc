@@ -34662,3 +34662,11 @@ msgstr "Clipboard"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Copy a photo first, then try again."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Recently used boxes"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Boxes you open or add items to will appear here."

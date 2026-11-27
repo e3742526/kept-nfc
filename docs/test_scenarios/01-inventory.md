@@ -63,14 +63,22 @@ after the transient Undo message disappears.
 it after closing the browser tab.
 
 **Preconditions and inputs.** Seeded owner, English interface, 375 px viewport.
+The default web build offers English only and hides the language picker. For
+the language steps, start a second fixture from a build made with
+`VITE_UI_LOCALES=en,ar corepack pnpm --filter @kept/web build`.
 
-1. From Home open Settings and change language to Arabic. Observe the direction
-   and the time it takes to apply. Inspect navigation at phone width.
-2. Close the tab and open the same origin in the same browser profile. Check the
+1. On the default build, open Settings and confirm there is no language
+   picker. Set the browser language to Arabic, reload, and check that the
+   interface stays in English and left to right.
+2. On the `en,ar` build, change the language to Arabic in Settings. Observe the
+   direction and the time it takes to apply. Inspect navigation at phone width.
+3. Close the tab and open the same origin in the same browser profile. Check the
    language again. Use Tab and Escape on a menu or sheet and inspect focus.
-3. Change back to English, return home, and verify that ordinary search and
+4. Change back to English, return home, and verify that ordinary search and
    browser history still open usable screens.
 
-**Expected and observe.** Language and direction agree and survive reload.
-Keyboard focus stays visible and returns to the control that opened a menu.
-Settings changes preserve inventory.
+**Expected and observe.** A build offering one language never shows a
+partly translated or right-to-left interface. Where Arabic is offered, the
+language and direction agree and survive reload. Keyboard focus stays visible
+and returns to the control that opened a menu. Settings changes preserve
+inventory.

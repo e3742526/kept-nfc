@@ -34662,3 +34662,11 @@ msgstr "Буфер обміну"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Спершу скопіюйте фото, а потім спробуйте ще раз."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Нещодавно використані коробки"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Тут з’являться коробки, які ви відкриваєте або до яких додаєте речі."

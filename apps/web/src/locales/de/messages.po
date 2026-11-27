@@ -34662,3 +34662,11 @@ msgstr "Zwischenablage"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Kopiere zuerst ein Foto und versuche es dann erneut."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Zuletzt verwendete Boxen"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Hier erscheinen Boxen, die du öffnest oder befüllst."

@@ -1066,6 +1066,15 @@ async function openItemLabelPicker(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByText('QR or NFC label'));
 }
 
+async function openAddFromHome(user: ReturnType<typeof userEvent.setup>) {
+  const nav = await screen.findByRole('navigation');
+  const manual = screen.queryByRole('button', { name: 'Add manually' });
+  if (!manual) await user.click(within(nav).getByRole('button', { name: 'Home' }));
+  const add = await screen.findByRole('button', { name: 'Add manually' });
+  await waitFor(() => expect(add).toBeEnabled());
+  await user.click(add);
+}
+
 async function openSettings(user: ReturnType<typeof userEvent.setup>) {
   await user.click(
     within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
@@ -1085,6 +1094,38 @@ async function openWinterBox(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('shows recently opened boxes on Home and retains them offline after restart', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    const view = env.renderApp();
+    const recent = await screen.findByRole('region', { name: 'Recently used boxes' });
+    expect(
+      within(recent).getByText('Boxes you open or add items to will appear here.'),
+    ).toBeVisible();
+    await openWinterBox(user);
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Home' }));
+    expect(
+      await within(screen.getByRole('region', { name: 'Recently used boxes' })).findByRole(
+        'button',
+        { name: /Winter Box/ },
+      ),
+    ).toBeVisible();
+    view.unmount();
+    env.setOnline(false);
+    env.renderApp();
+    const offline = await screen.findByRole('region', { name: 'Recently used boxes' });
+    await user.click(await within(offline).findByRole('button', { name: /Winter Box/ }));
+    expect(await screen.findByRole('heading', { name: 'Winter Box' })).toBeVisible();
+  });
   it('starts adding to a selected box from the Home shortcut and box card', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
@@ -1351,7 +1392,7 @@ describe('KeptPhone mobile workflows', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await openAddFromHome(user);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'USB cable');
     await user.click(screen.getByRole('button', { name: 'Change' }));
     await user.click(screen.getByRole('button', { name: 'Scan place label' }));
@@ -1421,9 +1462,7 @@ describe('KeptPhone mobile workflows', () => {
     };
     const user = userEvent.setup();
     env.renderApp();
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'USB cable');
     await user.click(screen.getByRole('button', { name: 'Change' }));
     const fingerprint = 'd'.repeat(64);
@@ -1540,9 +1579,7 @@ describe('KeptPhone mobile workflows', () => {
       const request = vi.spyOn(env.adapters.transport, 'request');
       const user = userEvent.setup();
       const mounted = env.renderApp();
-      await user.click(
-        within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-      );
+      await openAddFromHome(user);
       const picker = document.querySelector<HTMLInputElement>(
         'input[type=file][accept="image/*"][multiple]',
       );
@@ -1634,9 +1671,7 @@ describe('KeptPhone mobile workflows', () => {
     const request = vi.spyOn(env.adapters.transport, 'request');
     const upload = vi.spyOn(env.adapters.transport, 'uploadOriginal');
     const mounted = env.renderApp();
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -1748,9 +1783,7 @@ describe('KeptPhone mobile workflows', () => {
       'server',
     );
     env.renderApp();
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -1832,9 +1865,7 @@ describe('KeptPhone mobile workflows', () => {
       'server',
     );
     env.renderApp();
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -2119,7 +2150,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByRole('button', { name: /Default location/ })).toHaveTextContent(
       'Home',
     );
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await openAddFromHome(user);
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -2156,9 +2187,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
 
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     const picker = document.querySelector<HTMLInputElement>(
       'input[type=file][accept="image/*"][multiple]',
     );
@@ -2396,7 +2425,7 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(screen.getByRole('button', { name: 'Back' }));
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await openAddFromHome(user);
     await user.click(screen.getByRole('button', { name: 'Change' }));
     await user.click(screen.getByRole('button', { name: /Room or box/ }));
     await user.click(await screen.findByRole('option', { name: 'Attic' }));
@@ -3904,7 +3933,7 @@ describe('KeptPhone mobile workflows', () => {
     await screen.findByRole('navigation');
     const tab = (name: string) =>
       within(screen.getByRole('navigation')).getByRole('button', { name });
-    await user.click(tab('Add'));
+    await openAddFromHome(user);
     await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Cordless drill');
     await saveNewItem(user);
     expect(await screen.findByText('Synced: 1')).toBeInTheDocument();
@@ -4603,7 +4632,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.type(screen.getByLabelText('Description'), 'Holiday decorations');
 
     const tabbar = screen.getByRole('navigation');
-    await user.click(within(tabbar).getByRole('button', { name: 'Add' }));
+    expect(within(tabbar).queryByRole('button', { name: 'Add' })).not.toBeInTheDocument();
     expect(screen.getByText('Adding to box')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
@@ -4716,9 +4745,7 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     const addBox = screen.getByRole('button', { name: 'Add box' });
     await waitFor(() => expect(addBox).toBeEnabled());
     await user.type(screen.getByLabelText('Description'), 'Keep this draft');
@@ -4793,7 +4820,7 @@ describe('KeptPhone mobile workflows', () => {
     expect(await screen.findByRole('button', { name: /Current \(1\)/ })).toBeInTheDocument();
   });
 
-  it('shows recent activity on Home and the full History and Logs with provenance', async () => {
+  it('shows activity in History and Logs with provenance', async () => {
     const env = createFakeEnvironment({
       initialConnection: {
         id: 'https://kept.example.com|ibrahim|epoch-1',
@@ -4804,10 +4831,11 @@ describe('KeptPhone mobile workflows', () => {
     });
     const user = userEvent.setup();
     env.renderApp();
-    const recent = await screen.findByRole('region', { name: 'Recent activity' });
-    expect(within(recent).getByText(/Fixture ladder/)).toBeInTheDocument();
-
-    await user.click(within(recent).getByRole('button', { name: 'History' }));
+    expect(await screen.findByRole('region', { name: 'Recently used boxes' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Recent activity' })).not.toBeInTheDocument();
+    await user.click(
+      within(screen.getByRole('navigation')).getByRole('button', { name: 'History' }),
+    );
     expect(await screen.findByRole('heading', { name: 'History' })).toBeInTheDocument();
     expect(await screen.findByText(/Fixture ladder/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
@@ -4835,7 +4863,7 @@ describe('KeptPhone mobile workflows', () => {
 
     const tabbar = await screen.findByRole('navigation');
     expect(within(tabbar).getAllByRole('button')).toEqual(
-      ['Home', 'Browse', 'Scan', 'Add', 'More'].map((name) =>
+      ['Home', 'Browse', 'Scan', 'History', 'More'].map((name) =>
         within(tabbar).getByRole('button', { name }),
       ),
     );
@@ -4861,9 +4889,13 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(searchTab);
     expect(browseSearch).toHaveValue('ladder');
 
-    // The Add tab opens the one-screen form with a back button.
-    await user.click(within(tabbar).getByRole('button', { name: 'Add' }));
-    expect(await screen.findByLabelText('Description')).toBeInTheDocument();
+    // History has its own tab.
+    await user.click(within(tabbar).getByRole('button', { name: 'History' }));
+    expect(await screen.findByRole('heading', { name: 'History' })).toBeInTheDocument();
+    expect(within(tabbar).getByRole('button', { name: 'History' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
 
     // The More tab compartments settings, appearance, and secondary workflows.
     await user.click(within(tabbar).getByRole('button', { name: 'More' }));
@@ -5157,7 +5189,7 @@ describe('KeptPhone mobile workflows', () => {
     const start = async (withPhoto = false) => {
       const boxes = await screen.findByRole('button', { name: '2 Boxes' });
       await waitFor(() => expect(boxes).toBeEnabled());
-      await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+      await openAddFromHome(user);
       if (withPhoto) {
         const input = document.querySelector<HTMLInputElement>('input[type="file"][multiple]');
         if (!input) throw new Error('Missing photos picker');
@@ -5205,7 +5237,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await screen.findByRole('button', { name: '2 Boxes' });
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await openAddFromHome(user);
     await user.click(await screen.findByRole('button', { name: 'Start with NFC' }));
     expect(await screen.findByText(/Currently linked to:/)).toHaveTextContent('Winter Box');
     await user.click(screen.getByRole('button', { name: 'Overwrite NFC tag' }));
@@ -5255,7 +5287,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     await screen.findByRole('button', { name: '2 Boxes' });
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await openAddFromHome(user);
     const enter = async (text: string) => {
       await user.click(await screen.findByRole('button', { name: 'Scan UPC' }));
       await user.type(screen.getByLabelText('UPC digits'), text);
@@ -5290,7 +5322,7 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     const boxes = await screen.findByRole('button', { name: '2 Boxes' });
     await waitFor(() => expect(boxes).toBeEnabled());
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
+    await openAddFromHome(user);
     await user.type(screen.getByLabelText('Description'), 'Camera');
     await openItemLabelPicker(user);
 
@@ -5625,9 +5657,7 @@ describe('KeptPhone mobile workflows', () => {
     const destination = () =>
       (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent;
     const openAdd = async () => {
-      await user.click(
-        within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-      );
+      await openAddFromHome(user);
     };
     const first = env.renderApp();
     // Opening a box is not adding to it: Add still starts at Unplaced.
@@ -5683,9 +5713,7 @@ describe('KeptPhone mobile workflows', () => {
     const destination = () =>
       (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent;
     env.renderApp();
-    await user.click(
-      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-    );
+    await openAddFromHome(user);
     expect(destination()).toContain('Home › Unplaced');
     // Recent destinations sit under Change; picking one closes the picker.
     await user.click(screen.getByRole('button', { name: 'Change' }));
@@ -5709,6 +5737,51 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.getByRole('button', { name: /Action/ })).toHaveTextContent('Add contents');
     expect(screen.getByRole('button', { name: 'Remove category Electrical' })).toBeInTheDocument();
     expect(destination()).toContain('Home › Garage › Winter Box');
+  });
+
+  it('retries only unsaved box contents after a partial storage failure', async () => {
+    const connection = {
+      id: 'https://kept.example.com|ibrahim|epoch-1',
+      origin: 'https://kept.example.com',
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    let boxes = 0;
+    vi.spyOn(env.adapters.transport, 'request').mockImplementation(async (conn, path, options) => {
+      if (path !== inventoryPaths.things || options?.method !== 'POST')
+        return request(conn, path, options);
+      const body = options.body as { id: string; name: string };
+      const box = { ...env.serverThings.get(env.boxId), ...body, shortCode: 'NEWBOX' };
+      boxes += 1;
+      env.serverThings.set(body.id, box);
+      return box as never;
+    });
+    const save = env.adapters.outbox.save.bind(env.adapters.outbox);
+    const names: string[] = [];
+    let attempts = 0;
+    vi.spyOn(env.adapters.outbox, 'save').mockImplementation(async (conn, input) => {
+      if (++attempts === 2) throw new StorageFullError();
+      await save(conn, input);
+      names.push((JSON.parse(input.payload) as { name: string }).name);
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await openAddFromHome(user);
+    await user.click(await screen.findByRole('button', { name: 'Add box' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'Contents (optional)' }),
+      'First{Enter}Second',
+    );
+    await user.click(screen.getByRole('button', { name: 'Create box' }));
+    expect(
+      await screen.findByText(/box was created, but its contents could not be saved/),
+    ).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'Contents (optional)' })).toHaveValue('Second');
+    await user.click(screen.getByRole('button', { name: 'Save contents' }));
+    await waitFor(() => expect(names).toEqual(['First', 'Second']));
+    expect(boxes).toBe(1);
   });
 
   it('creates a box with its contents listed, or goes on to add items to it', async () => {
@@ -5750,9 +5823,7 @@ describe('KeptPhone mobile workflows', () => {
     const user = userEvent.setup();
     env.renderApp();
     const openBoxForm = async () => {
-      await user.click(
-        within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
-      );
+      await openAddFromHome(user);
       const addBox = await screen.findByRole('button', { name: 'Add box' });
       await waitFor(() => expect(addBox).toBeEnabled());
       await user.click(addBox);

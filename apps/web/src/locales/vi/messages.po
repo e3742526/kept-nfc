@@ -34662,3 +34662,11 @@ msgstr "Bộ nhớ tạm"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Hãy sao chép một ảnh trước rồi thử lại."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Hộp dùng gần đây"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Các hộp bạn mở hoặc thêm đồ vào sẽ xuất hiện ở đây."

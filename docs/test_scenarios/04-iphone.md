@@ -10,11 +10,15 @@ seeded loopback instance using only fixture credentials.
 
 1. Open the app, enter the disposable server's address and start sign-in.
    Cancel the system browser, then repeat and approve the connection.
-2. Check that inventory opens and choose a known box. Terminate the app from
-   Simulator, then launch again and reopen the box.
+2. Check that inventory opens and that Home shows **Boxes you open or add
+   items to will appear here.** Open Cable box. Terminate the app from
+   Simulator, then launch again and reopen the box from **Recently used
+   boxes** on Home.
 
 **Expected and observe.** Cancellation allows retry. Approval returns to the
-app and the saved session allows reopening without signing in again.
+app and the saved session allows reopening without signing in again. The
+recently used box survives relaunch. The bottom tabs are **Home**, **Browse**,
+**Scan**, **History** and **More**.
 
 ## IOS-02 Keep a capture through an interruption
 
@@ -25,10 +29,12 @@ relaunch.
 disabled, one synthetic photo and one small PDF in Simulator. Name the item
 `Playtest Holiday decorations` and use the run marker as notes.
 
-1. Open **Add to this box**. Try whitespace for the description and zero for
-   quantity. Supply valid values, then select a photo and a PDF.
-2. Disconnect the fixture. Save in the cached box, verify **Saved on device**,
-   terminate, and relaunch while still disconnected. Preview both originals.
+1. Open the box and choose **Add to this box**. Try whitespace for the
+   description, and zero for quantity under **Details**. Supply valid values,
+   then add the photo with **Photos** and the PDF with **Files**.
+2. Disconnect the fixture. Choose **Save item** in the cached box, verify
+   **Saved on device**, terminate, and relaunch while still disconnected.
+   Preview both originals from **More → Recent capture batches**.
 3. Reconnect the same fixture and use **Retry sync** if needed. Inspect the
    outbox status, then open the box in web inventory and verify one item and
    the correct original lengths and hashes.
@@ -45,7 +51,8 @@ manual save.
 **Preconditions and inputs.** IOS-01 connection, one box with an existing label,
 and an unassigned syntactically valid label code.
 
-1. Open **Identify a label** and enter the unassigned code. Return to input
+1. Open the **Scan** tab, choose **Identify a label** and enter the unassigned
+   code. Return to input
    and enter the existing code. Check the resulting box.
 2. Open **Find this box**. If Simulator cannot scan NFC, observe its feedback,
    return, and reopen the selected box. Check that the same label URL still

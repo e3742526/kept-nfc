@@ -34662,3 +34662,11 @@ msgstr "الحافظة"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "انسخ صورةً أولاً، ثم حاول مجدداً."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "الصناديق المستخدمة مؤخرًا"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "تظهر هنا الصناديق التي تفتحها أو تضيف إليها عناصر."

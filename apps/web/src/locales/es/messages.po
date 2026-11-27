@@ -34662,3 +34662,11 @@ msgstr "Portapapeles"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Copia primero una foto y vuelve a intentarlo."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Cajas usadas recientemente"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Aquí aparecen las cajas que abres o a las que añades artículos."

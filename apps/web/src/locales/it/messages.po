@@ -34662,3 +34662,11 @@ msgstr "Appunti"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Copia prima una foto, poi riprova."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Scatole usate di recente"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Qui appaiono le scatole che apri o in cui aggiungi oggetti."

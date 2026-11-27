@@ -4,6 +4,34 @@ import type { Destination } from './destination';
 
 const RECENT_DESTINATIONS = 'recentDestinations';
 const writes = new WeakMap<Connection, Promise<void>>();
+const RECENT_BOXES = 'recentBoxes';
+const boxWrites = new WeakMap<Connection, Promise<void>>();
+
+export async function readRecentBoxes(connection: Connection, adapters: PlatformAdapters) {
+  try {
+    const raw = await adapters.outbox.getValue(connection, RECENT_BOXES);
+    const ids: unknown = raw && JSON.parse(raw);
+    return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function rememberRecentBox(connection: Connection, adapters: PlatformAdapters, id: string) {
+  const next = (boxWrites.get(connection) ?? Promise.resolve())
+    .then(async () => {
+      const ids = await readRecentBoxes(connection, adapters);
+      await adapters.outbox.setValue(
+        connection,
+        RECENT_BOXES,
+        JSON.stringify([id, ...ids.filter((item) => item !== id)].slice(0, 12)),
+      );
+      window.dispatchEvent(new Event('kept-recent-boxes'));
+    })
+    .catch(() => {});
+  boxWrites.set(connection, next);
+  return next;
+}
 
 export async function readRecentDestinations(connection: Connection, adapters: PlatformAdapters) {
   try {

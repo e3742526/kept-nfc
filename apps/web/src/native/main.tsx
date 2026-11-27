@@ -4,7 +4,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import {
   Camera,
   ChevronRight,
-  Clock,
   CornerDownLeft,
   Ellipsis,
   FileText,
@@ -107,6 +106,7 @@ import {
   readLastAddDestination,
   rememberDestination,
   rememberLastAddDestination,
+  rememberRecentBox,
 } from './recent-destinations';
 import { RecordScreen } from './record';
 import { Places } from './rooms';
@@ -157,7 +157,7 @@ type Screen =
   | { kind: 'logs' }
   | { kind: 'more' };
 
-type TabKey = 'home' | 'search' | 'scan' | 'capture' | 'more';
+type TabKey = 'home' | 'search' | 'scan' | 'history' | 'more';
 
 function tabFor(screen: Screen): TabKey {
   switch (screen.kind) {
@@ -165,9 +165,10 @@ function tabFor(screen: Screen): TabKey {
       return 'search';
     case 'capture':
     case 'new':
-      return 'capture';
     case 'photoReview':
-      return 'capture';
+      return 'home';
+    case 'history':
+      return 'history';
     case 'identify':
     case 'nfcTarget':
       return 'scan';
@@ -176,7 +177,6 @@ function tabFor(screen: Screen): TabKey {
     case 'printerSettings':
     case 'locationSettings':
     case 'ai':
-    case 'history':
     case 'logs':
     case 'trash':
     case 'unplaced':
@@ -205,7 +205,7 @@ function TabBar({
     { key: 'home', label: t`Home`, Icon: Home },
     { key: 'search', label: t`Browse`, Icon: Search },
     { key: 'scan', label: t`Scan`, Icon: QrCode },
-    { key: 'capture', label: t`Add`, Icon: Plus },
+    { key: 'history', label: t`History`, Icon: History },
     { key: 'more', label: t`More`, Icon: Ellipsis },
   ] as const;
   return (
@@ -699,6 +699,20 @@ export function Inventory({
   );
   const cache = useMemo(() => shownInventory(allInventory), [allInventory]);
   const hiddenPersonalId = cache !== allInventory ? allInventory?.personal?.id : undefined;
+  useEffect(() => {
+    if (screen.kind !== 'record' || screen.target.kind !== 'thing') return;
+    const target = screen.target;
+    if (
+      cache?.things.some(
+        (thing) =>
+          thing.id === target.id &&
+          thing.locationId === target.locationId &&
+          thing.isContainer &&
+          thing.reviewState !== 'draft',
+      )
+    )
+      void rememberRecentBox(connection, adapters, target.id);
+  }, [screen, cache, connection, adapters]);
   // Hiding Personal takes it out of lists and search only: a screen opened for something in it
   // (a scanned label, a link) still reads the whole cache.
   const cacheForLocation = (id?: string) => (id && id === hiddenPersonalId ? allInventory : cache);
@@ -758,9 +772,8 @@ export function Inventory({
       return;
     }
     if (screen.kind === 'capture') {
-      if (tab === 'capture' || !(await canLeaveCapture.current?.())) return;
+      if (!(await canLeaveCapture.current?.())) return;
     }
-    if (screen.kind === 'new' && tab === 'capture') return;
     if (tab === 'search') {
       if (screen.kind === 'browse' && backStack.current.length === 0) return;
       resetBrowseFilters('all', screen.kind === 'home' ? query.trim() : '');
@@ -789,6 +802,7 @@ export function Inventory({
     setLastAdded(destination);
     void rememberLastAddDestination(connection, adapters, destination);
     void rememberDestination(connection, adapters, destination.id);
+    if (destination.kind === 'box') void rememberRecentBox(connection, adapters, destination.id);
   };
   const open = (target: Target, backToRooms = false) => {
     setScreen({ kind: 'record', target, backToRooms });
@@ -1668,7 +1682,6 @@ export function Inventory({
               onRetry={() => void refresh(true)}
               onSettings={() => pushScreen({ kind: 'settings' })}
               findName={savedFindTarget?.name}
-              onHistory={() => pushScreen({ kind: 'history' })}
               onFind={() => savedFindTarget && pushScreen({ kind: 'find', box: savedFindTarget })}
             />
           )}
@@ -2143,12 +2156,6 @@ export function Inventory({
               isDisabled={!online}
               onPress={() => pushScreen({ kind: 'trash' })}
             />
-            <MoreRow
-              label={t`History`}
-              Icon={Clock}
-              isDisabled={!online}
-              onPress={() => pushScreen({ kind: 'history' })}
-            />
           </div>
           <footer className="pt-2">
             <ProjectNotice revision={import.meta.env.VITE_SHEEPKEEP_REVISION} />
@@ -2340,7 +2347,7 @@ export function Inventory({
             screen.kind === 'assistant'
               ? undefined
               : screen.kind === 'capture' || screen.kind === 'new' || screen.kind === 'photoReview'
-                ? 'capture'
+                ? 'home'
                 : tabFor(backStack.current[0] ?? screen)
           }
           canSearch={!!cache}

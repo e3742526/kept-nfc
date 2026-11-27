@@ -34662,3 +34662,11 @@ msgstr "Presse-papiers"
 #: src/native/capture-form.tsx
 msgid "Copy a photo first, then try again."
 msgstr "Copiez d’abord une photo, puis réessayez."
+
+#: src/native/home.tsx
+msgid "Recently used boxes"
+msgstr "Boîtes utilisées récemment"
+
+#: src/native/home.tsx
+msgid "Boxes you open or add items to will appear here."
+msgstr "Les boîtes ouvertes ou remplies apparaîtront ici."

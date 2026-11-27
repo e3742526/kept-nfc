@@ -1481,10 +1481,11 @@ export function NewBoxForm({
       setBusy(false);
       return;
     }
+    let savedLines = 0;
     try {
       if (lines.length) {
         const batchId = newId();
-        for (const line of lines)
+        for (const line of lines) {
           await saveOnPhone(
             connection,
             {
@@ -1498,11 +1499,30 @@ export function NewBoxForm({
             [],
             adapters,
           );
+          savedLines += 1;
+        }
         setContents('');
         onContentsSaved?.();
       }
       onCreated(box, addItems);
     } catch {
+      if (savedLines) {
+        // Keep only unsaved input on retry, including lines beyond the per-batch limit.
+        let remaining = savedLines;
+        setContents(
+          contents
+            .split(/\r?\n/)
+            .filter((line) => {
+              if (remaining && line.trim().replace(/^[-*•]\s*/, '')) {
+                remaining -= 1;
+                return false;
+              }
+              return true;
+            })
+            .join('\n'),
+        );
+        onContentsSaved?.();
+      }
       setStatus(
         t`The box was created, but its contents could not be saved on this iPhone. Try again.`,
       );
