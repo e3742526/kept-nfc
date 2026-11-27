@@ -102,7 +102,7 @@
   "sessions/counts.ts": "1068f030244b846e",
   "sessions/service.ts": "f5f77a8c4364f229",
   "sharelinks/service.ts": "1d9554e8114040f0",
-  "sync/snapshot.ts": "2db6295f106d591c",
+  "sync/snapshot.ts": "ec614bb3789060a0",
   "templates/place-templates.ts": "09646aa286078544",
   "things/audit-image.ts": "ebb634602f7478ff",
   "things/move.ts": "6c6c9ce314f8b032",
