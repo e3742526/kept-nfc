@@ -5,7 +5,7 @@ CREATE TABLE "label_print_queue" (
 	"record_id" uuid NOT NULL,
 	"batch_id" uuid,
 	"queued_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "label_print_queue_pk" PRIMARY KEY("user_id","kind","record_id"),
+	CONSTRAINT "label_print_queue_pk" PRIMARY KEY("user_id","kind","record_id","location_id"),
 	CONSTRAINT "label_print_queue_kind_chk" CHECK ("kind" IN ('thing', 'place'))
 );
 --> statement-breakpoint

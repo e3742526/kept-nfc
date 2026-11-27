@@ -100,7 +100,10 @@ export const labelPrintQueue = pgTable(
   },
   (t) => [
     queueKind.check('label_print_queue'),
-    primaryKey({ name: 'label_print_queue_pk', columns: [t.userId, t.kind, t.recordId] }),
+    primaryKey({
+      name: 'label_print_queue_pk',
+      columns: [t.userId, t.kind, t.recordId, t.locationId],
+    }),
     index('label_print_queue_batch_idx').on(t.batchId),
   ],
 );

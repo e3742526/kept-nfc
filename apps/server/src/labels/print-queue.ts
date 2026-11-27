@@ -99,7 +99,10 @@ export async function changePrintQueue(
     ) {
       return { items };
     }
-    if (items.length >= maxQueueSize)
+    if (
+      items.length >= maxQueueSize &&
+      !items.some((row) => row.recordId === recordId && row.kind === input.kind)
+    )
       throw new AppError('conflict', 409, 'The print queue is full.');
     const table = input.kind === 'thing' ? 'things' : 'places';
     const live = input.kind === 'place' ? 'AND NOT is_unplaced' : '';
@@ -107,11 +110,15 @@ export async function changePrintQueue(
       `INSERT INTO public.label_print_queue (user_id, location_id, kind, record_id)
        SELECT kept.current_user_id(), location_id, $3, id FROM public.${table}
         WHERE id = $1 AND location_id = $2 AND deleted_at IS NULL ${live}
-       ON CONFLICT (user_id, kind, record_id) DO UPDATE
-         SET location_id = excluded.location_id, batch_id = NULL`,
+       ON CONFLICT (user_id, kind, record_id, location_id) DO NOTHING`,
       [recordId, locationId, input.kind],
     );
     if (!rowCount) throw notFound();
+    // A moved record gets a new row in its current location. The scope of a saved row is fixed.
+    await client.query(
+      `DELETE FROM public.label_print_queue WHERE record_id = $1 AND location_id <> $2 AND kind = $3`,
+      [recordId, locationId, input.kind],
+    );
     changed = rowCount;
   } else {
     const queued = items.find(
