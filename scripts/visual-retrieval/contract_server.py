@@ -12,6 +12,8 @@ import hashlib
 from pathlib import Path
 import sys
 
+# Leave no __pycache__ in the checkout.
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import serve  # noqa: E402
 

@@ -1,0 +1,73 @@
+# Visual search's encoder image (docker/visual-encoder/Dockerfile): builds it, starts it the way
+# compose.yaml's `visual` profile does (read-only, no capabilities, loopback only), and runs the
+# provider's contract test against the real model (apps/server/src/visual-search/
+# encoder-contract.test.ts with KEPT_VISUAL_CONTRACT_URL). The same test runs on every pull request
+# in ci.yml's db-test job against serve.py with a stand-in model; this one adds the checkpoint,
+# the pinned wheels and the image. Weekly too, so a pinned download that disappears is noticed.
+#
+# The build downloads about 1.4 GB (CPU PyTorch and the 577 MiB checkpoint). Nothing is pushed.
+# Actions pinned by commit SHA with their tag in a comment.
+name: visual-encoder
+
+on:
+  push:
+    branches: [main]
+    paths: &encoder_paths
+      - '.github/workflows/visual-encoder.yml'
+      - 'docker/visual-encoder/**'
+      - 'scripts/visual-retrieval/serve.py'
+      - 'scripts/visual-retrieval/contract_server.py'
+      - 'apps/server/src/visual-search/provider.ts'
+      - 'apps/server/src/visual-search/encoder-contract.test.ts'
+  pull_request:
+    paths: *encoder_paths
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-encoder-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the encoder image
+        run: |
+          docker build -f docker/visual-encoder/Dockerfile \
+            --build-arg REVISION="$GITHUB_SHA" -t sheepkeep-visual-encoder:ci .
+          docker image ls sheepkeep-visual-encoder:ci
+      - name: Start it on the runner's loopback, hardened as in compose.yaml
+        run: |
+          docker run -d --name visual-encoder --network host --read-only --tmpfs /tmp \
+            --cap-drop ALL --security-opt no-new-privileges:true sheepkeep-visual-encoder:ci
+          for _ in $(seq 1 60); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' visual-encoder)
+            [[ $status == healthy ]] && break
+            [[ $(docker inspect -f '{{.State.Running}}' visual-encoder) == true ]] || break
+            sleep 3
+          done
+          docker logs visual-encoder
+          [[ $status == healthy ]] || { echo "::error::the encoder did not become healthy ($status)"; exit 1; }
+      # The server project's test setup makes its template database, so it needs the dev Postgres.
+      - run: docker compose -f compose.dev.yaml up -d --wait db
+      - name: Contract test against the real model
+        env:
+          KEPT_VISUAL_CONTRACT_URL: http://127.0.0.1:8798
+        run: pnpm exec vitest run --project @kept/server apps/server/src/visual-search/encoder-contract.test.ts
+      - if: failure()
+        run: docker logs visual-encoder || true

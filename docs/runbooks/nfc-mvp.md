@@ -203,8 +203,11 @@ Open a result to inspect the original and verify its current recorded path. Use 
 bin's existing **Find** action for supported NFC tags. Search keeps no inventory photo
 or offline draft. Ordinary cached search remains available when the phone is offline.
 
-The visual index is opt-in. Run the [local encoder](../../scripts/visual-retrieval/README.md#opt-in-local-encoder)
-and configure its loopback address with `KEPT_VISUAL_ENCODER_URL` on the server and worker.
+The visual index is opt-in and experimental. Run the encoder image beside Kept (the
+[`visual` Compose profile or the chart's `visualEncoder`](../../scripts/visual-retrieval/README.md#run-the-encoder-image-beside-kept))
+and set `KEPT_VISUAL_ENCODER_URL=http://127.0.0.1:8798` on the server and worker. Kept logs
+`visual search on: the encoder is ready` once it answers, and a warning when the address is
+rejected or the encoder never answers.
 Inspect `GET /api/v1/visual-search/status?locationIds=<location UUID>` with an authorized
 session. Pending and failed counts are scoped to the caller. Photos without a supported
 original or bounded display rendition appear as unsupported. Native capture supplies

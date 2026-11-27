@@ -544,7 +544,7 @@ const schema = z.object({
     .string()
     .optional()
     .describe(
-      'opt-in whole-image search; an `http://127.0.0.1:<port>` OpenCLIP sidecar in the same network namespace as the server and worker; unset disables visual inference',
+      "experimental, opt-in visual search: `http://127.0.0.1:<port>` of the visual encoder (`docker/visual-encoder`) in the server's and worker's network namespace (compose.yaml's `visual` profile, the chart's `visualEncoder`); unset disables visual inference, and another value is ignored with a warning at start",
     ),
   // Generic OIDC sign-in, configured here and read at boot.
   // Unset issuer: no OIDC. Discovery goes through the SSRF guard.

@@ -192,9 +192,7 @@ describe('visual encoder startup report', () => {
     const endpoint = await listen((_req, res) => sendJson(res, { ...profile, dimensions: 768 }));
     const { lines, log } = recorder();
     await reportVisualEncoder(log, { value: endpoint, waitMs: 50, pollMs: 10 });
-    expect(lines).toEqual([
-      { level: 'warn', msg: expect.stringContaining('is not answering') },
-    ]);
+    expect(lines).toEqual([{ level: 'warn', msg: expect.stringContaining('is not answering') }]);
 
     const stopped = recorder();
     const controller = new AbortController();
