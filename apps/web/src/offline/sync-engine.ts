@@ -34,7 +34,6 @@
 import {
   KEPT_VERSION,
   type QueueItem,
-  type SyncOpResult,
   type SyncOpsRequest,
   type SyncOpsResponse,
   type UpgraderTable,
@@ -42,9 +41,10 @@ import {
 import { captureApi } from '@/api/capture/queries';
 import { ApiError } from '@/api/client';
 import { requestPersistence, StorageFullError } from './persist';
-import { nextBatch, upgradeEntry } from './queue';
+import { upgradeEntry } from './queue';
+import { localDrop, sendQueue } from './send-queue';
 import { type PullResult, pullSnapshot, type SnapshotFetch } from './snapshot';
-import type { LocalBlob, QueueEntry, SyncNotice } from './store';
+import type { LocalBlob, SyncNotice } from './store';
 import type { SyncStore } from './sync-store';
 import { type UploadHttp, uploadEntryFiles, uploadHttp } from './uploader';
 
@@ -117,32 +117,6 @@ const BACKOFF_MAX_MS = 5 * 60_000;
 
 const errStatus = (e: unknown) => (e instanceof ApiError ? e.status : undefined);
 const isOffline = (e: unknown) => e instanceof ApiError && e.code === 'offline';
-const outdatedCode = (e: unknown): 'client_outdated' | 'server_outdated' | null =>
-  e instanceof ApiError && (e.code === 'client_outdated' || e.code === 'server_outdated')
-    ? e.code
-    : null;
-
-/** Exactly the wire fields: the server's schema is strict (SyncOpsRequestSchema). */
-function toItem(e: QueueEntry): QueueItem {
-  return {
-    clientVersion: e.clientVersion,
-    payloadVersion: e.payloadVersion,
-    clientId: e.clientId,
-    idempotencyKey: e.idempotencyKey,
-    op: e.op,
-    takenAt: e.takenAt,
-    locationId: e.locationId,
-    ...(e.dependsOn ? { dependsOn: e.dependsOn } : {}),
-    payload: e.payload,
-  };
-}
-
-const localDrop = (e: QueueEntry, reason: string): SyncOpResult => ({
-  clientId: e.clientId,
-  idempotencyKey: e.idempotencyKey,
-  outcome: 'dropped',
-  reason,
-});
 
 export class SyncEngine {
   readonly store: SyncStore;
@@ -337,86 +311,20 @@ export class SyncEngine {
     }
   }
 
-  /** Sends ready ops in order. Answers the blocking problem, if the server refused the batch. */
-  private async sendAll(): Promise<SyncProblem | null> {
-    let max: number | undefined;
-    for (;;) {
-      const all = await this.store.entries();
-      const byKey = new Map(all.map((e) => [e.idempotencyKey, e.state]));
-      const needs = await this.store.unuploadedSeqs();
-      const batch = nextBatch(
-        all,
-        (seq) => !needs.has(seq),
-        (k) => byKey.get(k),
-        max,
-      );
-      let send = batch.send;
-      for (const e of batch.parentDropped) await this.store.settle(localDrop(e, 'parent_dropped'));
-      if (send.length === 0) {
-        const blocked = all.some((e) => e.state === 'blocked');
-        return blocked ? (this.blockedCode ?? 'client_outdated') : null;
-      }
-      await this.store.setState(
-        send.map((e) => e.seq),
-        'sent',
-      );
-      // Re-read: an op taken back ("Undo this batch", `unqueue`) before it was marked is gone.
-      const marked = new Set(send.map((e) => e.seq));
-      send = (await this.store.entries()).filter((e) => marked.has(e.seq) && e.state === 'sent');
-      if (send.length === 0) continue;
-      const seqs = send.map((e) => e.seq);
-      let res: SyncOpsResponse;
-      try {
-        res = await this.http.syncOps({
-          clientVersion: this.opts.clientVersion ?? KEPT_VERSION,
-          ops: send.map(toItem),
-        });
-      } catch (e) {
-        const outdated = outdatedCode(e);
-        if (outdated) {
-          // Nothing in the batch was applied; the queue stays, blocked, never dropped (D148).
-          await this.store.setState(seqs, 'blocked');
-          await this.store.addNotice({ kind: 'outdated' });
-          this.blockedAt = this.now();
-          this.blockedCode = outdated;
-          return outdated;
-        }
-        if (errStatus(e) === 400) {
-          // The batch didn't parse. Find the one op that doesn't, by sending one at a time.
-          if (send.length > 1) {
-            await this.store.setState(seqs, 'pending');
-            max = 1;
-            continue;
-          }
-          const [only] = send;
-          if (only) await this.store.settle(localDrop(only, 'invalid'));
-          continue;
-        }
-        // No answer (offline, 5xx, a dropped connection): the server may have applied them, so
-        // they stay `sent` (never taken back by `unqueue`, never re-written by an upgrade) and go
-        // again next run with the same keys; the server answers a replay from its ledger.
-        throw e;
-      }
-      if (this.blockedCode !== null || this.blockedAt !== null) {
+  /** Sends ready ops in order (send-queue.ts). Answers the blocking problem, if any. */
+  private sendAll(): Promise<SyncProblem | null> {
+    return sendQueue(this.store, this.http.syncOps, {
+      clientVersion: this.opts.clientVersion ?? KEPT_VERSION,
+      blockedCode: () => this.blockedCode,
+      onBlocked: (code) => {
+        this.blockedAt = this.now();
+        this.blockedCode = code;
+      },
+      onAnswered: () => {
         this.blockedAt = null;
         this.blockedCode = null;
-      }
-      await this.store.clearOutdated();
-      const answered = new Set<string>();
-      for (const r of res.results) {
-        await this.store.settle(r);
-        answered.add(r.idempotencyKey);
-      }
-      const unanswered = send.filter((e) => !answered.has(e.idempotencyKey));
-      if (unanswered.length > 0) {
-        // The server stopped part-way (a 500 in one op): the rest go again, same keys.
-        await this.store.setState(
-          unanswered.map((e) => e.seq),
-          'pending',
-        );
-        throw new ApiError(500, 'internal', 'The server answered part of the batch.');
-      }
-    }
+      },
+    });
   }
 
   /**

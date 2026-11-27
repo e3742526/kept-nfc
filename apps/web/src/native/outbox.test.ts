@@ -4,6 +4,7 @@ import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
 import { paths } from '@/api/paths';
+import { memorySyncQueue } from '@/test/memory-sync-queue';
 import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import {
   type Capture,
@@ -100,6 +101,7 @@ function makeInMemoryAdapters(
   const staged = new Map<string, string>();
   const captures = new Map<string, PendingCapture>();
   const completionStates = new Map<string, 'synced' | 'discarded'>();
+  const syncQueue = memorySyncQueue();
 
   const delegateRequest = overrides.request ?? vi.fn();
   const adapters: PlatformAdapters = {
@@ -159,11 +161,14 @@ function makeInMemoryAdapters(
         captures.set(id, { capture: next });
         return next;
       },
-      async complete(_conn, id) {
+      syncQueue: syncQueue.queue,
+      async complete(conn, id) {
+        syncQueue.finish(conn.id, id);
         completionStates.set(id, 'synced');
         captures.delete(id);
       },
-      async discard(_conn, id) {
+      async discard(conn, id) {
+        syncQueue.finish(conn.id, id);
         completionStates.set(id, 'discarded');
         captures.delete(id);
       },
@@ -184,7 +189,7 @@ function makeInMemoryAdapters(
     },
   };
 
-  return { adapters, staged, captures, completionStates };
+  return { adapters, staged, captures, completionStates, syncQueue };
 }
 
 describe('native outbox staging and replay', () => {
@@ -893,7 +898,8 @@ describe('native outbox staging and replay', () => {
     expect(await syncOutbox(connection, adapters)).toBe(0);
     conflicting = false;
     expect(await retryCapture(connection, id, adapters)).toBe(true);
-    expect(calls).toEqual([[updateId, createdId, binEvidenceId], [updateId]]);
+    // The applied op is answered from the phone's queue: it isn't sent again, only the PATCH is.
+    expect(calls).toEqual([[updateId, createdId, binEvidenceId]]);
     expect(patches).toEqual(
       Array.from({ length: 2 }, () => ({
         method: 'PATCH',
@@ -1061,5 +1067,168 @@ describe('native outbox staging and replay', () => {
     expect(isAuthRefusal(new ApiError(403, 'mfa_required', 'MFA'))).toBe(true);
     expect(isAuthRefusal(new ApiError(403, 'two_factor_required', '2FA'))).toBe(true);
     expect(isAuthRefusal(new ApiError(403, 'forbidden', 'Denied'))).toBe(false);
+  });
+});
+
+// The phone loses the server (or the app is killed) between the steps of one capture's replay.
+// Each step the server finished keeps its answer; nothing the server may have applied is sent
+// again under its key with a different payload; nothing is applied twice.
+describe('a replay interrupted between its steps', () => {
+  type Op = {
+    clientId: string;
+    idempotencyKey: string;
+    op: string;
+    payload: { id?: string; thingIds?: string[]; add?: string[] };
+  };
+  const steps = ['create', 'tags', 'attachments'] as const;
+  const fileId = newId();
+
+  function fakeServer(failAfter: (typeof steps)[number] | 'none') {
+    const ledger = new Map<string, { hash: string; result: unknown }>();
+    const sent: Op[] = [];
+    const things = new Set<string>();
+    const tagged: string[][] = [];
+    let failing = failAfter !== 'none';
+    const lose = (step: (typeof steps)[number]) => {
+      // The server did the work; the answer never reaches the phone.
+      if (failing && step === failAfter) {
+        failing = false;
+        throw new ApiError(0, 'offline', 'Lost the connection');
+      }
+    };
+    const request = vi.fn(async (_conn: Connection, path: string, options?: unknown) => {
+      if (path === capturePaths.syncOps) {
+        const { ops } = (options as { body: { ops: (Op & { clientVersion?: string })[] } }).body;
+        const results = ops.map(({ clientVersion: _version, ...op }) => {
+          sent.push(op);
+          // The server's ledger (sync/ops.ts): the same key and request answer the same result.
+          const hash = JSON.stringify(op);
+          const prior = ledger.get(op.idempotencyKey);
+          if (prior)
+            return prior.hash === hash
+              ? prior.result
+              : {
+                  clientId: op.clientId,
+                  idempotencyKey: op.idempotencyKey,
+                  outcome: 'dropped',
+                  reason: 'idempotency_mismatch',
+                };
+          if (op.op === 'create_thing' && op.payload.id) things.add(op.payload.id);
+          if (op.op === 'tag_things') tagged.push(op.payload.add ?? []);
+          const result = {
+            clientId: op.clientId,
+            idempotencyKey: op.idempotencyKey,
+            outcome: 'applied',
+            ...(op.op === 'create_thing'
+              ? { entity: { type: 'thing', id: op.payload.id ?? '' } }
+              : {}),
+          };
+          ledger.set(op.idempotencyKey, { hash, result });
+          return result;
+        });
+        lose(ops.some((op) => op.op === 'tag_things') ? 'tags' : 'create');
+        return { results };
+      }
+      if (path.includes('/attachments')) {
+        lose('attachments');
+        return {
+          items: [{ role: 'photo', file: { id: fileId, sha256: 'a'.repeat(64), bytes: 5 } }],
+          next_cursor: null,
+        };
+      }
+      throw new Error(`Unexpected path ${path}`);
+    });
+    return { request, sent, things, tagged, ledger };
+  }
+
+  it.each(steps)(
+    'after the server finished the %s step, finishes once on the next run',
+    async (step) => {
+      const server = fakeServer(step);
+      const uploadOriginal = vi
+        .fn()
+        .mockResolvedValue({ id: fileId, sha256: 'a'.repeat(64), bytes: 5 });
+      const { adapters, completionStates, syncQueue } = makeInMemoryAdapters({
+        request: server.request as PlatformAdapters['transport']['request'],
+        uploadOriginal,
+      });
+      const tag = newId();
+      const id = await saveOnPhone(
+        connection,
+        { locationId: newId(), boxId: newId(), name: 'Drill', tags: [tag] },
+        [{ file: new File(['photo'], 'drill.jpg', { type: 'image/jpeg' }), role: 'photo' }],
+        adapters,
+      );
+
+      await expect(syncOutbox(connection, adapters)).rejects.toMatchObject({ status: 0 });
+      expect(completionStates.has(id)).toBe(false);
+      expect(await syncOutbox(connection, adapters)).toBe(1);
+
+      expect(completionStates.get(id)).toBe('synced');
+      expect([...server.things]).toEqual([id]);
+      expect(server.tagged).toEqual([[tag]]);
+      // Every op sent more than once went byte for byte the same; none was refused as changed.
+      const byKey = new Map<string, Op[]>();
+      for (const op of server.sent)
+        byKey.set(op.idempotencyKey, [...(byKey.get(op.idempotencyKey) ?? []), op]);
+      for (const copies of byKey.values())
+        for (const copy of copies) expect(copy).toEqual(copies[0]);
+      expect(server.sent.map((op) => op.op).sort()).toEqual(
+        step === 'create'
+          ? ['create_thing', 'create_thing', 'tag_things']
+          : step === 'tags'
+            ? ['create_thing', 'tag_things', 'tag_things']
+            : ['create_thing', 'tag_things'],
+      );
+      // An op answered before the interruption isn't sent again, and its files aren't uploaded again.
+      expect(uploadOriginal).toHaveBeenCalledTimes(1);
+      // Finishing the capture leaves nothing queued.
+      expect(syncQueue.rowsOf(connection.id)).toEqual([]);
+    },
+  );
+
+  it('refuses to retarget a capture whose op may have been applied, and allows it once dropped', async () => {
+    let answer: 'lose' | 'trashed' = 'lose';
+    const request = vi.fn(async (_conn: Connection, path: string, options?: unknown) => {
+      if (path !== capturePaths.syncOps) throw new Error(`Unexpected path ${path}`);
+      if (answer === 'lose') throw new ApiError(0, 'offline', 'Lost the connection');
+      const { ops } = (options as { body: { ops: Op[] } }).body;
+      return {
+        results: ops.map((op) => ({
+          clientId: op.clientId,
+          idempotencyKey: op.idempotencyKey,
+          outcome: 'dropped',
+          reason: 'target_trashed',
+        })),
+      };
+    });
+    const { adapters, captures } = makeInMemoryAdapters({
+      request: request as PlatformAdapters['transport']['request'],
+      uploadOriginal: vi.fn().mockResolvedValue({ id: fileId, sha256: 'a'.repeat(64), bytes: 5 }),
+    });
+    const id = await saveOnPhone(
+      connection,
+      { locationId: newId(), boxId: newId(), name: 'Drill' },
+      [{ file: new File(['photo'], 'drill.jpg', { type: 'image/jpeg' }), role: 'photo' }],
+      adapters,
+    );
+    await expect(syncOutbox(connection, adapters)).rejects.toMatchObject({ status: 0 });
+    // Shown as trashed (say, a stale answer) while the op is still `sent`: not retargeted.
+    const pending = { capture: captures.get(id)?.capture as Capture, failure: 'target_trashed' };
+    await expect(
+      retargetCapture(connection, pending, { id: newId(), locationId: newId() }, adapters),
+    ).rejects.toMatchObject({ reason: 'needs_review' });
+
+    answer = 'trashed';
+    expect(await syncOutbox(connection, adapters)).toBe(0);
+    const failed = captures.get(id);
+    expect(failed?.failure).toBe('target_trashed');
+    const moved = await retargetCapture(
+      connection,
+      failed as PendingCapture,
+      { id: newId(), locationId: newId() },
+      adapters,
+    );
+    expect(draftFields(moved).attemptId).toBeDefined();
   });
 });

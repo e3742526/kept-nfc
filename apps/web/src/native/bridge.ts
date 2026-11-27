@@ -37,6 +37,18 @@ export type PendingCapture = { capture: Capture; failure?: string };
 /** Only `synced` means server-confirmed; disappearance alone proves nothing. */
 export type CompletionState = 'synced' | 'discarded';
 
+/** One queued `/sync/ops` op as the iPhone's SQLite queue keeps it (SyncQueue.swift). */
+export type SyncOpRow = {
+  seq: number;
+  capture: string;
+  idempotencyKey: string;
+  state: string;
+  /** The queue item as JSON. */
+  item: string;
+  /** The server's answer as JSON. */
+  result?: string;
+};
+
 export type StorageStats = {
   pendingCount: number;
   pendingBytes: number;

@@ -22,6 +22,7 @@ import { paths } from '@/api/paths';
 import * as cameraSession from '@/camera/session';
 import { ConfirmProvider } from '@/components/ui/confirm';
 import { activateLocale, i18n } from '@/i18n/i18n';
+import { memorySyncQueue } from '@/test/memory-sync-queue';
 import { expectLogicalOnly } from '@/test/render';
 import { NativePlatformProvider, type PlatformAdapters } from './adapters';
 import {
@@ -192,6 +193,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
   const appStateListeners = new Set<(state: { active: boolean }) => void>();
   const scanSequence: TagReading[] = [];
   const completionsByContext = new Map<string, Map<string, 'synced' | 'discarded'>>();
+  const syncQueue = memorySyncQueue();
   const getCompletions = (ctx: string) => {
     const existing = completionsByContext.get(ctx);
     if (existing) return existing;
@@ -448,6 +450,13 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 idempotencyKey: op.idempotencyKey,
                 outcome: 'dropped',
                 reason: forceDropReason,
+              };
+            }
+            if (op.op === 'tag_things') {
+              return {
+                clientId: op.clientId,
+                idempotencyKey: op.idempotencyKey,
+                outcome: 'applied',
               };
             }
             if (op.op === 'create_area') {
@@ -834,7 +843,9 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
         list[idx] = { capture: updated };
         return updated;
       },
+      syncQueue: syncQueue.queue,
       async complete(conn, id) {
+        syncQueue.finish(conn.id, id);
         getCompletions(conn.id).set(id, 'synced');
         outboxByContext.set(
           conn.id,
@@ -842,6 +853,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
         );
       },
       async discard(conn, id) {
+        syncQueue.finish(conn.id, id);
         getCompletions(conn.id).set(id, 'discarded');
         outboxByContext.set(
           conn.id,
@@ -863,6 +875,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
       },
       async discardHeld(conn, heldContext, id) {
         if (!isHeld(heldContext, conn.id)) throw new Error('not held');
+        syncQueue.finish(heldContext, id);
         getCompletions(heldContext).set(id, 'discarded');
         outboxByContext.set(
           heldContext,
@@ -1616,9 +1629,10 @@ describe('KeptPhone mobile workflows', () => {
             body: expect.objectContaining({
               ops: [
                 expect.objectContaining({
+                  // Queued ops are JSON, as the wire carries them: no quantity, no key.
                   payload: expect.objectContaining({
                     name: 'Fixture wrench',
-                    quantity: expectedQuantity || undefined,
+                    ...(expectedQuantity ? { quantity: expectedQuantity } : {}),
                   }),
                 }),
               ],
@@ -1630,7 +1644,8 @@ describe('KeptPhone mobile workflows', () => {
   );
 
   it('resumes a two-photo review and syncs only selected entries with shared originals', async () => {
-    const origin = 'https://kept.example.com';
+    // Its own origin: the picker remembers recent categories per connection for the session.
+    const origin = 'https://review.kept.example.com';
     const category = (id: string, name: string): Tag => ({
       id,
       name,
@@ -1638,8 +1653,9 @@ describe('KeptPhone mobile workflows', () => {
       rowVersion: 1,
       colour: null,
     });
-    const tools = category('tools', 'Tools');
-    const electrical = category('electrical', 'Electrical');
+    // Tag ids are UUIDs, as the registry makes them (the queued tag_things op checks).
+    const tools = category('0196f3a0-0000-7000-8000-000000000001', 'Tools');
+    const electrical = category('0196f3a0-0000-7000-8000-000000000002', 'Electrical');
     const env = createFakeEnvironment({
       tags: [tools, electrical],
       initialConnection: {
@@ -1720,15 +1736,22 @@ describe('KeptPhone mobile workflows', () => {
       expect(request.mock.calls.some(([, path]) => path === capturePaths.syncOps)).toBe(true),
     );
     expect(upload).toHaveBeenCalledTimes(2);
+    // Tags go as the protocol's tag_things op, queued after the item it tags.
     await waitFor(() =>
-      expect(request).toHaveBeenCalledWith(
-        expect.anything(),
-        inventoryPaths.thingsTags,
+      expect(
+        request.mock.calls
+          .filter(([, path]) => path === capturePaths.syncOps)
+          .flatMap(
+            ([, , options]) => (options?.body as { ops: { op: string }[] } | undefined)?.ops ?? [],
+          )
+          .filter(({ op }) => op === 'tag_things'),
+      ).toContainEqual(
         expect.objectContaining({
-          body: expect.objectContaining({ add: [tools.id, electrical.id] }),
+          payload: expect.objectContaining({ add: [tools.id, electrical.id] }),
         }),
       ),
     );
+    expect(request.mock.calls.some(([, path]) => path === inventoryPaths.thingsTags)).toBe(false);
     const sent = request.mock.calls.find(([, path]) => path === capturePaths.syncOps)?.[2]?.body;
     expect(sent).toMatchObject({
       ops: [
@@ -1736,7 +1759,6 @@ describe('KeptPhone mobile workflows', () => {
           payloadVersion: 4,
           payload: {
             name: 'Cordless drill',
-            quantity: undefined,
             captureIntent: 'record',
             skipServerSuggestions: true,
           },
@@ -1746,6 +1768,8 @@ describe('KeptPhone mobile workflows', () => {
         { payloadVersion: 4, payload: { name: 'Christmas lights', skipServerSuggestions: true } },
       ],
     });
+    // Queued ops are stored as JSON, as the wire carries them: no quantity was entered.
+    expect((sent as { ops: { payload: object }[] }).ops[0]?.payload).not.toHaveProperty('quantity');
   });
 
   it('keeps manual photo capture usable after empty, malformed and cancelled proposals', async () => {

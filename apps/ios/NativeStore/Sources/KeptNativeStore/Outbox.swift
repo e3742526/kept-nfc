@@ -148,6 +148,7 @@ public final class Outbox {
                 PRIMARY KEY (context, key)
             )
             """)
+        try createSyncQueue()
         try sql("""
             CREATE TABLE IF NOT EXISTS completions (
                 context TEXT NOT NULL,
@@ -375,10 +376,14 @@ public final class Outbox {
     }
 
     private func finish(context: String, id: String, state: CompletionState) throws {
-        try sql("""
-            INSERT INTO completions (context, id, state) VALUES (?, ?, ?)
-            ON CONFLICT (context, id) DO UPDATE SET state = EXCLUDED.state
-            """, [context, id.lowercased(), state.rawValue])
+        try transaction {
+            try sql("""
+                INSERT INTO completions (context, id, state) VALUES (?, ?, ?)
+                ON CONFLICT (context, id) DO UPDATE SET state = EXCLUDED.state
+                """, [context, id.lowercased(), state.rawValue])
+            // A finished capture's queued sync ops have nothing left to do (SyncQueue.swift).
+            try sql("DELETE FROM sync_ops WHERE context = ? AND capture = ?", [context, id.lowercased()])
+        }
         // Record confirmation durably before removing file bytes. Repair never reopens a
         // completed capture even if the app stops before file cleanup finishes.
         try sql("UPDATE captures SET completed = 1 WHERE context = ? AND id = ?", [context, id.lowercased()])
@@ -560,11 +565,11 @@ public final class Outbox {
         return root.appendingPathComponent(scope, isDirectory: true).appendingPathComponent(name, isDirectory: true)
     }
 
-    private func sql(_ sql: String, _ values: [String] = []) throws {
+    func sql(_ sql: String, _ values: [String] = []) throws {
         _ = try query(sql, values) { _ in () }
     }
 
-    private func query<T>(_ sql: String, _ values: [String], map: (OpaquePointer) throws -> T) throws -> [T] {
+    func query<T>(_ sql: String, _ values: [String], map: (OpaquePointer) throws -> T) throws -> [T] {
         var statement: OpaquePointer?
         let prepStatus = sqlite3_prepare_v2(db, sql, -1, &statement, nil)
         guard prepStatus == SQLITE_OK, let statement else {
@@ -589,11 +594,11 @@ public final class Outbox {
         return result
     }
 
-    private func optionalString(_ statement: OpaquePointer, _ column: Int32) -> String? {
+    func optionalString(_ statement: OpaquePointer, _ column: Int32) -> String? {
         sqlite3_column_text(statement, column).map { String(cString: $0) }
     }
 
-    private func string(_ statement: OpaquePointer, _ column: Int32) throws -> String {
+    func string(_ statement: OpaquePointer, _ column: Int32) throws -> String {
         guard let value = optionalString(statement, column) else { throw OutboxError.storage }
         return value
     }

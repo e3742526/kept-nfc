@@ -874,6 +874,40 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                 case "deleteValue":
                     guard let key = call.getString("key") else { throw KeptNativeError.invalidRequest }
                     try store.deleteValue(context: context, key: key)
+                // The /sync/ops queue (SyncQueue.swift): JSON in, JSON out.
+                case "queueEnqueue":
+                    struct Op: Decodable { let idempotencyKey: String; let item: String }
+                    guard let capture = call.getString("capture"), let raw = call.getString("ops"),
+                          raw.utf8.count <= 2_000_000
+                    else { throw KeptNativeError.invalidRequest }
+                    let ops = try JSONDecoder().decode([Op].self, from: Data(raw.utf8))
+                    let rows = try store.enqueueSyncOps(
+                        context: context, capture: capture, ops: ops.map { ($0.idempotencyKey, $0.item) }
+                    )
+                    return ["data": String(decoding: try JSONEncoder().encode(rows), as: UTF8.self)]
+                case "queueList":
+                    let rows = try store.syncOps(context: context)
+                    return ["data": String(decoding: try JSONEncoder().encode(rows), as: UTF8.self)]
+                case "queueSetState":
+                    guard let raw = call.getString("seqs"), let state = call.getString("state"),
+                          raw.utf8.count <= 4_096
+                    else { throw KeptNativeError.invalidRequest }
+                    let seqs = try JSONDecoder().decode([Int].self, from: Data(raw.utf8))
+                    try store.setSyncOpState(context: context, seqs: seqs, state: state)
+                case "queueSettle":
+                    guard let key = call.getString("key"), let state = call.getString("state"),
+                          let result = call.getString("result")
+                    else { throw KeptNativeError.invalidRequest }
+                    try store.settleSyncOp(context: context, idempotencyKey: key, state: state, result: result)
+                case "queueUnqueue":
+                    guard let raw = call.getString("keys"), raw.utf8.count <= 32_768
+                    else { throw KeptNativeError.invalidRequest }
+                    let keys = try JSONDecoder().decode([String].self, from: Data(raw.utf8))
+                    let removed = try store.unqueueSyncOps(context: context, idempotencyKeys: keys)
+                    return ["data": String(decoding: try JSONEncoder().encode(removed), as: UTF8.self)]
+                case "queueRelease":
+                    guard let capture = call.getString("capture") else { throw KeptNativeError.invalidRequest }
+                    return ["data": try store.releaseSyncOps(context: context, capture: capture) ? "true" : "false"]
                 default:
                     throw KeptNativeError.invalidRequest
                 }

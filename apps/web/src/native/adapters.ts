@@ -20,6 +20,7 @@ import {
   networkError,
   type PendingCapture,
   type StorageStats,
+  type SyncOpRow,
   type TagReading,
   unwrap,
 } from './bridge';
@@ -72,6 +73,24 @@ export type PlatformOutbox = {
   getValue(connection: Connection, key: string): Promise<string | undefined>;
   setValue(connection: Connection, key: string, data: string): Promise<void>;
   deleteValue(connection: Connection, key: string): Promise<void>;
+  /** The durable `/sync/ops` queue (native/sync-queue.ts sends it by the shared rules). */
+  syncQueue: PlatformSyncQueue;
+};
+
+export type PlatformSyncQueue = {
+  /** Queues a capture's ops; a key already queued keeps its row, item and state. */
+  enqueue(
+    connection: Connection,
+    capture: string,
+    ops: { idempotencyKey: string; item: string }[],
+  ): Promise<SyncOpRow[]>;
+  list(connection: Connection): Promise<SyncOpRow[]>;
+  setState(connection: Connection, seqs: number[], state: string): Promise<void>;
+  settle(connection: Connection, key: string, state: string, result: string): Promise<void>;
+  /** Takes back ops still `pending` or `blocked`; answers the keys removed. */
+  unqueue(connection: Connection, keys: string[]): Promise<string[]>;
+  /** Clears a capture's ops unless one is `sent` or `applied`; false when refused. */
+  release(connection: Connection, capture: string): Promise<boolean>;
 };
 
 export type PlatformNfc = {
@@ -336,6 +355,35 @@ export const capacitorAdapters: PlatformAdapters = {
     },
     async deleteValue(connection, key) {
       await callOutbox(connection, 'deleteValue', { key });
+    },
+    syncQueue: {
+      async enqueue(connection, capture, ops) {
+        const { data } = await callOutbox(connection, 'queueEnqueue', {
+          capture,
+          ops: JSON.stringify(ops),
+        });
+        return JSON.parse(data ?? '[]') as SyncOpRow[];
+      },
+      async list(connection) {
+        const { data } = await callOutbox(connection, 'queueList');
+        return JSON.parse(data ?? '[]') as SyncOpRow[];
+      },
+      async setState(connection, seqs, state) {
+        await callOutbox(connection, 'queueSetState', { seqs: JSON.stringify(seqs), state });
+      },
+      async settle(connection, key, state, result) {
+        await callOutbox(connection, 'queueSettle', { key, state, result });
+      },
+      async unqueue(connection, keys) {
+        const { data } = await callOutbox(connection, 'queueUnqueue', {
+          keys: JSON.stringify(keys),
+        });
+        return JSON.parse(data ?? '[]') as string[];
+      },
+      async release(connection, capture) {
+        const { data } = await callOutbox(connection, 'queueRelease', { capture });
+        return data === 'true';
+      },
     },
   },
   nfc: {

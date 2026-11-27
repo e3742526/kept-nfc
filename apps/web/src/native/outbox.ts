@@ -9,7 +9,8 @@ import {
   NATIVE_LOCATION_PHOTO_PAYLOAD_VERSION,
   newId,
   PAYLOAD_VERSION,
-  type SyncOpsResponse,
+  type QueueItem,
+  TagThingsPayload,
 } from '@kept/shared';
 import { capturePaths } from '@/api/capture/paths';
 import { ApiError } from '@/api/client';
@@ -20,6 +21,7 @@ import { capacitorAdapters, type PlatformAdapters } from './adapters';
 import type { Capture, Connection, OriginalMeta, PendingCapture, StorageStats } from './bridge';
 import { forgetPlacePhotos } from './place-photo-cache';
 import { rememberDestination } from './recent-destinations';
+import { NativeSyncQueue, sendNativeQueue } from './sync-queue';
 
 export type { Capture, OriginalMeta, PendingCapture, StorageStats };
 
@@ -106,6 +108,8 @@ export const ACTION_REQUIRED_FAILURES = new Set([
   'validation',
   'payload_too_large',
   'checksum_mismatch',
+  // The server couldn't parse the op (the shared sender drops just that one, D35).
+  'invalid',
   // Older/rolled-back server that cannot accept this capture shape. Held, never
   // retried in a loop and never fixed by stripping fields such as reviewSuggestions.
   'compatibility_hold',
@@ -314,6 +318,27 @@ export class ReplayError extends Error {
   }
 }
 
+/**
+ * Queues a capture's ops and sends the queue (sync-queue.ts). An op already queued under its key
+ * is sent as it was queued, never rebuilt. Answers this capture's queued ops by key; any of
+ * `items` left unanswered throws: `compatibility_hold` when the queue is blocked, else `retry`.
+ * No answer from the server throws the transport's error (the ops stay `sent`).
+ */
+async function queueAndSend(
+  connection: Connection,
+  adapters: PlatformAdapters,
+  captureId: string,
+  items: QueueItem[],
+) {
+  const queue = new NativeSyncQueue(connection, adapters);
+  await queue.enqueue(captureId, items);
+  const blocked = await sendNativeQueue(queue, connection, adapters, isCompatibilityFailure);
+  const mine = await queue.ofCapture(captureId);
+  const unanswered = items.some(({ idempotencyKey }) => !mine.get(idempotencyKey)?.result);
+  if (unanswered) throw new ReplayError(blocked ? 'compatibility_hold' : 'retry');
+  return mine;
+}
+
 async function waitForPlace(connection: Connection, adapters: PlatformAdapters, id: string) {
   const completions = await getCompletions(connection, adapters);
   if (completions[id] === 'synced') return;
@@ -343,37 +368,26 @@ async function replayPlace(
   adapters: PlatformAdapters,
 ) {
   await ensurePlaceQueueCompatible(connection, adapters);
-  const response = await adapters.transport.request<SyncOpsResponse>(
-    connection,
-    capturePaths.syncOps,
+  const mine = await queueAndSend(connection, adapters, capture.id, [
     {
-      method: 'POST',
-      body: {
-        clientVersion: KEPT_VERSION,
-        ops: [
-          {
-            clientVersion: KEPT_VERSION,
-            payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
-            clientId: capture.id,
-            idempotencyKey: capture.id,
-            op: 'create_area',
-            takenAt: capture.takenAt,
-            locationId: fields.locationId,
-            ...(fields.dependsOnPlace ? { dependsOn: [fields.dependsOnPlace] } : {}),
-            payload: CreateAreaPayload.parse({
-              id: capture.id,
-              name: fields.name,
-              ...fields.placeCreation,
-            }),
-          },
-        ],
-      },
+      clientVersion: KEPT_VERSION,
+      payloadVersion: NATIVE_CREATE_AREA_PAYLOAD_VERSION,
+      clientId: capture.id,
+      idempotencyKey: capture.id,
+      op: 'create_area',
+      takenAt: capture.takenAt,
+      locationId: fields.locationId,
+      ...(fields.dependsOnPlace ? { dependsOn: [fields.dependsOnPlace] } : {}),
+      payload: CreateAreaPayload.parse({
+        id: capture.id,
+        name: fields.name,
+        ...fields.placeCreation,
+      }),
     },
-  );
-  const result = response.results.find(({ clientId }) => clientId === capture.id);
+  ]);
+  const result = mine.get(capture.id)?.result;
   if (
     result?.outcome !== 'applied' ||
-    result.idempotencyKey !== capture.id ||
     result.entity?.type !== 'place' ||
     result.entity.id !== capture.id
   ) {
@@ -514,9 +528,15 @@ export async function replayCapture(
     await adapters.outbox.complete(connection, capture.id);
     return;
   }
+  const keyOf = (entry: (typeof work)[number]) =>
+    reviewed ? entry.id : (fields.attemptId ?? entry.id);
+  // Ops queued by an earlier attempt are frozen with the files they name: no upload is needed
+  // again, and none of them is rebuilt.
+  const queued = await new NativeSyncQueue(connection, adapters).ofCapture(capture.id);
+  const allQueued = work.every((entry) => queued.has(keyOf(entry)));
   const uploadedFiles: { fileId: string; role: 'photo' | 'document'; sha256: string }[] = [];
 
-  for (const { file, sha256 } of capture.files) {
+  for (const { file, sha256 } of allQueued ? [] : capture.files) {
     const uploaded = await adapters.transport.uploadOriginal(connection, {
       id: capture.id,
       file: file.id,
@@ -532,11 +552,11 @@ export async function replayCapture(
     }
   }
 
-  const ops = work.map((entry) => ({
+  const ops: QueueItem[] = work.map((entry) => ({
     clientVersion: KEPT_VERSION,
     payloadVersion: entry.existing && !fields.locationPhoto ? PAYLOAD_VERSION : required,
     clientId: entry.id,
-    idempotencyKey: reviewed ? entry.id : (fields.attemptId ?? entry.id),
+    idempotencyKey: keyOf(entry),
     op: 'create_thing' as const,
     takenAt: fields.review?.acceptedAt ?? capture.takenAt,
     locationId: fields.locationId,
@@ -570,15 +590,16 @@ export async function replayCapture(
       files: uploadedFiles,
     }),
   }));
-  const response = await adapters.transport.request<SyncOpsResponse>(
+  const answers = await queueAndSend(
     connection,
-    capturePaths.syncOps,
-    { method: 'POST', body: { clientVersion: KEPT_VERSION, ops } },
+    adapters,
+    capture.id,
+    allQueued ? work.map((entry) => queued.get(keyOf(entry)) as QueueItem) : ops,
   );
   let failed: string | undefined;
   for (const entry of work) {
     const subject = entry.existing?.id ?? entry.id;
-    const result = response.results.find(({ clientId }) => clientId === entry.id);
+    const result = answers.get(keyOf(entry))?.result;
     // A label claimed first for something else leaves the item made with its own code and a
     // `label_claim` inbox item to settle it: the capture itself is done.
     const labelTaken =
@@ -588,7 +609,6 @@ export async function replayCapture(
     if (
       !result ||
       (result.outcome !== 'applied' && !labelTaken) ||
-      result.idempotencyKey !== (reviewed ? entry.id : (fields.attemptId ?? entry.id)) ||
       result.entity?.type !== 'thing' ||
       result.entity?.id !== subject
     ) {
@@ -612,11 +632,25 @@ export async function replayCapture(
         entry.tags.length &&
         (!entry.existing || ('update' in entry.existing && entry.existing.update))
       ) {
-        await adapters.transport.request(connection, inventoryPaths.thingsTags, {
-          method: 'POST',
-          idempotencyKey: entry.tagRequestId,
-          body: { thingIds: [subject], add: entry.tags },
-        });
+        // The protocol's own `tag_things` op, queued and sent like the capture's ops.
+        const key = `tags:${entry.tagRequestId}`;
+        const tagged = await queueAndSend(connection, adapters, capture.id, [
+          {
+            clientVersion: KEPT_VERSION,
+            payloadVersion: PAYLOAD_VERSION,
+            clientId: newId(),
+            idempotencyKey: key,
+            op: 'tag_things',
+            takenAt: capture.takenAt,
+            locationId: fields.locationId,
+            payload: TagThingsPayload.parse({ thingIds: [subject], add: entry.tags }),
+          },
+        ]);
+        const answer = tagged.get(key)?.result;
+        if (answer?.outcome !== 'applied') {
+          failed ??= answer?.reason ?? 'needs_review';
+          continue;
+        }
       }
     } catch (error) {
       if (
@@ -715,6 +749,8 @@ export async function syncOutbox(
   adapters: PlatformAdapters = capacitorAdapters,
   options: { includeFailed?: boolean } = {},
 ): Promise<number> {
+  // A new run may find the server updated: ops blocked by a refusal go again (D148).
+  await new NativeSyncQueue(connection, adapters).unblock();
   const queue = await adapters.outbox.list(connection);
   let count = 0;
   for (const entry of queue) {
@@ -752,6 +788,7 @@ export async function retryCapture(
   if (review && !review.accepted) return false;
   try {
     await adapters.outbox.clearFailure(connection, id);
+    await new NativeSyncQueue(connection, adapters).unblock();
     await replayCapture(connection, entry.capture, adapters);
     return true;
   } catch (error) {
@@ -770,6 +807,10 @@ export async function retargetCapture(
 ): Promise<Capture> {
   if (!canRetarget(entry)) throw new ReplayError('needs_review');
   const { capture } = entry;
+  // The new destination goes under new keys. The old ops must all have been answered without
+  // being applied; one that is `sent` may have been, and then retargeting would duplicate it.
+  if (!(await new NativeSyncQueue(connection, adapters).release(capture.id)))
+    throw new ReplayError('needs_review');
   const fields = draftFields(capture);
   // Kept keeps the rejected request under its old key. Reuse the record ID to prevent duplicates.
   // Uploads use location-specific IDs but the device still reads the same protected originals.
