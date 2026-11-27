@@ -33742,8 +33742,7 @@ msgstr "نسخ إلى ملف تعريف جديد"
 msgid "Couldn’t prepare the PDF."
 msgstr "تعذّر تجهيز ملف PDF."
 
-#: src/components/labels/thermal/epc-form.tsx
-#: src/components/labels/thermal/replace-form.tsx
+#: src/components/labels/thermal/label-tools.tsx
 msgid "Current label code or URL"
 msgstr "رمز الملصق الحالي أو رابطه"
 
@@ -34274,3 +34273,149 @@ msgstr "حفظ العنصر"
 
 msgid "Skip NFC and save"
 msgstr "التخطي والحفظ دون وسم NFC"
+
+msgid "Turn on Bluetooth to use the label printer."
+msgstr "شغّل Bluetooth لاستخدام طابعة الملصقات."
+
+msgid "Allow Bluetooth for SheepKeep in iPhone Settings."
+msgstr "اسمح لتطبيق SheepKeep باستخدام Bluetooth في إعدادات iPhone."
+
+msgid "This printer did not identify as a NIIMBOT B1 Pro."
+msgstr "لم تتعرّف SheepKeep على هذه الطابعة على أنها NIIMBOT B1 Pro."
+
+msgid "A Bluetooth printer operation is already in progress."
+msgstr "هناك عملية جارية على طابعة Bluetooth."
+
+msgid "Printer connection cancelled."
+msgstr "أُلغي الاتصال بالطابعة."
+
+msgid "Prepare the labels with a supported B1 Pro stock and page range."
+msgstr "جهّز الملصقات باستخدام مقاس مدعوم لطابعة B1 Pro ونطاق صفحات صالح."
+
+msgid "Could not communicate with the printer. Check that it is on and nearby."
+msgstr "تعذّر الاتصال بالطابعة. تأكّد من تشغيلها ومن وجودها بالقرب منك."
+
+msgid "NIIMBOT B1 Pro Bluetooth"
+msgstr "NIIMBOT B1 Pro عبر Bluetooth"
+
+msgid "Check printer status"
+msgstr "التحقّق من حالة الطابعة"
+
+msgid "Forget printer"
+msgstr "نسيان الطابعة"
+
+msgid "B1 Pro verified at 300 DPI. It reconnects when you print."
+msgstr "تم التحقّق من طابعة B1 Pro بدقة ٣٠٠ نقطة في البوصة. ستتصل مجددًا عند الطباعة."
+
+msgid "Firmware: {0}"
+msgstr "البرنامج الثابت: {0}"
+
+msgid "Protocol generation: {0}"
+msgstr "إصدار البروتوكول: {0}"
+
+msgid "Battery: {0}%"
+msgstr "البطارية: {0}٪"
+
+msgid "The printer lid is open."
+msgstr "غطاء الطابعة مفتوح."
+
+msgid "The printer is out of labels."
+msgstr "نفدت الملصقات من الطابعة."
+
+msgid "The printer recognized the label roll."
+msgstr "تعرّفت الطابعة على لفة الملصقات."
+
+msgid "The printer did not report a recognized roll."
+msgstr "لم تؤكّد الطابعة التعرّف على اللفة."
+
+msgid "Find nearby printers"
+msgstr "البحث عن طابعات قريبة"
+
+msgid "Show other Bluetooth devices"
+msgstr "إظهار أجهزة Bluetooth الأخرى"
+
+msgid "Checking Bluetooth…"
+msgstr "جارٍ التحقّق من Bluetooth…"
+
+msgid "No nearby printers found."
+msgstr "لم يُعثر على طابعات قريبة."
+
+msgid "Print density"
+msgstr "كثافة الطباعة"
+
+msgid "Print these labels again?"
+msgstr "هل تريد طباعة هذه الملصقات مرة أخرى؟"
+
+msgid "Check the printer output first. Printing again can produce duplicate labels."
+msgstr "تحقّق من الملصقات المطبوعة أولًا. قد تنتج عن إعادة الطباعة ملصقات مكرّرة."
+
+msgid "Load the matching NIIMBOT gap stock before printing."
+msgstr "حمّل لفة NIIMBOT المطابقة ذات الفواصل قبل الطباعة."
+
+msgid "Pages in this job: {0}"
+msgstr "عدد صفحات المهمة: {0}"
+
+msgid "Last page"
+msgstr "آخر صفحة"
+
+msgid "Copies per label"
+msgstr "عدد النسخ لكل ملصق"
+
+msgid "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+msgstr "اختر نطاقًا صالحًا لا يتجاوز {NIIMBOT_PAGE_LIMIT} صفحة."
+
+msgid "Prepare this job on a supported B1 Pro stock."
+msgstr "جهّز هذه المهمة باستخدام مقاس مدعوم لطابعة B1 Pro."
+
+msgid "Print on B1 Pro"
+msgstr "الطباعة على B1 Pro"
+
+msgid "Cancel print"
+msgstr "إلغاء الطباعة"
+
+msgid "Connecting to the printer or sending labels…"
+msgstr "جارٍ الاتصال بالطابعة أو إرسال الملصقات…"
+
+msgid "The printer reports completion. Check the printed labels."
+msgstr "أفادت الطابعة بانتهاء المهمة. تحقّق من الملصقات المطبوعة."
+
+msgid "Print completion is uncertain. Check the output before reprinting the same identifiers."
+msgstr "لم يتأكّد اكتمال الطباعة. تحقّق من الناتج قبل إعادة طباعة الملصقات بالمعرّفات نفسها."
+
+msgid "Labels reported complete: {reported}"
+msgstr "عدد الملصقات التي أفادت الطابعة باكتمالها: {reported}"
+
+msgid "Partial print recorded. Reprint the missing pages using the page range."
+msgstr "سُجّلت طباعة جزئية. أعد طباعة الصفحات الناقصة باختيار نطاقها."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Could not load printer settings."
+msgstr "تعذّر تحميل إعدادات الطابعة."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Default printer"
+msgstr "الطابعة الافتراضية"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Loading printer settings…"
+msgstr "جارٍ تحميل إعدادات الطابعة…"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "No remembered printers."
+msgstr "لا توجد طابعات محفوظة."
+
+#: src/components/labels/thermal/studio.tsx src/native/main.tsx
+msgid "Printer settings"
+msgstr "إعدادات الطابعة"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Use for thermal printing"
+msgstr "استخدامها لطباعة الملصقات الحرارية"
+
+#: src/components/labels/thermal/label-tools.tsx
+msgid "Advanced label tools"
+msgstr "أدوات الملصقات المتقدّمة"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
+msgstr "أدخل من ١ إلى {NIIMBOT_COPY_LIMIT} نسخة لكل ملصق."

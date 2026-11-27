@@ -33742,8 +33742,7 @@ msgstr "Copy to a new profile"
 msgid "Couldn’t prepare the PDF."
 msgstr "Couldn’t prepare the PDF."
 
-#: src/components/labels/thermal/epc-form.tsx
-#: src/components/labels/thermal/replace-form.tsx
+#: src/components/labels/thermal/label-tools.tsx
 msgid "Current label code or URL"
 msgstr "Current label code or URL"
 
@@ -34274,3 +34273,149 @@ msgstr "Зберегти предмет"
 
 msgid "Skip NFC and save"
 msgstr "Зберегти без NFC-мітки"
+
+msgid "Turn on Bluetooth to use the label printer."
+msgstr "Увімкніть Bluetooth, щоб скористатися принтером етикеток."
+
+msgid "Allow Bluetooth for SheepKeep in iPhone Settings."
+msgstr "Дозвольте SheepKeep використовувати Bluetooth у налаштуваннях iPhone."
+
+msgid "This printer did not identify as a NIIMBOT B1 Pro."
+msgstr "Принтер не ідентифікувався як NIIMBOT B1 Pro."
+
+msgid "A Bluetooth printer operation is already in progress."
+msgstr "Операція з Bluetooth-принтером уже виконується."
+
+msgid "Printer connection cancelled."
+msgstr "З’єднання з принтером скасовано."
+
+msgid "Prepare the labels with a supported B1 Pro stock and page range."
+msgstr "Підготуйте етикетки на матеріалі, сумісному з B1 Pro, і виберіть допустимий діапазон сторінок."
+
+msgid "Could not communicate with the printer. Check that it is on and nearby."
+msgstr "Не вдалося зв’язатися з принтером. Перевірте, чи він увімкнений і поруч."
+
+msgid "NIIMBOT B1 Pro Bluetooth"
+msgstr "NIIMBOT B1 Pro через Bluetooth"
+
+msgid "Check printer status"
+msgstr "Перевірити стан принтера"
+
+msgid "Forget printer"
+msgstr "Забути принтер"
+
+msgid "B1 Pro verified at 300 DPI. It reconnects when you print."
+msgstr "Підтверджено B1 Pro з роздільною здатністю 300 dpi. Принтер з’єднається знову під час друку."
+
+msgid "Firmware: {0}"
+msgstr "Прошивка: {0}"
+
+msgid "Protocol generation: {0}"
+msgstr "Покоління протоколу: {0}"
+
+msgid "Battery: {0}%"
+msgstr "Заряд: {0}%"
+
+msgid "The printer lid is open."
+msgstr "Кришку принтера відкрито."
+
+msgid "The printer is out of labels."
+msgstr "У принтері закінчилися етикетки."
+
+msgid "The printer recognized the label roll."
+msgstr "Принтер розпізнав рулон етикеток."
+
+msgid "The printer did not report a recognized roll."
+msgstr "Принтер не повідомив, що розпізнав рулон."
+
+msgid "Find nearby printers"
+msgstr "Знайти принтери поблизу"
+
+msgid "Show other Bluetooth devices"
+msgstr "Показати інші пристрої Bluetooth"
+
+msgid "Checking Bluetooth…"
+msgstr "Перевірка Bluetooth…"
+
+msgid "No nearby printers found."
+msgstr "Поблизу не знайдено принтерів."
+
+msgid "Print density"
+msgstr "Щільність друку"
+
+msgid "Print these labels again?"
+msgstr "Надрукувати ці етикетки повторно?"
+
+msgid "Check the printer output first. Printing again can produce duplicate labels."
+msgstr "Спершу перевірте, що надрукував принтер. Повторний друк може створити дублікати."
+
+msgid "Load the matching NIIMBOT gap stock before printing."
+msgstr "Перед друком вставте відповідний рулон NIIMBOT із проміжками між етикетками."
+
+msgid "Pages in this job: {0}"
+msgstr "Сторінок у завданні: {0}"
+
+msgid "Last page"
+msgstr "Остання сторінка"
+
+msgid "Copies per label"
+msgstr "Копій кожної етикетки"
+
+msgid "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+msgstr "Виберіть допустимий діапазон до {NIIMBOT_PAGE_LIMIT} сторінок."
+
+msgid "Prepare this job on a supported B1 Pro stock."
+msgstr "Підготуйте завдання для матеріалу, сумісного з B1 Pro."
+
+msgid "Print on B1 Pro"
+msgstr "Друк на B1 Pro"
+
+msgid "Cancel print"
+msgstr "Скасувати друк"
+
+msgid "Connecting to the printer or sending labels…"
+msgstr "Підключення до принтера або надсилання етикеток…"
+
+msgid "The printer reports completion. Check the printed labels."
+msgstr "Принтер повідомив про завершення. Перевірте надруковані етикетки."
+
+msgid "Print completion is uncertain. Check the output before reprinting the same identifiers."
+msgstr "Завершення друку не підтверджено. Перевірте етикетки перед повторним друком тих самих ідентифікаторів."
+
+msgid "Labels reported complete: {reported}"
+msgstr "Етикеток, які принтер позначив як готові: {reported}"
+
+msgid "Partial print recorded. Reprint the missing pages using the page range."
+msgstr "Зареєстровано частковий друк. Виберіть діапазон відсутніх сторінок, щоб надрукувати їх повторно."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Could not load printer settings."
+msgstr "Не вдалося завантажити налаштування принтера."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Default printer"
+msgstr "Принтер за замовчуванням"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Loading printer settings…"
+msgstr "Завантаження налаштувань принтера…"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "No remembered printers."
+msgstr "Немає збережених принтерів."
+
+#: src/components/labels/thermal/studio.tsx src/native/main.tsx
+msgid "Printer settings"
+msgstr "Налаштування принтера"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Use for thermal printing"
+msgstr "Використовувати для термодруку"
+
+#: src/components/labels/thermal/label-tools.tsx
+msgid "Advanced label tools"
+msgstr "Розширені інструменти для етикеток"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
+msgstr "Введіть від 1 до {NIIMBOT_COPY_LIMIT} копій на етикетку."

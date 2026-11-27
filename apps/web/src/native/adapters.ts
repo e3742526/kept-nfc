@@ -4,6 +4,7 @@ import { capturePaths } from '@/api/capture/paths';
 import { inventoryPaths } from '@/api/inventory/paths';
 import type { FileView } from '@/api/inventory/types';
 import { fromFile } from '@/camera/image';
+import type { NiimbotOutput } from '@/components/labels/thermal/niimbot';
 import {
   type Capture,
   type CaptureAIModel,
@@ -139,6 +140,7 @@ export type PlatformAdapters = {
   feedback: PlatformFeedback;
   media: PlatformMedia;
   lifecycle: PlatformLifecycle;
+  niimbot?: (connection: Connection) => NiimbotOutput;
   visualSearch?: VisualSearchAdapter;
   captureAI?: {
     serverProposals?: (connection: Connection, locationId: string, file: File) => Promise<unknown>;
@@ -191,6 +193,13 @@ async function photoJpeg(file: File): Promise<string> {
 }
 
 export const capacitorAdapters: PlatformAdapters = {
+  niimbot: ({ id: context }) => ({
+    discover: async (showOtherDevices) =>
+      (await native.discoverNiimbot({ context, showOtherDevices })).devices,
+    identify: (deviceId) => native.identifyNiimbot({ context, deviceId }),
+    print: (deviceId, job) => native.printNiimbot({ context, deviceId, ...job }),
+    cancel: () => native.cancelNiimbot({ context }),
+  }),
   captureAI: {
     async serverProposals(connection, locationId, file) {
       return nativeRequest(connection, capturePaths.nativePhotoProposals, {

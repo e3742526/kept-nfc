@@ -19,6 +19,7 @@ import {
   Package,
   Palette,
   Plus,
+  Printer,
   QrCode,
   Search,
   Settings,
@@ -36,6 +37,7 @@ import type { Page, SearchResponse, ThingRow } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import type { Me } from '@/api/types';
 import { AppMark, BrandLockup } from '@/components/brand';
+import { NiimbotSettings } from '@/components/labels/thermal/niimbot-settings';
 import { PhotoImage } from '@/components/photo-image';
 import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
 import { ProjectNotice } from '@/components/project-notice';
@@ -142,6 +144,7 @@ type Screen =
   | { kind: 'photoReview'; id: string }
   | { kind: 'photoLibrary'; target: Target; name: string; location: string }
   | { kind: 'settings' }
+  | { kind: 'printerSettings' }
   | { kind: 'locationSettings' }
   | { kind: 'ai' }
   | { kind: 'history' }
@@ -164,6 +167,7 @@ function tabFor(screen: Screen): TabKey {
       return 'scan';
     case 'more':
     case 'settings':
+    case 'printerSettings':
     case 'locationSettings':
     case 'ai':
     case 'history':
@@ -595,6 +599,11 @@ export function Inventory({
   const confirm = useConfirm();
   const formatBytes = useBytes();
   const [screen, setScreen] = useState<Screen>({ kind: 'home' });
+  const niimbot = adapters.niimbot;
+  const printerOutput = useMemo(
+    () => (screen.kind === 'printerSettings' ? niimbot?.(connection) : undefined),
+    [connection, niimbot, screen.kind],
+  );
   const [assistantThreadId, setAssistantThreadId] = useState<string>();
   const [assistantDraft, setAssistantDraft] = useState('');
   const [preferredLocationId, setPreferredLocationId] = useState<string>();
@@ -2174,6 +2183,18 @@ export function Inventory({
           onAuthError={onSignOut}
         />
       )}
+      {screen.kind === 'printerSettings' && printerOutput && (
+        <section className="grid gap-4">
+          <ScreenHeader
+            title={<Trans>Printer settings</Trans>}
+            onBack={goBack}
+            icon={<Printer size={18} aria-hidden />}
+          />
+          <div className="kept-card">
+            <NiimbotSettings key={connection.id} owner={connection.id} output={printerOutput} />
+          </div>
+        </section>
+      )}
       {screen.kind === 'settings' && (
         <section className="grid gap-4">
           <ScreenHeader
@@ -2205,6 +2226,16 @@ export function Inventory({
               </Select>
             )}
           </section>
+          {niimbot && (
+            <div className="kept-rows">
+              <MoreRow
+                label={t`Printer settings`}
+                hint={t`NIIMBOT B1 Pro Bluetooth`}
+                Icon={Printer}
+                onPress={() => pushScreen({ kind: 'printerSettings' })}
+              />
+            </div>
+          )}
           <section className="kept-rows" aria-label={t`Advanced`}>
             <MoreRow
               label={t`Locations`}

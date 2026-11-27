@@ -33742,8 +33742,7 @@ msgstr "Copy to a new profile"
 msgid "Couldn’t prepare the PDF."
 msgstr "Couldn’t prepare the PDF."
 
-#: src/components/labels/thermal/epc-form.tsx
-#: src/components/labels/thermal/replace-form.tsx
+#: src/components/labels/thermal/label-tools.tsx
 msgid "Current label code or URL"
 msgstr "Current label code or URL"
 
@@ -34274,3 +34273,149 @@ msgstr "Guardar artículo"
 
 msgid "Skip NFC and save"
 msgstr "Guardar sin etiqueta NFC"
+
+msgid "Turn on Bluetooth to use the label printer."
+msgstr "Activa Bluetooth para usar la impresora de etiquetas."
+
+msgid "Allow Bluetooth for SheepKeep in iPhone Settings."
+msgstr "Permite el acceso de SheepKeep a Bluetooth en Ajustes del iPhone."
+
+msgid "This printer did not identify as a NIIMBOT B1 Pro."
+msgstr "Esta impresora no se identificó como una NIIMBOT B1 Pro."
+
+msgid "A Bluetooth printer operation is already in progress."
+msgstr "Ya hay una operación en curso con la impresora Bluetooth."
+
+msgid "Printer connection cancelled."
+msgstr "Se canceló la conexión con la impresora."
+
+msgid "Prepare the labels with a supported B1 Pro stock and page range."
+msgstr "Prepara las etiquetas con un formato compatible con B1 Pro y un intervalo de páginas válido."
+
+msgid "Could not communicate with the printer. Check that it is on and nearby."
+msgstr "No se pudo comunicar con la impresora. Comprueba que esté encendida y cerca."
+
+msgid "NIIMBOT B1 Pro Bluetooth"
+msgstr "NIIMBOT B1 Pro por Bluetooth"
+
+msgid "Check printer status"
+msgstr "Comprobar el estado de la impresora"
+
+msgid "Forget printer"
+msgstr "Olvidar impresora"
+
+msgid "B1 Pro verified at 300 DPI. It reconnects when you print."
+msgstr "Se verificó una B1 Pro de 300 ppp. Se volverá a conectar al imprimir."
+
+msgid "Firmware: {0}"
+msgstr "Firmware: {0}"
+
+msgid "Protocol generation: {0}"
+msgstr "Generación del protocolo: {0}"
+
+msgid "Battery: {0}%"
+msgstr "Batería: {0} %"
+
+msgid "The printer lid is open."
+msgstr "La tapa de la impresora está abierta."
+
+msgid "The printer is out of labels."
+msgstr "No quedan etiquetas en la impresora."
+
+msgid "The printer recognized the label roll."
+msgstr "La impresora reconoció el rollo de etiquetas."
+
+msgid "The printer did not report a recognized roll."
+msgstr "La impresora no indicó que hubiera reconocido el rollo."
+
+msgid "Find nearby printers"
+msgstr "Buscar impresoras cercanas"
+
+msgid "Show other Bluetooth devices"
+msgstr "Mostrar otros dispositivos Bluetooth"
+
+msgid "Checking Bluetooth…"
+msgstr "Comprobando Bluetooth…"
+
+msgid "No nearby printers found."
+msgstr "No se encontraron impresoras cercanas."
+
+msgid "Print density"
+msgstr "Densidad de impresión"
+
+msgid "Print these labels again?"
+msgstr "¿Volver a imprimir estas etiquetas?"
+
+msgid "Check the printer output first. Printing again can produce duplicate labels."
+msgstr "Revisa primero la impresión. Al imprimir de nuevo pueden salir etiquetas duplicadas."
+
+msgid "Load the matching NIIMBOT gap stock before printing."
+msgstr "Carga el rollo NIIMBOT adecuado con separación entre etiquetas antes de imprimir."
+
+msgid "Pages in this job: {0}"
+msgstr "Páginas del trabajo: {0}"
+
+msgid "Last page"
+msgstr "Última página"
+
+msgid "Copies per label"
+msgstr "Copias por etiqueta"
+
+msgid "Select a valid range of up to {NIIMBOT_PAGE_LIMIT} pages."
+msgstr "Elige un intervalo válido de hasta {NIIMBOT_PAGE_LIMIT} páginas."
+
+msgid "Prepare this job on a supported B1 Pro stock."
+msgstr "Prepara el trabajo con un formato compatible con B1 Pro."
+
+msgid "Print on B1 Pro"
+msgstr "Imprimir en B1 Pro"
+
+msgid "Cancel print"
+msgstr "Cancelar impresión"
+
+msgid "Connecting to the printer or sending labels…"
+msgstr "Conectando con la impresora o enviando etiquetas…"
+
+msgid "The printer reports completion. Check the printed labels."
+msgstr "La impresora indica que ha terminado. Revisa las etiquetas impresas."
+
+msgid "Print completion is uncertain. Check the output before reprinting the same identifiers."
+msgstr "No se pudo confirmar que la impresión terminara. Revisa las etiquetas antes de volver a imprimir los mismos identificadores."
+
+msgid "Labels reported complete: {reported}"
+msgstr "Etiquetas que la impresora dio por terminadas: {reported}"
+
+msgid "Partial print recorded. Reprint the missing pages using the page range."
+msgstr "Se registró una impresión parcial. Vuelve a imprimir las páginas que faltan seleccionando su intervalo."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Could not load printer settings."
+msgstr "No se pudo cargar la configuración de la impresora."
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Default printer"
+msgstr "Impresora predeterminada"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Loading printer settings…"
+msgstr "Cargando configuración de la impresora…"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "No remembered printers."
+msgstr "No hay impresoras guardadas."
+
+#: src/components/labels/thermal/studio.tsx src/native/main.tsx
+msgid "Printer settings"
+msgstr "Configuración de la impresora"
+
+#: src/components/labels/thermal/niimbot-settings.tsx
+msgid "Use for thermal printing"
+msgstr "Usar para impresión térmica"
+
+#: src/components/labels/thermal/label-tools.tsx
+msgid "Advanced label tools"
+msgstr "Herramientas avanzadas de etiquetas"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
+msgstr "Introduce de 1 a {NIIMBOT_COPY_LIMIT} copias por etiqueta."

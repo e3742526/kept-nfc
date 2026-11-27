@@ -136,21 +136,42 @@ const THERMAL_ONLY_STOCKS = [
   roll('thermal_2x1in', 50.8, 25.4, 'Small · 2 × 1 in', 'صغير · 2 × 1 بوصة'),
 ] as const;
 
-export const THERMAL_LABEL_STOCKS = [...THERMAL_ONLY_STOCKS, SQUARE_ROLL] as const;
+// These rolls also occur in older label batches without thermal rendering settings.
+const LEGACY_THERMAL_ROLLS = [
+  roll('thermal_50x30', 50, 30, 'Thermal 50 × 30 mm', 'حراري 50 × 30 مم'),
+  roll('thermal_40x30', 40, 30, 'Thermal 40 × 30 mm', 'حراري 40 × 30 مم'),
+] as const;
+
+const METRIC_THERMAL_ROLLS = [
+  roll('thermal_40x20', 40, 20, 'Thermal 40 × 20 mm', 'حراري 40 × 20 مم'),
+  roll('thermal_30x20', 30, 20, 'Thermal 30 × 20 mm', 'حراري 30 × 20 مم'),
+  roll('thermal_50x50', 50, 50, 'Thermal 50 × 50 mm', 'حراري 50 × 50 مم'),
+] as const;
+
+export const THERMAL_LABEL_STOCKS = [
+  ...THERMAL_ONLY_STOCKS,
+  ...LEGACY_THERMAL_ROLLS,
+  ...METRIC_THERMAL_ROLLS,
+  SQUARE_ROLL,
+] as const;
 
 export function isThermalLabelStock(key: string): boolean {
   return THERMAL_LABEL_STOCKS.some((stock) => stock.key === key);
 }
 
-// Square rolls predate the thermal editor and remain available in the original label builder.
+// Preserve the original label builder for earlier roll batches without print settings.
 export function usesThermalLabelEditor(key: string, hasPrintSettings = false): boolean {
-  return isThermalLabelStock(key) && (key !== SQUARE_THERMAL_STOCK || hasPrintSettings);
+  return (
+    isThermalLabelStock(key) &&
+    (hasPrintSettings ||
+      (key !== SQUARE_THERMAL_STOCK && !LEGACY_THERMAL_ROLLS.some((stock) => stock.key === key)))
+  );
 }
 
 export const LABEL_STOCKS: readonly LabelStock[] = Object.freeze([
   ...THERMAL_ONLY_STOCKS,
-  roll('thermal_50x30', 50, 30, 'Thermal 50 × 30 mm', 'حراري 50 × 30 مم'),
-  roll('thermal_40x30', 40, 30, 'Thermal 40 × 30 mm', 'حراري 40 × 30 مم'),
+  ...LEGACY_THERMAL_ROLLS,
+  ...METRIC_THERMAL_ROLLS,
   roll('thermal_62x29', 62, 29, 'Brother 62 × 29 mm', 'براذر 62 × 29 مم'),
   inchRoll('thermal_1x1in', 1, 1, 'compact', 'Micro 1 × 1 in', 'صغير جدًا 1 × 1 بوصة'),
   inchRoll('thermal_1_5x1in', 1.5, 1, 'compact', 'Compact 1.5 × 1 in', 'مدمج 1.5 × 1 بوصة'),

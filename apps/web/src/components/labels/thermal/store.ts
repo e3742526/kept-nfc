@@ -9,7 +9,16 @@ import Dexie, { type Table } from 'dexie';
 import type { CreateLabelBatchBody, LabelBatch } from '@/api/capture/types';
 import type { ThermalContent } from './document';
 
-export type PrintState = 'opened' | 'submitted' | 'cancelled' | 'failed' | 'partial' | 'confirmed';
+export type PrintState =
+  | 'opened'
+  | 'submitted'
+  | 'cancelled'
+  | 'failed'
+  | 'partial'
+  | 'confirmed'
+  | 'connecting'
+  | 'printer-completed'
+  | 'uncertain';
 export type Registration = 'pending' | 'registered' | 'collision' | 'address-changed' | 'blocked';
 
 export type PrintManifest = {
@@ -29,7 +38,7 @@ export type PrintManifest = {
   confirmationSynced?: boolean;
 };
 
-type Preferences = {
+export type PrintPreferences = {
   owner: string;
   profiles: PrinterProfile[];
   profileId: string;
@@ -37,9 +46,12 @@ type Preferences = {
   address?: string | undefined;
 };
 
+type PrintReceipt = { owner: string; key: string; state: PrintState };
+
 class PrintStore extends Dexie {
   declare jobs: Table<PrintManifest, string>;
-  declare preferences: Table<Preferences, string>;
+  declare preferences: Table<PrintPreferences, string>;
+  declare receipts: Table<PrintReceipt, [string, string]>;
 
   constructor(options?: ConstructorParameters<typeof Dexie>[1]) {
     // The offline inventory orphan scanner owns the kept-* database namespace.
@@ -52,6 +64,8 @@ class PrintStore extends Dexie {
     this.version(2).stores({
       jobs: 'id, [owner+locationId], &[owner+prefix+series], [origin+prefix+series]',
     });
+    // Registered and cached labels already have identities. Only their local output state is new.
+    this.version(3).stores({ receipts: '[owner+key]' });
   }
 }
 
