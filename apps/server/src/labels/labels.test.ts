@@ -100,7 +100,9 @@ afterAll(async () => {
 
 describe('POST /api/v1/labels/batches', () => {
   it('records the resolved built-in template with a thermal batch', async () => {
-    const thing = await createThing(t, ibrahim, home, { name: 'Drawer contents' });
+    // Keep the template batch's audit event out of the shared Home fixture.
+    const workshop = await createLocation(t, db, ibrahim, 'household', 'Template workshop');
+    const thing = await createThing(t, ibrahim, workshop, { name: 'Drawer contents' });
     const thermal = {
       layout: 'single',
       profile: { dpi: 300, orientation: 'portrait', scale: 100 },
@@ -117,7 +119,7 @@ describe('POST /api/v1/labels/batches', () => {
     };
     const made = ok(
       await batch(ibrahim, {
-        locationId: home.id,
+        locationId: workshop.id,
         kind: 'things',
         thingIds: [thing.id],
         stock: 'thermal_50x20',
