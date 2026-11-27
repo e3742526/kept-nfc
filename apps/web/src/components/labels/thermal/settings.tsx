@@ -174,12 +174,9 @@ export function ThermalSettings({
           }))}
           change={setStock}
         />
-        <Choices
-          label={t`Label layout`}
-          value={layout}
-          items={stock === 'thermal_4x6in' ? layoutItems : layoutItems.slice(0, 1)}
-          change={setLayout}
-        />
+        {stock === 'thermal_4x6in' && !niimbot && (
+          <Choices label={t`Label layout`} value={layout} items={layoutItems} change={setLayout} />
+        )}
         <PrintNumber
           label={t`Handwriting lines`}
           value={Math.min(maxLines, options.handwriting)}

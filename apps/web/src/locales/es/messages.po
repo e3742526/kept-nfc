@@ -33742,8 +33742,7 @@ msgstr "Copy to a new profile"
 msgid "Couldn’t prepare the PDF."
 msgstr "Couldn’t prepare the PDF."
 
-#: src/components/labels/thermal/epc-form.tsx
-#: src/components/labels/thermal/replace-form.tsx
+#: src/components/labels/thermal/label-tools.tsx
 msgid "Current label code or URL"
 msgstr "Current label code or URL"
 
@@ -34412,3 +34411,11 @@ msgstr "Configuración de la impresora"
 #: src/components/labels/thermal/niimbot-settings.tsx
 msgid "Use for thermal printing"
 msgstr "Usar para impresión térmica"
+
+#: src/components/labels/thermal/label-tools.tsx
+msgid "Advanced label tools"
+msgstr "Herramientas avanzadas de etiquetas"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
+msgstr "Introduce de 1 a {NIIMBOT_COPY_LIMIT} copias por etiqueta."

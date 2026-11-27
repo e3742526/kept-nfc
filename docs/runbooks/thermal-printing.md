@@ -58,8 +58,14 @@ Use the same screen to check the printer’s status, switch to a saved B1 Pro, o
 
 In the thermal label editor, check **Printer profile** and choose the stock that matches the
 loaded roll. The **Printer settings** shortcut opens the same setup without closing your draft.
-Save changes to stock and calibration in **Save printer profile**. Choose **System print dialog**
-in the printer profile picker to use AirPrint for a job.
+Save changes to stock and calibration in **Save printer profile**. B1 Pro uses one label per
+sticker. Set a page range when a job has more than one page, and use **Copies per label** to
+repeat the selected labels. Choose **System print dialog** in the printer profile picker to use
+AirPrint for a job.
+
+On iPhone, **Advanced label tools** uses one current label for identity replacement and UHF
+registration. Open thermal printing from a record or a single-label item or place batch to
+start with its code. For other batches, enter the specific label code or URL.
 
 ### macOS and the LOSRECAL reference printer
 

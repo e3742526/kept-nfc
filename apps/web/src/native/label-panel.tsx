@@ -775,6 +775,7 @@ export function LabelPanel({
                   key={tagVersion}
                   connection={connection}
                   locationId={box.locationId}
+                  canManageLabels={canEnroll}
                   thingId={box.kind === 'thing' ? box.id : undefined}
                   placeId={box.kind === 'place' ? box.id : undefined}
                   cachedLabel={
@@ -784,6 +785,7 @@ export function LabelPanel({
                           url,
                           name: box.name,
                           kind: box.kind === 'place' ? 'place' : 'thing',
+                          targetId: box.id,
                         }
                       : undefined
                   }

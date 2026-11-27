@@ -7,6 +7,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { assistantPaths } from '@/api/assistant/paths';
 import type { AskBody, ConfirmBody, Proposal } from '@/api/assistant/types';
 import { capturePaths } from '@/api/capture/paths';
+import type { LabelBatch } from '@/api/capture/types';
 import { ApiError } from '@/api/client';
 import { inventoryPaths } from '@/api/inventory/paths';
 import type {
@@ -1098,6 +1099,129 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'Thermal printing' }));
     const printer = await screen.findByRole('button', { name: /Printer profile$/ });
     await waitFor(() => expect(printer).toHaveTextContent(device.name));
+  });
+
+  it('shares the current record label across the advanced tools and follows its replacement', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const runRequest = env.adapters.transport.request;
+    const request = vi
+      .spyOn(env.adapters.transport, 'request')
+      .mockImplementation(async (connection, path, options) => {
+        if (path === capturePaths.labelReplace) return { kind: 'thing', id: env.boxId };
+        if (path === capturePaths.labelTags) return { configured: true };
+        return runRequest(connection, path, options);
+      });
+    const user = userEvent.setup();
+    env.renderApp();
+
+    await openWinterBox(user);
+    await user.click(screen.getByRole('button', { name: 'QR and NFC label' }));
+    await user.click(screen.getByText('Thermal printing', { selector: 'summary' }));
+    await user.click(await screen.findByText('Advanced label tools', { selector: 'summary' }));
+    const current = screen.getByRole('textbox', { name: 'Current label code or URL' });
+    expect(current).toHaveValue('7KQ4MZ');
+
+    await user.click(screen.getByText('Replace a label identity', { selector: 'summary' }));
+    await user.type(
+      screen.getByRole('textbox', { name: 'Replacement label code or URL' }),
+      'F00BA4',
+    );
+    await user.type(
+      screen.getByRole('textbox', { name: 'Reason for replacement' }),
+      'Worn sticker',
+    );
+    await user.click(screen.getByRole('button', { name: 'Replace label' }));
+    expect(await screen.findByText('Replacement label assigned.')).toBeVisible();
+    expect(request).toHaveBeenCalledWith(
+      expect.anything(),
+      capturePaths.labelReplace,
+      expect.objectContaining({
+        body: expect.objectContaining({ previous: '7KQ4MZ', replacement: 'F00BA4' }),
+      }),
+    );
+    expect(current).toHaveValue('F00BA4');
+
+    await user.click(screen.getByText('Register a UHF RFID tag', { selector: 'summary' }));
+    expect(screen.getAllByRole('textbox', { name: 'Current label code or URL' })).toHaveLength(1);
+    await user.type(screen.getByRole('textbox', { name: 'EPC from your UHF reader' }), 'AABBCCDD');
+    await user.click(screen.getByRole('button', { name: 'Register EPC' }));
+    expect(await screen.findByText('UHF RFID tag registered.')).toBeVisible();
+    expect(request).toHaveBeenCalledWith(
+      expect.anything(),
+      capturePaths.labelTags,
+      expect.objectContaining({
+        body: expect.objectContaining({ label: 'F00BA4', epc: 'AABBCCDD' }),
+      }),
+    );
+  });
+
+  it('prefills the advanced tools only for a batch with one assigned label', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const location = env.rooms[0]?.locationId;
+    if (!location) throw new Error('Missing location');
+    const label = (code: string): LabelBatch['labels'][number] => ({
+      code,
+      kind: 'thing',
+      url: `${origin}/l/${code}`,
+      targetId: env.boxId,
+    });
+    const batch: LabelBatch = {
+      id: '549f871a-88fb-4a31-b952-48ae6ef98940',
+      locationId: location,
+      kind: 'things',
+      stock: 'thermal_50x20',
+      startCell: 1,
+      createdAt: '2026-01-01T12:00:00Z',
+      printedConfirmedAt: null,
+      dismissedAt: null,
+      labels: [label('7KQ4MZ')],
+    };
+    const otherBatch = {
+      ...batch,
+      id: 'c9aaba60-eaa7-4662-bded-f6d90cad5091',
+      labels: [label('9AB2CD'), label('F00BA4')],
+    };
+    const runRequest = env.adapters.transport.request;
+    vi.spyOn(env.adapters.transport, 'request').mockImplementation(
+      async (connection, path, options) =>
+        path.startsWith(`${capturePaths.labelBatches}?`)
+          ? { items: [batch, otherBatch], next_cursor: null }
+          : runRequest(connection, path, options),
+    );
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'More' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Print label sheets' }));
+    await user.click(screen.getByRole('button', { name: 'Thermal printing' }));
+
+    async function currentLabel() {
+      await user.click(await screen.findByText('Advanced label tools', { selector: 'summary' }));
+      return screen.getByRole('textbox', { name: 'Current label code or URL' });
+    }
+
+    expect(await currentLabel()).toHaveValue('');
+    await user.click(await screen.findByRole('button', { name: /Reprint label sheet.*7KQ4MZ/ }));
+    expect(await currentLabel()).toHaveValue('7KQ4MZ');
+    await user.click(screen.getByRole('button', { name: /Reprint label sheet.*9AB2CD/ }));
+    expect(await currentLabel()).toHaveValue('');
   });
 
   it('enrolls a place label and scans it into an active capture without losing the draft', async () => {

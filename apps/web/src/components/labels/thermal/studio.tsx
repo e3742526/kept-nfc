@@ -34,8 +34,8 @@ import {
   ThermalFitError,
   thermalDocument,
 } from './document';
-import { EpcForm } from './epc-form';
 import { knownLabelAddress, printSpec, syncPrintConfirmation, syncPrintManifest } from './jobs';
+import { LabelTools } from './label-tools';
 import {
   fitsNiimbotStock,
   isNiimbotStock,
@@ -54,7 +54,6 @@ import {
   ThermalPreview,
 } from './output';
 import { loadThermalPdf, thermalPdf } from './pdf';
-import { ReplaceLabelForm } from './replace-form';
 import { Choices, PrintNumber, ThermalSettings } from './settings';
 import {
   batchLabels,
@@ -93,6 +92,7 @@ export function ThermalStudio({
   api,
   nativeOutput,
   bluetooth,
+  canManageLabels,
   cachedLabel,
   batch,
   reprintStock,
@@ -104,6 +104,7 @@ export function ThermalStudio({
   api: PrintApi;
   nativeOutput?: NativeThermalOutput | undefined;
   bluetooth?: NiimbotOutput | undefined;
+  canManageLabels?: boolean | undefined;
   cachedLabel?: LabelCellContent | undefined;
   batch?: LabelBatch | undefined;
   reprintStock?: string | undefined;
@@ -153,16 +154,15 @@ export function ThermalStudio({
     selected?.stock &&
     fitsNiimbotStock(selected.stock, selected.doc)
   );
-  const validPrintRange =
+  const pageCount = selected?.doc.pages.length ?? 0;
+  const validPageRange =
     Number.isInteger(firstPage) &&
     Number.isInteger(lastPage) &&
-    Number.isInteger(copies) &&
     firstPage >= 1 &&
     lastPage >= firstPage &&
-    lastPage <= (selected?.doc.pages.length ?? 0) &&
-    lastPage - firstPage + 1 <= NIIMBOT_PAGE_LIMIT &&
-    copies >= 1 &&
-    copies <= NIIMBOT_COPY_LIMIT;
+    lastPage <= pageCount &&
+    lastPage - firstPage + 1 <= NIIMBOT_PAGE_LIMIT;
+  const validCopies = Number.isInteger(copies) && copies >= 1 && copies <= NIIMBOT_COPY_LIMIT;
 
   const selectedJobId = selected?.kind === 'local' ? selected.job.id : undefined;
   const selectedDocument = selected?.doc;
@@ -329,6 +329,12 @@ export function ThermalStudio({
   const labels =
     batch?.labels ??
     (offlineLabel ? [offlineLabel] : loaded && 'labels' in loaded ? loaded.labels : undefined);
+  const currentLabels = selected?.kind === 'server' ? selected.batch.labels : labels;
+  const currentLabel = currentLabels
+    ? currentLabels.length === 1 && currentLabels[0]?.targetId
+      ? currentLabels[0].code
+      : undefined
+    : cachedLabel?.code;
 
   const preview = useMemo(() => {
     if (!encode) return null;
@@ -580,7 +586,7 @@ export function ThermalStudio({
       return;
 
     if (bluetooth && bluetoothId && selected.stock) {
-      if (!bluetoothReady || !validPrintRange) return;
+      if (!bluetoothReady || !validPageRange || !validCopies) return;
       const job = niimbotJob(
         selected.stock,
         selected.doc,
@@ -832,24 +838,28 @@ export function ThermalStudio({
                 <p className="m-0 text-small text-ink-2">
                   <Trans>Load the matching NIIMBOT gap stock before printing.</Trans>
                 </p>
-                {selected.doc.pages.length > NIIMBOT_PAGE_LIMIT && (
+                {pageCount > NIIMBOT_PAGE_LIMIT && (
                   <p className="m-0 text-small">{t`Pages in this job: ${selected.doc.pages.length}`}</p>
                 )}
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <PrintNumber
-                    label={t`First page`}
-                    value={firstPage}
-                    min={1}
-                    max={selected.doc.pages.length}
-                    change={(value) => setFirstPage(value ?? 0)}
-                  />
-                  <PrintNumber
-                    label={t`Last page`}
-                    value={lastPage}
-                    min={1}
-                    max={selected.doc.pages.length}
-                    change={(value) => setLastPage(value ?? 0)}
-                  />
+                  {pageCount > 1 && (
+                    <>
+                      <PrintNumber
+                        label={t`First page`}
+                        value={firstPage}
+                        min={1}
+                        max={pageCount}
+                        change={(value) => setFirstPage(value ?? 0)}
+                      />
+                      <PrintNumber
+                        label={t`Last page`}
+                        value={lastPage}
+                        min={1}
+                        max={pageCount}
+                        change={(value) => setLastPage(value ?? 0)}
+                      />
+                    </>
+                  )}
                   <PrintNumber
                     label={t`Copies per label`}
                     value={copies}
@@ -858,8 +868,11 @@ export function ThermalStudio({
                     change={(value) => setCopies(value ?? 0)}
                   />
                 </div>
-                {!validPrintRange && (
+                {pageCount > 1 && !validPageRange && (
                   <Notice tone="warn">{t`Select a valid range of up to ${NIIMBOT_PAGE_LIMIT} pages.`}</Notice>
+                )}
+                {!validCopies && (
+                  <Notice tone="warn">{t`Enter 1 to ${NIIMBOT_COPY_LIMIT} copies per label.`}</Notice>
                 )}
               </div>
             ) : (
@@ -879,7 +892,9 @@ export function ThermalStudio({
               <Button
                 isDisabled={
                   busy ||
-                  (bluetoothId ? !bluetoothReady || !validPrintRange : !!nativeOutput && !pdf)
+                  (bluetoothId
+                    ? !bluetoothReady || !validPageRange || !validCopies
+                    : !!nativeOutput && !pdf)
                 }
                 onPress={() => void run(print)}
               >
@@ -1036,8 +1051,14 @@ export function ThermalStudio({
           </ul>
         </section>
       )}
-      {newNumbered && online && <ReplaceLabelForm locationId={locationId} replace={api.replace} />}
-      {newNumbered && online && <EpcForm locationId={locationId} register={api.registerTag} />}
+      {online && (canManageLabels ?? newNumbered) && (
+        <LabelTools
+          key={JSON.stringify([locationId, currentLabel])}
+          locationId={locationId}
+          currentLabel={currentLabel}
+          api={api}
+        />
+      )}
       {problem && <Notice tone="danger">{problem}</Notice>}
     </div>
   );

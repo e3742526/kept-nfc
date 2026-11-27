@@ -18,6 +18,7 @@ export function NativeThermalPrint({
   placeId,
   onSaved,
   cachedLabel,
+  canManageLabels,
 }: {
   connection: Connection;
   locationId: string;
@@ -26,6 +27,7 @@ export function NativeThermalPrint({
   placeId?: string | undefined;
   onSaved?: (batch: LabelBatch) => void;
   cachedLabel?: LabelCellContent | undefined;
+  canManageLabels?: boolean | undefined;
 }) {
   const { t } = useLingui();
   const { transport, media, captureAI, niimbot } = usePlatform();
@@ -82,6 +84,7 @@ export function NativeThermalPrint({
       nativeOutput={output}
       bluetooth={bluetooth}
       cachedLabel={cachedLabel}
+      canManageLabels={canManageLabels}
       batch={batch}
       suggestIcon={
         propose &&

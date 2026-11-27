@@ -7,14 +7,15 @@ import { TextField } from '@/components/ui/text-field';
 
 export function ReplaceLabelForm({
   locationId,
+  previous,
   replace,
 }: {
   locationId: string;
+  previous: string;
   replace: (body: ReplaceLabelBody) => Promise<ReplaceLabelResult>;
 }) {
   const { t } = useLingui();
   const errors = useErrorText();
-  const [previous, setPrevious] = useState('');
   const [replacement, setReplacement] = useState('');
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState('');
@@ -27,7 +28,6 @@ export function ReplaceLabelForm({
     setDone(false);
     try {
       await replace({ locationId, previous, replacement, reason });
-      setPrevious('');
       setReplacement('');
       setReason('');
       setDone(true);
@@ -50,12 +50,6 @@ export function ReplaceLabelForm({
             same record and shows as superseded when scanned.
           </Trans>
         </p>
-        <TextField
-          label={t`Current label code or URL`}
-          value={previous}
-          onChange={setPrevious}
-          inputProps={{ maxLength: 1024 }}
-        />
         <TextField
           label={t`Replacement label code or URL`}
           value={replacement}

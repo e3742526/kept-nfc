@@ -87,10 +87,14 @@ it('verifies the selected model, then retries an interrupted offline job with th
   await user.click(within(setup).getByRole('button', { name: 'Close' }));
   await waitFor(() => expect(settings).toHaveFocus());
   expect(quantity).toHaveValue(2);
+  expect(screen.queryByRole('button', { name: /Label layout$/ })).not.toBeInTheDocument();
   await user.clear(quantity);
   await user.type(quantity, '1');
   await user.click(screen.getByRole('button', { name: 'Prepare labels' }));
   const send = await screen.findByRole('button', { name: 'Print on B1 Pro' });
+  expect(screen.queryByRole('spinbutton', { name: 'First page' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('spinbutton', { name: 'Last page' })).not.toBeInTheDocument();
+  expect(screen.getByRole('spinbutton', { name: 'Copies per label' })).toHaveValue(1);
   await user.click(send);
   expect(await screen.findByText(/Print completion is uncertain/)).toBeVisible();
   expect(print).toHaveBeenCalledExactlyOnceWith(
@@ -113,6 +117,31 @@ it('verifies the selected model, then retries an interrupted offline job with th
   });
   expect(api.create).not.toHaveBeenCalled();
   expect(api.confirm).not.toHaveBeenCalled();
+
+  await user.clear(quantity);
+  await user.type(quantity, '3');
+  await user.click(screen.getByRole('button', { name: 'Prepare labels' }));
+  const first = await screen.findByRole('spinbutton', { name: 'First page' });
+  const last = screen.getByRole('spinbutton', { name: 'Last page' });
+  expect(first).toHaveValue(1);
+  expect(last).toHaveValue(3);
+  await user.clear(first);
+  await user.type(first, '2');
+  await user.clear(last);
+  await user.type(last, '2');
+  await user.click(screen.getByRole('button', { name: 'Print on B1 Pro' }));
+  await waitFor(() =>
+    expect(print).toHaveBeenNthCalledWith(
+      3,
+      device.id,
+      expect.objectContaining({ pages: [expect.any(String)] }),
+    ),
+  );
+
+  await user.click(screen.getByRole('button', { name: 'Prepare calibration print' }));
+  await waitFor(() => expect(first).not.toBeInTheDocument());
+  expect(last).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Print on B1 Pro' })).toBeEnabled();
 
   await user.click(settings);
   const reopened = await screen.findByRole('dialog', { name: 'Printer settings' });

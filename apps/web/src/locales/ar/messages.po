@@ -33742,8 +33742,7 @@ msgstr "نسخ إلى ملف تعريف جديد"
 msgid "Couldn’t prepare the PDF."
 msgstr "تعذّر تجهيز ملف PDF."
 
-#: src/components/labels/thermal/epc-form.tsx
-#: src/components/labels/thermal/replace-form.tsx
+#: src/components/labels/thermal/label-tools.tsx
 msgid "Current label code or URL"
 msgstr "رمز الملصق الحالي أو رابطه"
 
@@ -34412,3 +34411,11 @@ msgstr "إعدادات الطابعة"
 #: src/components/labels/thermal/niimbot-settings.tsx
 msgid "Use for thermal printing"
 msgstr "استخدامها لطباعة الملصقات الحرارية"
+
+#: src/components/labels/thermal/label-tools.tsx
+msgid "Advanced label tools"
+msgstr "أدوات الملصقات المتقدّمة"
+
+#: src/components/labels/thermal/studio.tsx
+msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
+msgstr "أدخل من ١ إلى {NIIMBOT_COPY_LIMIT} نسخة لكل ملصق."

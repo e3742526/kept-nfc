@@ -7,14 +7,15 @@ import type { PrintApi } from './api';
 
 export function EpcForm({
   locationId,
+  label,
   register,
 }: {
   locationId: string;
+  label: string;
   register: PrintApi['registerTag'];
 }) {
   const { t } = useLingui();
   const errorText = useErrorText();
-  const [label, setLabel] = useState('');
   const [epc, setEpc] = useState('');
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
@@ -26,7 +27,6 @@ export function EpcForm({
     setStatus('');
     try {
       await register({ kind: 'uhf', locationId, label, epc });
-      setLabel('');
       setEpc('');
       setSaved(true);
     } catch (error) {
@@ -42,12 +42,6 @@ export function EpcForm({
         <Trans>Register a UHF RFID tag</Trans>
       </summary>
       <div className="mt-3 grid gap-3">
-        <TextField
-          label={t`Current label code or URL`}
-          value={label}
-          onChange={setLabel}
-          inputProps={{ maxLength: 1024 }}
-        />
         <TextField
           label={t`EPC from your UHF reader`}
           value={epc}
