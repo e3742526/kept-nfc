@@ -1,11 +1,12 @@
 import type { SnapThing } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { CornerDownLeft, MessageSquare, Package } from 'lucide-react';
+import { CornerDownLeft, MessageSquare, Package, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { inventoryPaths, qs } from '@/api/inventory/paths';
 import type { Brand, Page, ThingRow } from '@/api/inventory/types';
 import { useErrorText } from '@/components/page';
 import { PhotoImage } from '@/components/photo-image';
+import { useTypeName } from '@/components/things/names';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { TextField } from '@/components/ui/text-field';
@@ -14,6 +15,7 @@ import { usePlatform } from './adapters';
 import { ScreenHeader } from './back-button';
 import type { Connection } from './bridge';
 import { CategoryEditor } from './category-editor';
+import type { Destination } from './destination';
 import {
   type InventoryCache,
   inventoryPath,
@@ -171,6 +173,7 @@ export function Browse({
   onFilters,
   onBack,
   onOpen,
+  onAddToBox,
   onPhotoSearch,
   onRooms,
   onAssistant,
@@ -184,6 +187,7 @@ export function Browse({
   onFilters: (next: BrowseFilters) => void;
   onBack: () => void;
   onOpen: (target: Target) => void;
+  onAddToBox: (destination: Destination) => void;
   onPhotoSearch: (mode: VisualSearchIntent['mode']) => void;
   onRooms: () => void;
   onAssistant: () => void;
@@ -191,6 +195,7 @@ export function Browse({
   onInventoryChanged: () => void;
 }) {
   const { t } = useLingui();
+  const typeName = useTypeName();
   const { transport } = usePlatform();
   const errorText = useErrorText();
   const [page, setPage] = useState<BrowsePage>();
@@ -282,6 +287,7 @@ export function Browse({
   const rows = useCache
     ? remembered.map((thing) => ({
         id: thing.id,
+        typeId: thing.typeId,
         name: thing.name,
         locationId: thing.locationId,
         shortCode: thing.shortCode,
@@ -293,6 +299,7 @@ export function Browse({
       }))
     : (page?.items.map((thing) => ({
         id: thing.id,
+        typeId: thing.type?.id,
         name: thing.name,
         locationId: thing.locationId,
         shortCode: thing.shortCode,
@@ -318,7 +325,9 @@ export function Browse({
     <section className="grid gap-3">
       <ScreenHeader
         title={
-          f.mode === 'bins' ? (
+          f.state === 'uncertain' && f.mode === 'all' ? (
+            <Trans>Missing items</Trans>
+          ) : f.mode === 'bins' ? (
             <Trans>Boxes</Trans>
           ) : f.mode === 'categories' ? (
             <Trans>Categories</Trans>
@@ -588,6 +597,12 @@ export function Browse({
       {useCache && (
         <p className="m-0 text-small text-ink-2">
           <Trans>Showing cached inventory</Trans>
+          {cache.truncated && (
+            <>
+              {' '}
+              <Trans>Some items are missing from this device.</Trans>
+            </>
+          )}
         </p>
       )}
       {needsOnlineFilter && (
@@ -631,54 +646,94 @@ export function Browse({
               l.role !== 'viewer' &&
               l.ownerAccountId === owner?.ownerAccountId,
           );
+          const boxType = cache.types.find(
+            (type) =>
+              type.id === row.typeId &&
+              ['tote_27g', 'shoe_box_bin', 'cardboard_box'].includes(type.builtinKey ?? ''),
+          );
           return (
             <li key={row.id} className="grid min-w-0 gap-1">
-              <Button
-                className={f.grid ? 'min-w-0 flex-col items-start p-2' : 'kept-phone-row'}
-                variant="secondary"
-                onPress={() => onOpen({ id: row.id, locationId: row.locationId, kind: 'thing' })}
-              >
-                {row.thumb ? (
-                  <PhotoImage
-                    src={row.thumb}
-                    rotation={row.thumbnailRotation}
-                    className={f.grid ? 'aspect-square w-full rounded-lg' : 'kept-thumb'}
-                  />
-                ) : (
-                  <Package size={20} aria-hidden />
-                )}
-                <span className="kept-row-body text-start">
-                  <bdi>{row.name ?? t`Untitled`}</bdi>
-                  <span className="text-small">
-                    <bdi>{row.path}</bdi>
+              <div className="flex min-w-0 items-stretch rounded-lg border border-line bg-surface">
+                <Button
+                  className={
+                    f.grid
+                      ? 'min-w-0 flex-1 flex-col items-start p-2'
+                      : 'kept-phone-row min-w-0 flex-1'
+                  }
+                  variant="ghost"
+                  onPress={() => onOpen({ id: row.id, locationId: row.locationId, kind: 'thing' })}
+                >
+                  {row.thumb ? (
+                    <PhotoImage
+                      src={row.thumb}
+                      rotation={row.thumbnailRotation}
+                      className={f.grid ? 'aspect-square w-full rounded-lg' : 'kept-thumb'}
+                    />
+                  ) : (
+                    <Package size={20} aria-hidden />
+                  )}
+                  <span className="kept-row-body text-start">
+                    <bdi>{row.name ?? t`Untitled`}</bdi>
+                    {f.mode === 'bins' && boxType && (
+                      <span className="text-small">
+                        {typeName({
+                          ...boxType,
+                          name: boxType.name === boxType.builtinKey ? null : boxType.name,
+                        })}
+                      </span>
+                    )}
+                    <span className="text-small">
+                      <bdi>{row.path}</bdi>
+                    </span>
+                    {row.tags.length > 0 && (
+                      <span className="flex flex-wrap gap-1">
+                        {row.tags.map((tag) => (
+                          <bdi key={tag.id} className="rounded-md bg-sunken px-2 py-0.5 text-small">
+                            {tag.name}
+                          </bdi>
+                        ))}
+                      </span>
+                    )}
+                    {row.shortCode && <bdi className="text-small">{row.shortCode}</bdi>}
+                    {f.mode === 'bins' && cache.things.some((item) => item.id === row.id) && (
+                      <span className="text-small">
+                        <Trans>Contents</Trans>{' '}
+                        {
+                          cache.things.filter(
+                            (item) =>
+                              item.containerId === row.id && item.reviewState === 'confirmed',
+                          ).length
+                        }
+                      </span>
+                    )}
+                    {inBox && (
+                      <span className="text-small">
+                        <Trans>Inside a matching bin</Trans>
+                      </span>
+                    )}
                   </span>
-                  {row.tags.length > 0 && (
-                    <span className="flex flex-wrap gap-1">
-                      {row.tags.map((tag) => (
-                        <bdi key={tag.id} className="rounded-md bg-sunken px-2 py-0.5 text-small">
-                          {tag.name}
-                        </bdi>
-                      ))}
-                    </span>
-                  )}
-                  {row.shortCode && <bdi className="text-small">{row.shortCode}</bdi>}
-                  {f.mode === 'bins' && cache.things.some((item) => item.id === row.id) && (
-                    <span className="text-small">
-                      <Trans>Contents</Trans>{' '}
-                      {
-                        cache.things.filter(
-                          (item) => item.containerId === row.id && item.reviewState === 'confirmed',
-                        ).length
+                </Button>
+                {f.mode === 'bins' &&
+                  cache.locations.some(
+                    (location) => location.id === row.locationId && location.role !== 'viewer',
+                  ) && (
+                    <Button
+                      variant="ghost"
+                      aria-label={t`Add to ${row.name ?? t`Untitled`}`}
+                      onPress={() =>
+                        onAddToBox({
+                          id: row.id,
+                          locationId: row.locationId,
+                          name: row.name ?? t`Untitled`,
+                          kind: 'box',
+                          path: [row.path, row.name ?? t`Untitled`].filter(Boolean).join(' › '),
+                        })
                       }
-                    </span>
+                    >
+                      <Plus size={20} aria-hidden />
+                    </Button>
                   )}
-                  {inBox && (
-                    <span className="text-small">
-                      <Trans>Inside a matching bin</Trans>
-                    </span>
-                  )}
-                </span>
-              </Button>
+              </div>
               {online && writable && (
                 <label className="flex min-h-10 items-center gap-2 px-2 text-small">
                   <input

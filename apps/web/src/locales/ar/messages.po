@@ -34614,3 +34614,52 @@ msgstr "استخدم علامة NFC أخرى"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "قائمة الطباعة فارغة."
+
+#: src/native/browse.tsx
+msgid "Missing items"
+msgstr "العناصر المفقودة"
+
+#: src/native/browse.tsx
+msgid "Some items are missing from this device."
+msgstr "بعض العناصر غير موجودة على هذا الجهاز."
+
+#: src/native/record.tsx
+msgid "Mark found here"
+msgstr "تحديد أنه تم العثور عليه هنا"
+
+#: src/native/record.tsx
+msgid "Mark missing"
+msgstr "تحديد كمفقود"
+
+msgid "Add to {0}"
+msgstr "إضافة إلى {0}"
+
+msgid "Box type"
+msgstr "نوع الصندوق"
+
+msgid "Box / bin"
+msgstr "صندوق / حاوية"
+
+msgid "Add to bin"
+msgstr "إضافة إلى حاوية"
+
+msgid "AirPrint / share"
+msgstr "AirPrint / مشاركة"
+
+msgid "NIIMBOT B1 Pro"
+msgstr "NIIMBOT B1 Pro"
+
+msgid "QR code and item details"
+msgstr "رمز QR وتفاصيل العنصر"
+
+msgid "QR code, category and contents"
+msgstr "رمز QR والفئة والمحتويات"
+
+msgid "View templates"
+msgstr "عرض القوالب"
+
+msgid "Label templates"
+msgstr "قوالب الملصقات"
+
+msgid "Use template"
+msgstr "استخدام القالب"

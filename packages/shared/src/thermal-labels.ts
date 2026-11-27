@@ -153,6 +153,14 @@ export function supportsDrawerTemplate(stock: string): boolean {
   );
 }
 
+/** Built-in label layouts. The rendered fallback is also the value recorded on the batch. */
+export function resolveLabelTemplate(
+  stock: string,
+  options: { template?: 'drawer' },
+): 'standard' | 'drawer' {
+  return options.template === 'drawer' && supportsDrawerTemplate(stock) ? 'drawer' : 'standard';
+}
+
 const printDistance = z.number().positive().max(1000);
 export const ThermalBatchSpecSchema = z.strictObject({
   layout: ThermalLayoutSchema,

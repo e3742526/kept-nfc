@@ -34614,3 +34614,52 @@ msgstr "Використати іншу мітку NFC"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "Черга друку порожня."
+
+#: src/native/browse.tsx
+msgid "Missing items"
+msgstr "Загублені речі"
+
+#: src/native/browse.tsx
+msgid "Some items are missing from this device."
+msgstr "Деякі речі відсутні на цьому пристрої."
+
+#: src/native/record.tsx
+msgid "Mark found here"
+msgstr "Позначити як знайдене тут"
+
+#: src/native/record.tsx
+msgid "Mark missing"
+msgstr "Позначити як загублене"
+
+msgid "Add to {0}"
+msgstr "Додати до {0}"
+
+msgid "Box type"
+msgstr "Тип коробки"
+
+msgid "Box / bin"
+msgstr "Коробка / контейнер"
+
+msgid "Add to bin"
+msgstr "Додати до контейнера"
+
+msgid "AirPrint / share"
+msgstr "AirPrint / поділитися"
+
+msgid "NIIMBOT B1 Pro"
+msgstr "NIIMBOT B1 Pro"
+
+msgid "QR code and item details"
+msgstr "QR-код і дані речі"
+
+msgid "QR code, category and contents"
+msgstr "QR-код, категорія та вміст"
+
+msgid "View templates"
+msgstr "Переглянути шаблони"
+
+msgid "Label templates"
+msgstr "Шаблони етикеток"
+
+msgid "Use template"
+msgstr "Використати шаблон"

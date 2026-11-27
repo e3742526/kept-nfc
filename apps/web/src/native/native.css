@@ -774,12 +774,12 @@
 
 .kept-home-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
-.kept-home-actions-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.kept-home-actions-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .kept-action {
@@ -815,7 +815,7 @@
 
 .kept-shortcuts {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 

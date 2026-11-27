@@ -1390,8 +1390,10 @@ export function NewBoxForm({
   headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
+  const typeName = useTypeName();
   const adapters = usePlatform();
   const [name, setName] = useState('');
+  const [boxTypeId, setBoxTypeId] = useState('');
   const [contents, setContents] = useState('');
   const [target, setTarget] = useState<Destination | undefined>(() =>
     place ? { ...place, kind: place.kind ?? 'place' } : (suggested ?? defaultDestination(cache)),
@@ -1410,7 +1412,14 @@ export function NewBoxForm({
     let box = created;
     try {
       if (!box) {
-        const result = await createBox(connection, cache, target, name.trim() || t`Box`, adapters);
+        const result = await createBox(
+          connection,
+          cache,
+          target,
+          name.trim() || t`Box`,
+          adapters,
+          boxTypeId || undefined,
+        );
         box = {
           id: result.id,
           locationId: result.locationId,
@@ -1478,6 +1487,30 @@ export function NewBoxForm({
           inputProps={{ maxLength: 200 }}
           isDisabled={busy || !!created}
         />
+        <Select
+          label={t`Box type`}
+          selectedKey={boxTypeId || 'default'}
+          isDisabled={busy || !!created}
+          items={[
+            { id: 'default', name: t`Box / bin` },
+            ...cache.types
+              .filter((type) =>
+                ['tote_27g', 'shoe_box_bin', 'cardboard_box'].includes(type.builtinKey ?? ''),
+              )
+              .map((type) => ({
+                id: type.id,
+                name: typeName({ ...type, name: type.name === type.builtinKey ? null : type.name }),
+              })),
+          ]}
+          onSelectionChange={(key) => setBoxTypeId(key === 'default' ? '' : String(key))}
+        >
+          {(item) => <SelectItem id={item.id}>{item.name}</SelectItem>}
+        </Select>
+        {!cache.types.some((type) => type.builtinKey === 'tote_27g') && (
+          <p className="m-0 text-small text-ink-2">
+            <Trans>Update this SheepKeep server to use this action.</Trans>
+          </p>
+        )}
         {!created && (
           <DestinationPicker
             connection={connection}

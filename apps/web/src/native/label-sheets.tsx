@@ -1,14 +1,18 @@
 import { labelStock, newId, usesThermalLabelEditor } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ChevronRight, Printer, Tags } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { capturePaths } from '@/api/capture/paths';
 import type { CreateLabelBatchBody, CreateLabelBatchResult, LabelBatch } from '@/api/capture/types';
 import { qs } from '@/api/inventory/paths';
 import type { Page } from '@/api/inventory/types';
 import { PrintQueue } from '@/components/labels/print-queue';
+import { DEFAULT_THERMAL_OPTIONS } from '@/components/labels/thermal/document';
+import { PrinterSettingsPanel } from '@/components/labels/thermal/printer-settings';
+import { TemplateLibrary } from '@/components/labels/thermal/template-library';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, Modal } from '@/components/ui/dialog';
 import { Select, SelectItem } from '@/components/ui/select';
 import { sep } from '@/lib/format';
 import { usePlatform } from './adapters';
@@ -36,6 +40,7 @@ export function LabelSheets({
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
+  const bluetooth = useMemo(() => adapters.niimbot?.(connection), [adapters, connection]);
   const queue = useNativePrintQueue(connection);
   const errorText = useErrorText();
   const [location, setLocation] = useState(writableLocations(cache)[0]?.id ?? null);
@@ -144,6 +149,20 @@ export function LabelSheets({
       <PrintQueue
         heading="h3"
         request={queue}
+        printerSettings={
+          bluetooth && (
+            <DialogTrigger>
+              <Button variant="secondary">
+                <Trans>Printer settings</Trans>
+              </Button>
+              <Modal>
+                <Dialog title={<Trans>Printer settings</Trans>}>
+                  <PrinterSettingsPanel owner={connection.id} output={bluetooth} />
+                </Dialog>
+              </Modal>
+            </DialogTrigger>
+          )
+        }
         locationName={(id) => cache.locations.find((entry) => entry.id === id)?.name}
         openBatch={async (id) => {
           const batch = await adapters.transport.request<LabelBatch>(
@@ -194,6 +213,7 @@ export function LabelSheets({
           )
         ) : (
           <>
+            <TemplateLibrary stock={`letter_writable_${count}`} options={DEFAULT_THERMAL_OPTIONS} />
             <Select
               label={t`Labels per US Letter sheet`}
               items={counts.map((value) => ({ id: value }))}

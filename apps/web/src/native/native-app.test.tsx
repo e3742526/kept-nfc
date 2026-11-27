@@ -323,7 +323,22 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
             ],
             tags: { items: (opts.tags ?? []).map((tag) => ({ ...tag, accountId: 'acc-1' })) },
             types: {
-              items: [{ id: 'type-box', builtinKey: 'box_bin', name: 'Box', isContainer: true }],
+              items: [
+                { id: 'type-box', builtinKey: 'box_bin', name: 'Box', isContainer: true },
+                { id: 'type-tote', builtinKey: 'tote_27g', name: 'tote_27g', isContainer: true },
+                {
+                  id: 'type-shoe',
+                  builtinKey: 'shoe_box_bin',
+                  name: 'shoe_box_bin',
+                  isContainer: true,
+                },
+                {
+                  id: 'type-cardboard',
+                  builtinKey: 'cardboard_box',
+                  name: 'cardboard_box',
+                  isContainer: true,
+                },
+              ],
             },
             changes: {
               places: rooms,
@@ -340,7 +355,7 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                 aliases: {},
                 lifecycle: 'in_use',
                 reviewState: t.reviewState,
-                locationUncertain: false,
+                locationUncertain: t.locationUncertain,
                 lastSeenAt: null,
                 coverFileId: null,
                 isContainer: t.isContainer,
@@ -602,6 +617,11 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
           const box = serverThings.get(boxId);
           expect(options?.ifMatch).toBe(box?.rowVersion);
           if (box) box.locationUncertain = true;
+          return box as T;
+        }
+        if (path === inventoryPaths.thingSeen(boxId)) {
+          const box = serverThings.get(boxId);
+          if (box) box.locationUncertain = false;
           return box as T;
         }
         if (path.startsWith(inventoryPaths.activity)) {
@@ -1061,10 +1081,50 @@ async function openWinterBox(user: ReturnType<typeof userEvent.setup>) {
     await waitFor(() => expect(tile).toBeEnabled());
     await user.click(tile);
   }
-  await user.click(await screen.findByRole('button', { name: /Winter Box/i }));
+  await user.click(await screen.findByRole('button', { name: /^Winter Box/i }));
 }
 
 describe('KeptPhone mobile workflows', () => {
+  it('starts adding to a selected box from the Home shortcut and box card', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await user.click(await screen.findByRole('button', { name: 'Add to bin' }));
+    await user.click(await screen.findByRole('button', { name: 'Add to Winter Box' }));
+    await continueToItemDetails(user);
+    expect(screen.getByText('Destination').closest('.kept-destination')).toHaveTextContent(
+      'Winter Box',
+    );
+  });
+
+  it('lets an existing box be assigned a box type', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    await user.click(screen.getByRole('button', { name: /Type$/ }));
+    await user.click(screen.getByRole('option', { name: 'Cardboard box' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(env.serverThings.get(env.boxId)?.typeId).toBe('type-cardboard'));
+  });
+
   it('remembers the printer from Settings and uses it in thermal printing', async () => {
     const origin = 'https://printer-settings.example.com';
     const connection = {
@@ -3478,6 +3538,70 @@ describe('KeptPhone mobile workflows', () => {
     });
   });
 
+  it('marks an item missing and finds it from Home, then marks it found', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    env.adapters.transport.request = async <T,>(
+      conn: Connection,
+      path: string,
+      options?: NativeRequestOptions,
+    ) => {
+      const url = new URL(path, origin);
+      if (url.pathname === inventoryPaths.things && url.searchParams.get('state') === 'uncertain') {
+        const items = [...env.serverThings.values()].filter((thing) => thing.locationUncertain);
+        return { items, next_cursor: null, total: items.length } as T;
+      }
+      return request<T>(conn, path, options);
+    };
+    const user = userEvent.setup();
+    env.renderApp();
+    await openWinterBox(user);
+    await user.click(await screen.findByRole('button', { name: 'Mark missing' }));
+    expect(await screen.findByRole('button', { name: 'Mark found here' })).toBeInTheDocument();
+    expect(screen.getByText(/Last known location/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await user.click(screen.getByRole('button', { name: 'Home' }));
+    await user.click(await screen.findByRole('button', { name: 'Missing items' }));
+    expect(await screen.findByRole('heading', { name: 'Missing items' })).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /^Winter Box/ }));
+    await user.click(await screen.findByRole('button', { name: 'Mark found here' }));
+    expect(await screen.findByRole('button', { name: 'Mark missing' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: /^Winter Box/ })).not.toBeInTheDocument(),
+    );
+  });
+
+  it('shows cached missing items from Home while offline', async () => {
+    const origin = 'https://kept.example.com';
+    const env = createFakeEnvironment({
+      initialConnection: {
+        id: `${origin}|ibrahim|epoch-1`,
+        origin,
+        account: 'ibrahim',
+        epoch: 'epoch-1',
+      },
+    });
+    const item = env.serverThings.get(env.boxId);
+    if (!item) throw new Error('Missing fixture');
+    item.locationUncertain = true;
+    const user = userEvent.setup();
+    env.renderApp();
+    await screen.findByRole('button', { name: 'Missing items' });
+    env.setOnline(false);
+    await user.click(screen.getByRole('button', { name: 'Missing items' }));
+    expect(await screen.findByText('Showing cached inventory')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^Winter Box/ })).toBeInTheDocument();
+  });
+
   it('edits a bin in place and shows the last known location and photo history', async () => {
     const origin = 'https://kept.example.com';
     const env = createFakeEnvironment({
@@ -3712,7 +3836,7 @@ describe('KeptPhone mobile workflows', () => {
     const boxesTile = await screen.findByRole('button', { name: /Boxes$/ });
     await waitFor(() => expect(boxesTile).toBeEnabled());
     await user.click(boxesTile);
-    const winterBoxBtn = await screen.findByRole('button', { name: /Winter Box/i });
+    const winterBoxBtn = await screen.findByRole('button', { name: /^Winter Box/i });
     expect(winterBoxBtn).toHaveTextContent('Garage');
     expectLogicalOnly();
     await user.click(winterBoxBtn);
@@ -3803,7 +3927,7 @@ describe('KeptPhone mobile workflows', () => {
     ).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Search inventory' }), '7KQ4MZ');
     expect(screen.queryByRole('button', { name: /Spare Box/ })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Winter Box/ }));
+    await user.click(screen.getByRole('button', { name: /^Winter Box/ }));
     expect(await screen.findByRole('button', { name: 'Inspect NFC tag' })).toBeEnabled();
     expect(screen.getByText('7KQ4MZ')).toBeInTheDocument();
     // Only Scan's own listening read: nothing inspected or written yet.
@@ -4732,7 +4856,7 @@ describe('KeptPhone mobile workflows', () => {
 
     const tabbar = await screen.findByRole('navigation');
     expect(within(tabbar).getAllByRole('button')).toEqual(
-      ['Home', 'Search', 'Scan', 'Add', 'More'].map((name) =>
+      ['Home', 'Browse', 'Scan', 'Add', 'More'].map((name) =>
         within(tabbar).getByRole('button', { name }),
       ),
     );
@@ -4749,8 +4873,8 @@ describe('KeptPhone mobile workflows', () => {
       'page',
     );
 
-    // Search opens Browse directly and reselecting the tab keeps the current query.
-    const searchTab = within(tabbar).getByRole('button', { name: 'Search' });
+    // Browse opens the inventory and reselecting the tab keeps the current query.
+    const searchTab = within(tabbar).getByRole('button', { name: 'Browse' });
     await user.click(searchTab);
     const browseSearch = await screen.findByRole('textbox', { name: 'Search' });
     expect(searchTab).toHaveAttribute('aria-current', 'page');
@@ -5655,12 +5779,22 @@ describe('KeptPhone mobile workflows', () => {
 
     await openBoxForm();
     await user.type(screen.getByRole('textbox', { name: 'Box name (optional)' }), 'Cables');
+    await user.click(screen.getByRole('button', { name: /Box type/ }));
+    await user.click(screen.getByRole('option', { name: '27-gallon tote' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Contents (optional)' }),
       '3 x HDMI cable{Enter}Power strip',
     );
     expect(screen.getByText('2 items go in the box.')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Create box' }));
+    expect(
+      spy.mock.calls.some(
+        ([, path, options]) =>
+          path === inventoryPaths.things &&
+          options?.method === 'POST' &&
+          (options.body as { typeId?: string }).typeId === 'type-tote',
+      ),
+    ).toBe(true);
     expect(await screen.findByRole('heading', { name: 'Cables' })).toBeInTheDocument();
     await waitFor(() =>
       expect(syncedNames()).toEqual(

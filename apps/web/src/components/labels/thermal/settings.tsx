@@ -20,6 +20,7 @@ import { TextField } from '@/components/ui/text-field';
 import { useStockText } from '../stock-picker';
 import type { ThermalOptions } from './document';
 import { NIIMBOT_STOCKS } from './niimbot';
+import { TemplateLibrary } from './template-library';
 import { useWorkshopIconNames, WorkshopPhoto } from './workshop-photo';
 
 export function Choices<T extends string>({
@@ -73,6 +74,7 @@ export function PrintNumber({
 
 export function ThermalSettings({
   printerSettings,
+  mode = 'editor',
   stock,
   setStock,
   layout,
@@ -87,6 +89,7 @@ export function ThermalSettings({
   suggestIcon,
 }: {
   printerSettings?: ReactNode;
+  mode?: 'editor' | 'printer';
   stock: string;
   setStock: (stock: string) => void;
   layout: ThermalLayout;
@@ -177,17 +180,24 @@ export function ThermalSettings({
         {stock === 'thermal_4x6in' && !niimbot && (
           <Choices label={t`Label layout`} value={layout} items={layoutItems} change={setLayout} />
         )}
-        <PrintNumber
-          label={t`Handwriting lines`}
-          value={Math.min(maxLines, options.handwriting)}
-          min={0}
-          max={maxLines}
-          change={(handwriting) =>
-            setOptions({ ...options, handwriting: Math.min(maxLines, handwriting ?? 0) })
-          }
-        />
+        {mode === 'editor' && (
+          <PrintNumber
+            label={t`Handwriting lines`}
+            value={Math.min(maxLines, options.handwriting)}
+            min={0}
+            max={maxLines}
+            change={(handwriting) =>
+              setOptions({ ...options, handwriting: Math.min(maxLines, handwriting ?? 0) })
+            }
+          />
+        )}
       </div>
-      {supportsDrawer && (
+      <TemplateLibrary
+        stock={stock}
+        options={options}
+        {...(mode === 'editor' ? { onSelect: setOptions } : {})}
+      />
+      {mode === 'editor' && supportsDrawer && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Choices
             label={t`Label template`}
@@ -235,7 +245,7 @@ export function ThermalSettings({
           )}
         </div>
       )}
-      {(compact || micro || drawer) && (
+      {mode === 'editor' && (compact || micro || drawer) && (
         <div className="grid gap-3 sm:grid-cols-2">
           {!drawer && (
             <Choices
@@ -259,206 +269,219 @@ export function ThermalSettings({
           />
         </div>
       )}
-      <details className="rounded-lg border border-line p-3">
-        <summary className="cursor-pointer font-semibold">
-          <Trans>Layout and printer calibration</Trans>
-        </summary>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          {!compact && !drawer && (
-            <Choices
-              label={t`QR side on compact labels`}
-              value={options.qrSide}
-              items={[
-                { id: 'left', name: t`Left` },
-                { id: 'right', name: t`Right` },
-              ]}
-              change={(qrSide) => setOptions({ ...options, qrSide })}
-            />
-          )}
-          <PrintNumber
-            label={t`Preferred QR width (mm)`}
-            value={profile.qrMm ?? (compact ? (drawer ? 17 : 16) : undefined)}
-            min={5}
-            max={125}
-            change={(qrMm) => {
-              const { qrMm: _previous, ...other } = profile;
-              setProfile(qrMm === undefined ? other : { ...other, qrMm });
-            }}
-          />
-          <PrintNumber
-            label={t`Preferred identifier size (pt)`}
-            value={options.identifierPt || undefined}
-            min={6}
-            max={72}
-            change={(size) => setOptions({ ...options, identifierPt: size ?? 0 })}
-          />
-          {!niimbot && (
-            <>
-              <PrintNumber
-                label={t`Resolution (DPI)`}
-                value={profile.dpi}
-                min={150}
-                max={1200}
-                change={(dpi) => setProfile({ ...profile, dpi: dpi ?? 203 })}
-              />
+      {mode === 'editor' && (
+        <details className="rounded-lg border border-line p-3">
+          <summary className="cursor-pointer font-semibold">
+            <Trans>Label layout</Trans>
+          </summary>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {!compact && !drawer && (
               <Choices
-                label={t`Orientation`}
-                value={profile.orientation}
+                label={t`QR side on compact labels`}
+                value={options.qrSide}
                 items={[
-                  { id: 'portrait', name: t`Portrait` },
-                  { id: 'landscape', name: t`Landscape` },
+                  { id: 'left', name: t`Left` },
+                  { id: 'right', name: t`Right` },
                 ]}
-                change={(orientation) => setProfile({ ...profile, orientation })}
+                change={(qrSide) => setOptions({ ...options, qrSide })}
               />
-            </>
-          )}
-          <PrintNumber
-            label={t`Content scale (%)`}
-            value={profile.scale}
-            min={60}
-            max={100}
-            change={(scale) => setProfile({ ...profile, scale: scale ?? 100 })}
-          />
-          {!niimbot &&
-            (
-              [
-                ['printableWidth', t`Printable width (mm)`],
-                ['printableHeight', t`Printable height (mm)`],
-                ['minMediaWidth', t`Minimum media width (mm)`],
-                ['maxMediaWidth', t`Maximum media width (mm)`],
-                ['minFeedLength', t`Minimum feed length (mm)`],
-              ] as const
-            ).map(([key, label]) => (
+            )}
+            <PrintNumber
+              label={t`Preferred identifier size (pt)`}
+              value={options.identifierPt || undefined}
+              min={6}
+              max={72}
+              change={(size) => setOptions({ ...options, identifierPt: size ?? 0 })}
+            />
+            {visibility
+              .filter(
+                ([key]) =>
+                  !(micro || compact) ||
+                  (key !== 'showNfc' && key !== 'showBarcode' && key !== 'showLocation'),
+              )
+              .map(([key, label]) => (
+                <Checkbox
+                  key={key}
+                  className="flex items-center gap-2"
+                  isSelected={options[key] ?? false}
+                  onChange={(checked) => setOptions({ ...options, [key]: checked })}
+                >
+                  {({ isSelected }) => (
+                    <>
+                      <span
+                        aria-hidden
+                        className="grid size-5 place-items-center rounded border border-line"
+                      >
+                        {isSelected ? '✓' : ''}
+                      </span>
+                      {label}
+                    </>
+                  )}
+                </Checkbox>
+              ))}
+          </div>
+        </details>
+      )}
+      {mode === 'printer' && (
+        <>
+          <details className="rounded-lg border border-line p-3">
+            <summary className="cursor-pointer font-semibold">
+              <Trans>Layout and printer calibration</Trans>
+            </summary>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <PrintNumber
-                key={key}
-                label={label}
-                value={profile[key]}
-                min={1}
-                max={1000}
-                change={(value) => {
-                  const { [key]: _previous, ...other } = profile;
-                  setProfile(value === undefined ? other : { ...other, [key]: value });
+                label={t`Preferred QR width (mm)`}
+                value={profile.qrMm ?? (compact ? (drawer ? 17 : 16) : undefined)}
+                min={5}
+                max={125}
+                change={(qrMm) => {
+                  const { qrMm: _previous, ...other } = profile;
+                  setProfile(qrMm === undefined ? other : { ...other, qrMm });
                 }}
               />
-            ))}
-          {measurements.map(([key, label]) => (
-            <PrintNumber
-              key={key}
-              label={label}
-              min={key.startsWith('offset') ? -25 : 0}
-              max={25}
-              value={calibration[key]}
-              change={(value) => setCalibration(key, value)}
-            />
-          ))}
-          {visibility
-            .filter(
-              ([key]) =>
-                !(micro || compact) ||
-                (key !== 'showNfc' && key !== 'showBarcode' && key !== 'showLocation'),
-            )
-            .map(([key, label]) => (
-              <Checkbox
-                key={key}
-                className="flex items-center gap-2"
-                isSelected={options[key] ?? false}
-                onChange={(checked) => setOptions({ ...options, [key]: checked })}
-              >
-                {({ isSelected }) => (
-                  <>
-                    <span
-                      aria-hidden
-                      className="grid size-5 place-items-center rounded border border-line"
-                    >
-                      {isSelected ? '✓' : ''}
-                    </span>
-                    {label}
-                  </>
-                )}
-              </Checkbox>
-            ))}
-        </div>
-      </details>
-      <details className="rounded-lg border border-line p-3">
-        <summary className="cursor-pointer font-semibold">
-          <Trans>Save printer profile</Trans>
-        </summary>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <TextField
-            label={t`Printer name`}
-            value={profile.name}
-            onChange={(name) => setProfile({ ...profile, name })}
-            inputProps={{ maxLength: 100 }}
-          />
-          {niimbot ? (
-            <Choices
-              label={t`Print density`}
-              value={String(profile.darkness ?? 3)}
-              items={['1', '2', '3', '4', '5'].map((id) => ({ id, name: id }))}
-              change={(value) => setProfile({ ...profile, darkness: Number(value) })}
-            />
-          ) : (
-            <>
-              <TextField
-                label={t`System printer or queue name`}
-                value={profile.queue ?? ''}
-                onChange={(queue) => setProfile({ ...profile, queue })}
-                inputProps={{ maxLength: 200 }}
+              {!niimbot && (
+                <>
+                  <PrintNumber
+                    label={t`Resolution (DPI)`}
+                    value={profile.dpi}
+                    min={150}
+                    max={1200}
+                    change={(dpi) => setProfile({ ...profile, dpi: dpi ?? 203 })}
+                  />
+                  <Choices
+                    label={t`Orientation`}
+                    value={profile.orientation}
+                    items={[
+                      { id: 'portrait', name: t`Portrait` },
+                      { id: 'landscape', name: t`Landscape` },
+                    ]}
+                    change={(orientation) => setProfile({ ...profile, orientation })}
+                  />
+                </>
+              )}
+              <PrintNumber
+                label={t`Content scale (%)`}
+                value={profile.scale}
+                min={60}
+                max={100}
+                change={(scale) => setProfile({ ...profile, scale: scale ?? 100 })}
               />
-              <Choices
-                label={t`Media tracking`}
-                value={profile.media}
-                items={[
-                  { id: 'gap', name: t`Gap` },
-                  { id: 'mark', name: t`Black mark` },
-                  { id: 'continuous', name: t`Continuous` },
-                ]}
-                change={(media) => setProfile({ ...profile, media })}
-              />
-              {(
-                [
-                  ['gapOrMark', t`Gap or mark height (mm)`, 30],
-                  ['speed', t`Driver speed setting`, 100],
-                  ['darkness', t`Driver darkness setting`, 100],
-                ] as const
-              ).map(([key, label, max]) => (
+              {!niimbot &&
+                (
+                  [
+                    ['printableWidth', t`Printable width (mm)`],
+                    ['printableHeight', t`Printable height (mm)`],
+                    ['minMediaWidth', t`Minimum media width (mm)`],
+                    ['maxMediaWidth', t`Maximum media width (mm)`],
+                    ['minFeedLength', t`Minimum feed length (mm)`],
+                  ] as const
+                ).map(([key, label]) => (
+                  <PrintNumber
+                    key={key}
+                    label={label}
+                    value={profile[key]}
+                    min={1}
+                    max={1000}
+                    change={(value) => {
+                      const { [key]: _previous, ...other } = profile;
+                      setProfile(value === undefined ? other : { ...other, [key]: value });
+                    }}
+                  />
+                ))}
+              {measurements.map(([key, label]) => (
                 <PrintNumber
                   key={key}
                   label={label}
-                  value={profile[key]}
-                  min={0}
-                  max={max}
-                  change={(value) => {
-                    const { [key]: _previous, ...other } = profile;
-                    setProfile(value === undefined ? other : { ...other, [key]: value });
-                  }}
+                  min={key.startsWith('offset') ? -25 : 0}
+                  max={25}
+                  value={calibration[key]}
+                  change={(value) => setCalibration(key, value)}
                 />
               ))}
-            </>
-          )}
-        </div>
-        {!niimbot && (
-          <p className="text-small text-ink-2">
-            <Trans>
-              Use the system print dialog to select the queue and apply media, speed, and darkness
-              settings.
-            </Trans>
-          </p>
-        )}
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" isDisabled={!profile.name.trim()} onPress={saveProfile}>
-            <Trans>Save profile and stock calibration</Trans>
-          </Button>
-          {profile.id && !niimbot && (
-            <Button
-              variant="secondary"
-              onPress={() => setProfile({ ...profile, id: '', name: '' })}
-            >
-              <Trans>Copy to a new profile</Trans>
-            </Button>
-          )}
-        </div>
-      </details>
+            </div>
+          </details>
+          <details className="rounded-lg border border-line p-3">
+            <summary className="cursor-pointer font-semibold">
+              <Trans>Save printer profile</Trans>
+            </summary>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <TextField
+                label={t`Printer name`}
+                value={profile.name}
+                onChange={(name) => setProfile({ ...profile, name })}
+                inputProps={{ maxLength: 100 }}
+              />
+              {niimbot ? (
+                <Choices
+                  label={t`Print density`}
+                  value={String(profile.darkness ?? 3)}
+                  items={['1', '2', '3', '4', '5'].map((id) => ({ id, name: id }))}
+                  change={(value) => setProfile({ ...profile, darkness: Number(value) })}
+                />
+              ) : (
+                <>
+                  <TextField
+                    label={t`System printer or queue name`}
+                    value={profile.queue ?? ''}
+                    onChange={(queue) => setProfile({ ...profile, queue })}
+                    inputProps={{ maxLength: 200 }}
+                  />
+                  <Choices
+                    label={t`Media tracking`}
+                    value={profile.media}
+                    items={[
+                      { id: 'gap', name: t`Gap` },
+                      { id: 'mark', name: t`Black mark` },
+                      { id: 'continuous', name: t`Continuous` },
+                    ]}
+                    change={(media) => setProfile({ ...profile, media })}
+                  />
+                  {(
+                    [
+                      ['gapOrMark', t`Gap or mark height (mm)`, 30],
+                      ['speed', t`Driver speed setting`, 100],
+                      ['darkness', t`Driver darkness setting`, 100],
+                    ] as const
+                  ).map(([key, label, max]) => (
+                    <PrintNumber
+                      key={key}
+                      label={label}
+                      value={profile[key]}
+                      min={0}
+                      max={max}
+                      change={(value) => {
+                        const { [key]: _previous, ...other } = profile;
+                        setProfile(value === undefined ? other : { ...other, [key]: value });
+                      }}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
+            {!niimbot && (
+              <p className="text-small text-ink-2">
+                <Trans>
+                  Use the system print dialog to select the queue and apply media, speed, and
+                  darkness settings.
+                </Trans>
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" isDisabled={!profile.name.trim()} onPress={saveProfile}>
+                <Trans>Save profile and stock calibration</Trans>
+              </Button>
+              {profile.id && !niimbot && (
+                <Button
+                  variant="secondary"
+                  onPress={() => setProfile({ ...profile, id: '', name: '' })}
+                >
+                  <Trans>Copy to a new profile</Trans>
+                </Button>
+              )}
+            </div>
+          </details>
+        </>
+      )}
     </div>
   );
 }

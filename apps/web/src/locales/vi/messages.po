@@ -34614,3 +34614,52 @@ msgstr "Dùng thẻ NFC khác"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "Hàng đợi in của bạn đang trống."
+
+#: src/native/browse.tsx
+msgid "Missing items"
+msgstr "Đồ bị thất lạc"
+
+#: src/native/browse.tsx
+msgid "Some items are missing from this device."
+msgstr "Một số đồ không có trên thiết bị này."
+
+#: src/native/record.tsx
+msgid "Mark found here"
+msgstr "Đánh dấu đã tìm thấy ở đây"
+
+#: src/native/record.tsx
+msgid "Mark missing"
+msgstr "Đánh dấu thất lạc"
+
+msgid "Add to {0}"
+msgstr "Thêm vào {0}"
+
+msgid "Box type"
+msgstr "Loại hộp"
+
+msgid "Box / bin"
+msgstr "Hộp / thùng"
+
+msgid "Add to bin"
+msgstr "Thêm vào thùng"
+
+msgid "AirPrint / share"
+msgstr "AirPrint / chia sẻ"
+
+msgid "NIIMBOT B1 Pro"
+msgstr "NIIMBOT B1 Pro"
+
+msgid "QR code and item details"
+msgstr "Mã QR và chi tiết món đồ"
+
+msgid "QR code, category and contents"
+msgstr "Mã QR, danh mục và nội dung"
+
+msgid "View templates"
+msgstr "Xem mẫu"
+
+msgid "Label templates"
+msgstr "Mẫu nhãn"
+
+msgid "Use template"
+msgstr "Dùng mẫu"

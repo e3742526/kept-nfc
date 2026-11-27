@@ -1,12 +1,13 @@
-import { hasQr, LABEL_STOCKS } from '@kept/shared';
+import { COMPACT_THERMAL_STOCK, hasQr, LABEL_STOCKS, usesThermalLabelEditor } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
-import { useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { capturePaths } from '@/api/capture/paths';
 import { api } from '@/api/client';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
 import { useStockText } from './stock-picker';
+import { isNiimbotStock } from './thermal/niimbot';
 
 export type QueueTarget = { locationId: string; kind: 'thing' | 'place'; recordId: string };
 type Row = QueueTarget & { batchId: string | null; name: string | null; available: boolean };
@@ -61,12 +62,14 @@ export function PrintQueue({
   confirmPrinted,
   locationName,
   heading: Heading = 'h2',
+  printerSettings,
 }: {
   request?: PrintQueueRequest;
   openBatch: (id: string) => void | Promise<void>;
   confirmPrinted?: (id: string) => Promise<unknown>;
   locationName: (id: string) => string | undefined;
   heading?: 'h2' | 'h3';
+  printerSettings?: ReactNode;
 }) {
   const { t } = useLingui();
   const errorText = useErrorText();
@@ -74,9 +77,16 @@ export function PrintQueue({
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<unknown>();
   const [stock, setStock] = useState('letter_writable_12');
+  const [printer, setPrinter] = useState<'office' | 'thermal'>('office');
   const stockText = useStockText();
   const stocks = LABEL_STOCKS.filter((entry) =>
-    confirmPrinted ? entry.key.startsWith('letter_writable_') : hasQr(entry),
+    printerSettings
+      ? printer === 'office'
+        ? entry.key.startsWith('letter_writable_')
+        : isNiimbotStock(entry.key) && usesThermalLabelEditor(entry.key)
+      : confirmPrinted
+        ? entry.key.startsWith('letter_writable_')
+        : hasQr(entry),
   ).map((entry) => ({ id: entry.key, label: stockText(entry).title }));
   const reload = useCallback(async () => {
     try {
@@ -124,6 +134,26 @@ export function PrintQueue({
           <Trans>Refresh</Trans>
         </Button>
       </div>
+      {printerSettings && (
+        <>
+          <Select
+            label={t`Printer`}
+            selectedKey={printer}
+            items={[
+              { id: 'office', label: t`AirPrint / share` },
+              { id: 'thermal', label: t`NIIMBOT B1 Pro` },
+            ]}
+            onSelectionChange={(value) => {
+              if (value !== 'office' && value !== 'thermal') return;
+              setPrinter(value);
+              setStock(value === 'thermal' ? COMPACT_THERMAL_STOCK : 'letter_writable_12');
+            }}
+          >
+            {({ id, label }) => <SelectItem id={id}>{label}</SelectItem>}
+          </Select>
+          {printer === 'thermal' && printerSettings}
+        </>
+      )}
       {items?.length === 0 && (
         <p>
           <Trans>Your print queue is empty.</Trans>

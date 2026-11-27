@@ -348,8 +348,11 @@ export async function createBox(
   destination: Destination,
   name: string,
   adapters: PlatformAdapters = capacitorAdapters,
+  selectedTypeId?: string,
 ): Promise<ThingView> {
-  const type = cache.types.find((entry) => entry.builtinKey === 'box_bin' && entry.isContainer);
+  const type = selectedTypeId
+    ? cache.types.find((entry) => entry.id === selectedTypeId && entry.isContainer)
+    : cache.types.find((entry) => entry.builtinKey === 'box_bin' && entry.isContainer);
   if (!type) throw new ApiError(400, 'validation', 'This SheepKeep has no Box type.');
   const view = await adapters.transport.request<ThingView>(connection, inventoryPaths.things, {
     method: 'POST',

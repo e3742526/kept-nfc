@@ -39,6 +39,7 @@ export const labelBatches = pgTable(
     startCell: integer('start_cell').notNull().default(1),
     codeCount: integer('code_count').notNull(),
     thermal: jsonb('thermal'),
+    templateKey: text('template_key'),
     createdBy: uuid('created_by').notNull(),
     /** "Printed OK?" answered yes. */
     printedConfirmedAt: tstz('printed_confirmed_at'),

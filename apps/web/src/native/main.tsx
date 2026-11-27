@@ -37,7 +37,7 @@ import type { Page, SearchResponse, ThingRow } from '@/api/inventory/types';
 import { paths } from '@/api/paths';
 import type { Me } from '@/api/types';
 import { AppMark, BrandLockup } from '@/components/brand';
-import { NiimbotSettings } from '@/components/labels/thermal/niimbot-settings';
+import { PrinterSettingsPanel } from '@/components/labels/thermal/printer-settings';
 import { PhotoImage } from '@/components/photo-image';
 import { PlaceEvidenceDetails } from '@/components/places/place-evidence';
 import { ProjectNotice } from '@/components/project-notice';
@@ -204,7 +204,7 @@ function TabBar({
   const { t } = useLingui();
   const tabs = [
     { key: 'home', label: t`Home`, Icon: Home },
-    { key: 'search', label: t`Search`, Icon: Search },
+    { key: 'search', label: t`Browse`, Icon: Search },
     { key: 'scan', label: t`Scan`, Icon: QrCode },
     { key: 'capture', label: t`Add`, Icon: Plus },
     { key: 'more', label: t`More`, Icon: Ellipsis },
@@ -1646,12 +1646,22 @@ export function Inventory({
               onItems={() => openBrowse('all')}
               onBoxes={() => openBrowse('bins')}
               onCategories={() => openBrowse('categories')}
+              onMissing={() => {
+                setBrowseFilters((previous) => ({
+                  ...browseDefaults,
+                  state: 'uncertain',
+                  grid: previous.grid,
+                  sort: previous.sort,
+                }));
+                pushScreen({ kind: 'browse' });
+              }}
               onRooms={() => pushScreen({ kind: 'rooms' })}
               onUnplaced={() => {
                 setUnplacedLocationFilter(null);
                 pushScreen({ kind: 'unplaced' });
               }}
               onAddManually={() => pushScreen({ kind: 'capture', skipPhotos: true })}
+              onAddToBin={() => openBrowse('bins')}
               onAddWithCamera={(initialPhoto) => pushScreen({ kind: 'capture', initialPhoto })}
               onLabels={() => pushScreen({ kind: 'labelSheets' })}
               onReview={() => pushScreen({ kind: 'batches' })}
@@ -2062,6 +2072,9 @@ export function Inventory({
           onOpen={(target) => {
             pushScreen({ kind: 'record', target, backToBrowse: true });
           }}
+          onAddToBox={(destination) =>
+            pushScreen({ kind: 'capture', destination, fromRecord: true })
+          }
           onPhotoSearch={(mode) =>
             pushScreen({ kind: 'visualSearch', intent: { mode, text: browseFilters.q } })
           }
@@ -2231,7 +2244,11 @@ export function Inventory({
             icon={<Printer size={18} aria-hidden />}
           />
           <div className="kept-card">
-            <NiimbotSettings key={connection.id} owner={connection.id} output={printerOutput} />
+            <PrinterSettingsPanel
+              key={connection.id}
+              owner={connection.id}
+              output={printerOutput}
+            />
           </div>
         </section>
       )}

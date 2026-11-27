@@ -7,8 +7,10 @@ See the [NFC runbook](../../docs/runbooks/nfc-mvp.md) for the integrated setup a
 
 ## Inventory on iPhone
 
-- The bottom tab bar contains **Home**, **Search**, **Scan**, **Add** and **More**. Scan sits in the center above the bar. Home shows tappable inventory counts, shortcuts, recent activity and sync status. **Assistant** is in the header. Open **Settings** from the Home gear or **More**. Home offers **Continue finding** when there is a saved Find target.
-- Tap **Search** to open the filterable inventory view. Tap **Home** again to focus **Search inventory**. Type to search boxes, rooms, items and documents. Use **Open in Browse** to take that search into the filterable inventory view, or **Add “your text”** to start an entry with that description.
+- The bottom tab bar contains **Home**, **Browse**, **Scan**, **Add** and **More**. Scan sits in the center above the bar. Home shows tappable inventory counts, shortcuts, recent activity and sync status. **Assistant** is in the header. Open **Settings** from the Home gear or **More**. Home offers **Continue finding** when there is a saved Find target.
+- Choose **Add to bin** on Home, then tap the plus on a box card to add an item directly to it. You can choose a 27-gallon tote, shoe box bin or cardboard box when creating a box, or change an existing box's type under **Edit**. The server must be updated and migrated to provide these types.
+- Choose **Missing items** on Home to see records marked missing, including their last recorded locations. On an item, choose **Mark missing**; when you find it at its recorded location, choose **Mark found here**. To record a different location, use **Move**. The list shows cached inventory when offline, while changing the status requires a connection.
+- Tap **Browse** to open the filterable inventory view. Tap **Home** again to focus **Search inventory**. Type to search boxes, rooms, items and documents. Use **Open in Browse** to take that search into the filterable inventory view, or **Add “your text”** to start an entry with that description.
 - Open **More → Settings → Locations** to hide Personal or delete another location you own. Personal shows again if it becomes your only location. Deleting another location removes it for everyone who uses it. Its owner can restore it for 30 days from **Settings → Locations** in the web app.
 - Open **Home → Places → Create place** to add a room, spot, closet or floor. **Add sub-location** adds a place inside the current one. With a connection, open a place and tap **Edit** beside its name to rename it or change its description or kind. **Move** changes where it sits in the location.
 - In **Add**, choose **Add item** or **Add box**. Take or choose photos, or tap **Add manually**. Enter a description and check the destination. Add starts at the place or box you last added to, or at Unplaced. A default location in Settings keeps it in that location. Tap **Change** to pick another destination. You can attach PDFs, choose an action, and enter a quantity or notes. **Save item** saves right away; **Continue to labels** opens the NFC step first. **Recent** under the destination switches to a recent place or box in one tap. **Suggest details** lists what AI read from the photos field by field: tick the rows to use, or **Accept all**. The form starts a fresh item after saving and keeps the action and categories. Item capture works offline with a cached destination. Creating a box requires a connection. When creating a box, list its **Contents** one item per line ("3 x HDMI cable" for a count) to add them with the box, or choose **Create box and add items** to go straight to adding items into it with photos and AI.
@@ -33,8 +35,8 @@ Load genuine NIIMBOT gap stock, starting with **50 × 20 mm**. You can also sele
 40 × 20, 30 × 20, 40 × 30, 50 × 30, and 50 × 50 mm. Choose **Prepare
 calibration print** for a QR sample and alignment ticks, or **Prepare labels**
 for inventory output. **Print on B1 Pro** accepts a range of up to 40 pages and
-up to 20 copies per label. Use **Layout and printer calibration** for offsets
-and **Save printer profile** for density. AirPrint and PDF export remain
+up to 20 copies per label. Open **Printer settings** from the print screen or
+from **More → Settings** to adjust calibration and save printer profiles. AirPrint and PDF export remain
 available. USB direct printing to the B1 Pro is outside this adapter's scope.
 
 After a signed-in phone has cached the permanent label address, it can prepare

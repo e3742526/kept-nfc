@@ -14,6 +14,7 @@ import {
   Image,
   Layers,
   MapPin,
+  MapPinOff,
   Package,
   Pencil,
   Plus,
@@ -537,6 +538,24 @@ export function RecordScreen({
     onInventoryChanged();
   }
 
+  function toggleMissing() {
+    if (!thing) return;
+    return update(async () => {
+      await adapters.transport.request(
+        connection,
+        thing.locationUncertain
+          ? inventoryPaths.thingSeen(thing.id)
+          : inventoryPaths.thingNotHere(thing.id),
+        {
+          method: 'POST',
+          body: {},
+          ...(thing.locationUncertain ? {} : { ifMatch: thing.rowVersion }),
+        },
+      );
+      changed();
+    });
+  }
+
   async function update(work: () => Promise<void>) {
     if (changing) return;
     setChanging(true);
@@ -1039,6 +1058,18 @@ export function RecordScreen({
             )}
             {online && canEdit && thing && (
               <>
+                <Button
+                  variant="secondary"
+                  isPending={changing}
+                  onPress={() => void toggleMissing()}
+                >
+                  <MapPinOff size={16} aria-hidden />
+                  {thing.locationUncertain ? (
+                    <Trans>Mark found here</Trans>
+                  ) : (
+                    <Trans>Mark missing</Trans>
+                  )}
+                </Button>
                 <Button variant="secondary" onPress={() => setEditor('edit')}>
                   <Pencil size={16} aria-hidden />
                   <Trans>Edit</Trans>

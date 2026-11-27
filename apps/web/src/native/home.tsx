@@ -8,15 +8,16 @@ import {
   Image,
   Inbox,
   MapPin,
+  MapPinOff,
   Minus,
   Package,
   Pencil,
   Plus,
+  Printer,
   Radar,
   RefreshCw,
   Settings,
   Tag,
-  Tags,
   WifiOff,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -197,7 +198,9 @@ export function HomeDashboard({
   onBoxes,
   onRooms,
   onUnplaced,
+  onMissing,
   onAddManually,
+  onAddToBin,
   onAddWithCamera,
   onCategories,
   onLabels,
@@ -220,7 +223,9 @@ export function HomeDashboard({
   onBoxes: () => void;
   onRooms: () => void;
   onUnplaced: () => void;
+  onMissing: () => void;
   onAddManually: () => void;
+  onAddToBin: () => void;
   onAddWithCamera: (photo: File) => void;
   onCategories: () => void;
   onLabels: () => void;
@@ -272,7 +277,7 @@ export function HomeDashboard({
           onPress={onUnplaced}
         />
       </div>
-      <div className={`kept-home-actions${findName ? ' kept-home-actions-3' : ''}`}>
+      <div className={`kept-home-actions${findName ? ' kept-home-actions-4' : ''}`}>
         <Button className="kept-action" isDisabled={!canWrite} onPress={onAddManually}>
           <span className="kept-action-well kept-action-well-accent" aria-hidden>
             <Plus size={20} />
@@ -294,6 +299,17 @@ export function HomeDashboard({
             <Trans>Add with camera</Trans>
           </Button>
         </FileTrigger>
+        <Button
+          variant="secondary"
+          className="kept-action"
+          isDisabled={!canWrite}
+          onPress={onAddToBin}
+        >
+          <span className="kept-action-well" aria-hidden>
+            <Boxes size={20} />
+          </span>
+          <Trans>Add to bin</Trans>
+        </Button>
         {findName && (
           <Button
             variant="secondary"
@@ -309,6 +325,12 @@ export function HomeDashboard({
         )}
       </div>
       <div className="kept-shortcuts">
+        <Button variant="ghost" className="kept-shortcut" isDisabled={!ready} onPress={onMissing}>
+          <span className="kept-shortcut-well" aria-hidden>
+            <MapPinOff size={18} />
+          </span>
+          <Trans>Missing items</Trans>
+        </Button>
         <Button
           variant="ghost"
           className="kept-shortcut"
@@ -327,7 +349,7 @@ export function HomeDashboard({
           onPress={onLabels}
         >
           <span className="kept-shortcut-well" aria-hidden>
-            <Tags size={18} />
+            <Printer size={18} />
           </span>
           <Trans>Labels</Trans>
         </Button>

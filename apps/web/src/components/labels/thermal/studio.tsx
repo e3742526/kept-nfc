@@ -214,6 +214,8 @@ export function ThermalStudio({
               ? { ...saved, ...rendering, id: saved.id, name: saved.name, media: saved.media }
               : rendering,
           );
+        } else if (batch && saved && isNiimbotStock(batch.stock)) {
+          setProfile(printerOnStock(saved, batch.stock));
         } else if (row && isThermalLabelStock(row.stock)) {
           const printer = saved && printerOnStock(saved, row.stock);
           if (printer) setProfile(printer);
@@ -700,23 +702,61 @@ export function ThermalStudio({
           )}
           <ThermalSettings
             printerSettings={
-              bluetooth && (
-                <DialogTrigger>
-                  <Button variant="secondary" isDisabled={busy} className="justify-self-start">
-                    <Trans>Printer settings</Trans>
-                  </Button>
-                  <Modal>
-                    <Dialog title={<Trans>Printer settings</Trans>}>
-                      <NiimbotSettings
-                        owner={owner}
-                        output={bluetooth}
+              <DialogTrigger>
+                <Button variant="secondary" isDisabled={busy} className="justify-self-start">
+                  <Trans>Printer settings</Trans>
+                </Button>
+                <Modal>
+                  <Dialog title={<Trans>Printer settings</Trans>}>
+                    <div className="grid gap-4">
+                      {bluetooth && (
+                        <NiimbotSettings
+                          owner={owner}
+                          output={bluetooth}
+                          stock={stock}
+                          onChange={applyPrinterSettings}
+                        />
+                      )}
+                      <ThermalSettings
+                        mode="printer"
                         stock={stock}
-                        onChange={applyPrinterSettings}
+                        setStock={(value) => {
+                          const next = printerOnStock(profile, value);
+                          setProfile(next);
+                          setStock(value);
+                          setLayout(stocksMatch(value, next.layout));
+                        }}
+                        layout={layout}
+                        setLayout={setLayout}
+                        profile={profile}
+                        setProfile={setProfile}
+                        profiles={profiles.filter(
+                          (entry) => bluetooth || entry.adapter !== 'niimbot-b1-pro',
+                        )}
+                        selectProfile={restore}
+                        saveProfile={() =>
+                          void run(async () => {
+                            ThermalBatchSpecSchema.parse(spec);
+                            await remember(
+                              savePrinterStock(
+                                {
+                                  ...profile,
+                                  id: profile.id || crypto.randomUUID(),
+                                  name: profile.name.trim(),
+                                },
+                                stock,
+                                layout,
+                              ),
+                            );
+                          })
+                        }
+                        options={options}
+                        setOptions={setOptions}
                       />
-                    </Dialog>
-                  </Modal>
-                </DialogTrigger>
-              )
+                    </div>
+                  </Dialog>
+                </Modal>
+              </DialogTrigger>
             }
             stock={stock}
             setStock={(value) => {

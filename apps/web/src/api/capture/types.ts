@@ -511,6 +511,7 @@ export type LabelBatch = {
   locationId: string;
   kind: LabelBatchKind;
   stock: string;
+  templateKey?: 'standard' | 'drawer' | null;
   thermal?: ThermalBatchSpec;
   startCell: number;
   createdAt: string;

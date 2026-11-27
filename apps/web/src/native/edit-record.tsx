@@ -17,7 +17,7 @@ import { useErrorText } from '@/components/page';
 import { PLACE_KINDS } from '@/components/places/labels';
 import { formValues, isEmptyPatch, toPatch, validate } from '@/components/things/form-model';
 import { useConditionLabels } from '@/components/things/labels';
-import { useFieldLabel } from '@/components/things/names';
+import { useFieldLabel, useTypeName } from '@/components/things/names';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -77,6 +77,7 @@ export function EditRecord({
   onAuthError?: (reason: 'expired' | 'restored') => void;
 }) {
   const { t } = useLingui();
+  const typeName = useTypeName();
   const adapters = usePlatform();
   const confirm = useConfirm();
   const errorText = useErrorText();
@@ -444,7 +445,16 @@ export function EditRecord({
                 label={t`Type`}
                 selectedKey={values.typeId ?? 'none'}
                 isDisabled={busy}
-                items={[{ id: 'none', name: t`No type` }, ...cache.types]}
+                items={[
+                  { id: 'none', name: t`No type` },
+                  ...cache.types.map((type) => ({
+                    ...type,
+                    name: typeName({
+                      ...type,
+                      name: type.name === type.builtinKey ? null : type.name,
+                    }),
+                  })),
+                ]}
                 onSelectionChange={(key) =>
                   setValues({ ...values, typeId: !key || key === 'none' ? null : String(key) })
                 }

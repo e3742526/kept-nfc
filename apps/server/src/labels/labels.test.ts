@@ -99,6 +99,45 @@ afterAll(async () => {
 });
 
 describe('POST /api/v1/labels/batches', () => {
+  it('records the resolved built-in template with a thermal batch', async () => {
+    const thing = await createThing(t, ibrahim, home, { name: 'Drawer contents' });
+    const thermal = {
+      layout: 'single',
+      profile: { dpi: 300, orientation: 'portrait', scale: 100 },
+      options: {
+        qrSide: 'left',
+        handwriting: 0,
+        showName: true,
+        showLocation: false,
+        showContents: true,
+        showNfc: false,
+        identifierPt: 10,
+        template: 'drawer',
+      },
+    };
+    const made = ok(
+      await batch(ibrahim, {
+        locationId: home.id,
+        kind: 'things',
+        thingIds: [thing.id],
+        stock: 'thermal_50x20',
+        thermal,
+      }),
+      201,
+    ) as unknown as { batch: { id: string; templateKey: string } };
+    expect(made.batch.templateKey).toBe('drawer');
+    const read = ok(await call(t, `/api/v1/labels/batches/${made.batch.id}`, { as: ibrahim }));
+    expect(read.templateKey).toBe('drawer');
+    const rows = await own<{ template_key: string }>(
+      db,
+      'SELECT template_key FROM public.label_batches WHERE id = $1',
+      [made.batch.id],
+    );
+    expect(rows[0]?.template_key).toBe('drawer');
+    expect(
+      (await call(t, `/api/v1/labels/batches/${made.batch.id}`, { as: bruce })).statusCode,
+    ).toBe(404);
+  });
   // catalogue: POST /api/v1/labels/batches
   it('labels listed things with their codes, links, names and paths, audited', async () => {
     const drill = await createThing(t, ibrahim, home, { name: 'Drill', placeId: shelf });
@@ -600,6 +639,24 @@ describe('POST /api/v1/labels/batches/:id/printed', () => {
 });
 
 describe('personal print queue', () => {
+  it('prepares queued records on thermal stock without changing their identity', async () => {
+    const thing = await createThing(t, ibrahim, home, { name: 'Thermal queue item' });
+    const url = '/api/v1/labels/queue';
+    const target = { recordId: thing.id, locationId: home.id, kind: 'thing' };
+    ok(await call(t, url, { as: ibrahim, body: { action: 'add', ...target } }));
+    const result = ok(
+      await call(t, url, {
+        as: ibrahim,
+        body: { action: 'prepare', locationId: home.id, kind: 'thing', stock: 'thermal_50x20' },
+      }),
+    );
+    const batch = ok(await call(t, `/api/v1/labels/batches/${result.batchId}`, { as: ibrahim }));
+    expect(batch).toMatchObject({
+      stock: 'thermal_50x20',
+      labels: [expect.objectContaining({ targetId: thing.id })],
+    });
+    ok(await printed(ibrahim, String(result.batchId)));
+  });
   // catalogue: POST /api/v1/labels/queue
   it('shares the prepared batch across sessions for one user and keeps it until print confirmation', async () => {
     const thing = await createThing(t, ibrahim, home, { name: 'Queue clamp' });

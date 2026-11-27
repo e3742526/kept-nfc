@@ -34614,3 +34614,52 @@ msgstr "Anderes NFC-Tag verwenden"
 #: src/components/labels/print-queue.tsx
 msgid "Your print queue is empty."
 msgstr "Deine Druckwarteschlange ist leer."
+
+#: src/native/browse.tsx
+msgid "Missing items"
+msgstr "Vermisste Gegenstände"
+
+#: src/native/browse.tsx
+msgid "Some items are missing from this device."
+msgstr "Einige Gegenstände fehlen auf diesem Gerät."
+
+#: src/native/record.tsx
+msgid "Mark found here"
+msgstr "Hier als gefunden markieren"
+
+#: src/native/record.tsx
+msgid "Mark missing"
+msgstr "Als vermisst markieren"
+
+msgid "Add to {0}"
+msgstr "Zu {0} hinzufügen"
+
+msgid "Box type"
+msgstr "Boxtyp"
+
+msgid "Box / bin"
+msgstr "Kiste / Box"
+
+msgid "Add to bin"
+msgstr "Zu Box hinzufügen"
+
+msgid "AirPrint / share"
+msgstr "AirPrint / Teilen"
+
+msgid "NIIMBOT B1 Pro"
+msgstr "NIIMBOT B1 Pro"
+
+msgid "QR code and item details"
+msgstr "QR-Code und Artikeldetails"
+
+msgid "QR code, category and contents"
+msgstr "QR-Code, Kategorie und Inhalt"
+
+msgid "View templates"
+msgstr "Vorlagen ansehen"
+
+msgid "Label templates"
+msgstr "Etikettenvorlagen"
+
+msgid "Use template"
+msgstr "Vorlage verwenden"

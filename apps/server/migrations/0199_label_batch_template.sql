@@ -1,0 +1,1 @@
+ALTER TABLE "label_batches" ADD COLUMN "template_key" text;

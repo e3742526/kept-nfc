@@ -68,8 +68,12 @@ it('verifies the selected model, then retries an interrupted offline job with th
   await user.clear(quantity);
   await user.type(quantity, '2');
   const settings = screen.getByRole('button', { name: 'Printer settings' });
+  expect(screen.queryByText('Save printer profile')).not.toBeInTheDocument();
+  expect(screen.queryByText('Layout and printer calibration')).not.toBeInTheDocument();
   await user.click(settings);
   const setup = await screen.findByRole('dialog', { name: 'Printer settings' });
+  expect(within(setup).getByText('Save printer profile')).toBeInTheDocument();
+  expect(within(setup).getByText('Layout and printer calibration')).toBeInTheDocument();
   await user.click(within(setup).getByRole('button', { name: 'Find nearby printers' }));
   await user.click(await screen.findByRole('button', { name: device.name }));
   expect(
@@ -153,3 +157,67 @@ it('verifies the selected model, then retries an interrupted offline job with th
   expect(screen.queryByRole('button', { name: 'Print on B1 Pro' })).not.toBeInTheDocument();
   expect(await printStore.jobs.get(before?.id ?? '')).toMatchObject({ codes: before?.codes });
 }, 10_000);
+
+it('lets a user choose between remembered Bluetooth printers', async () => {
+  const { niimbotProfile } = await import('./niimbot');
+  const { NiimbotSettings } = await import('./niimbot-settings');
+  const owner = 'niimbot-multiple-printers';
+  const first = niimbotProfile({ id: 'device-a', name: 'Workshop printer' }, 'thermal_50x20');
+  const second = niimbotProfile({ id: 'device-b', name: 'Office printer' }, 'thermal_50x20');
+  await printStore.preferences.put({
+    owner,
+    profiles: [first, second],
+    profileId: first.id,
+    stock: first.stock,
+  });
+  const onChange = vi.fn();
+  const output = {
+    discover: vi.fn(),
+    identify: vi.fn(),
+    print: vi.fn(),
+    cancel: vi.fn(),
+  } as unknown as NiimbotOutput;
+  const user = userEvent.setup();
+  render(
+    <I18nProvider i18n={i18n}>
+      <NiimbotSettings owner={owner} output={output} onChange={onChange} />
+    </I18nProvider>,
+  );
+  const other = await screen.findByRole('region', { name: 'Office printer' });
+  await user.click(within(other).getByRole('button', { name: 'Use for thermal printing' }));
+  expect(await printStore.preferences.get(owner)).toMatchObject({ profileId: second.id });
+  expect(onChange).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.objectContaining({ bluetoothId: 'device-b' }),
+  );
+});
+
+it('saves a printer profile and calibration from printer settings', async () => {
+  const { PrinterSettingsPanel } = await import('./printer-settings');
+  const owner = 'printer-settings-profile-test';
+  const user = userEvent.setup();
+  render(
+    <I18nProvider i18n={i18n}>
+      <PrinterSettingsPanel owner={owner} />
+    </I18nProvider>,
+  );
+  await user.click(await screen.findByText('Layout and printer calibration'));
+  const offset = screen.getByRole('spinbutton', { name: 'Horizontal offset (mm)' });
+  await user.clear(offset);
+  await user.type(offset, '2');
+  await user.click(screen.getByText('Save printer profile'));
+  await user.type(screen.getByRole('textbox', { name: 'Printer name' }), 'Label printer');
+  await user.click(screen.getByRole('button', { name: 'Save profile and stock calibration' }));
+  await waitFor(async () =>
+    expect((await printStore.preferences.get(owner))?.profiles).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'Label printer',
+          calibration: expect.objectContaining({
+            thermal_50x20: expect.objectContaining({ offsetX: 2 }),
+          }),
+        }),
+      ]),
+    ),
+  );
+});

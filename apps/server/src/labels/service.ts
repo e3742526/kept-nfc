@@ -7,6 +7,7 @@ import {
   newId,
   profileForBatch,
   randomShortCode,
+  resolveLabelTemplate,
   type ThermalBatchSpec,
   ThermalBatchSpecSchema,
   thermalGeometry,
@@ -119,6 +120,7 @@ export const LabelBatchSchema = z.object({
   locationId: z.uuid(),
   kind: z.enum(['things', 'places', 'blank']),
   stock: z.string(),
+  templateKey: z.enum(['standard', 'drawer']).nullable(),
   thermal: ThermalBatchSpecSchema.optional(),
   startCell: z.number(),
   createdAt: z.string(),
@@ -167,6 +169,7 @@ type BatchRow = {
   location_id: string;
   kind: 'things' | 'places' | 'blank';
   stock: string;
+  template_key: 'standard' | 'drawer' | null;
   thermal: ThermalBatchSpec | null;
   start_cell: number;
   created_at: Date;
@@ -175,7 +178,7 @@ type BatchRow = {
 };
 
 const BATCH_COLUMNS = `b.id, b.location_id, b.kind, b.stock, b.start_cell, b.created_at,
-                       b.printed_confirmed_at, b.dismissed_at, b.thermal`;
+                       b.printed_confirmed_at, b.dismissed_at, b.thermal, b.template_key`;
 
 type CellRow = {
   batch_id: string;
@@ -318,6 +321,8 @@ function batchOf(b: BatchRow, labels: LabelBatch['labels']): LabelBatch {
     locationId: b.location_id,
     kind: b.kind,
     stock: b.stock,
+    templateKey:
+      b.template_key ?? (b.thermal ? resolveLabelTemplate(b.stock, b.thermal.options) : null),
     ...(b.thermal ? { thermal: b.thermal } : {}),
     startCell: b.start_cell,
     createdAt: b.created_at.toISOString(),
@@ -748,9 +753,18 @@ export async function createBatch(
       : newId();
   await client.query(
     `INSERT INTO public.label_batches (id, location_id, kind, stock, start_cell, code_count,
-                                       created_by, thermal)
-     VALUES ($1, $2, $3, $4, $5, $6, kept.current_user_id(), $7)`,
-    [id, locationId, body.kind, stock.key, startCell, picked.codes.length, thermal ?? null],
+                                       created_by, thermal, template_key)
+     VALUES ($1, $2, $3, $4, $5, $6, kept.current_user_id(), $7, $8)`,
+    [
+      id,
+      locationId,
+      body.kind,
+      stock.key,
+      startCell,
+      picked.codes.length,
+      thermal ?? null,
+      thermal ? resolveLabelTemplate(stock.key, thermal.options) : null,
+    ],
   );
   await client.query(
     `INSERT INTO public.label_batch_codes (batch_id, location_id, code, sort)
@@ -768,6 +782,7 @@ export async function createBatch(
     after: {
       kind: body.kind,
       stock: stock.key,
+      ...(thermal ? { template_key: resolveLabelTemplate(stock.key, thermal.options) } : {}),
       start_cell: startCell,
       code_count: picked.codes.length,
       ...(body.unprinted ? { unprinted: true } : {}),
