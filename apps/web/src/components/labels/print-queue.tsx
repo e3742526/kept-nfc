@@ -6,6 +6,7 @@ import { api } from '@/api/client';
 import { useErrorText } from '@/components/page';
 import { Button } from '@/components/ui/button';
 import { Select, SelectItem } from '@/components/ui/select';
+import { sep } from '@/lib/format';
 import { useStockText } from './stock-picker';
 
 export type QueueTarget = { locationId: string; kind: 'thing' | 'place'; recordId: string };
@@ -149,7 +150,8 @@ export function PrintQueue({
         return (
           <div key={key} className="grid gap-2 rounded-lg border border-line p-3">
             <p className="font-semibold">
-              {locationName(locationId) ?? t`Inventory location`} ·{' '}
+              {locationName(locationId) ?? t`Inventory location`}
+              {sep()}
               {kind === 'thing' ? t`Items` : t`Places`}
             </p>
             <ul className="grid gap-1">
