@@ -65,7 +65,7 @@ import {
 import { Browse, browseDefaults } from './browse';
 import { CaptureAISettings } from './capture-ai';
 import { CaptureForm, NewBoxForm } from './capture-form';
-import { type Destination, defaultDestination, writableLocations } from './destination';
+import { addDestination, type Destination, writableLocations } from './destination';
 import { HomeDashboard } from './home';
 import {
   type InventoryCache,
@@ -102,6 +102,7 @@ import {
 } from './outbox';
 import { applyPalette, type PaletteId, setPalette, usePalette } from './palette';
 import { PhotoReview } from './photo-review';
+import { readLastAddDestination, rememberLastAddDestination } from './recent-destinations';
 import { RecordScreen } from './record';
 import { Places } from './rooms';
 import { Trash } from './trash';
@@ -699,8 +700,7 @@ export function Inventory({
   const [completions, setCompletions] = useState<Record<string, CompletionState>>({});
   const [held, setHeld] = useState<PendingCapture[]>([]);
   const [stats, setStats] = useState<StorageStats>();
-  const [recentBoxes, setRecentBoxes] = useState<string[]>([]);
-  const recentRef = useRef<string[]>([]);
+  const [lastAdded, setLastAdded] = useState<Destination>();
   const [savedFindTarget, setSavedFindTarget] = useState<PersistedFindTarget>();
   const [retargetingId, setRetargetingId] = useState<string>();
   const [retargetBoxId, setRetargetBoxId] = useState<string | null>(null);
@@ -780,20 +780,12 @@ export function Inventory({
     resetBrowseFilters(mode, q);
     pushScreen({ kind: 'browse' });
   };
-  const rememberBox = (target: Target) => {
-    if (
-      target.kind !== 'thing' ||
-      !cacheRef.current?.things.find((item) => item.id === target.id)?.isContainer
-    )
-      return;
-    const next = [target.id, ...recentRef.current.filter((id) => id !== target.id)].slice(0, 6);
-    recentRef.current = next;
-    setRecentBoxes(next);
-    void adapters.outbox.setValue(connection, 'recentBoxes', JSON.stringify(next)).catch(() => {});
+  const rememberAdded = (destination: Destination) => {
+    setLastAdded(destination);
+    void rememberLastAddDestination(connection, adapters, destination);
   };
   const open = (target: Target, backToRooms = false) => {
     setScreen({ kind: 'record', target, backToRooms });
-    rememberBox(target);
   };
 
   const display = useCallback((next: InventoryCache | undefined) => {
@@ -954,20 +946,9 @@ export function Inventory({
         if (raw && mounted.current) setSavedFindTarget(JSON.parse(raw) as PersistedFindTarget);
       })
       .catch(() => {});
-    void adapters.outbox
-      .getValue(connection, 'recentBoxes')
-      .then((raw) => {
-        if (!raw || !mounted.current || recentRef.current.length) return;
-        const saved: unknown = JSON.parse(raw);
-        if (Array.isArray(saved)) {
-          const ids = saved
-            .filter((value): value is string => typeof value === 'string')
-            .slice(0, 6);
-          recentRef.current = ids;
-          setRecentBoxes(ids);
-        }
-      })
-      .catch(() => {});
+    void readLastAddDestination(connection, adapters).then((saved) => {
+      if (saved && mounted.current) setLastAdded((current) => current ?? saved);
+    });
     void refresh();
     const now = () => {
       if (document.visibilityState === 'visible') void refresh();
@@ -1209,20 +1190,8 @@ export function Inventory({
     cache?.locations.some((loc) => loc.id === box.locationId && loc.role !== 'viewer'),
   );
   const canWrite = cache?.locations.some((location) => location.role !== 'viewer') ?? false;
-  // The box used most recently is the likeliest place for the next item.
-  const suggestedBox = recentBoxes
-    .map((id) => editableBoxes.find((box) => box.id === id))
-    .find(
-      (box) => box !== undefined && (!defaultLocationId || box.locationId === defaultLocationId),
-    );
-  const suggestedDestination: Destination | undefined = suggestedBox
-    ? {
-        id: suggestedBox.id,
-        locationId: suggestedBox.locationId,
-        name: suggestedBox.name ?? t`Untitled`,
-        kind: 'box',
-      }
-    : cache && defaultDestination(cache, defaultLocationId);
+  // Add starts where the last item or box was added (still open and writable), else Unplaced.
+  const suggestedDestination = cache && addDestination(cache, lastAdded, defaultLocationId);
   const localResults = cache && cachedSearch ? localInventorySearch(cache, searchTerm) : [];
   const things = query.trim()
     ? (found?.things.items.map((thing) => ({
@@ -1819,7 +1788,9 @@ export function Inventory({
             screen.destination ??
             authoritativeCache?.places.find((entry) => entry.id === screen.place?.id)
           }
+          suggested={suggestedDestination}
           onClose={() => (screen.place ? open(screen.place, true) : goHome())}
+          onAdded={rememberAdded}
           onCreated={(id, locationId) => {
             open({ id, locationId, kind: 'thing' });
             void refresh();
@@ -1861,6 +1832,7 @@ export function Inventory({
           leaveRef={canLeaveCapture}
           onClose={goBack}
           onSave={savedLocally}
+          onAdded={rememberAdded}
           onReview={(id) => pushScreen({ kind: 'photoReview', id })}
           onAuthError={onSignOut}
         />
@@ -2020,7 +1992,6 @@ export function Inventory({
           onBack={goBack}
           onOpen={(target) => {
             pushScreen({ kind: 'record', target, backToBrowse: true });
-            rememberBox(target);
           }}
           onPhotoSearch={(mode) =>
             pushScreen({ kind: 'visualSearch', intent: { mode, text: browseFilters.q } })

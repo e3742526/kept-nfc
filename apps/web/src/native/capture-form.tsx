@@ -85,6 +85,7 @@ export function CaptureForm({
   leaveRef,
   onClose,
   onSave,
+  onAdded,
   onReview,
   onAuthError,
   headerExtra,
@@ -99,7 +100,7 @@ export function CaptureForm({
   skipPhotos?: boolean;
   /** A blank NFC tag scanned on the way here: the label step offers to write it. */
   blankTag?: TagReading;
-  /** Where the next item most likely goes (the box used last); the picker changes it. */
+  /** Where Add starts (the place or box added to last, else Unplaced); the picker changes it. */
   suggested?: Destination;
   pending?: readonly PendingCapture[];
   /** Durable terminal states; only `synced` counts as synchronized. */
@@ -111,6 +112,8 @@ export function CaptureForm({
   leaveRef: Ref<() => Promise<boolean>>;
   onClose: () => void;
   onSave: () => void;
+  /** An item was saved into this place or box (not photos or documents for a record). */
+  onAdded?: (destination: Destination) => void;
   onReview?: (id: string) => void;
   onAuthError?: (reason: 'expired' | 'restored') => void;
   /** Shown right under the header (the Add tab's Item | Box switch). */
@@ -337,6 +340,7 @@ export function CaptureForm({
       setIntent('record');
       setTags([]);
       if (labelled) clearLabel();
+      onAdded?.(destination);
       onSave();
       onReview(id);
     } catch {
@@ -387,6 +391,7 @@ export function CaptureForm({
       clearLabel();
       setStep('photos');
       setStatus(t`Saved on device.`);
+      if (!evidenceOnly) onAdded?.(destination);
       onSave();
     } catch (error) {
       setStatus(
@@ -798,22 +803,27 @@ export function NewBoxForm({
   connection,
   cache,
   place,
+  suggested,
   onClose,
   onCreated,
+  onAdded,
   headerExtra,
 }: {
   connection: Connection;
   cache: InventoryCache;
   place?: Destination;
+  /** Where Add starts when no place was given (the place or box added to last, else Unplaced). */
+  suggested?: Destination;
   onClose: () => void;
   onCreated: (id: string, locationId: string) => void;
+  onAdded?: (destination: Destination) => void;
   headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
   const adapters = usePlatform();
   const [name, setName] = useState('');
   const [target, setTarget] = useState<Destination | undefined>(() =>
-    place ? { ...place, kind: place.kind ?? 'place' } : defaultDestination(cache),
+    place ? { ...place, kind: place.kind ?? 'place' } : (suggested ?? defaultDestination(cache)),
   );
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
@@ -824,6 +834,7 @@ export function NewBoxForm({
     setStatus('');
     try {
       const result = await createBox(connection, cache, target, name.trim() || t`Box`, adapters);
+      onAdded?.(target);
       onCreated(result.id, result.locationId);
     } catch {
       setStatus(t`Could not create the box. Check your connection and selected location.`);

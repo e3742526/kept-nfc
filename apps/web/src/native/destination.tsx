@@ -507,6 +507,34 @@ export function DestinationPicker({
   );
 }
 
+/**
+ * Where Add starts: the place or box the last item or box was added to, while it is still an
+ * open, writable destination in the default location (when one is set). Otherwise that
+ * location's Unplaced.
+ */
+export function addDestination(
+  cache: InventoryCache,
+  last: Destination | undefined,
+  preferredLocationId?: string,
+): Destination | undefined {
+  const location =
+    last &&
+    (!preferredLocationId || last.locationId === preferredLocationId) &&
+    writableLocations(cache).find(({ id }) => id === last.locationId);
+  const row =
+    location &&
+    (last.kind === 'place'
+      ? cache.places.find(({ id, deleted }) => id === last.id && !deleted)
+      : last.kind === 'box'
+        ? cache.things.find(
+            ({ id, isContainer, lifecycle }) =>
+              id === last.id && isContainer && lifecycle === 'in_use',
+          )
+        : undefined);
+  if (!last || !row) return defaultDestination(cache, preferredLocationId);
+  return { id: last.id, locationId: last.locationId, kind: last.kind, name: row.name ?? last.name };
+}
+
 export function defaultDestination(
   cache: InventoryCache,
   preferredId?: string,

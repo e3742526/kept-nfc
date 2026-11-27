@@ -5315,24 +5315,50 @@ describe('KeptPhone mobile workflows', () => {
     expect((await screen.findAllByText('Photo review')).length).toBeGreaterThan(0);
   });
 
-  it('suggests the box opened last as the next destination', async () => {
-    const env = createFakeEnvironment({
-      initialConnection: {
-        id: 'https://kept.example.com|ibrahim|epoch-1',
-        origin: 'https://kept.example.com',
-        account: 'ibrahim',
-        epoch: 'epoch-1',
-      },
-    });
+  it('starts Add where the last item was added, not at a box only opened', async () => {
+    const connection = {
+      id: 'https://kept.example.com|ibrahim|epoch-1',
+      origin: 'https://kept.example.com',
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const env = createFakeEnvironment({ initialConnection: connection });
     const user = userEvent.setup();
-    env.renderApp();
+    const destination = () =>
+      (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent;
+    const openAdd = async () => {
+      await user.click(
+        within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+      );
+      await continueToItemDetails(user);
+    };
+    const first = env.renderApp();
+    // Opening a box is not adding to it: Add still starts at Unplaced.
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Back' }));
-    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Add' }));
-    await continueToItemDetails(user);
-    expect(await screen.findByText(/Winter Box/)).toBeInTheDocument();
+    await openAdd();
+    expect(destination()).toContain('Home › Unplaced');
+    await user.click(screen.getByRole('button', { name: 'Change' }));
+    await user.click(screen.getByRole('button', { name: /Room or box/ }));
+    await user.click(await screen.findByRole('option', { name: 'Garage' }));
+    await user.click(screen.getByRole('button', { name: 'Done' }));
     await user.type(screen.getByLabelText('Description'), 'Scarf');
     await saveNewItem(user);
     expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+    await waitFor(async () =>
+      expect(
+        JSON.parse((await env.adapters.outbox.getValue(connection, 'lastAddDestination')) ?? '{}'),
+      ).toMatchObject({ id: env.rooms[0]?.id, kind: 'place' }),
+    );
+
+    await user.click(within(screen.getByRole('navigation')).getByRole('button', { name: 'Home' }));
+    await openAdd();
+    expect(destination()).toContain('Home › Garage');
+    first.unmount();
+
+    // It is remembered across a relaunch.
+    env.renderApp();
+    await openAdd();
+    await waitFor(() => expect(destination()).toContain('Home › Garage'));
   });
 });
