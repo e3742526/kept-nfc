@@ -94,6 +94,16 @@ export type StoredCode = {
   printedAt: string | null;
 };
 
+/** A row of someone's print queue (the server's `label_print_queue`): a thing or place waiting
+ * for a label, and the batch "Prepare labels" made for it until it is confirmed printed. */
+export type StoredQueueEntry = {
+  userId: string;
+  locationId: string;
+  kind: 'thing' | 'place';
+  recordId: string;
+  batchId: string | null;
+};
+
 /**
  * A draft the capture fixtures own: completed from the inventory's own draft (its template) and
  * added to the inventory on the first inbox request. `typeId` is resolved against its types then.
@@ -115,6 +125,8 @@ export type CaptureState = {
   extractions: Record<string, ExtractionAttempt[]>;
   labelBatches: LabelBatch[];
   codes: StoredCode[];
+  /** Every user's print queue, oldest first. */
+  labelQueue: StoredQueueEntry[];
   /** Old labels that resolve by scan (T17's `legacy_codes`). */
   legacyCodes: StoredLegacyCode[];
   imports: ImportRun[];
@@ -877,6 +889,7 @@ export function captureFixtures(meId: string): CaptureState {
         printedAt: ago(48),
       },
     ],
+    labelQueue: [],
     legacyCodes: [
       {
         locationId: L.garage,

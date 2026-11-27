@@ -13,7 +13,9 @@ import {
  * create (the preview) answers the labels without saving a batch or allocating a blank (a place
  * with no code is given one, as by the server), and names
  * the newest unconfirmed batch holding exactly the same codes. "Not printed" (`dismiss`) sets an
- * unconfirmed batch aside; "Printed OK?" clears that.
+ * unconfirmed batch aside; "Printed OK?" clears that. The print queue is the signed-in user's own:
+ * "Prepare labels" makes the batch for a location's queued things or places as POST /labels/batches
+ * does, and "Printed OK?" takes what that batch printed off the queue.
  */
 
 import {
@@ -32,6 +34,7 @@ import type { MockState } from '../../mock/fixtures';
 import {
   err,
   forbidden,
+  MockReply,
   type MockRoute,
   notFound,
   reply,
@@ -49,9 +52,15 @@ import type {
   ReplaceLabelBody,
 } from '../types';
 import { allocateCode } from './capture';
-import { urlOf } from './state';
+import { type StoredQueueEntry, urlOf } from './state';
 
 const BLANK_CAP = 1000;
+const QUEUE_CAP = 500;
+
+type QueueTarget = { locationId: string; kind: 'thing' | 'place'; recordId: string };
+type QueueAction =
+  | (QueueTarget & { action: 'add' | 'remove' })
+  | (Omit<QueueTarget, 'recordId'> & { action: 'prepare'; stock: string });
 
 /** "Garage › Shelf A": the label's path line (unplaced areas included, as the server names them). */
 const pathText = (steps: PathStep[]) => steps.map((s) => s.name).join(' › ');
@@ -86,6 +95,45 @@ export function labelsRoutes(state: MockState): MockRoute[] {
    * say carries one (`labelPrinted`, what lists show as the tape). The server's rule is one table
    * (labels/printed-sql.ts); the mock keeps the two in step here. */
   const printedCodes = () => printedCodesOf(state);
+  const me = () => state.me.user.id;
+  /** The signed-in user's queue rows, oldest first (the same objects as in the state). */
+  const myQueue = () =>
+    cap()
+      .labelQueue.filter((q) => q.userId === me())
+      .slice(0, QUEUE_CAP);
+  /** The queued thing or place, while it is live in the location it was queued in. */
+  const queuedRecord = ({ locationId, kind, recordId }: QueueTarget) => {
+    if (!access().visible(locationId)) return undefined;
+    const record =
+      kind === 'thing'
+        ? liveThing(inv(), recordId)
+        : inv().places.find((x) => x.id === recordId && !x.deletedAt);
+    return record?.locationId === locationId ? record : undefined;
+  };
+  const queueItems = () =>
+    myQueue().map(({ locationId, kind, recordId, batchId }) => {
+      const record = queuedRecord({ locationId, kind, recordId });
+      return {
+        locationId,
+        kind,
+        recordId,
+        batchId,
+        name: record?.name ?? null,
+        available: record !== undefined,
+      };
+    });
+  /** POST /labels/batches, which "Prepare labels" calls as the server's queue calls createBatch. */
+  const createBatch = (body: CreateLabelBatchBody) =>
+    routes
+      .find((r) => r.method === 'POST' && r.template === p.labelBatches)
+      ?.handler({
+        method: 'POST',
+        path: p.labelBatches,
+        params: {},
+        query: new URLSearchParams(),
+        headers: {},
+        body,
+      });
 
   const short = (locationId: string, text: string) => {
     const scan = parseScan(text);
@@ -100,7 +148,7 @@ export function labelsRoutes(state: MockState): MockRoute[] {
     }
     return '';
   };
-  return [
+  const routes: MockRoute[] = [
     // The label address: the mock has no label host, so labels carry the page's own origin.
     route('POST', p.labelTags, ({ body }) => {
       const gate = sessionGate(state);
@@ -386,6 +434,7 @@ export function labelsRoutes(state: MockState): MockRoute[] {
             printedAt: at,
           });
       }
+      cap().labelQueue = cap().labelQueue.filter((q) => q.batchId !== batch.id);
       return batch;
     }),
 
@@ -516,5 +565,74 @@ export function labelsRoutes(state: MockState): MockRoute[] {
       markLabelled(target);
       return { outcome: 'claimed', target: { kind: target.kind, id: target.id } };
     }),
+
+    route('GET', p.labelQueue, () => sessionGate(state) ?? { items: queueItems() }),
+    route('POST', p.labelQueue, ({ body }) => {
+      const gate = sessionGate(state);
+      if (gate) return gate;
+      const input = body as QueueAction;
+      if (!['add', 'remove', 'prepare'].includes(input?.action))
+        return err(400, 'validation', 'The request is not valid.');
+      const { locationId, kind } = input;
+      if (!access().visible(locationId)) return notFound();
+      if (!access().canWrite(locationId)) return forbidden();
+      if (input.action !== 'remove' && !labelsOn(locationId))
+        return err(409, 'module_off', 'Labels are off in this location.');
+      const queue = myQueue();
+      if (input.action === 'prepare') {
+        const group = queue.filter((q) => q.locationId === locationId && q.kind === kind);
+        const ready = group.find((q) => q.batchId)?.batchId;
+        if (ready) return { items: queueItems(), batchId: ready };
+        const ids = group.filter((q) => queuedRecord(q)).map((q) => q.recordId);
+        if (!ids.length) return notFound();
+        const made = createBatch({
+          locationId,
+          kind: kind === 'thing' ? 'things' : 'places',
+          stock: input.stock,
+          ...(kind === 'thing' ? { thingIds: ids } : { placeIds: ids }),
+        });
+        if (!(made instanceof MockReply) || made.status !== 201) return made;
+        const { batch } = made.body as { batch: LabelBatch };
+        const printed = new Set(batch.labels.map((label) => label.targetId));
+        for (const q of group) if (printed.has(q.recordId)) q.batchId = batch.id;
+        return { items: queueItems(), batchId: batch.id };
+      }
+      const { recordId } = input;
+      const same = (q: StoredQueueEntry) =>
+        q.locationId === locationId && q.kind === kind && q.recordId === recordId;
+      if (input.action === 'add') {
+        if (queue.some(same)) return { items: queueItems() };
+        // A record queued in another location is moved here, so it doesn't grow the queue.
+        if (
+          queue.length >= QUEUE_CAP &&
+          !queue.some((q) => q.kind === kind && q.recordId === recordId)
+        )
+          return err(409, 'conflict', 'The print queue is full.');
+        const record = queuedRecord(input);
+        if (!record || ('isUnplaced' in record && record.isUnplaced)) return notFound();
+        cap().labelQueue = cap().labelQueue.filter(
+          (q) => !(q.userId === me() && q.kind === kind && q.recordId === recordId),
+        );
+        cap().labelQueue.push({ userId: me(), locationId, kind, recordId, batchId: null });
+        return { items: queueItems() };
+      }
+      const batchId = queue.find(same)?.batchId;
+      if (batchId) {
+        // "Not printed" for its batch, and the batch's other labels go back to the queue.
+        const batch = cap().labelBatches.find((b) => b.id === batchId);
+        if (batch?.printedConfirmedAt)
+          return err(
+            400,
+            'validation',
+            'The request is not valid.',
+            'This batch was confirmed printed.',
+          );
+        if (batch) batch.dismissedAt ??= now();
+        for (const q of cap().labelQueue) if (q.batchId === batchId) q.batchId = null;
+      }
+      cap().labelQueue = cap().labelQueue.filter((q) => !(q.userId === me() && same(q)));
+      return { items: queueItems() };
+    }),
   ];
+  return routes;
 }
