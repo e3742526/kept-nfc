@@ -3,6 +3,7 @@ import {
   type DevicePhotoProposal,
   DevicePhotoProposals,
   normalize,
+  PHOTO_DETAILS_MAX_PHOTOS,
 } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -277,9 +278,8 @@ export function CaptureSuggestion({
   online,
   provider,
   onProviderChange,
-  onUse,
+  onDetails,
   onProposals,
-  onCategories,
   disabled,
 }: {
   connection: Connection;
@@ -288,9 +288,9 @@ export function CaptureSuggestion({
   online: boolean;
   provider: CaptureAIProvider;
   onProviderChange: (provider: CaptureAIProvider) => void;
-  onUse: (name: string) => void;
+  /** What the photos show, for the form to itemize field by field. */
+  onDetails: (items: PhotoSuggestion[]) => void;
   onProposals?: (items: PhotoSuggestion[]) => Promise<void>;
-  onCategories?: (items: PhotoSuggestion[]) => Promise<void>;
   disabled: boolean;
 }) {
   const { t } = useLingui();
@@ -300,12 +300,11 @@ export function CaptureSuggestion({
   const [model, setModel] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-  const [suggestion, setSuggestion] = useState('');
   const generation = useRef(0);
-  const reviewCallbacks = useRef({ items: onProposals, categories: onCategories });
+  const callbacks = useRef({ items: onProposals, details: onDetails });
   useLayoutEffect(() => {
-    reviewCallbacks.current = { items: onProposals, categories: onCategories };
-  }, [onProposals, onCategories]);
+    callbacks.current = { items: onProposals, details: onDetails };
+  }, [onProposals, onDetails]);
   useEffect(
     () => () => {
       generation.current += 1;
@@ -340,22 +339,16 @@ export function CaptureSuggestion({
     };
   }, [captureAI, connection, provider, status, t]);
 
-  async function suggest(review?: 'items' | 'categories') {
+  async function suggest(review: 'items' | 'details') {
     if (!captureAI || busy || !files[0]) return;
     const run = ++generation.current;
     const current = () => generation.current === run;
     setBusy(true);
-    setSuggestion('');
     setMessage('');
     try {
       const modelId = provider === 'chatgpt' ? model : undefined;
-      if (!review && provider !== 'server') {
-        const { name } = await captureAI.suggest(connection, provider, files[0], modelId);
-        if (current()) setSuggestion(name);
-        return;
-      }
       const results: DevicePhotoProposal[][] = [];
-      for (const file of review ? files : [files[0]]) {
+      for (const file of review === 'items' ? files : files.slice(0, PHOTO_DETAILS_MAX_PHOTOS)) {
         let value: unknown;
         if (provider === 'server') {
           if (!locationId || !captureAI.serverProposals) return;
@@ -367,8 +360,9 @@ export function CaptureSuggestion({
         if (!current()) return;
         results.push(DevicePhotoProposals.parse(value).items);
       }
-      if (review) await reviewCallbacks.current[review]?.(mergePhotoSuggestions(results));
-      else if (results[0]?.[0]) setSuggestion(results[0][0].name);
+      const merged = mergePhotoSuggestions(results);
+      if (review === 'items') await callbacks.current.items?.(merged);
+      else callbacks.current.details(merged);
     } catch (error) {
       const code = nativeErrorCode(error);
       if (!current()) return;
@@ -381,9 +375,9 @@ export function CaptureSuggestion({
               ? t`AI paused`
               : code === 'reconnect'
                 ? t`Reconnect ChatGPT and try again.`
-                : review
+                : review === 'items'
                   ? t`Could not suggest items from this photo.`
-                  : t`Could not suggest a description from this photo.`,
+                  : t`Could not suggest details from these photos.`,
       );
     } finally {
       if (current()) setBusy(false);
@@ -419,7 +413,6 @@ export function CaptureSuggestion({
           const choice = providers.find(({ id }) => id === key);
           if (!choice) return;
           setMessage('');
-          setSuggestion('');
           onProviderChange(choice.id);
         }}
       >
@@ -459,7 +452,6 @@ export function CaptureSuggestion({
               isDisabled={busy || disabled}
               onChange={(key) => {
                 setModel(String(key ?? ''));
-                setSuggestion('');
                 setMessage('');
               }}
             >
@@ -477,9 +469,9 @@ export function CaptureSuggestion({
           variant="secondary"
           isPending={busy}
           isDisabled={disabled}
-          onPress={() => void suggest()}
+          onPress={() => void suggest('details')}
         >
-          <Trans>Suggest description</Trans>
+          <Trans>Suggest details</Trans>
         </Button>
       )}
       {canSuggest && onProposals && (
@@ -492,16 +484,6 @@ export function CaptureSuggestion({
           <Trans>Suggest items</Trans>
         </Button>
       )}
-      {canSuggest && onCategories && (
-        <Button
-          variant="secondary"
-          isPending={busy}
-          isDisabled={disabled}
-          onPress={() => void suggest('categories')}
-        >
-          <Trans>Suggest categories</Trans>
-        </Button>
-      )}
       {busy && (
         <Button
           variant="ghost"
@@ -512,23 +494,6 @@ export function CaptureSuggestion({
         >
           <Trans>Cancel suggestions</Trans>
         </Button>
-      )}
-      {suggestion && (
-        <div className="grid gap-2">
-          <bdi role="status" className="break-words text-small">
-            {suggestion}
-          </bdi>
-          <Button
-            variant="secondary"
-            isDisabled={disabled}
-            onPress={() => {
-              onUse(suggestion);
-              setSuggestion('');
-            }}
-          >
-            <Trans>Use this description</Trans>
-          </Button>
-        </div>
       )}
       {message && (
         <p role="status" className="text-small text-ink-2">

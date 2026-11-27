@@ -34428,3 +34428,40 @@ msgstr "Công cụ nhãn nâng cao"
 #: src/components/labels/thermal/studio.tsx
 msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
 msgstr "Nhập từ 1 đến {NIIMBOT_COPY_LIMIT} bản sao cho mỗi nhãn."
+
+#: src/native/capture-details.tsx
+msgid "{others, plural, one {The photos may show # more item.} other {The photos may show # more items.}}"
+msgstr "{others, plural, other {Ảnh có thể còn # món khác.}}"
+
+#: src/native/capture-details.tsx
+msgid "{selected, plural, one {Use # selected} other {Use # selected}}"
+msgstr "{selected, plural, other {Dùng # mục đã chọn}}"
+
+#: src/native/capture-details.tsx
+#: src/native/photo-details.tsx
+msgid "Accept all"
+msgstr "Chấp nhận tất cả"
+
+#: src/native/capture-details.tsx
+msgid "Adds to notes"
+msgstr "Thêm vào ghi chú"
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest details from these photos."
+msgstr "Không thể gợi ý chi tiết từ những ảnh này."
+
+#: src/native/capture-details.tsx
+msgid "Nothing new to suggest."
+msgstr "Không có gì mới để gợi ý."
+
+#: src/native/capture-form.tsx
+msgid "Some categories could not be added. Check your connection and try again."
+msgstr "Không thể thêm một số danh mục. Hãy kiểm tra kết nối và thử lại."
+
+#: src/native/capture-ai.tsx
+msgid "Suggest details"
+msgstr "Gợi ý chi tiết"
+
+#: src/native/capture-details.tsx
+msgid "Suggested details"
+msgstr "Chi tiết được gợi ý"

@@ -338,6 +338,12 @@ export function PhotoDetailsPanel({
     });
   }
 
+  function fill(rows: readonly Suggestion[]) {
+    onApply(applySuggestions(values, rows, t`Specs`));
+    setSuggestions(undefined);
+    setStatus(t`Filled in. Check the fields, then save.`);
+  }
+
   const labels: Record<Target, string> = {
     name: t`Name`,
     model: t`Model`,
@@ -520,17 +526,15 @@ export function PhotoDetailsPanel({
               );
             })}
           </ul>
-          <Button
-            isDisabled={locked || chosen.length === 0}
-            onPress={() => {
-              onApply(applySuggestions(values, chosen, t`Specs`));
-              setSuggestions(undefined);
-              setStatus(t`Filled in. Check the fields, then save.`);
-            }}
-          >
-            <Check size={16} aria-hidden />
-            {plural(chosen.length, { one: 'Fill in # field', other: 'Fill in # fields' })}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button isDisabled={locked || chosen.length === 0} onPress={() => fill(chosen)}>
+              <Check size={16} aria-hidden />
+              {plural(chosen.length, { one: 'Fill in # field', other: 'Fill in # fields' })}
+            </Button>
+            <Button variant="secondary" isDisabled={locked} onPress={() => fill(suggestions)}>
+              <Trans>Accept all</Trans>
+            </Button>
+          </div>
         </div>
       )}
       {status && (

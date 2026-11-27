@@ -34428,3 +34428,40 @@ msgstr "Outils avancés pour les étiquettes"
 #: src/components/labels/thermal/studio.tsx
 msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
 msgstr "Saisissez de 1 à {NIIMBOT_COPY_LIMIT} copies par étiquette."
+
+#: src/native/capture-details.tsx
+msgid "{others, plural, one {The photos may show # more item.} other {The photos may show # more items.}}"
+msgstr "{others, plural, one {Les photos montrent peut-être # autre objet.} other {Les photos montrent peut-être # autres objets.}}"
+
+#: src/native/capture-details.tsx
+msgid "{selected, plural, one {Use # selected} other {Use # selected}}"
+msgstr "{selected, plural, one {Utiliser # sélection} other {Utiliser # sélections}}"
+
+#: src/native/capture-details.tsx
+#: src/native/photo-details.tsx
+msgid "Accept all"
+msgstr "Tout accepter"
+
+#: src/native/capture-details.tsx
+msgid "Adds to notes"
+msgstr "S’ajoute aux notes"
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest details from these photos."
+msgstr "Impossible de suggérer des détails à partir de ces photos."
+
+#: src/native/capture-details.tsx
+msgid "Nothing new to suggest."
+msgstr "Rien de nouveau à suggérer."
+
+#: src/native/capture-form.tsx
+msgid "Some categories could not be added. Check your connection and try again."
+msgstr "Certaines catégories n’ont pas pu être ajoutées. Vérifiez votre connexion et réessayez."
+
+#: src/native/capture-ai.tsx
+msgid "Suggest details"
+msgstr "Suggérer des détails"
+
+#: src/native/capture-details.tsx
+msgid "Suggested details"
+msgstr "Détails suggérés"

@@ -1,4 +1,4 @@
-import { AMOUNT_STRING, newId, normalize } from '@kept/shared';
+import { AMOUNT_STRING, newId, normalize, TAG_LIMITS } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Camera, Check, FileText, Images, MapPin, Package, Plus, Trash2 } from 'lucide-react';
 import {
@@ -12,6 +12,8 @@ import {
   useState,
 } from 'react';
 import { TextField as AriaTextField, FileTrigger, Label, TextArea } from 'react-aria-components';
+import { inventoryPaths, qs } from '@/api/inventory/paths';
+import type { CreateRegistryResult, Page, Tag } from '@/api/inventory/types';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm';
 import { inputClass } from '@/components/ui/field';
@@ -28,16 +30,24 @@ import {
   type TagReading,
 } from './bridge';
 import { CaptureSuggestion, type PhotoSuggestion } from './capture-ai';
-import { CategoryPicker } from './category-picker';
+import {
+  type DetailRow,
+  DetailSuggestions,
+  detailRowsFor,
+  leadSuggestion,
+} from './capture-details';
+import { CategoryPicker, equivalentCategory } from './category-picker';
 import {
   type Destination,
   DestinationPicker,
   defaultDestination,
   PlacePreview,
+  resolveDestination,
 } from './destination';
 import { createBox, type InventoryCache, inventoryPath } from './inventory';
 import { type ItemLabel, ItemLabelPicker } from './item-label';
 import { mobileFileLimit, type PendingCapture, type SelectedOriginal, saveOnPhone } from './outbox';
+import { readRecentDestinations } from './recent-destinations';
 
 type ChosenFile = SelectedOriginal & { key: string; previewUrl?: string };
 type AddStep = 'photos' | 'details' | 'label';
@@ -151,6 +161,8 @@ export function CaptureForm({
   const [label, setLabel] = useState<ItemLabel>();
   // Bumped after each save, so the next item starts with a fresh label picker.
   const [labelSession, setLabelSession] = useState(0);
+  // A blank NFC tag scanned on the way here: the details step leads to the label step to write it.
+  const blankTagWaiting = !!blankTag && labelSession === 0;
   const [providerOverride, setProvider] = useState<CaptureAIProvider>();
   const provider = providerOverride ?? preferredProvider;
   const photos = evidenceOnly ? [] : files.filter((item) => item.role === 'photo');
@@ -161,6 +173,33 @@ export function CaptureForm({
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
   const previewUrlsRef = useRef<string[]>([]);
+  // The AI's reading of these photos, itemized by field; it goes stale when the photos change.
+  const photoKey = photos.map(({ key }) => key).join(',');
+  const [details, setDetails] = useState<{ photoKey: string; items: PhotoSuggestion[] }>();
+  const shownDetails = details?.photoKey === photoKey ? details.items : undefined;
+  // Categories created from a suggestion, named until the cache has them.
+  const [createdTags, setCreatedTags] = useState<(Tag & { accountId: string })[]>([]);
+  const categoryOptions = [
+    ...(cache?.tags?.filter((tag) => tag.accountId === account) ?? []),
+    ...createdTags.filter((tag) => tag.accountId === account),
+  ];
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+  useEffect(() => {
+    let current = true;
+    void readRecentDestinations(connection, adapters).then((ids) => {
+      if (current) setRecentIds(ids);
+    });
+    return () => {
+      current = false;
+    };
+  }, [adapters, connection]);
+  const recentDestinations =
+    cache && !evidenceOnly
+      ? recentIds
+          .filter((id) => id !== destination?.id)
+          .flatMap((id) => resolveDestination(cache, id) ?? [])
+          .slice(0, 4)
+      : [];
 
   async function canLeave() {
     if (busy) return false;
@@ -196,6 +235,74 @@ export function CaptureForm({
   function clearLabel() {
     setLabel(undefined);
     setLabelSession((n) => n + 1);
+  }
+
+  function added(to: Destination) {
+    setRecentIds((ids) => [to.id, ...ids.filter((id) => id !== to.id)]);
+    onAdded?.(to);
+  }
+
+  function changeDestination(next: Destination | undefined) {
+    const owner = cache?.locations.find(({ id }) => id === next?.locationId)?.ownerAccountId;
+    if (account !== owner) setTags([]);
+    if (label && label.locationId !== next?.locationId) setLabel(undefined);
+    setDestination(next);
+  }
+
+  /** A category the AI named: an existing one by name, else created (online only). */
+  async function categoryFor(row: DetailRow): Promise<string | undefined> {
+    if (row.tag) return row.tag.id;
+    if (!account) return;
+    const path = inventoryPaths.accountRegistry(account, 'tags');
+    const { items } = await adapters.transport.request<Page<Tag>>(
+      connection,
+      path + qs({ q: row.value, limit: 30 }),
+    );
+    const found =
+      items.find((tag) => equivalentCategory(tag.name, row.value)) ??
+      (
+        await adapters.transport.request<CreateRegistryResult<'tags'>>(connection, path, {
+          method: 'POST',
+          idempotencyKey: newId(),
+          body: { name: row.value },
+        })
+      ).item;
+    setCreatedTags((current) => [
+      ...current.filter(({ id }) => id !== found.id),
+      { ...found, accountId: account },
+    ]);
+    return found.id;
+  }
+
+  async function applyDetails(rows: readonly DetailRow[]) {
+    if (busy) return;
+    setBusy(true);
+    setStatus('');
+    let failed = false;
+    const addedTags: string[] = [];
+    for (const row of rows) {
+      if (row.field === 'name') setName(row.value);
+      else if (row.field === 'quantity') setQuantity(row.value);
+      else if (row.field === 'note')
+        setNote((current) => (current.trim() ? `${current.trimEnd()}\n${row.value}` : row.value));
+      else {
+        try {
+          const id = await categoryFor(row);
+          if (id) addedTags.push(id);
+        } catch {
+          failed = true;
+        }
+      }
+    }
+    if (addedTags.length)
+      setTags((current) => [...new Set([...current, ...addedTags])].slice(0, TAG_LIMITS.perThing));
+    setDetails(undefined);
+    setBusy(false);
+    setStatus(
+      failed
+        ? t`Some categories could not be added. Check your connection and try again.`
+        : t`Filled in. Check the fields, then save.`,
+    );
   }
 
   function goToStep(next: AddStep) {
@@ -266,14 +373,13 @@ export function CaptureForm({
     });
   }
 
-  async function reviewPhoto(items: PhotoSuggestion[] = [], single = false) {
+  async function reviewPhoto(items: PhotoSuggestion[] = []) {
     if (busy || !firstPhoto || !destination || evidenceOnly || !onReview) return;
     // A label belongs to one item. A review of several items can't know which, so it is never
     // guessed: the label stays on this form, for the next item saved, once that is confirmed.
     if (
       claimCode &&
       items.length > 1 &&
-      !single &&
       !(await confirm({
         title: t`Keep the label for another item?`,
         body: t`The label is not added to these items. It stays here for the next item you save.`,
@@ -285,15 +391,11 @@ export function CaptureForm({
     setBusy(true);
     setStatus('');
     try {
-      const proposals: PhotoSuggestion[] =
-        items.length && !single ? items : [{ name: name.trim() }];
+      const proposals: PhotoSuggestion[] = items.length ? items : [{ name: name.trim() }];
       const draftName = normalize(name);
       // The label goes with the item when the review is of one item; with several, it stays
       // here for the next item saved (confirmed above).
       const labelled = proposals.length === 1 ? claimCode : undefined;
-      const categories = new Map(
-        items.flatMap((item) => item.categories ?? []).map((tag) => [normalize(tag), tag]),
-      );
       const id = await saveOnPhone(
         connection,
         {
@@ -314,15 +416,15 @@ export function CaptureForm({
               id: newId(),
               tagRequestId: newId(),
               name: item.name,
-              note: items.length && !single ? (item.description ?? note.trim()) : note.trim(),
+              note: items.length ? (item.description ?? note.trim()) : note.trim(),
               quantity:
                 proposals.length === 1 && (!draftName || normalize(item.name) === draftName)
                   ? quantity
                   : '',
-              estimatedQuantity: items.length && !single ? (item.quantity ?? undefined) : undefined,
+              estimatedQuantity: items.length ? (item.quantity ?? undefined) : undefined,
               evidence: item.evidence,
               include: true,
-              categories: single ? [...categories.values()].slice(0, 8) : (item.categories ?? []),
+              categories: item.categories ?? [],
               tags,
               ...(labelled ? { claimCode: labelled, ...nfcVerified } : {}),
             })),
@@ -337,10 +439,8 @@ export function CaptureForm({
       setName('');
       setQuantity('');
       setNote('');
-      setIntent('record');
-      setTags([]);
       if (labelled) clearLabel();
-      onAdded?.(destination);
+      added(destination);
       onSave();
       onReview(id);
     } catch {
@@ -385,13 +485,12 @@ export function CaptureForm({
       setName('');
       setNote('');
       setQuantity('');
-      setIntent('record');
-      setTags([]);
+      // Action and categories stay for the next item: a bin is usually filled with similar things.
       setFiles([]);
       clearLabel();
       setStep('photos');
       setStatus(t`Saved on device.`);
-      if (!evidenceOnly) onAdded?.(destination);
+      if (!evidenceOnly) added(destination);
       onSave();
     } catch (error) {
       setStatus(
@@ -492,7 +591,10 @@ export function CaptureForm({
         className="grid gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          if (showDetails && canSave) goToStep('label');
+          if (showDetails && canSave) {
+            if (blankTagWaiting) goToStep('label');
+            else void save();
+          }
           if ((evidenceOnly || showLabels) && !labelBusy) void save();
         }}
       >
@@ -540,14 +642,7 @@ export function CaptureForm({
                   value={destination}
                   offerTagWrite
                   onAuthError={onAuthError}
-                  onChange={(next) => {
-                    const owner = cache.locations.find(
-                      ({ id }) => id === next?.locationId,
-                    )?.ownerAccountId;
-                    if (account !== owner) setTags([]);
-                    if (label && label.locationId !== next?.locationId) setLabel(undefined);
-                    setDestination(next);
-                  }}
+                  onChange={changeDestination}
                   disabled={busy}
                 />
                 {destination && (
@@ -560,6 +655,24 @@ export function CaptureForm({
                     <Trans>Done</Trans>
                   </Button>
                 )}
+              </div>
+            )}
+            {!changingDestination && recentDestinations.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-small text-ink-2">
+                  <Trans>Recent</Trans>
+                </span>
+                {recentDestinations.map((recent) => (
+                  <Button
+                    key={recent.id}
+                    variant="secondary"
+                    size="small"
+                    isDisabled={busy}
+                    onPress={() => changeDestination(recent)}
+                  >
+                    <bdi>{destinationLabel(cache, recent)}</bdi>
+                  </Button>
+                ))}
               </div>
             )}
           </div>
@@ -671,15 +784,32 @@ export function CaptureForm({
             locationId={destination?.locationId}
             provider={provider}
             onProviderChange={setProvider}
-            onUse={setName}
+            onDetails={(items) => setDetails({ photoKey, items })}
             onProposals={destination && onReview ? reviewPhoto : undefined}
-            onCategories={
-              destination && onReview && name.trim()
-                ? (items) => reviewPhoto(items, true)
-                : undefined
-            }
             online={online}
             disabled={busy || !photoPreferenceLoaded}
+          />
+        )}
+        {showDetails && shownDetails && (
+          <DetailSuggestions
+            key={photoKey}
+            rows={
+              leadSuggestion(shownDetails)
+                ? detailRowsFor(
+                    leadSuggestion(shownDetails) as PhotoSuggestion,
+                    { name, quantity, note, tags },
+                    categoryOptions,
+                    online && !!captureLocation && captureLocation.role !== 'viewer',
+                  )
+                : []
+            }
+            others={Math.max(0, shownDetails.length - 1)}
+            disabled={busy}
+            onApply={(rows) => void applyDetails(rows)}
+            onDismiss={() => setDetails(undefined)}
+            onReviewItems={
+              destination && onReview ? () => void reviewPhoto(shownDetails) : undefined
+            }
           />
         )}
         {showDetails && firstPhoto && onReview && (
@@ -712,7 +842,7 @@ export function CaptureForm({
             accountId={account}
             online={online}
             canCreate={captureLocation.role !== 'viewer'}
-            options={cache?.tags?.filter((tag) => tag.accountId === account) ?? []}
+            options={categoryOptions}
             selected={tags}
             disabled={busy}
             onChange={setTags}
@@ -772,8 +902,19 @@ export function CaptureForm({
             {files.length ? <Trans>Continue</Trans> : <Trans>Add manually</Trans>}
           </Button>
         )}
+        {showDetails && !blankTagWaiting && (
+          <Button type="submit" isPending={busy} isDisabled={!canSave}>
+            <Check size={18} aria-hidden />
+            <Trans>Save item</Trans>
+          </Button>
+        )}
         {showDetails && (
-          <Button type="submit" isDisabled={!canSave || busy}>
+          <Button
+            type={blankTagWaiting ? 'submit' : 'button'}
+            variant={blankTagWaiting ? 'primary' : 'secondary'}
+            isDisabled={!canSave || busy}
+            onPress={blankTagWaiting ? undefined : () => goToStep('label')}
+          >
             <Trans>Continue to labels</Trans>
           </Button>
         )}

@@ -507,6 +507,20 @@ export function DestinationPicker({
   );
 }
 
+/** A place or an open box by id, while its location is writable on this phone. */
+export function resolveDestination(cache: InventoryCache, id: string): Destination | undefined {
+  const place = cache.places.find((entry) => entry.id === id && !entry.deleted);
+  const box = place
+    ? undefined
+    : cache.things.find(
+        (entry) => entry.id === id && entry.isContainer && entry.lifecycle === 'in_use',
+      );
+  const row = place ?? box;
+  if (!row || !writableLocations(cache).some(({ id: locationId }) => locationId === row.locationId))
+    return;
+  return { id, locationId: row.locationId, name: row.name ?? '', kind: place ? 'place' : 'box' };
+}
+
 /**
  * Where Add starts: the place or box the last item or box was added to, while it is still an
  * open, writable destination in the default location (when one is set). Otherwise that
@@ -517,22 +531,12 @@ export function addDestination(
   last: Destination | undefined,
   preferredLocationId?: string,
 ): Destination | undefined {
-  const location =
+  const found =
     last &&
     (!preferredLocationId || last.locationId === preferredLocationId) &&
-    writableLocations(cache).find(({ id }) => id === last.locationId);
-  const row =
-    location &&
-    (last.kind === 'place'
-      ? cache.places.find(({ id, deleted }) => id === last.id && !deleted)
-      : last.kind === 'box'
-        ? cache.things.find(
-            ({ id, isContainer, lifecycle }) =>
-              id === last.id && isContainer && lifecycle === 'in_use',
-          )
-        : undefined);
-  if (!last || !row) return defaultDestination(cache, preferredLocationId);
-  return { id: last.id, locationId: last.locationId, kind: last.kind, name: row.name ?? last.name };
+    resolveDestination(cache, last.id);
+  if (!last || !found) return defaultDestination(cache, preferredLocationId);
+  return { ...found, name: found.name || last.name };
 }
 
 export function defaultDestination(

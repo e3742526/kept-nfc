@@ -1726,9 +1726,17 @@ describe('KeptPhone mobile workflows', () => {
     });
   });
 
-  it('offers optional categories for one broad description without replacing it', async () => {
+  it('itemizes AI suggestions by field, uses the ticked ones, or accepts them all', async () => {
     const origin = 'https://holiday.kept.example.com';
+    const category = (id: string, name: string): Tag => ({
+      id,
+      name,
+      ownerAccountId: 'acc-1',
+      rowVersion: 1,
+      colour: null,
+    });
     const env = createFakeEnvironment({
+      tags: [category('electrical', 'Electrical')],
       initialConnection: {
         id: `${origin}|ibrahim|epoch-1`,
         origin,
@@ -1744,11 +1752,24 @@ describe('KeptPhone mobile workflows', () => {
       suggest: vi.fn(async () => ({ name: '' })),
       serverProposals: vi.fn(async () => ({
         items: [
-          { name: 'Christmas lights', categories: ['Electrical', 'Decorations'] },
+          {
+            name: 'Christmas lights',
+            description: 'Warm white string lights',
+            quantity: 2,
+            categories: ['Electrical', 'Decorations'],
+          },
           { name: 'Tinsel', categories: ['Decorations'] },
         ],
       })),
     };
+    const request = env.adapters.transport.request.bind(env.adapters.transport);
+    const create = vi
+      .spyOn(env.adapters.transport, 'request')
+      .mockImplementation(async (connection, path, options) =>
+        options?.method === 'POST' && path === inventoryPaths.accountRegistry('acc-1', 'tags')
+          ? ({ item: category('decorations', 'Decorations') } as never)
+          : request(connection, path, options),
+      );
     const user = userEvent.setup();
     // These read the server's suggestions: this iPhone opts into the server's API key.
     await env.adapters.outbox.setValue(
@@ -1769,12 +1790,44 @@ describe('KeptPhone mobile workflows', () => {
       new File([new Uint8Array([1, 2, 3])], 'review.jpg', { type: 'image/jpeg' }),
     );
     await continueToItemDetails(user);
-    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Holiday supplies');
-    await user.click(await screen.findByRole('button', { name: 'Suggest categories' }));
-    expect(await screen.findByDisplayValue('Holiday supplies')).toBeVisible();
-    expect(screen.getAllByRole('textbox', { name: 'Name' })).toHaveLength(1);
-    expect(screen.getByRole('button', { name: 'Create Electrical' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Create Decorations' })).toBeVisible();
+    const description = screen.getByRole('textbox', { name: 'Description' });
+    await user.type(description, 'Holiday supplies');
+    await user.click(await screen.findByRole('button', { name: 'Suggest details' }));
+
+    let list = await screen.findByRole('list', { name: 'Suggestions' });
+    expect(within(list).getAllByRole('checkbox')).toHaveLength(5);
+    expect(within(list).getByText('Replaces: Holiday supplies')).toBeVisible();
+    expect(within(list).getByRole('checkbox', { name: /^Category\s*Electrical/ })).toBeVisible();
+    expect(
+      within(list).getByRole('checkbox', { name: /New category\s*Decorations/ }),
+    ).toBeVisible();
+    expect(screen.getByText('The photos may show 1 more item.')).toBeVisible();
+    // Nothing is ticked until chosen: use only the quantity and the notes.
+    expect(screen.getByRole('button', { name: 'Use 0 selected' })).toBeDisabled();
+    await user.click(within(list).getByRole('checkbox', { name: /Quantity/ }));
+    await user.click(within(list).getByRole('checkbox', { name: /Notes/ }));
+    await user.click(screen.getByRole('button', { name: 'Use 2 selected' }));
+    expect(description).toHaveValue('Holiday supplies');
+    expect(screen.getByRole('textbox', { name: 'Quantity (optional)' })).toHaveValue('2');
+    expect(screen.getByRole('textbox', { name: 'Notes' })).toHaveValue('Warm white string lights');
+    expect(screen.queryByRole('list', { name: 'Suggestions' })).not.toBeInTheDocument();
+    expect(create).not.toHaveBeenCalledWith(
+      expect.anything(),
+      inventoryPaths.accountRegistry('acc-1', 'tags'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    // Asked again, only what still differs is offered; Accept all takes every row.
+    await user.click(screen.getByRole('button', { name: 'Suggest details' }));
+    list = await screen.findByRole('list', { name: 'Suggestions' });
+    expect(within(list).getAllByRole('checkbox')).toHaveLength(3);
+    await user.click(screen.getByRole('button', { name: 'Accept all' }));
+    expect(description).toHaveValue('Christmas lights');
+    expect(
+      await screen.findByRole('button', { name: 'Remove category Electrical' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove category Decorations' })).toBeInTheDocument();
+    expect(await screen.findByText('Filled in. Check the fields, then save.')).toBeVisible();
   });
 
   it('uses Assistant photos, model selection, confirmed record changes, and thread deletion', async () => {
@@ -2042,7 +2095,9 @@ describe('KeptPhone mobile workflows', () => {
       connect: vi.fn(async () => ({ account: 'ibrahim@kept.test' })),
       disconnect: vi.fn(async () => ({ revoked: true })),
       models: vi.fn(async () => [{ id: 'fixture-vision', name: 'Fixture vision model' }]),
-      suggest: vi.fn(async () => ({ name: 'Assorted cables' })),
+      suggest: vi.fn(async () => ({
+        name: JSON.stringify({ items: [{ name: 'Assorted cables' }] }),
+      })),
     };
     env.adapters.captureAI = ai;
     const request = vi.spyOn(env.adapters.transport, 'request');
@@ -2064,23 +2119,26 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(await screen.findByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'Apple Intelligence' }));
-    await user.click(screen.getByRole('button', { name: 'Suggest description' }));
-    expect(ai.suggest).toHaveBeenLastCalledWith(expect.anything(), 'apple', photo, undefined);
+    await user.click(screen.getByRole('button', { name: 'Suggest details' }));
+    expect(ai.suggest).toHaveBeenLastCalledWith(expect.anything(), 'apple', photo, undefined, true);
     expect(description).toHaveValue('My draft');
+    await user.click(await screen.findByRole('button', { name: 'Dismiss' }));
 
     await user.click(screen.getByRole('button', { name: /AI provider/ }));
     await user.click(await screen.findByRole('option', { name: 'ChatGPT plan' }));
     await user.click(screen.getByRole('button', { name: 'Continue with ChatGPT' }));
-    await user.click(await screen.findByRole('button', { name: 'Suggest description' }));
+    await user.click(await screen.findByRole('button', { name: 'Suggest details' }));
     expect(ai.connect).toHaveBeenCalledTimes(1);
     expect(ai.suggest).toHaveBeenLastCalledWith(
       expect.anything(),
       'chatgpt',
       photo,
       'fixture-vision',
+      true,
     );
     expect(description).toHaveValue('My draft');
-    await user.click(await screen.findByRole('button', { name: 'Use this description' }));
+    expect(await screen.findByText('Replaces: My draft')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Accept all' }));
     expect(description).toHaveValue('Assorted cables');
 
     await saveNewItem(user);
@@ -5360,5 +5418,54 @@ describe('KeptPhone mobile workflows', () => {
     env.renderApp();
     await openAdd();
     await waitFor(() => expect(destination()).toContain('Home › Garage'));
+  });
+
+  it('saves from the details step, keeps Action and categories, and offers recent destinations', async () => {
+    const connection = {
+      id: 'https://kept.example.com|ibrahim|epoch-1',
+      origin: 'https://kept.example.com',
+      account: 'ibrahim',
+      epoch: 'epoch-1',
+    };
+    const electrical: Tag = {
+      id: 'electrical',
+      name: 'Electrical',
+      ownerAccountId: 'acc-1',
+      rowVersion: 1,
+      colour: null,
+    };
+    const env = createFakeEnvironment({ tags: [electrical], initialConnection: connection });
+    await env.adapters.outbox.setValue(
+      connection,
+      'recentDestinations',
+      JSON.stringify(['11111111-1111-7111-8111-111111111111']),
+    );
+    const user = userEvent.setup();
+    const destination = () =>
+      (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent;
+    env.renderApp();
+    await user.click(
+      within(await screen.findByRole('navigation')).getByRole('button', { name: 'Add' }),
+    );
+    await continueToItemDetails(user);
+    expect(destination()).toContain('Home › Unplaced');
+    // A recent destination is one tap away.
+    await user.click(await screen.findByRole('button', { name: 'Garage › Winter Box' }));
+    expect(destination()).toContain('Home › Garage › Winter Box');
+
+    await user.click(screen.getByRole('button', { name: /Action/ }));
+    await user.click(await screen.findByRole('option', { name: 'Add contents' }));
+    await user.click(screen.getByText('Categories'));
+    await user.click(await screen.findByRole('checkbox', { name: /Electrical/ }));
+    await user.type(screen.getByRole('textbox', { name: 'Description' }), 'Extension cord');
+    // Saving needs no trip through the label step.
+    await user.click(screen.getByRole('button', { name: 'Save item' }));
+    expect(await screen.findByText('Saved on device.')).toBeInTheDocument();
+
+    await continueToItemDetails(user);
+    expect(screen.getByRole('textbox', { name: 'Description' })).toHaveValue('');
+    expect(screen.getByRole('button', { name: /Action/ })).toHaveTextContent('Add contents');
+    expect(screen.getByRole('button', { name: 'Remove category Electrical' })).toBeInTheDocument();
+    expect(destination()).toContain('Home › Garage › Winter Box');
   });
 });

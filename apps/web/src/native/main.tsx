@@ -102,7 +102,11 @@ import {
 } from './outbox';
 import { applyPalette, type PaletteId, setPalette, usePalette } from './palette';
 import { PhotoReview } from './photo-review';
-import { readLastAddDestination, rememberLastAddDestination } from './recent-destinations';
+import {
+  readLastAddDestination,
+  rememberDestination,
+  rememberLastAddDestination,
+} from './recent-destinations';
 import { RecordScreen } from './record';
 import { Places } from './rooms';
 import { Trash } from './trash';
@@ -783,6 +787,7 @@ export function Inventory({
   const rememberAdded = (destination: Destination) => {
     setLastAdded(destination);
     void rememberLastAddDestination(connection, adapters, destination);
+    void rememberDestination(connection, adapters, destination.id);
   };
   const open = (target: Target, backToRooms = false) => {
     setScreen({ kind: 'record', target, backToRooms });

@@ -34428,3 +34428,40 @@ msgstr "Розширені інструменти для етикеток"
 #: src/components/labels/thermal/studio.tsx
 msgid "Enter 1 to {NIIMBOT_COPY_LIMIT} copies per label."
 msgstr "Введіть від 1 до {NIIMBOT_COPY_LIMIT} копій на етикетку."
+
+#: src/native/capture-details.tsx
+msgid "{others, plural, one {The photos may show # more item.} other {The photos may show # more items.}}"
+msgstr "{others, plural, one {На фото може бути ще # предмет.} few {На фото може бути ще # предмети.} many {На фото може бути ще # предметів.} other {На фото може бути ще # предмета.}}"
+
+#: src/native/capture-details.tsx
+msgid "{selected, plural, one {Use # selected} other {Use # selected}}"
+msgstr "{selected, plural, one {Використати # вибране} few {Використати # вибрані} many {Використати # вибраних} other {Використати # вибраного}}"
+
+#: src/native/capture-details.tsx
+#: src/native/photo-details.tsx
+msgid "Accept all"
+msgstr "Прийняти все"
+
+#: src/native/capture-details.tsx
+msgid "Adds to notes"
+msgstr "Додається до нотаток"
+
+#: src/native/capture-ai.tsx
+msgid "Could not suggest details from these photos."
+msgstr "Не вдалося запропонувати подробиці за цими фото."
+
+#: src/native/capture-details.tsx
+msgid "Nothing new to suggest."
+msgstr "Немає нічого нового для пропозиції."
+
+#: src/native/capture-form.tsx
+msgid "Some categories could not be added. Check your connection and try again."
+msgstr "Не вдалося додати деякі категорії. Перевірте з’єднання та повторіть спробу."
+
+#: src/native/capture-ai.tsx
+msgid "Suggest details"
+msgstr "Запропонувати подробиці"
+
+#: src/native/capture-details.tsx
+msgid "Suggested details"
+msgstr "Запропоновані подробиці"
