@@ -35,7 +35,8 @@ struct KeptConnection: Codable, Equatable {
 }
 
 enum KeptNativeError: LocalizedError {
-    case invalidServer, missingSession, invalidRequest, signInFailed, appleSignInUnsupported
+    case invalidServer, missingSession, invalidRequest, signInFailed
+    case appleAuthorizationFailed, appleSignInUnsupported
     case busy, keychain, storage, previewUnavailable, invalidVisualPhoto
 
     var errorDescription: String? {
@@ -44,6 +45,7 @@ enum KeptNativeError: LocalizedError {
         case .missingSession: return "Sign in to this SheepKeep account again."
         case .invalidRequest: return "The app could not prepare this SheepKeep request."
         case .signInFailed: return "SheepKeep could not finish connecting this iPhone. Sign in again."
+        case .appleAuthorizationFailed: return "Could not sign in with Apple."
         case .appleSignInUnsupported: return "Update this SheepKeep server to sign in with Apple."
         case .busy: return "Finish the current sign-in and try again."
         case .keychain: return "The iPhone could not save or read the session in Keychain."
@@ -333,7 +335,13 @@ final class NativeSignIn: NSObject, ASWebAuthenticationPresentationContextProvid
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         guard controller === appleController else { return }
-        finishApple(.failure(error))
+        if (error as? ASAuthorizationError)?.code == .canceled {
+            finishApple(.failure(error))
+        } else {
+            // Apple can reject the request before SheepKeep contacts the server, including
+            // when the device has no Apple Account and the user closes the system prompt.
+            finishApple(.failure(KeptNativeError.appleAuthorizationFailed))
+        }
     }
 
     private func finishApple(_ result: Result<ASAuthorizationAppleIDCredential, Error>) {
@@ -691,6 +699,9 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                 return
             } catch let error as ASAuthorizationError where error.code == .canceled {
                 call.reject("Sign-in cancelled.", "sign_in_cancelled")
+                return
+            } catch KeptNativeError.appleAuthorizationFailed {
+                call.reject(KeptNativeError.appleAuthorizationFailed.localizedDescription, "apple_authorization_failed")
                 return
             } catch KeptNativeError.appleSignInUnsupported {
                 call.reject(KeptNativeError.appleSignInUnsupported.localizedDescription, "apple_sign_in_unsupported")

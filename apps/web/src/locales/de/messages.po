@@ -8233,6 +8233,10 @@ msgid "Could not search SheepKeep. Try again."
 msgstr "Suche in SheepKeep fehlgeschlagen. Erneut versuchen."
 
 #: src/native/main.tsx
+msgid "Could not sign in with Apple. Check your Apple Account in Settings and try again."
+msgstr "Die Anmeldung mit Apple ist fehlgeschlagen. Prüfe deinen Apple Account in den Einstellungen und versuche es erneut."
+
+#: src/native/main.tsx
 msgid "Could not sign out."
 msgstr "Abmeldung fehlgeschlagen."
 

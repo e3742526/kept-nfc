@@ -8233,6 +8233,10 @@ msgid "Could not search SheepKeep. Try again."
 msgstr "Không thể tìm kiếm trong SheepKeep. Hãy thử lại."
 
 #: src/native/main.tsx
+msgid "Could not sign in with Apple. Check your Apple Account in Settings and try again."
+msgstr "Không thể đăng nhập bằng Apple. Hãy kiểm tra Tài khoản Apple của bạn trong Cài đặt rồi thử lại."
+
+#: src/native/main.tsx
 msgid "Could not sign out."
 msgstr "Không thể đăng xuất."
 

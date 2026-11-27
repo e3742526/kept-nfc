@@ -342,6 +342,7 @@ const HOUSEHOLD_SHARED = [
     'context.ts',
     'conversation.tsx',
     'icons.tsx',
+    'inputs.tsx',
     'link-only-markdown.tsx',
     'panel.tsx',
     'sheet.tsx',

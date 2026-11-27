@@ -2392,6 +2392,11 @@ export function KeptPhone() {
         case 'sign_in_cancelled':
           setStatus(t`Sign-in cancelled.`);
           break;
+        case 'apple_authorization_failed':
+          setStatus(
+            t`Could not sign in with Apple. Check your Apple Account in Settings and try again.`,
+          );
+          break;
         case 'apple_sign_in_unsupported':
           setStatus(t`Update this SheepKeep server to sign in with Apple.`);
           break;

@@ -3662,11 +3662,12 @@ describe('KeptPhone mobile workflows', () => {
     expect(screen.queryByText('Observed at')).not.toBeInTheDocument();
   });
 
-  it('keeps the address and allows retry after the browser sign-in sheet is cancelled', async () => {
+  it('explains sign-in failures and keeps the server address for retry', async () => {
     const env = createFakeEnvironment();
     const connect = vi
       .spyOn(env.adapters.credentials, 'connect')
       .mockRejectedValueOnce({ code: 'sign_in_cancelled' })
+      .mockRejectedValueOnce({ code: 'apple_authorization_failed' })
       .mockRejectedValueOnce({ code: 'network' })
       .mockRejectedValueOnce({ code: 'apple_sign_in_unsupported' });
     const user = userEvent.setup();
@@ -3683,6 +3684,13 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(signIn);
     expect(await screen.findByRole('status')).toHaveTextContent(
+      'Could not sign in with Apple. Check your Apple Account in Settings and try again.',
+    );
+    expect(serverField).toHaveValue(address);
+    expect(signIn).toBeEnabled();
+
+    await user.click(signIn);
+    expect(await screen.findByRole('status')).toHaveTextContent(
       'Could not connect to SheepKeep. Check the server address and try again.',
     );
 
@@ -3694,7 +3702,7 @@ describe('KeptPhone mobile workflows', () => {
 
     await user.click(signIn);
     expect(await screen.findByRole('button', { name: /Boxes$/ })).toBeInTheDocument();
-    expect(connect).toHaveBeenCalledTimes(4);
+    expect(connect).toHaveBeenCalledTimes(5);
     expect(connect).toHaveBeenLastCalledWith(address);
   });
 
