@@ -60,11 +60,13 @@ export function PrintQueue({
   openBatch,
   confirmPrinted,
   locationName,
+  heading: Heading = 'h2',
 }: {
   request?: PrintQueueRequest;
   openBatch: (id: string) => void | Promise<void>;
   confirmPrinted?: (id: string) => Promise<unknown>;
   locationName: (id: string) => string | undefined;
+  heading?: 'h2' | 'h3';
 }) {
   const { t } = useLingui();
   const errorText = useErrorText();
@@ -115,9 +117,9 @@ export function PrintQueue({
   return (
     <section className="grid gap-3 kept-card">
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-title">
+        <Heading className="text-title">
           <Trans>Print queue</Trans>
-        </h3>
+        </Heading>
         <Button variant="ghost" size="small" isDisabled={busy} onPress={() => void reload()}>
           <Trans>Refresh</Trans>
         </Button>

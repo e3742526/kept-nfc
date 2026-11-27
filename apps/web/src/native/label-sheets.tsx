@@ -142,6 +142,7 @@ export function LabelSheets({
         icon={<Tags size={18} aria-hidden />}
       />
       <PrintQueue
+        heading="h3"
         request={queue}
         locationName={(id) => cache.locations.find((entry) => entry.id === id)?.name}
         openBatch={async (id) => {
