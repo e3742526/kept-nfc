@@ -310,7 +310,9 @@ describe('the first sync', () => {
   it('sends the types only when their hash differs from the phone’s', async () => {
     const first = await page(louis);
     expect(first.types.items?.length).toBeGreaterThan(10);
-    expect(first.types.items?.find((x) => x.builtinKey === 'box_bin')?.isContainer).toBe(true);
+    for (const key of ['box_bin', 'toolbox', 'small_parts_bin', 'drawer']) {
+      expect(first.types.items?.find((x) => x.builtinKey === key)?.isContainer, key).toBe(true);
+    }
     const again = await page(louis, { typesHash: first.types.hash });
     expect(again.types).toEqual({ hash: first.types.hash });
     const stale = await page(louis, { typesHash: 'something-else' });

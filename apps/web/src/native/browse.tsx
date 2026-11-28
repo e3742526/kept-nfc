@@ -1,4 +1,4 @@
-import type { SnapThing } from '@kept/shared';
+import { builtinType, type SnapThing } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { CornerDownLeft, MessageSquare, Package, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -669,10 +669,7 @@ export function Browse({
           const name = row.name ?? t`Untitled`;
           const boxType = cache.types.find(
             (type) =>
-              type.id === row.typeId &&
-              ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(
-                type.builtinKey ?? '',
-              ),
+              type.id === row.typeId && builtinType(type.builtinKey ?? '')?.parent === 'box_bin',
           );
           return (
             <li key={row.id} className="min-w-0">

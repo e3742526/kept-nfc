@@ -345,6 +345,14 @@ function createFakeEnvironment(opts: FakeEnvOptions = {}) {
                   isContainer: true,
                 },
                 { id: 'type-cabinet', builtinKey: 'cabinet', name: 'cabinet', isContainer: true },
+                { id: 'type-toolbox', builtinKey: 'toolbox', name: 'toolbox', isContainer: true },
+                {
+                  id: 'type-small-parts-bin',
+                  builtinKey: 'small_parts_bin',
+                  name: 'small_parts_bin',
+                  isContainer: true,
+                },
+                { id: 'type-drawer', builtinKey: 'drawer', name: 'drawer', isContainer: true },
                 ...(opts.lookupType
                   ? [
                       {
@@ -1192,9 +1200,12 @@ describe('KeptPhone mobile workflows', () => {
     await openWinterBox(user);
     await user.click(await screen.findByRole('button', { name: 'Edit' }));
     await user.click(screen.getByRole('button', { name: /Type$/ }));
-    await user.click(screen.getByRole('option', { name: 'Cardboard box' }));
+    await user.click(screen.getByRole('option', { name: 'Drawer' }));
     await user.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(env.serverThings.get(env.boxId)?.typeId).toBe('type-cardboard'));
+    await waitFor(() => expect(env.serverThings.get(env.boxId)?.typeId).toBe('type-drawer'));
+    await user.click(await screen.findByRole('button', { name: 'Back' }));
+    const row = await screen.findByRole('button', { name: /^Winter Box/ });
+    expect(await within(row).findByText('Drawer')).toBeVisible();
   });
 
   it('remembers the printer from Settings and uses it in thermal printing', async () => {
@@ -6245,7 +6256,9 @@ describe('KeptPhone mobile workflows', () => {
     await user.type(screen.getByRole('textbox', { name: 'Container name (optional)' }), 'Cables');
     await user.click(screen.getByRole('button', { name: /Container type/ }));
     expect(screen.getByRole('option', { name: '27-gallon tote' })).toBeVisible();
-    await user.click(screen.getByRole('option', { name: 'Cabinet' }));
+    expect(screen.getByRole('option', { name: 'Cabinet' })).toBeVisible();
+    expect(screen.getByRole('option', { name: 'Drawer' })).toBeVisible();
+    await user.click(screen.getByRole('option', { name: 'Toolbox' }));
     await user.type(
       screen.getByRole('textbox', { name: 'Contents (optional)' }),
       '3 x HDMI cable{Enter}Power strip',
@@ -6257,7 +6270,7 @@ describe('KeptPhone mobile workflows', () => {
         ([, path, options]) =>
           path === inventoryPaths.things &&
           options?.method === 'POST' &&
-          (options.body as { typeId?: string }).typeId === 'type-cabinet',
+          (options.body as { typeId?: string }).typeId === 'type-toolbox',
       ),
     ).toBe(true);
     expect(await screen.findByRole('heading', { name: 'Cables' })).toBeInTheDocument();
@@ -6284,7 +6297,7 @@ describe('KeptPhone mobile workflows', () => {
     await user.click(screen.getByRole('button', { name: 'New container' }));
     await user.type(screen.getByRole('textbox', { name: 'Container name' }), 'Hardware');
     await user.click(screen.getByRole('button', { name: /Container type/ }));
-    await user.click(screen.getByRole('option', { name: 'Cabinet' }));
+    await user.click(screen.getByRole('option', { name: 'Small Parts Bin' }));
     await user.click(screen.getByRole('button', { name: 'Create container' }));
     expect(
       (screen.getByText('Destination').closest('.kept-destination') as HTMLElement).textContent,
@@ -6294,7 +6307,7 @@ describe('KeptPhone mobile workflows', () => {
       inventoryPaths.things,
       expect.objectContaining({
         method: 'POST',
-        body: expect.objectContaining({ name: 'Hardware', typeId: 'type-cabinet' }),
+        body: expect.objectContaining({ name: 'Hardware', typeId: 'type-small-parts-bin' }),
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Back' }));

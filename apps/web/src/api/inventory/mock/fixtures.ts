@@ -107,6 +107,9 @@ export const INV_IDS = {
     batteries: yid(18),
     device: yid(19),
     smallAppliance: yid(20),
+    toolbox: yid(21),
+    smallPartsBin: yid(22),
+    drawer: yid(23),
     /** Ibrahim's own custom type. */
     boardGame: yid(50),
   },
@@ -276,6 +279,15 @@ function types(): TypeDetail[] {
       ],
     }),
     builtin(T.boxBin, 'box_bin', null, 'lucide:package', ['container']),
+    builtin(T.toolbox, 'toolbox', T.boxBin, 'lucide:toolbox', [], {
+      resolvedCapabilities: ['container'],
+    }),
+    builtin(T.smallPartsBin, 'small_parts_bin', T.boxBin, 'lucide:grid-2x2', [], {
+      resolvedCapabilities: ['container'],
+    }),
+    builtin(T.drawer, 'drawer', T.boxBin, 'lucide:archive', [], {
+      resolvedCapabilities: ['container'],
+    }),
     builtin(T.safe, 'safe', null, 'lucide:vault', ['container', 'serialized'], {
       fields: [field(T.safe, 'combination', 'text', { secret: true })],
     }),

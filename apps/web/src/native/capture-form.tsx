@@ -1,4 +1,11 @@
-import { AMOUNT_STRING, type DeviceItemLookup, newId, normalize, TAG_LIMITS } from '@kept/shared';
+import {
+  AMOUNT_STRING,
+  builtinType,
+  type DeviceItemLookup,
+  newId,
+  normalize,
+  TAG_LIMITS,
+} from '@kept/shared';
 import { plural } from '@lingui/core/macro';
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
@@ -1563,11 +1570,7 @@ function ContainerTypePicker({
         { id: 'default', name: t`Box / bin` },
         ...cache.types
           .filter(
-            (type) =>
-              type.isContainer &&
-              ['tote_27g', 'shoe_box_bin', 'cardboard_box', 'cabinet'].includes(
-                type.builtinKey ?? '',
-              ),
+            (type) => type.isContainer && builtinType(type.builtinKey ?? '')?.parent === 'box_bin',
           )
           .map((type) => ({
             id: type.id,
