@@ -2361,8 +2361,8 @@ msgid "{u} is taken by {name} at the rear."
 msgstr "{u} is taken by {name} at the rear."
 
 #: src/components/sync-status.tsx
-msgid "{unexplained, plural, one {# change needs a look} other {# changes need a look}}"
-msgstr "{unexplained, plural, one {# change needs a look} other {# changes need a look}}"
+msgid "{remaining, plural, one {# more sync notice} other {# more sync notices}}"
+msgstr "{remaining, plural, one {# more sync notice} other {# more sync notices}}"
 
 #: src/components/places/rack.tsx
 msgid "{units, plural, one {# unit, U1 at the bottom} other {# units, U1 at the bottom}}"
@@ -2995,6 +2995,10 @@ msgstr "A change couldn't apply: <0>{name}</0> was removed by <1>{by}</1>."
 msgid "A change couldn't apply: <0>{name}</0> was trashed by <1>{by}</1>."
 msgstr "A change couldn't apply: <0>{name}</0> was trashed by <1>{by}</1>."
 
+#: src/components/sync-status.tsx
+msgid "A change couldn't sync."
+msgstr "A change couldn't sync."
+
 #: src/components/inbox/sync-drop-item.tsx
 msgid "A change made offline couldn't apply"
 msgstr "A change made offline couldn't apply"
@@ -3606,6 +3610,10 @@ msgstr "A thing's state changes, such as lost or sold"
 #: src/assistant/confirm-card.tsx
 #: src/components/filters/display.tsx
 #: src/components/places/sub-places.tsx
+#: src/components/sync-status.tsx
+msgid "A synced change needs review."
+msgstr "A synced change needs review."
+
 #: src/routes/_app/p.$id.tsx
 msgid "A to Z"
 msgstr "A to Z"
@@ -3985,6 +3993,14 @@ msgstr "Add a photo"
 #: src/assistant/confirm-card.tsx
 msgid "Add a photo or document"
 msgstr "Add a photo or document"
+
+#: src/native/capture-form.tsx
+msgid "Add a photo to get AI suggestions."
+msgstr "Add a photo to get AI suggestions."
+
+#: src/native/capture-form.tsx
+msgid "Add a photo, enter a name, or scan a UPC to get AI suggestions."
+msgstr "Add a photo, enter a name, or scan a UPC to get AI suggestions."
 
 #: src/components/ai/prices.tsx
 msgid "Add a price"
@@ -15573,6 +15589,10 @@ msgstr "Loading the move"
 #: src/components/things/schedules-section.tsx
 msgid "Loading the schedules"
 msgstr "Loading the schedules"
+
+#: src/components/inbox/bulk-bar.tsx
+msgid "Loading the selected location…"
+msgstr "Loading the selected location…"
 
 #: src/components/vehicles/recent-services.tsx
 msgid "Loading the services"

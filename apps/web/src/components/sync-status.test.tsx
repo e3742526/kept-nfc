@@ -131,10 +131,10 @@ describe('the sync status line', () => {
     expect(router.state.location.search).toMatchObject({ 'f.kind': 'sync_drop' });
   });
 
-  it('names at most three; the others, and reviews, are counted', async () => {
+  it('shows three notices and counts the rest', async () => {
     await showRouted({
       ...base,
-      counts: { ...base.counts, needsAttention: 6 },
+      counts: { ...base.counts, needsAttention: 4 },
       notices: [
         drop(1, 'trashed', 'Office'),
         drop(2, 'moved', 'Drill'),
@@ -146,6 +146,24 @@ describe('the sync status line', () => {
     expect(line).toHaveTextContent('Drill was moved by Alfred.');
     expect(line).toHaveTextContent('Shelf was removed by Alfred.');
     expect(line).not.toHaveTextContent('Garage');
-    expect(screen.getByText('3 changes need a look')).toBeInTheDocument();
+    expect(screen.getByText('1 more sync notice')).toBeInTheDocument();
+  });
+
+  it('offers dismissal for review and local failures without an Inbox entry', async () => {
+    const { user, dismissNotice } = await showRouted({
+      ...base,
+      counts: { ...base.counts, needsAttention: 2 },
+      notices: [
+        { id: 8, kind: 'needs_review', at: '2026-09-29T10:00:00.000Z' },
+        { id: 9, kind: 'dropped', at: '2026-09-29T10:00:01.000Z' },
+      ],
+    });
+    expect(await screen.findByText('A synced change needs review.')).toBeInTheDocument();
+    expect(screen.getByText("A change couldn't sync.")).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Inbox|Restore/ })).toBeNull();
+    for (const button of screen.getAllByRole('button', { name: 'Dismiss' })) {
+      await user.click(button);
+    }
+    expect(dismissNotice.mock.calls).toEqual([[8], [9]]);
   });
 });

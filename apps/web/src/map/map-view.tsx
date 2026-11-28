@@ -1222,11 +1222,11 @@ function MapBody({
           </div>
           {review ? (
             <div className="kmap-tools" data-map-obstacle data-map-reserve="top">
-              <fieldset className="kmap-seg" aria-label={t`Arrange tool`}>
-                <button type="button" aria-pressed="true">
+              <div className="kmap-seg">
+                <span className="kmap-review-tool">
                   <Trans>Move</Trans>
-                </button>
-              </fieldset>
+                </span>
+              </div>
               {underlayUrl ? (
                 <Switch
                   className="kmap-switch min-h-11 gap-2 text-[13px]"

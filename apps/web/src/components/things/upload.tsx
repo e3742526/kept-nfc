@@ -82,8 +82,10 @@ export function xhrPut<T = FileView>(
   onProgress: (fraction: number) => void,
   signal?: AbortSignal,
 ): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
+  const abort = () => xhr.abort();
+  return new Promise<T>((resolve, reject) => {
+    signal?.throwIfAborted();
     xhr.open('PUT', url);
     xhr.withCredentials = true;
     for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v);
@@ -91,14 +93,21 @@ export function xhrPut<T = FileView>(
       if (e.lengthComputable) onProgress(e.loaded / e.total);
     };
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve(JSON.parse(xhr.responseText) as T);
-      else reject(errorFrom(xhr.status, xhr.responseText));
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(errorFrom(xhr.status, xhr.responseText));
+        return;
+      }
+      try {
+        resolve(JSON.parse(xhr.responseText) as T);
+      } catch {
+        reject(new ApiError(502, 'internal', 'The upload returned an unreadable response.'));
+      }
     };
     xhr.onerror = () => reject(new ApiError(0, 'offline', 'Needs a connection'));
     xhr.onabort = () => reject(new DOMException('Aborted', 'AbortError'));
-    signal?.addEventListener('abort', () => xhr.abort(), { once: true });
+    signal?.addEventListener('abort', abort, { once: true });
     xhr.send(file);
-  });
+  }).finally(() => signal?.removeEventListener('abort', abort));
 }
 
 export type UploadInput = {

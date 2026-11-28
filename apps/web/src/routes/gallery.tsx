@@ -5,7 +5,7 @@
  */
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, notFound } from '@tanstack/react-router';
 import { type ReactNode, useState } from 'react';
 import type { Key } from 'react-aria-components';
 import type { Page } from '@/api/inventory/types';
@@ -36,6 +36,9 @@ import { toast } from '@/components/ui/toast';
 import { firstOf, listSearch, useListState } from '@/lib/url-state';
 
 export const Route = createFileRoute('/gallery')({
+  beforeLoad: () => {
+    if (!import.meta.env.DEV) throw notFound();
+  },
   validateSearch: listSearch(['kind']),
   component: Gallery,
 });

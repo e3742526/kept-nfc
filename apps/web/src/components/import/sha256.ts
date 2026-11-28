@@ -15,22 +15,30 @@ export type HashMessage =
  * The file's SHA-256, in a worker where there is one (sha256.worker.ts), else here. Rejects when
  * the file can't be read (it was moved or deleted after it was chosen).
  */
-export function hashFile(file: Blob, onProgress: (fraction: number) => void): Promise<string> {
-  if (typeof Worker === 'undefined') return hashBlob(file, onProgress);
+export async function hashFile(
+  file: Blob,
+  onProgress: (fraction: number) => void,
+  signal?: AbortSignal,
+): Promise<string> {
+  signal?.throwIfAborted();
+  if (typeof Worker === 'undefined') return hashBlob(file, onProgress, signal);
   const worker = new Worker(new URL('./sha256.worker.ts', import.meta.url), { type: 'module' });
-  return new Promise<string>((resolve, reject) => {
-    worker.onmessage = (e: MessageEvent<HashMessage>) => {
-      if (e.data.kind === 'progress') onProgress(e.data.fraction);
-      else {
-        worker.terminate();
-        if (e.data.kind === 'done') resolve(e.data.sha256);
+  let abort: (() => void) | undefined;
+  try {
+    return await new Promise<string>((resolve, reject) => {
+      abort = () => reject(signal?.reason);
+      signal?.addEventListener('abort', abort, { once: true });
+      worker.onmessage = (e: MessageEvent<HashMessage>) => {
+        if (e.data.kind === 'progress') onProgress(e.data.fraction);
+        else if (e.data.kind === 'done') resolve(e.data.sha256);
         else reject(new Error('unreadable'));
-      }
-    };
-    worker.onerror = () => {
-      worker.terminate();
-      reject(new Error('unreadable'));
-    };
-    worker.postMessage(file);
-  });
+      };
+      worker.onerror = () => reject(new Error('unreadable'));
+      worker.onmessageerror = () => reject(new Error('unreadable'));
+      worker.postMessage(file);
+    });
+  } finally {
+    if (abort) signal?.removeEventListener('abort', abort);
+    worker.terminate();
+  }
 }

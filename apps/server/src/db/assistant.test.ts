@@ -307,6 +307,29 @@ describe('retention', () => {
         .code,
     ).toBe('42501');
   });
+
+  it('fails an abandoned turn and clears the thread for the next question', async () => {
+    const th = await thread(louis);
+    const abandoned = newId();
+    const fresh = await turn(louis, await thread(louis));
+    await own(
+      `INSERT INTO public.assistant_turns (id, thread_id, user_id, status, updated_at)
+       VALUES ($1, $2, $3, 'running', now() - interval '9 minutes')`,
+      [abandoned, th, louis],
+    );
+    await withSystem(db.pools.system, (_tx, c) =>
+      c.query('SELECT * FROM kept.prune_assistant(now())'),
+    );
+    expect(
+      await own('SELECT status, status_reason FROM public.assistant_turns WHERE id = $1', [
+        abandoned,
+      ]),
+    ).toEqual([{ status: 'failed', status_reason: 'timeout' }]);
+    expect(await own('SELECT status FROM public.assistant_turns WHERE id = $1', [fresh])).toEqual([
+      { status: 'queued' },
+    ]);
+    await turn(louis, th);
+  });
 });
 
 describe('redaction when access ends', () => {

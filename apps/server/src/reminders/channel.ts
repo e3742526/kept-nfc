@@ -5,6 +5,7 @@ import {
   type OccurrenceKind,
   type SourceType,
 } from '@kept/shared';
+import type pg from 'pg';
 import type { AdminAlertKind } from '../db/schema/alerts.js';
 import type { StaleMeter } from '../notify/words.js';
 
@@ -119,7 +120,12 @@ export type SendOutcome =
   | { status: 'skipped'; error: string };
 
 export interface ChannelSender {
-  send(target: ChannelTarget, to: ReminderRecipient, message: ChannelMessage): Promise<SendOutcome>;
+  send(
+    target: ChannelTarget,
+    to: ReminderRecipient,
+    message: ChannelMessage,
+    client?: pg.ClientBase,
+  ): Promise<SendOutcome>;
 }
 
 /** The senders this instance has. A missing one means that channel is off here. */

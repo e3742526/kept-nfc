@@ -117,27 +117,30 @@ export async function uploadEntryFiles(
   const ordered = [...left].sort(
     (a, b) => Number(a.kind === 'display') - Number(b.kind === 'display'),
   );
-  for (const b of ordered) {
-    if (b.kind === 'original') {
-      try {
-        await http.putFile(b.id, entry.locationId, fileClassFor(entry), b.blob, b.sha256);
-      } catch (e) {
-        if (isPermanent(e)) return 'refused';
-        throw e;
-      }
-    } else {
-      const parent = displayParentOf(entry, b.id);
-      if (parent) {
+  try {
+    for (const b of ordered) {
+      if (b.kind === 'original') {
         try {
-          await http.putDisplay(parent, b.blob, b.sha256);
+          await http.putFile(b.id, entry.locationId, fileClassFor(entry), b.blob, b.sha256);
         } catch (e) {
-          if (!isPermanent(e)) throw e;
-          // Refused (too old, not an image…): "preview unavailable" on the server (D36).
+          if (isPermanent(e)) return 'refused';
+          throw e;
+        }
+      } else {
+        const parent = displayParentOf(entry, b.id);
+        if (parent) {
+          try {
+            await http.putDisplay(parent, b.blob, b.sha256);
+          } catch (e) {
+            if (!isPermanent(e)) throw e;
+            // Refused (too old, not an image…): "preview unavailable" on the server (D36).
+          }
         }
       }
+      await store.markUploaded(b.id);
     }
-    await store.markUploaded(b.id);
+  } finally {
+    if (!blocked) await store.setState([entry.seq], entry.state === 'sent' ? 'sent' : 'pending');
   }
-  if (!blocked) await store.setState([entry.seq], 'pending');
   return 'uploaded';
 }

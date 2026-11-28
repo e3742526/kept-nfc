@@ -392,7 +392,7 @@ export class DexieStore implements SyncStore {
     await this.db.queue.each((e) => {
       if (e.state === 'pending') waiting += 1;
       else if (e.state === 'uploading' || e.state === 'sent') uploading += 1;
-      else if (e.state === 'needs_review' || e.state === 'dropped' || e.state === 'blocked')
+      else if (!e.noticeDismissed && (e.state === 'needs_review' || e.state === 'dropped'))
         needsAttention += 1;
     });
     return { waiting, uploading, needsAttention };
@@ -556,11 +556,18 @@ export class DexieStore implements SyncStore {
       await db.notices.delete(id);
       if (!n?.idempotencyKey) return;
       // The person has seen the answer: the entry leaves "needs attention".
-      await db.queue
-        .where('idempotencyKey')
-        .equals(n.idempotencyKey)
-        .and((e) => e.state === 'dropped' || e.state === 'needs_review')
-        .delete();
+      const entry = await db.queue.where('idempotencyKey').equals(n.idempotencyKey).first();
+      if (entry?.seq === undefined || (entry.state !== 'dropped' && entry.state !== 'needs_review'))
+        return;
+      const dependent =
+        entry.state === 'dropped' &&
+        (await db.queue
+          .filter(
+            (e) => UNANSWERED.has(e.state) && (e.dependsOn ?? []).includes(entry.idempotencyKey),
+          )
+          .first());
+      if (dependent) await db.queue.update(entry.seq, { noticeDismissed: true });
+      else await db.queue.delete(entry.seq);
     });
   }
 
@@ -573,11 +580,31 @@ export class DexieStore implements SyncStore {
    * before it are in the snapshot now, so their overlay (and "ID pending") can go.
    */
   async pruneApplied(passStartedAt: number) {
-    await this.db.queue
-      .where('state')
-      .equals('applied')
-      .and((e) => (e.settledAt ?? 0) < passStartedAt)
-      .delete();
+    const queue = this.db.queue;
+    await this.db.transaction('rw', queue, async () => {
+      await queue
+        .where('state')
+        .equals('applied')
+        .and((e) => (e.settledAt ?? 0) < passStartedAt)
+        .delete();
+      const dismissed = await queue
+        .where('state')
+        .equals('dropped')
+        .filter((e) => !!e.noticeDismissed)
+        .toArray();
+      if (!dismissed.length) return;
+      const dependencies = new Set<string>();
+      await queue
+        .filter((e) => UNANSWERED.has(e.state))
+        .each((e) => {
+          for (const key of e.dependsOn ?? []) dependencies.add(key);
+        });
+      await queue.bulkDelete(
+        dismissed.flatMap((e) =>
+          e.seq !== undefined && !dependencies.has(e.idempotencyKey) ? [e.seq] : [],
+        ),
+      );
+    });
   }
 
   async meta(key: MetaKey): Promise<unknown> {

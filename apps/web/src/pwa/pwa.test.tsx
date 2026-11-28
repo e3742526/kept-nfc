@@ -12,14 +12,17 @@ import { createMockApi, type MockApi, MockReply } from '@/api/mock/server';
 import { AppProviders } from '@/app-providers';
 import { ShareArrival } from '@/components/capture/share-arrival';
 import { toastQueue } from '@/components/ui/toast';
+import type { Offline } from '@/offline/open';
+import { OfflineContext } from '@/offline/provider';
 import { MemoryStore, type SharedInto } from '@/offline/store';
 import { expectLogicalOnly, renderUI } from '@/test/render';
 import manifestText from '../../public/manifest.webmanifest?raw';
 import { DiagnosticsPanel } from './diagnostics';
 import { HTTP_BANNER_HINT, InsecureBanner, insecureBannerKey } from './insecure-banner';
 import { PROBE_KEYS, type ProbeKey, type ProbeResult, reportText } from './probes';
-import { addUpdateGate, Updates, uploadIdle } from './register';
+import { addUpdateGate, Updates, updateIsSafe, uploadIdle } from './register';
 import { claimShare, SHARE_MAX_FILES, shareFromForm } from './share-target';
+import { PwaStoreBridge } from './store-bridge';
 import {
   isAuthenticatedPath,
   isHouseholdChunk,
@@ -97,6 +100,32 @@ describe('the service worker routes', () => {
 });
 
 describe('the update prompt', () => {
+  it('allows reload when a previously sent operation is waiting for replay', async () => {
+    const store = new MemoryStore();
+    await store.enqueue(
+      {
+        clientId: '01926f00-0000-7000-8000-00000020001a',
+        idempotencyKey: 'cap:1',
+        op: 'create_thing',
+        takenAt: '2026-09-27T11:05:00.000Z',
+        locationId: '01926f00-0000-7000-8000-00000000b002',
+        payload: {},
+      },
+      [],
+    );
+    const [entry] = await store.pending();
+    if (entry) entry.state = 'sent';
+    const isRunning = vi.fn(() => true);
+    await renderUI(
+      <OfflineContext.Provider value={{ store, engine: { isRunning } } as unknown as Offline}>
+        <PwaStoreBridge />
+      </OfflineContext.Provider>,
+    );
+    expect(await updateIsSafe()).toBe(false);
+    isRunning.mockReturnValue(false);
+    expect(await updateIsSafe()).toBe(true);
+  });
+
   it('waits while something uploads, then offers Reload, and hands over on Reload', async () => {
     const store = new MemoryStore();
     await store.enqueue(

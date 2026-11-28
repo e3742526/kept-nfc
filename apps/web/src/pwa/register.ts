@@ -2,8 +2,8 @@
  * Registering the service worker and the update flow (D148).
  *
  * A new worker installs in the background and **waits**. The page shows "A new version is
- * ready · Reload" (update-prompt.tsx) only when every update gate says it's safe: nothing is
- * uploading (`uploadIdle(store)`) and no capture session is open (`useHoldUpdates`). Reload
+ * ready · Reload" (update-prompt.tsx) only when every update gate says it's safe: no sync is
+ * active and no capture session is open (`useHoldUpdates`). Reload
  * sends SKIP_WAITING through @serwist/window, and the page reloads once the new worker controls
  * it. Kept never reloads mid-capture.
  *

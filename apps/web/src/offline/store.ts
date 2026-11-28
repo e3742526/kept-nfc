@@ -50,6 +50,8 @@ export type QueueEntry = QueueItem & {
   state: QueueState;
   /** The server's answer, once there is one. */
   result?: SyncOpResult;
+  /** Keep a dropped parent until its pending dependents have settled. */
+  noticeDismissed?: boolean;
 };
 
 /**
@@ -413,7 +415,7 @@ export class MemoryStore implements OfflineStore {
     for (const e of this.queue) {
       if (e.state === 'pending') waiting += 1;
       else if (e.state === 'uploading' || e.state === 'sent') uploading += 1;
-      else if (e.state === 'needs_review' || e.state === 'dropped' || e.state === 'blocked')
+      else if (!e.noticeDismissed && (e.state === 'needs_review' || e.state === 'dropped'))
         needsAttention += 1;
     }
     return { waiting, uploading, needsAttention };
@@ -434,7 +436,18 @@ export class MemoryStore implements OfflineStore {
     this.noticeList.push({ ...notice, id, at: new Date().toISOString() });
   }
   async dismissNotice(id: number) {
+    const notice = this.noticeList.find((n) => n.id === id);
     this.noticeList = this.noticeList.filter((n) => n.id !== id);
+    const entry = this.queue.find((e) => e.idempotencyKey === notice?.idempotencyKey);
+    if (entry && (entry.state === 'dropped' || entry.state === 'needs_review')) {
+      const dependent =
+        entry.state === 'dropped' &&
+        this.queue.some(
+          (e) => UNANSWERED.has(e.state) && (e.dependsOn ?? []).includes(entry.idempotencyKey),
+        );
+      if (dependent) entry.noticeDismissed = true;
+      else this.queue = this.queue.filter((e) => e !== entry);
+    }
   }
 
   async putShared(share: SharedInto) {

@@ -114,7 +114,7 @@ export const JOB_POLICIES = {
   'webhook-fanout': { retryLimit: 2, retryDelay: 10, retryBackoff: true, expireInSeconds: 60 },
   // One delivery, 10 attempts over about 24 hours, as step 4's channel webhook.
   'webhook-deliver': { retryLimit: 9, retryDelay: 113, retryBackoff: true, expireInSeconds: 60 },
-  // Daily: expired threads and proposals (D23, D22; kept.prune_assistant).
+  // Every 10 minutes: abandoned turns, expired threads and expired proposals.
   'assistant-maintenance': SCHEDULED_CLEANUP,
   // D180: mails every active user about one configuration change. Never retried: a retry
   // would mail everyone already told a second time (one failed address is logged, not thrown).

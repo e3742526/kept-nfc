@@ -228,8 +228,10 @@ export async function startKept(env: Env, opts: StartOptions = {}): Promise<Runn
             keyring: () => secretKeys.get().keyring,
             publicUrl: env.KEPT_PUBLIC_URL,
             appriseUrl: env.KEPT_APPRISE_URL ?? null,
-            enqueue: async (name, data) => {
-              await (boss as PgBoss).send(name, data);
+            enqueue: async (name, data, client) => {
+              if (!client)
+                throw new Error('A reminder webhook must be queued in its delivery transaction.');
+              await sendInTx(boss as PgBoss, client, name, data);
             },
           }),
           secretKeys,

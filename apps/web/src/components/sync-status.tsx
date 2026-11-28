@@ -34,34 +34,40 @@ const SHOWN_NOTICES = 3;
 function ChangeNotice({ notice, onDismiss }: { notice: SyncNotice; onDismiss: () => void }) {
   const { t } = useLingui();
   const n = notice.result?.notice;
-  if (!n) return null;
-  const name = n.name;
-  const by = n.by.displayName;
-  const text =
-    n.action === 'trashed' ? (
-      <Trans>
-        A change couldn't apply: <bdi>{name}</bdi> was trashed by <bdi>{by}</bdi>.
-      </Trans>
-    ) : n.action === 'moved' ? (
-      <Trans>
-        A change couldn't apply: <bdi>{name}</bdi> was moved by <bdi>{by}</bdi>.
-      </Trans>
+  const name = n?.name;
+  const by = n?.by.displayName;
+  const text = !n ? (
+    notice.kind === 'needs_review' ? (
+      t`A synced change needs review.`
     ) : (
-      <Trans>
-        A change couldn't apply: <bdi>{name}</bdi> was removed by <bdi>{by}</bdi>.
-      </Trans>
-    );
+      t`A change couldn't sync.`
+    )
+  ) : n.action === 'trashed' ? (
+    <Trans>
+      A change couldn't apply: <bdi>{name}</bdi> was trashed by <bdi>{by}</bdi>.
+    </Trans>
+  ) : n.action === 'moved' ? (
+    <Trans>
+      A change couldn't apply: <bdi>{name}</bdi> was moved by <bdi>{by}</bdi>.
+    </Trans>
+  ) : (
+    <Trans>
+      A change couldn't apply: <bdi>{name}</bdi> was removed by <bdi>{by}</bdi>.
+    </Trans>
+  );
   return (
     <Pill tone="warn" icon={<AlertIcon />} className="max-w-full rounded-[12px]">
       <span className="min-w-0 [overflow-wrap:anywhere]">
         {text}{' '}
-        <Link
-          to="/inbox"
-          search={{ 'f.kind': 'sync_drop' }}
-          className="font-semibold underline underline-offset-2"
-        >
-          {t`Restore`}
-        </Link>
+        {(n || notice.result?.inboxItemId) && (
+          <Link
+            to="/inbox"
+            search={n ? { 'f.kind': 'sync_drop' } : {}}
+            className="font-semibold underline underline-offset-2"
+          >
+            {n ? t`Restore` : t`Inbox`}
+          </Link>
+        )}
       </span>
       <AriaButton
         aria-label={t`Dismiss`}
@@ -132,19 +138,15 @@ export function SyncStatus() {
     else if (waiting > 0 && appleMobile())
       lines.push({ key: 'open', tone: 'info', text: t`Open to finish syncing (${waiting})` });
     notices.push(...status.notices.slice(0, SHOWN_NOTICES));
-    const unexplained = status.counts.needsAttention - notices.length;
-    if (unexplained > 0)
+    const remaining = status.notices.length - notices.length;
+    if (remaining > 0)
       lines.push({
         key: 'attention',
         tone: 'warn',
-        text: (
-          <Link to="/inbox" className="underline underline-offset-2">
-            {plural(unexplained, {
-              one: '# change needs a look',
-              other: '# changes need a look',
-            })}
-          </Link>
-        ),
+        text: plural(remaining, {
+          one: '# more sync notice',
+          other: '# more sync notices',
+        }),
       });
     if (status.truncated)
       lines.push({

@@ -174,10 +174,6 @@ export async function shareLinkRoutes(app: KeptApp, deps: InventoryDeps): Promis
       const { token } = req.params;
       if (!SHARE_LINK_TOKEN.test(token)) throw notFound();
       const hash = shareTokenHash(token);
-      const door = await withSystem(pools.system, (_tx, client) =>
-        openSharedPage(client, hash, req.query.page ?? 0),
-      );
-      if (!door) throw notFound();
       const limit = await reserveInWindow(
         pools.auth,
         limiterKey('share-link', hash),
@@ -185,6 +181,10 @@ export async function shareLinkRoutes(app: KeptApp, deps: InventoryDeps): Promis
         60,
       );
       if (!limit.allowed) throw rateLimited(reply, limit.retryAfter);
+      const door = await withSystem(pools.system, (_tx, client) =>
+        openSharedPage(client, hash, req.query.page ?? 0),
+      );
+      if (!door) throw notFound();
       const page = await sharedPageOf(deps.files, door);
       reply
         .header('cache-control', 'no-store')

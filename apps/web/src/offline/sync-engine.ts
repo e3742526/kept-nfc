@@ -82,15 +82,12 @@ export type SyncStatus = {
   /** Things whose short ID came at sync and can be printed now: "Print pending labels (N)". */
   printPending: number;
   /**
-   * The answers that name what changed under an op (D35, T14's `result.notice`): "the drill was
-   * trashed by Alfred", oldest first. The status line shows each until the person dismisses it.
+   * Terminal queue outcomes, oldest first. The status line shows each until dismissed.
    */
   notices: SyncNotice[];
 };
 
-/** A notice the status line spells out: a drop whose answer names what changed (T14 sends
- * `notice` with `dropped` only; any other answer is counted in "N changes need a look"). */
-export const namesChange = (n: SyncNotice): boolean => n.kind === 'dropped' && !!n.result?.notice;
+const isQueueNotice = (n: SyncNotice): boolean => n.kind === 'dropped' || n.kind === 'needs_review';
 
 /** Runs `fn` if this tab may sync now; resolves undefined when another tab is syncing. */
 export type SyncLock = <T>(fn: () => Promise<T>) => Promise<T | undefined>;
@@ -222,6 +219,8 @@ export class SyncEngine {
     this.listeners.add(fn);
     return () => this.listeners.delete(fn);
   };
+
+  isRunning = (): boolean => this.running !== null;
 
   /**
    * One sync run. Single-flight: a call during a run makes one more run after it, so nothing
@@ -416,7 +415,7 @@ export class SyncEngine {
       persisted: typeof persisted === 'boolean' ? persisted : null,
       lastSyncAt: typeof lastSyncAt === 'number' ? lastSyncAt : null,
       printPending: Array.isArray(printPending) ? printPending.length : 0,
-      notices: notices.filter(namesChange),
+      notices: notices.filter(isQueueNotice),
     });
   }
 

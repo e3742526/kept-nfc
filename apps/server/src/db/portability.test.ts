@@ -197,9 +197,15 @@ describe('export runs', () => {
     ).toBe('42501');
   });
 
-  it('the purge fails a run its job abandoned and clears its key; a claim pack is left as it was', async () => {
+  it('the purge fails abandoned exports and claim packs, and preserves fresh requests', async () => {
     const run = await exportAs(ibrahim.userId, { secrets: true });
     const fresh = await exportAs(ibrahim.userId);
+    const pack = newId();
+    await own(
+      `INSERT INTO public.export_runs (id, location_id, kind, created_by, thing_ids, created_at)
+       VALUES ($1, $2, 'claim_pack', $3, ARRAY[$4::uuid], now() - interval '45 minutes')`,
+      [pack, ibrahim.locationId, ibrahim.userId, newId()],
+    );
     await own(
       `UPDATE public.export_runs SET status = 'running', started_at = now() - interval '4 hours'
         WHERE id = $1`,
@@ -212,6 +218,7 @@ describe('export runs', () => {
       key_version: null,
     });
     expect((await exportRow(fresh))?.status).toBe('queued');
+    expect(await exportRow(pack)).toMatchObject({ status: 'failed', error: 'abandoned' });
   });
 
   it('the doors stay where they belong', async () => {
@@ -391,6 +398,22 @@ describe('archive import runs', () => {
             .rows,
       ),
     ).toEqual([]);
+  });
+
+  it('marks a crashed import as failed while preserving its resumable rows', async () => {
+    const crashed = newId();
+    await own(
+      `INSERT INTO public.import_runs (id, location_id, source, status, rows, created_by, updated_at)
+       VALUES ($1, $2, 'csv', 'running', '[{"name":"Drill"}]', $3, now() - interval '4 hours')`,
+      [crashed, ibrahim.locationId, ibrahim.userId],
+    );
+    await asSystem((c) =>
+      c.query(`SELECT * FROM kept.stale_import_runs(now() - interval '7 days', 100)`),
+    );
+    const [row] = await own('SELECT status, error, rows FROM public.import_runs WHERE id = $1', [
+      crashed,
+    ]);
+    expect(row).toEqual({ status: 'failed', error: 'abandoned', rows: [{ name: 'Drill' }] });
   });
 });
 

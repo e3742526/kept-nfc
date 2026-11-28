@@ -5368,6 +5368,9 @@ describe('KeptPhone mobile workflows', () => {
       Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
     expect(precedes(nfc, upc)).toBe(true);
     expect(precedes(upc, camera)).toBe(true);
+    const unavailableAssist = screen.getByRole('button', { name: 'AI assist' });
+    expect(unavailableAssist).toBeDisabled();
+    expect(unavailableAssist).toHaveAccessibleDescription('Add a photo to get AI suggestions.');
 
     await user.click(upc);
     await user.type(screen.getByLabelText('UPC digits'), '036000291452');

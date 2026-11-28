@@ -10,6 +10,7 @@ import { type Scope, withScope, withSystem } from '../db/scope.js';
 import { ingestFile } from '../files/ingest.js';
 import { AppError } from '../http/errors.js';
 import type { JobQueue } from '../jobs/queue.js';
+import type { SystemJobDeps } from '../jobs/system.js';
 import { renderPdf, writeData } from '../reports/render/render.js';
 import type { FileStorage } from '../storage/blob-store.js';
 import { ImageLimiter } from '../storage/derivatives.js';
@@ -47,12 +48,7 @@ export type MailInDeps = {
   keyring: Keyring | null;
   source: MailSource;
   /** The worker's tenant sender: the receipt's extraction and a PDF's text. */
-  sendTenant?: (
-    client: import('pg').ClientBase,
-    name: string,
-    data: object,
-    options: { startAfter: Date },
-  ) => Promise<void>;
+  sendTenant?: SystemJobDeps['sendTenant'];
   log: { info: (obj: object, msg: string) => void; error: (obj: object, msg: string) => void };
 };
 
@@ -78,6 +74,11 @@ function queueOf(deps: MailInDeps): JobQueue | null {
     sendTenant: (client, name, data, dedupe) =>
       send(client, name, data, {
         startAfter: new Date(Date.now() + (dedupe?.startAfter ?? 0) * 1000),
+        ...(dedupe && {
+          singletonKey: dedupe.singletonKey,
+          singletonSeconds: dedupe.singletonSeconds,
+          singletonNextSlot: true,
+        }),
       }),
   };
 }

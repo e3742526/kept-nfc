@@ -7,7 +7,7 @@ import {
   TOOL_DEFS,
   type ToolName,
 } from '@kept/mcp';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { TestApp } from '../../test/app.js';
 import { type TestDb, testDb } from '../../test/db.js';
 import { call, join, type Person, peopleApp, person } from '../../test/people.js';
@@ -201,6 +201,19 @@ describe('refusals', () => {
     expect(off).toEqual(unknown);
     expect(notMine).toEqual(unknown);
     expect(off).toMatchObject({ error: 'tool_unavailable' });
+  });
+
+  it('prepares semantic queries only for locations that allow the tool', async () => {
+    const context = ctx(louis, { via: 'mcp' });
+    const semantic = vi.fn(async () => null);
+    context.deps.semantic = semantic;
+    const query = 'Where are the cables?';
+    expect(
+      await runTool(context, 'search_things', { location_id: garage.id, query }),
+    ).toMatchObject({ error: 'tool_unavailable' });
+    expect(semantic).not.toHaveBeenCalled();
+    await runTool(context, 'search_things', { location_id: home.id, query });
+    expect(semantic).toHaveBeenCalledWith(expect.anything(), query, { locationIds: [home.id] });
   });
 
   it('refuses a viewer’s write with forbidden and writes nothing', async () => {

@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
-import { describe, expect, it } from 'vitest';
-import { HASH_CHUNK, hashBlob, Sha256 } from './sha256';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { HASH_CHUNK, hashBlob, hashFile, Sha256 } from './sha256';
 
 const node = (b: Uint8Array) => createHash('sha256').update(b).digest('hex');
+afterEach(() => vi.unstubAllGlobals());
 
 describe('the chunked SHA-256', () => {
   it('matches the FIPS vectors', () => {
@@ -29,5 +30,21 @@ describe('the chunked SHA-256', () => {
     expect(await hashBlob(new Blob([data]), (f) => seen.push(f))).toBe(node(data));
     expect(seen.at(-1)).toBe(1);
     expect(seen).toHaveLength(2);
+  });
+
+  it('terminates the hashing worker when the file is abandoned', async () => {
+    const terminate = vi.fn();
+    vi.stubGlobal(
+      'Worker',
+      class {
+        postMessage = vi.fn();
+        terminate = terminate;
+      },
+    );
+    const controller = new AbortController();
+    const hashing = hashFile(new Blob(['file']), vi.fn(), controller.signal);
+    controller.abort();
+    await expect(hashing).rejects.toMatchObject({ name: 'AbortError' });
+    expect(terminate).toHaveBeenCalledOnce();
   });
 });

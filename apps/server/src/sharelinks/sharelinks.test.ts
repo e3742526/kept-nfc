@@ -506,7 +506,7 @@ describe('GET /api/v1/shared/:token', () => {
     expect(over.statusCode).toBe(429);
     expect(over.headers['retry-after']).toBeDefined();
     [link] = await linksOf(bruce, h.home);
-    expect(link?.views).toBeGreaterThanOrEqual(SHARE_LINK_VIEWS_PER_MINUTE - 1);
+    expect(link?.views).toBe(SHARE_LINK_VIEWS_PER_MINUTE - 1);
   });
 
   it('pages A to Z, 60 at a time', async () => {

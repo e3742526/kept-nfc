@@ -10,8 +10,9 @@ import { type FileStorage, importArchiveKey } from '../storage/blob-store.js';
 // jobs/portability.ts. `prune-imports` runs daily as kept_system: for each run from
 // kept.stale_import_runs(now() - 7 days, 200) it deletes `i/<id>.zip` (importArchiveKey; a
 // missing blob is fine), then calls kept.clear_import_run(id), which clears the rows, the archive
-// columns, the inspection and any sealed key, and cancels a draft or checked run. A running run
-// is never listed. The archive of a finished run is deleted when its job ends; this
+// columns, the inspection and any sealed key, and cancels a draft or checked run. Abandoned
+// running attempts are failed before the retention window is applied, and can still be resumed.
+// The archive of a finished run is deleted when its job ends; pruning
 // catches what a crash, an abandoned upload or a refused archive left behind.
 
 /** Runs per door call. */

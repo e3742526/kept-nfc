@@ -77,7 +77,8 @@ how many captures are waiting from another account and deletes them only when th
 - iPhone photos in HEIC are kept as originals; if one can't be previewed, it says **Preview
   unavailable** and is never refused.
 - **Share into Kept**: on Android and desktop Chrome, the installed app appears in the share
-  sheet, so a receipt or PDF from another app lands in Capture. iPhone doesn't let web apps appear
+  sheet, so a receipt or PDF from another app lands in Capture. Open Capture within one minute to
+  claim the share. If it expires, share the files again. iPhone doesn't let web apps appear
   in the Share sheet: save the file, then use **Gallery** in Capture.
 - **Scan** reads Kept labels and product barcodes, offline too, from the phone's copy, and
   Data Matrix, Code 39, Code 93, ITF, Codabar, PDF417 and Aztec codes; a serial number or asset

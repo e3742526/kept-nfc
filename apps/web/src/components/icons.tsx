@@ -321,12 +321,6 @@ export const CheckCircleIcon = (p: IconProps) => (
   </Svg>
 );
 
-export const GripIcon = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M9 6v.01M15 6v.01M9 12v.01M15 12v.01M9 18v.01M15 18v.01" strokeWidth="2.6" />
-  </Svg>
-);
-
 /** A folded map with a pin (D237): the location map. */
 export const MapIcon = (p: IconProps) => (
   <Svg {...p}>
@@ -462,8 +456,6 @@ export const ScheduleIcon = (p: IconProps) => (
     <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M9 14.5l2 2 4-4" />
   </Svg>
 );
-
-export const LogoutIcon = LeaveIcon;
 
 // ----- step 2: status pills and places --------------------------------------------------------
 

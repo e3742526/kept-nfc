@@ -145,7 +145,11 @@ export function ItemShell({
 }
 
 /** The reason under a row of disabled buttons (never only a greyed-out button). */
-export function BlockedReason({ reason }: { reason: Blocked }) {
+export function BlockedReason({ reason, id }: { reason: Blocked; id?: string }) {
   if (!reason) return null;
-  return <p className="m-0 w-full text-small text-ink-3">{reason}</p>;
+  return (
+    <p id={id} className="m-0 w-full text-small text-ink-3">
+      {reason}
+    </p>
+  );
 }

@@ -12,7 +12,7 @@ import type { PaperworkRow, SubjectRef } from '@/api/household/types';
 import type { AttachmentView } from '@/api/inventory/types';
 import { useAllLocations } from '@/api/queries';
 import { DOCUMENT_TONE, noonOf, useDocumentKindLabels } from '@/components/documents/labels';
-import { BoxIcon, ClockIcon, DocumentIcon, HomeIcon, ShareIcon } from '@/components/icons';
+import { ClockIcon, DocumentIcon, ShareIcon } from '@/components/icons';
 import { Pill } from '@/components/page';
 import { useRoleLabels } from '@/components/things/labels';
 import { useOriginalFile } from '@/components/things/original-file';
@@ -111,10 +111,6 @@ export function SubjectLink({ subject, className }: { subject: SubjectRef; class
       {name}
     </Link>
   );
-}
-
-export function SubjectIcon({ type }: { type: SubjectRef['type'] }) {
-  return type === 'location' ? <HomeIcon /> : <BoxIcon />;
 }
 
 /** The path under a subject's name ("Home › Kitchen"), when it adds anything. */

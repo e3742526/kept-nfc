@@ -15,7 +15,7 @@
 import { type ArchiveSource, newId, ZIP_LIMITS } from '@kept/shared';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useBlocker } from '@tanstack/react-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DropZone, FileTrigger, ProgressBar } from 'react-aria-components';
 import { ApiError, isApiError } from '@/api/client';
 import { portabilityPaths } from '@/api/portability/paths';
@@ -125,6 +125,8 @@ export function ArchiveStep({
   const busy = useRef(false);
   const abort = useRef<AbortController | null>(null);
 
+  useEffect(() => () => abort.current?.abort(), []);
+
   useBlocker({
     shouldBlockFn: async () => {
       if (!busy.current) return false;
@@ -156,26 +158,33 @@ export function ArchiveStep({
 
   const send = async (chosen: File) => {
     busy.current = true;
-    abort.current = new AbortController();
+    const controller = new AbortController();
+    const { signal } = controller;
+    abort.current = controller;
     try {
       setPhase({ kind: 'hashing', fraction: 0 });
-      const sha256 = await hashFile(chosen, (fraction) => setPhase({ kind: 'hashing', fraction }));
-      if (!busy.current) return;
+      const sha256 = await hashFile(
+        chosen,
+        (fraction) => setPhase({ kind: 'hashing', fraction }),
+        signal,
+      );
+      signal.throwIfAborted();
       const id = newId();
       await portabilityApi.createArchiveImport({ id, source, bytes: chosen.size, sha256 });
+      signal.throwIfAborted();
       setPhase({ kind: 'uploading', fraction: 0 });
       const run = await uploadArchive(
         id,
         chosen,
         sha256,
         (fraction) => setPhase({ kind: 'uploading', fraction }),
-        abort.current.signal,
+        signal,
       );
+      signal.throwIfAborted();
       busy.current = false;
       onUploaded(run);
     } catch (e) {
-      if (!busy.current || (e instanceof DOMException && e.name === 'AbortError')) return;
-      busy.current = false;
+      if (signal.aborted) return;
       setPhase({
         kind: 'failed',
         message:
@@ -183,6 +192,11 @@ export function ArchiveStep({
             ? t`This file can't be read any more. Choose it again.`
             : failure(e),
       });
+    } finally {
+      if (abort.current === controller) {
+        abort.current = null;
+        busy.current = false;
+      }
     }
   };
 

@@ -179,7 +179,21 @@ async function fanOut(
   }
   // The location's own webhooks (D172): `reminder.due` once per occurrence, whoever its
   // recipients are, through the same fan-out as a write's events (webhooks/fanout.ts).
+  if (!deps.send && immediate && deliveries > 0) {
+    deps.log?.error(
+      { occurrenceId: occ.id, deliveries },
+      'reminder deliveries recorded without a job sender',
+    );
+  }
   if (deps.send) await queueReminderWebhook(client, deps.send, occ);
+  else if (deps.log)
+    await queueReminderWebhook(
+      client,
+      async () => {
+        deps.log?.error({ occurrenceId: occ.id }, 'reminder webhook was due without a job sender');
+      },
+      occ,
+    );
   return { notifications, deliveries };
 }
 
@@ -237,9 +251,16 @@ export async function runScan(deps: ScanDeps, opts: ScanOptions = {}): Promise<S
   const started = Date.now();
   const now = opts.now ?? new Date();
   const limit = opts.pageSize ?? 2000;
-  await withSystem(deps.pools.system, (_tx, client) =>
-    writeScanStatus(client, { lastRunAt: new Date(started).toISOString() }),
-  );
+  await withSystem(deps.pools.system, async (_tx, client) => {
+    await writeScanStatus(client, { lastRunAt: new Date(started).toISOString() });
+    // A final crashed attempt leaves an expired claim. Normal job retries can still claim failed
+    // rows. A worker that resumes after the sweep cannot overwrite the newer state.
+    await client.query(
+      `UPDATE public.reminder_deliveries SET status = 'failed', error = 'interrupted',
+              send_claim = NULL, send_claimed_at = NULL
+        WHERE status IN ('queued', 'failed') AND send_claimed_at < now() - interval '10 minutes'`,
+    );
+  });
   const book = new RecipientBook(deps);
   const result: ScanResult = {
     occurrences: 0,

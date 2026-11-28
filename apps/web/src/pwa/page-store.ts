@@ -4,7 +4,7 @@
  * store with `setPageStore()` when it opens it, and back on sign-out.
  */
 import { MemoryStore, type OfflineStore } from '@/offline/store';
-import { addUpdateGate, uploadIdle } from './register';
+import { addUpdateGate, type UpdateGate, uploadIdle } from './register';
 
 let current: OfflineStore = new MemoryStore();
 let removeGate = addUpdateGate(uploadIdle(current));
@@ -13,9 +13,9 @@ export function pageStore(): OfflineStore {
   return current;
 }
 
-/** Uses `store` from now on, and gates updates on its uploads. */
-export function setPageStore(store: OfflineStore): void {
+/** Uses `store` from now on, and gates updates on active sync work. */
+export function setPageStore(store: OfflineStore, canReload: UpdateGate = uploadIdle(store)): void {
   removeGate();
   current = store;
-  removeGate = addUpdateGate(uploadIdle(store));
+  removeGate = addUpdateGate(canReload);
 }

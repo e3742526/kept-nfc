@@ -26,6 +26,7 @@ import {
   type Ref,
   useEffect,
   useEffectEvent,
+  useId,
   useImperativeHandle,
   useRef,
   useState,
@@ -181,6 +182,7 @@ export function CaptureForm({
   headerExtra?: ReactNode;
 }) {
   const { t } = useLingui();
+  const assistReasonId = useId();
   const adapters = usePlatform();
   const printQueue = useNativePrintQueue(connection);
   const confirm = useConfirm();
@@ -1121,9 +1123,16 @@ export function CaptureForm({
           )}
         </div>
         {isItem && !showAssist && (
-          <Button variant="secondary" isDisabled>
-            <Trans>AI assist</Trans>
-          </Button>
+          <div className="grid gap-1">
+            <Button variant="secondary" isDisabled aria-describedby={assistReasonId}>
+              <Trans>AI assist</Trans>
+            </Button>
+            <p id={assistReasonId} className="m-0 text-small text-ink-2">
+              {canLookUp
+                ? t`Add a photo, enter a name, or scan a UPC to get AI suggestions.`
+                : t`Add a photo to get AI suggestions.`}
+            </p>
+          </div>
         )}
         {isItem && showAssist && (
           <CaptureSuggestion

@@ -545,18 +545,14 @@ function Sidebar({ locations, counts }: { locations: LocationSummary[]; counts: 
             </>
           }
         >
-          {/* A disabled link. In the rail it takes focus, so a keyboard reads its tooltip. */}
           {/* biome-ignore lint/a11y/useSemanticElements: a disabled link has no href, and an <a> without one isn't a link */}
           <span
             role="link"
-            tabIndex={tips ? 0 : -1}
+            tabIndex={-1}
             aria-disabled="true"
             data-nav={e.key}
             title={tips ? undefined : t`Coming soon`}
-            className={cn(
-              item,
-              'cursor-not-allowed text-ink-3 outline-none focus-visible:outline-2 focus-visible:outline-info [&>svg]:opacity-60',
-            )}
+            className={cn(item, 'cursor-not-allowed text-ink-3 [&>svg]:opacity-60')}
           >
             {e.icon}
             <NavLabel rail={rail}>

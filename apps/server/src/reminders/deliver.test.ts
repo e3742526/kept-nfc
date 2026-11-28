@@ -172,6 +172,31 @@ describe('reminder-deliver', () => {
     expect(await runDelivery(deps(), data)).toBe('sent');
   });
 
+  it('commits its claim before sending and skips a duplicate while the sender is active', async () => {
+    await runScan(deps());
+    const data = jobs[0]?.data;
+    const worker = {
+      ...deps(),
+      channels: {
+        email: {
+          send: vi.fn(async () => {
+            expect(
+              await own(
+                'SELECT status, send_claim FROM public.reminder_deliveries WHERE user_id = $1',
+                [ibrahim.userId],
+              ),
+            ).toEqual([{ status: 'queued', send_claim: expect.any(String) }]);
+            expect(await runDelivery(deps(), data)).toBe('nothing');
+            return { status: 'sent' } as const;
+          }),
+        },
+      },
+    };
+    expect(await runDelivery(worker, data)).toBe('sent');
+    expect(worker.channels.email.send).toHaveBeenCalledOnce();
+    expect(sent).toHaveLength(0);
+  });
+
   it('a push whose devices are all gone ends skipped; a closed occurrence is skipped, unsent', async () => {
     await runScan(deps());
     outcome = { status: 'skipped', error: 'push_gone' };

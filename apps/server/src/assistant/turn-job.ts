@@ -13,9 +13,8 @@ import { ASSISTANT_TURN_JOB } from './service.js';
 //   under row-level security (loop.ts), so a
 //   job naming someone else's turn finds nothing and ends. A retryable failure throws for pg-boss's
 //   one retry (JOB_POLICIES), which resumes after the last stored step.
-// - `assistant-maintenance`: daily at 03:15 UTC, kept_system: threads past their expiry go with
-//   everything in them, and open proposals past their 10 minutes are marked expired
-//   (kept.prune_assistant, 0073).
+// - `assistant-maintenance`: every 10 minutes, kept_system: removes expired threads,
+//   expires proposals and fails turns abandoned after their final attempt.
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -85,7 +84,7 @@ export function assistantJobs(deps: SystemJobDeps): JobDefinition[] {
     defineJob({
       name: 'assistant-maintenance',
       kind: 'system',
-      schedule: '15 3 * * *',
+      schedule: '*/10 * * * *',
       policy: JOB_POLICIES['assistant-maintenance'],
       handler: async () => {
         const rows = await withSystem(deps.pools.system, async (_tx, c) => {

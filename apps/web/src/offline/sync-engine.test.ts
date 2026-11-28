@@ -242,6 +242,7 @@ describe('the sync engine', () => {
     );
     await engine.run();
     expect(opsCalls()).toEqual([]);
+    expect(await store.counts()).toMatchObject({ waiting: 3, uploading: 0 });
 
     mock.on('PUT', inventoryPaths.file(':id'), ({ params, headers }) => ({
       id: params.id,

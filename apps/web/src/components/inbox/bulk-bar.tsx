@@ -8,7 +8,7 @@
  */
 import { can } from '@kept/shared';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { captureApi } from '@/api/capture/queries';
 import type { InboxBulkResult, InboxItem } from '@/api/capture/types';
 import type { Written } from '@/api/client';
@@ -74,6 +74,7 @@ export function BulkBar({
   const location = oneLocation
     ? locations.find((l) => l.id === selected[0]?.locationId)
     : undefined;
+  const tagReasonId = useId();
   const nameable = selected.filter(acceptsName);
   const whereReason: Blocked =
     blocked ??
@@ -147,7 +148,7 @@ export function BulkBar({
           onDone={onClear}
         />
       ) : (
-        <Button size="small" variant="secondary" isDisabled>
+        <Button size="small" variant="secondary" isDisabled aria-describedby={tagReasonId}>
           <Trans>Add tags…</Trans>
         </Button>
       )}
@@ -163,7 +164,10 @@ export function BulkBar({
       <Button size="small" variant="ghost" onPress={onClear}>
         <Trans>Clear selection</Trans>
       </Button>
-      <BlockedReason reason={whereReason} />
+      <BlockedReason
+        id={tagReasonId}
+        reason={whereReason ?? (!location ? t`Loading the selected location…` : undefined)}
+      />
       {nameable.length < n && !blocked ? (
         <p className="m-0 w-full text-small text-ink-3">
           <Trans>

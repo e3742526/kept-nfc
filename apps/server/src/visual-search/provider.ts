@@ -1,4 +1,5 @@
 import { request } from 'node:http';
+import { setTimeout as wait } from 'node:timers/promises';
 
 export const VISUAL_GENERATION = 'openclip-vit-b-32-laion2b-s34b-b79k-1a25a446-224-v1';
 export const VISUAL_DIMENSIONS = 512;
@@ -225,14 +226,12 @@ export function reportVisualEncoder(
         return;
       }
       if (Date.now() >= deadline) break;
-      await new Promise<void>((done) => {
-        const timer = setTimeout(done, pollMs);
-        timer.unref();
-        opts.signal?.addEventListener('abort', () => {
-          clearTimeout(timer);
-          done();
-        });
-      });
+      try {
+        await wait(pollMs, undefined, { ref: false, signal: opts.signal });
+      } catch (error) {
+        if (opts.signal?.aborted) return;
+        throw error;
+      }
     }
     if (opts.signal?.aborted) return;
     log.warn(

@@ -117,13 +117,18 @@ export const HASH_CHUNK = 4 * 1024 ** 2;
 export async function hashBlob(
   blob: Blob,
   onProgress: (fraction: number) => void = () => {},
+  signal?: AbortSignal,
 ): Promise<string> {
+  signal?.throwIfAborted();
   const hash = new Sha256();
   for (let at = 0; at < blob.size; at += HASH_CHUNK) {
     const chunk = blob.slice(at, Math.min(blob.size, at + HASH_CHUNK));
-    hash.update(new Uint8Array(await chunk.arrayBuffer()));
+    const bytes = await chunk.arrayBuffer();
+    signal?.throwIfAborted();
+    hash.update(new Uint8Array(bytes));
     onProgress(Math.min(1, (at + HASH_CHUNK) / blob.size));
   }
+  signal?.throwIfAborted();
   return hash.hex();
 }
 

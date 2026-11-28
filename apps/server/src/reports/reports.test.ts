@@ -533,6 +533,20 @@ describe('the report job and GET /api/v1/reports/:id', () => {
     expect((await call(t, `/api/v1/reports/${id}`, { as: ann })).statusCode).toBe(404);
   });
 
+  it('shows a stale queued report as failed and persists the timeout during cleanup', async () => {
+    const { id } = ok(await request(ann, { scope: { locationId: home.id } }), 202);
+    await own(
+      db,
+      "UPDATE public.report_runs SET created_at = now() - interval '11 minutes' WHERE id = $1",
+      [id],
+    );
+    expect(await runOf(ann, id)).toMatchObject({ status: 'failed', error: 'timeout' });
+    await purgeExpiredReports({ pools: db.pools, files, log });
+    expect(
+      await own(db, 'SELECT status, error FROM public.report_runs WHERE id = $1', [id]),
+    ).toEqual([{ status: 'failed', error: 'timeout' }]);
+  });
+
   it('fails a run with too_many_things past the limit rather than rendering it', async () => {
     const { MAX_THINGS } = await import('./gather.js');
     const { id } = ok(await request(ann, { scope: { locationId: garage.id } }), 202);

@@ -96,6 +96,15 @@ export async function ask(
       `a question is 1 to ${TURN_LIMITS.maxQuestionChars} characters`,
     );
   }
+  // Free the thread after both job attempts could have expired. The scoped write touches only
+  // this person's thread and leaves provider pauses to the existing scheduler.
+  await client.query(
+    `UPDATE public.assistant_turns
+        SET status = 'failed', status_reason = 'timeout', finished_at = now()
+      WHERE thread_id = $1 AND user_id = $2 AND status IN ('queued', 'running')
+        AND updated_at <= now() - interval '8 minutes'`,
+    [threadId, scope.userId],
+  );
   await client.query('SAVEPOINT ask_turn');
   let turnId: string;
   try {

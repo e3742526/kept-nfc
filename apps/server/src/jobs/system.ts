@@ -1,4 +1,5 @@
 import pg from 'pg';
+import type { SendOptions } from 'pg-boss';
 import { repairOrphanAccounts } from '../accounts/ensure-account.js';
 import { aiJobs } from '../ai/jobs.js';
 import type { AiDeps } from '../ai/routes.js';
@@ -60,7 +61,9 @@ export type SystemJobDeps = {
     client: pg.ClientBase,
     name: string,
     data: object,
-    options: { startAfter: Date },
+    options: Pick<SendOptions, 'singletonKey' | 'singletonSeconds' | 'singletonNextSlot'> & {
+      startAfter: Date;
+    },
   ) => Promise<void>;
   /** Sends a system job on a handler's own kept_system transaction (jobs/boss.ts sendInTx): the
    * reminder scan's `reminder-deliver` jobs, in the transaction that writes the delivery.

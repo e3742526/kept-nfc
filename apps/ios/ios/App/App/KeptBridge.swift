@@ -722,6 +722,8 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
     @objc func disconnect(_ call: CAPPluginCall) {
         run(call) {
             let connection = try KeptKeychain.read()
+            self.pendingScan = nil
+            self.nfc?.cancel()
             self.niimbot.cancel()
             try KeptKeychain.delete()
             self.loggedAuthorizedRequest = false
@@ -1442,18 +1444,21 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
                   let file = call.getString("file"), UUID(uuidString: file) != nil,
                   let controller = self.bridge?.viewController
             else { throw KeptNativeError.invalidRequest }
-            let (sourceURL, original) = try await self.store.use {
-                try $0.original(context: heldContext, draft: id, file: file)
-            }
-            guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
-            let ext = Self.mimeExtensions[original.file.mime] ?? "dat"
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent("kept-preview-\(UUID())", isDirectory: true)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,
-                                                    attributes: [.protectionKey: FileProtectionType.complete])
-            let target = folder.appendingPathComponent("SheepKeep held.\(ext)")
             do {
-                try FileManager.default.copyItem(at: sourceURL, to: target)
-                try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: target.path)
+                let target = try await self.store.use { outbox in
+                    let (sourceURL, original) = try outbox.original(context: heldContext, draft: id, file: file)
+                    let ext = Self.mimeExtensions[original.file.mime] ?? "dat"
+                    let target = folder.appendingPathComponent("SheepKeep held.\(ext)")
+                    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true,
+                                                            attributes: [.protectionKey: FileProtectionType.complete])
+                    try FileManager.default.copyItem(at: sourceURL, to: target)
+                    guard try target.resourceValues(forKeys: [.fileSizeKey]).fileSize == original.file.bytes
+                    else { throw OutboxError.missing }
+                    try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: target.path)
+                    return target
+                }
+                guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
                 try self.preview.present(target, from: controller)
             } catch {
                 try? FileManager.default.removeItem(at: folder)
@@ -1498,37 +1503,35 @@ final class KeptBridge: CAPPlugin, CAPBridgedPlugin {
             else { throw KeptNativeError.previewUnavailable }
 
             let normalizedId = id.lowercased()
-            let originals = try await self.store.use { store -> [(URL, PendingOriginal)] in
-                let heldEntries = try store.pending(context: heldContext)
-                guard let entry = heldEntries.first(where: { $0.capture.id == normalizedId }) else {
-                    throw OutboxError.missing
-                }
-                return try entry.capture.files.map { item in
-                    try store.original(context: heldContext, draft: normalizedId, file: item.file.id)
-                }
-            }
-            guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
-
             let folder = FileManager.default.temporaryDirectory.appendingPathComponent("kept-export-\(UUID())", isDirectory: true)
-            try FileManager.default.createDirectory(
-                at: folder,
-                withIntermediateDirectories: true,
-                attributes: [.protectionKey: FileProtectionType.complete]
-            )
             do {
+                let originals = try await self.store.use { store -> [URL] in
+                    let heldEntries = try store.pending(context: heldContext)
+                    guard let entry = heldEntries.first(where: { $0.capture.id == normalizedId }) else {
+                        throw OutboxError.missing
+                    }
+                    try FileManager.default.createDirectory(
+                        at: folder,
+                        withIntermediateDirectories: true,
+                        attributes: [.protectionKey: FileProtectionType.complete]
+                    )
+                    return try entry.capture.files.enumerated().map { index, item in
+                        let (source, original) = try store.original(context: heldContext, draft: normalizedId, file: item.file.id)
+                        let filename = Self.sanitizedExportFilename(original.file.name, mime: original.file.mime, index: index)
+                        let target = folder.appendingPathComponent(filename)
+                        try FileManager.default.copyItem(at: source, to: target)
+                        try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: target.path)
+                        return target
+                    }
+                }
+                guard try KeptKeychain.read() == connection else { throw KeptNativeError.missingSession }
+                guard controller.viewIfLoaded?.window != nil, controller.presentedViewController == nil,
+                      !controller.isBeingDismissed else { throw KeptNativeError.previewUnavailable }
+
                 let metadataURL = folder.appendingPathComponent("kept-held-\(normalizedId).json")
                 try Data(metadata.utf8).write(to: metadataURL, options: .atomic)
                 try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: metadataURL.path)
-
-                var exportedURLs: [URL] = [metadataURL]
-                for (index, (sourceURL, original)) in originals.enumerated() {
-                    let filename = Self.sanitizedExportFilename(original.file.name, mime: original.file.mime, index: index)
-                    let targetURL = folder.appendingPathComponent(filename)
-                    try FileManager.default.copyItem(at: sourceURL, to: targetURL)
-                    try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: targetURL.path)
-                    exportedURLs.append(targetURL)
-                }
-
+                let exportedURLs = [metadataURL] + originals
                 let activity = UIActivityViewController(activityItems: exportedURLs, applicationActivities: nil)
                 if let popover = activity.popoverPresentationController {
                     popover.sourceView = controller.view

@@ -253,11 +253,15 @@ async function executeTool(
     const meaning = prep ? meaningOf?.(input) : undefined;
     const over =
       prep && meaning
-        ? asked0
-          ? [asked0]
-          : await withScope(ctx.deps.pools.app, scope, async (tx, client) =>
-              (await reachableAll(tx, client, resolver, also)).filter(eligible).map((l) => l.id),
-            )
+        ? await withScope(ctx.deps.pools.app, scope, async (tx, client) => {
+            if (asked0) {
+              const location = await reachable(tx, client, asked0, resolver);
+              return location && eligible(location) ? [location.id] : [];
+            }
+            return (await reachableAll(tx, client, resolver, also))
+              .filter(eligible)
+              .map((l) => l.id);
+          })
         : [];
     const semantic =
       prep && over.length > 0

@@ -751,6 +751,23 @@ const download = (url: string, headers: Record<string, string> = {}) =>
   t.app.inject({ method: 'GET', url: new URL(url).pathname, headers });
 
 describe('claim packs', () => {
+  it('shows an abandoned queued claim pack as failed', async () => {
+    const { id } = ok(
+      await call(t, '/api/v1/claim-packs', {
+        as: ibrahim,
+        body: { scope: { locationId: home.id, thingIds: [tv] }, acknowledged: true },
+      }),
+      202,
+    );
+    expect((await packOf(ibrahim, id)).status).toBe('queued');
+    await own(
+      db,
+      "UPDATE public.export_runs SET created_at = now() - interval '41 minutes' WHERE id = $1",
+      [id],
+    );
+    expect((await packOf(ibrahim, id)).status).toBe('failed');
+  });
+
   it('needs the "includes prices and documents" acknowledgement, and an owner or admin', async () => {
     const scope = { locationId: home.id, thingIds: [tv] };
     const bare = await call(t, '/api/v1/claim-packs', { as: ibrahim, body: { scope } });

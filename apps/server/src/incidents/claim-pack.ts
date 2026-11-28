@@ -219,6 +219,7 @@ type RunRow = {
   downloads: number;
   last_downloaded_at: Date | null;
   created_at: Date;
+  started_at: Date | null;
   expires_at: Date;
 };
 
@@ -226,7 +227,7 @@ type RunRow = {
 async function readRun(client: pg.ClientBase, id: string, lock = false): Promise<RunRow> {
   const { rows } = await client.query<RunRow>(
     `SELECT id, location_id, status, progress_done, progress_total, bytes, error, token_hash,
-            token_expires_at, revoked_at, downloads, last_downloaded_at, created_at, expires_at
+            token_expires_at, revoked_at, downloads, last_downloaded_at, created_at, started_at, expires_at
        FROM public.export_runs WHERE id = $1 AND kind = 'claim_pack'${lock ? ' FOR UPDATE' : ''}`,
     [id.toLowerCase()],
   );
@@ -237,7 +238,10 @@ async function readRun(client: pg.ClientBase, id: string, lock = false): Promise
 
 function statusOf(run: RunRow): ClaimPackView['status'] {
   if (run.status === 'done' && run.expires_at.getTime() <= Date.now()) return 'expired';
-  if (run.status === 'running' && Date.now() - run.created_at.getTime() > STALE_RUNNING_MS) {
+  if (
+    (run.status === 'queued' || run.status === 'running') &&
+    Date.now() - (run.started_at ?? run.created_at).getTime() > STALE_RUNNING_MS
+  ) {
     return 'failed';
   }
   return run.status;

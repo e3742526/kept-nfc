@@ -114,6 +114,8 @@ export const reminderDeliveries = pgTable(
     status: deliveryStatus.col().notNull(),
     notBefore: tstz('not_before'),
     sentAt: tstz('sent_at'),
+    sendClaim: uuid('send_claim'),
+    sendClaimedAt: tstz('send_claimed_at'),
     /** A short machine code, never a message with data. */
     error: text('error'),
     createdAt: tstz('created_at').notNull().defaultNow(),

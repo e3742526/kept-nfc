@@ -784,9 +784,8 @@ export async function reportRunView(
   // A job past its pg-boss expiry (policies.ts `report`) never reaches its own failure write:
   // a run still `running` long after that is shown as what it is.
   const stale =
-    run.status === 'running' &&
-    run.started_at !== null &&
-    Date.now() - run.started_at.getTime() > STALE_RUNNING_MS;
+    (run.status === 'queued' || run.status === 'running') &&
+    Date.now() - (run.started_at ?? run.created_at).getTime() > STALE_RUNNING_MS;
   const view: ReportRunView = {
     id: run.id,
     status: expired ? 'expired' : stale ? 'failed' : run.status,

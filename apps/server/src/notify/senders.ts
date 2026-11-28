@@ -1,3 +1,4 @@
+import type pg from 'pg';
 import type { Keyring } from '../crypto/envelope.js';
 import type { Pools } from '../db/pools.js';
 import { withSystem } from '../db/scope.js';
@@ -57,7 +58,7 @@ export type SenderDeps = {
   keyring: () => Keyring;
   publicUrl: string;
   /** Queues a `channel-webhook` job (the worker's pg-boss). */
-  enqueue: (name: 'channel-webhook', data: WebhookJobData) => Promise<void>;
+  enqueue: (name: 'channel-webhook', data: WebhookJobData, client?: pg.ClientBase) => Promise<void>;
   /** Tests: how a push, a webhook or an ntfy or Telegram message leaves the process. */
   /** KEPT_APPRISE_URL (D232): the Apprise API server; absent, Apprise channels aren't sent to. */
   appriseUrl?: string | null;
@@ -170,20 +171,24 @@ function pushSender(deps: SenderDeps): ChannelSender {
 }
 
 function webhookSender(deps: SenderDeps): ChannelSender {
-  const queue = (target: ChannelTarget, item: ReminderItem) =>
-    deps.enqueue('channel-webhook', {
-      occurrenceId: item.occurrenceId,
-      userId: target.userId,
-      channelId: target.id,
-    });
+  const queue = (target: ChannelTarget, item: ReminderItem, client?: pg.ClientBase) =>
+    deps.enqueue(
+      'channel-webhook',
+      {
+        occurrenceId: item.occurrenceId,
+        userId: target.userId,
+        channelId: target.id,
+      },
+      ...(client ? ([client] as const) : []),
+    );
   return {
-    async send(target, _to: ReminderRecipient, message): Promise<SendOutcome> {
+    async send(target, _to: ReminderRecipient, message, client): Promise<SendOutcome> {
       if (message.mode === 'immediate') {
-        await queue(target, message.item);
+        await queue(target, message.item, client);
         return { status: 'sent' };
       }
       if (message.mode === 'digest') {
-        for (const item of message.items) await queue(target, item);
+        for (const item of message.items) await queue(target, item, client);
         return { status: 'sent' };
       }
       if (message.mode === 'alert') return { status: 'skipped', error: 'alerts_not_webhooked' };

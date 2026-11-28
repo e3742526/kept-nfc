@@ -107,11 +107,16 @@ async function sendDigest(deps: DeliverDeps, due: Due): Promise<'sent' | 'skippe
     }
     const items: ReminderItem[] = await reminderItems(client, live, deps.publicUrl);
     const outcome = await sender
-      .send({ id: ch.id, kind: ch.kind, userId: ch.user_id }, user, {
-        mode: 'digest',
-        digestOn: due.digest_on,
-        items,
-      })
+      .send(
+        { id: ch.id, kind: ch.kind, userId: ch.user_id },
+        user,
+        {
+          mode: 'digest',
+          digestOn: due.digest_on,
+          items,
+        },
+        client,
+      )
       .catch(() => ({ status: 'failed' as const, error: 'send_error' }));
     if (outcome.status === 'failed') {
       // Roll back: the digest row and every delivery are as they were, for the next pass.
