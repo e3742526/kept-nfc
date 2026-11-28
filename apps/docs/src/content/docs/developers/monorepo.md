@@ -44,9 +44,10 @@ scoped transaction), `view.ts` (response shapes) and `undo.ts` (in-app undo hand
 | `backup` | restic snapshots, the readable copy, verify, drill, restore |
 | `boxcheck` | Box checks |
 | `calendar` | The private iCal feed |
-| `capture` | Capture batches and their undo |
+| `capture` | Capture batches and their undo; the iPhone app's photo proposals and online item lookup |
 | `cli` | The `kept` command: `migrate` and `admin …` |
 | `codes` | A location's own codes and their format rule |
+| `condition` | Move-in and move-out condition reports |
 | `config` | The environment schema (`env.ts`) and its generated reference |
 | `consumables` | Stock rules for consumables |
 | `crypto` | Envelope encryption, the keyring, Crockford base32 |
@@ -58,28 +59,36 @@ scoped transaction), `view.ts` (response shapes) and `undo.ts` (in-app undo hand
 | `extraction` | AI extraction jobs, checks, duplicates, prompts |
 | `files` | Uploads, attachments, signed file serving, PDF text |
 | `fuel` | Fuel and charging entries |
+| `graph` | A location as a graph of its floors, rooms, boxes and things |
 | `history` | History and the activity feed |
 | `home` | The home screen's checklist, attention counts, overview (cards, tiles, Insights teaser) and hints |
+| `homeassistant` | Linking the Home Assistant app through its discovery message |
 | `http` | `buildApp()`, conventions, errors, module gating, health, the web bundle |
 | `imports` | CSV, Homebox and Kept archive imports |
 | `inbox` | The review inbox and bulk actions |
 | `incidents` | Incidents and claim packs |
+| `insights` | Insights: spending, value by place, vehicle costs and warranty coverage |
 | `invites` | Invites to a location |
 | `jobs` | pg-boss setup, the job registry and policies |
+| `kits` | Kits: what should be in a box or a lent set |
 | `labels` | Label batches and claiming blank labels |
 | `lending` | Loans |
 | `lists` | CSV export of the things list |
 | `locations` | Locations, members, membership jobs |
 | `mail` | Outgoing mail and its messages |
+| `mailin` | A location's mailbox: emailed receipts read in as captures every 10 minutes |
 | `managed` | Managed accounts |
+| `map` | The location map: its layout, floor plans and their review |
 | `mcp` | `/mcp`: its bearer verification and server |
 | `meters` | Meters, readings and their checks |
 | `money` | Exchange rates, valuations, conversions |
+| `moving` | Moves and their boxes |
 | `net` | The SSRF guard for outbound requests |
 | `notices` | Configuration-change notices to every user |
 | `notify` | The notification centre, channels, web push |
 | `oauth` | Kept as an OAuth server for MCP connectors (CIMD, consent) |
 | `observability` | Optional tracing and error reporting |
+| `paperless` | Paperless-ngx links, titles and thumbnails, with their short cache |
 | `paperwork` | Expiring documents |
 | `places` | The place tree |
 | `portability` | Export passphrases and ZIP handling |
@@ -87,6 +96,7 @@ scoped transaction), `view.ts` (response shapes) and `undo.ts` (in-app undo hand
 | `registries` | Types, place kinds, brands, vendors, people, tags |
 | `reminders` | The reminder scan, deliveries, digests |
 | `reports` | Inventory, insurance and vehicle reports |
+| `room` | Room captures: a room’s photos into reviewed drafts |
 | `scan` | Resolving a scanned code; barcode lookup |
 | `schedules` | Schedules and service records |
 | `search` | Search, document search, saved views, semantic search |
@@ -94,7 +104,9 @@ scoped transaction), `view.ts` (response shapes) and `undo.ts` (in-app undo hand
 | `seed` | `kept admin seed` scenarios |
 | `serialize` | Response gates for money and secret values |
 | `services` | Service drafts from an invoice |
+| `sessions` | Scanning sessions and their lines |
 | `setup` | The setup code and the recovery kit |
+| `sharelinks` | Share links and the shared page they open |
 | `storage` | The blob store: local and S3 drivers, derivatives, signed URLs |
 | `sync` | The phone's snapshot, cursor and offline ops |
 | `templates` | Templates and quick add |
@@ -106,6 +118,7 @@ scoped transaction), `view.ts` (response shapes) and `undo.ts` (in-app undo hand
 | `undo` | The undo registry and route |
 | `updates` | The opt-in update check |
 | `vehicles` | Vehicle costs, lists and series |
+| `visual-search` | Search by photo through the local visual encoder, and its index job |
 | `warranties` | Warranties and claims |
 | `webhooks` | Location webhooks and their delivery |
 
@@ -118,17 +131,23 @@ and search evaluations) and `assets/` (report fonts).
 | Directory | What it holds |
 |---|---|
 | `api` | The fetch client, query hooks, and the request and response types per area |
+| `assets` | Brand marks (SVG) |
 | `assistant` | The assistant panel, composer and confirm cards |
 | `camera` | The camera, barcode and QR scanner (zxing wasm) |
 | `components` | Screens' building blocks, by feature, and the shared UI kit |
+| `graph` | The location graph view (2D and 3D floors) |
 | `i18n` | Lingui setup |
 | `lib` | Formatting, bidi isolation, preferences, small helpers |
 | `locales` | One catalogue per language (`messages.po`) |
+| `map` | The location map: its engine, cards and compartments |
+| `native` | The iPhone app's screens, its Capacitor bridge, outbox and sync queue |
 | `offline` | The Dexie database, the queue, the sync engine, app lock |
 | `pwa` | Service-worker registration, install, push, share target, diagnostics |
 | `routes` | TanStack Router file routes (`routeTree.gen.ts` is generated) |
 | `styles` | Design tokens and the global stylesheet |
 | `test` | Test setup and helpers |
+| `try` | Try Kept, the demo build on the docs site |
+| `whats-new` | A release's Highlights, read at build time for the What's new card |
 
 `sw.ts` is the service worker's source and `demo.ts` the fixture mode (`?demo=…`). End-to-end
 tests are in `apps/web/e2e` (Playwright).

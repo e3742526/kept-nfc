@@ -172,7 +172,7 @@ describe('reminder-deliver', () => {
     expect(await runDelivery(deps(), data)).toBe('sent');
   });
 
-  it('commits its claim before sending and skips a duplicate while the sender is active', async () => {
+  it('commits its claim before sending and fails a retry while the sender is active', async () => {
     await runScan(deps());
     const data = jobs[0]?.data;
     const worker = {
@@ -186,7 +186,8 @@ describe('reminder-deliver', () => {
                 [ibrahim.userId],
               ),
             ).toEqual([{ status: 'queued', send_claim: expect.any(String) }]);
-            expect(await runDelivery(deps(), data)).toBe('nothing');
+            // pg-boss's retry of an expired attempt: not sent, and not completed either.
+            await expect(runDelivery(deps(), data)).rejects.toThrow(/held by another attempt/);
             return { status: 'sent' } as const;
           }),
         },
@@ -195,6 +196,30 @@ describe('reminder-deliver', () => {
     expect(await runDelivery(worker, data)).toBe('sent');
     expect(worker.channels.email.send).toHaveBeenCalledOnce();
     expect(sent).toHaveLength(0);
+    // Once the holder has settled, the next retry finds nothing left to send.
+    expect(await runDelivery(deps(), data)).toBe('nothing');
+  });
+
+  it('a retry that met a live lease sends after the holder fails', async () => {
+    await runScan(deps());
+    const data = jobs[0]?.data;
+    const worker = {
+      ...deps(),
+      channels: {
+        email: {
+          send: vi.fn(async () => {
+            await expect(runDelivery(deps(), data)).rejects.toThrow(/held by another attempt/);
+            return { status: 'failed', error: 'SMTP timeout' } as const;
+          }),
+        },
+      },
+    };
+    await expect(runDelivery(worker, data)).rejects.toThrow(/smtp_timeout/);
+    expect(sent).toHaveLength(0);
+    outcome = { status: 'sent' };
+    expect(await runDelivery(deps(), data)).toBe('sent');
+    expect(sent).toHaveLength(1);
+    expect((await status(ibrahim.userId))[0]).toMatchObject({ status: 'sent', error: null });
   });
 
   it('a push whose devices are all gone ends skipped; a closed occurrence is skipped, unsent', async () => {

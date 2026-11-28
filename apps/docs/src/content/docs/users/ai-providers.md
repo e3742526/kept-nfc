@@ -83,6 +83,11 @@ some. Under **This month**, a bar per limit shows the spend so far.
   read-only.
 - **Search words after an import**: an import can offer **Add search words with AI?**, with the
   token estimate first ([import](/users/import-export/)).
+- **Search online for details** (the iPhone app's Add form, off until you tick it): one call
+  that asks the provider to search the web for the product and return published facts, each
+  with its source link, for you to review before anything is saved. It works with OpenAI and
+  OpenRouter only, because the search runs at the provider, and the provider may charge for the
+  search on top of the tokens. The usage pages list it as **Photo**.
 
 **AI usage** pages list every call: **My AI usage** for everyone, a location's usage for its admins
 and owner, the account's for its owner, and the instance's under Admin → AI. Each shows totals,
@@ -132,6 +137,11 @@ A floor plan sends the same kind of copy (a PDF's first page drawn as a picture,
 text) and none of your location, room or floor names; the plan's own text is sent as data, and
 nothing Kept keeps from the answer is a name, an address or a number from the plan other than its
 rooms' labels and sizes.
+
+**Search online for details** sends the item's title, its UPC or EAN when there is one, and the
+names, units and options of the chosen type's fields (never secret ones), and no photo. The
+provider runs the web search itself; Kept fetches nothing from the web and keeps only the facts
+whose source link the search cited.
 
 Under it, Kept summarises what the provider says it does with API data (training, retention) and
 links its policy. A server you run yourself keeps what you let it keep.

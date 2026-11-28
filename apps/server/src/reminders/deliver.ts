@@ -17,7 +17,8 @@ import { loadUsers, type RecipientDeps } from './recipients.js';
 // channel once the person's quiet hours are over. The job's data only names a delivery row;
 // whether to send is read from the database, never trusted from the data (jobs/boss.ts):
 // The row is leased before sending. Network calls run outside the transaction; the lease token
-// fences the final write and an expired lease can be reclaimed by a retry. For a webhook, the
+// fences the final write and an expired lease can be reclaimed by a retry. A retry that finds a
+// live lease fails, so pg-boss tries again once the holder has settled. For a webhook, the
 // enqueue and delivery outcome commit together. External channels are at-least-once across a
 // crash after a provider accepts a send but before the outcome reaches the database.
 //
@@ -94,6 +95,14 @@ async function sendPrepared(plan: PreparedSend, client?: pg.ClientBase): Promise
 }
 
 type Delivery = Extract<DeliverData, { kind: 'delivery' }>;
+
+/** Another attempt holds the delivery's lease; pg-boss retries this job later. */
+class DeliveryHeld extends Error {
+  constructor() {
+    super('reminder delivery held by another attempt');
+    this.name = 'DeliveryHeld';
+  }
+}
 const LEASE_SECONDS = JOB_POLICIES['reminder-deliver'].expireInSeconds;
 
 async function prepareDelivery(deps: DeliverDeps, client: pg.ClientBase, data: Delivery) {
@@ -142,7 +151,19 @@ async function deliverOne(deps: DeliverDeps, data: Delivery): Promise<SendOutcom
         RETURNING 1`,
       [...key, LEASE_SECONDS],
     );
-    if (!claimed.rowCount) return null;
+    if (!claimed.rowCount) {
+      // Still unsent under another attempt's live lease: pg-boss expired that attempt and
+      // retried while its send is still running. Fail this attempt so a later retry finds the
+      // outcome. Completing it would leave no job to retry if the holder then records `failed`.
+      const held = await client.query(
+        `SELECT 1 FROM public.reminder_deliveries
+          WHERE occurrence_id = $1 AND user_id = $2 AND channel_id = $3
+            AND status IN ('queued', 'failed') AND send_claim IS NOT NULL`,
+        key.slice(0, 3),
+      );
+      if (held.rowCount) throw new DeliveryHeld();
+      return null;
+    }
     const plan = await prepareDelivery(deps, client, data);
     if ('status' in plan) return finish(client, plan);
     if (plan.target.kind === 'webhook') return finish(client, await sendPrepared(plan, client));
